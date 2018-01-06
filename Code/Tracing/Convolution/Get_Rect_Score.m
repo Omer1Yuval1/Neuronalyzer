@@ -1,0 +1,15 @@
+function [Mean_Pixel_Value,Values_Vector] = Get_Rect_Score(im,Rect1)
+	
+	% Input: an image and a vector of coordinates of a rectangle in the form of NX2 [x y].
+	% Output: the Mean_Pixel_Value of the pixels inside the rectangle and a vector of the values of these pixels(Values_Vector).
+	
+	% Ion = InRect(im,Rect1);
+	% [Ion Values_Vector] = InRect(im,Rect1);
+	Values_Vector = InRect(im,Rect1);
+	
+	if(isempty(Values_Vector))
+		Values_Vector = 0;
+	end
+	Mean_Pixel_Value = mean(Values_Vector);
+	
+end

@@ -1,0 +1,151 @@
+function Parameters1 = Parameters_Func(Scale_Factor)
+	
+	% To Keep in Mind (temp): I changes the maximal width ratio from 2 to 3. And the scan range from 130 to 90.
+	
+	General_Parameters.Version_Num = '2.0';
+	
+	General_Parameters.Plot1 = 0;
+	Auto_Tracing_Parameters.Plot_On_Off = General_Parameters(1).Plot1;
+	Auto_Tracing_Parameters.Plot_Trace = 1;
+	
+	General_Parameters.Graphs_Plot1 = 1;
+	General_Parameters.Trace_Plot1 = 0; % TODO: use an array with tracing method numbers.
+	General_Parameters.Message = 0;
+	
+	Cell_Body(1).Rect_Rotation_Range = 60;
+	Cell_Body(1).Rotation_Res = 2;
+	Cell_Body(1).Rotation_Origin = 14;
+	Cell_Body(1).Rect_Length_Width_Ratio = 2;
+	Cell_Body(1).Rect_Step_Length_Ratio = 5;
+	Cell_Body(1).Rect_Width = 1/Scale_Factor;
+	Cell_Body(1).Rect_Width_Range = [0.1 4]./Scale_Factor;
+	Cell_Body(1).MinPeakDistance = 10; % Used to detects the cell body branches.
+	Cell_Body(1).MinPeakProminence = 25; % ".
+	Cell_Body(1).MinPeakProminence_Normalized = 0.05; % ".
+	Cell_Body(1).MinPeakWidth = 3; % ".
+	Cell_Body(1).Max_Num_Of_Branches = 4;
+	Cell_Body(1).BW_Threshold = 0.9;
+	Cell_Body(1).Open_Close_Disk = 1.5;
+	Cell_Body(1).Perimeter_Connectivty = 8;
+	Cell_Body(1).Ellipse_Axes_Extension_Factor = 1.1/Scale_Factor;
+	Cell_Body(1).Ellipse_Resolution = 0.035 / Scale_Factor;
+	
+	Auto_Tracing_Parameters(1).Step_Smoothing_Parameter = 0.01; % 0.01. % TODO: should also be a function of Scale_Factor.
+	Auto_Tracing_Parameters(1).Plot_Steps_Num = -10;
+	Auto_Tracing_Parameters(1).Semi_Mode_Auto_Steps_Num = 10; % Number of steps to jump forward in manual mode.
+	
+	% Auto_Tracing_Parameters(1).Rect_Width_Range = [0.1 3.5]./Scale_Factor; % [0.1 1.3]./Scale_Factor;
+	Auto_Tracing_Parameters(1).Min_Rect_Width = .35/Scale_Factor; % Micrometers converted to pixels.
+	Auto_Tracing_Parameters(1).Max_Rect_Width_Ratio = 2; % Uppoer bound for width scanning (2 rects on both sides of the signal rect). Multiplication factor with the previous step width. Micrometers converted to pixels.
+	Auto_Tracing_Parameters(1).MaxMin_Rect_Width_Ratio = 3/Scale_Factor; % Global upper bound. Micrometers converted to pixels.
+	Auto_Tracing_Parameters(1).Width_Ratio = 0.95; % Ratio of the calculated width.
+	% TODO: This value may too big - bigger than the pixel resolution:
+	Auto_Tracing_Parameters(1).Rect_Width_Res = 0.1/Scale_Factor; % The scanning resolution for adjusting the rectangle's width.
+	Auto_Tracing_Parameters(1).Rect_Width_Smoothing_Parameter = 0.5; % TODO: should also be a function of Scale_Factor.
+	Auto_Tracing_Parameters(1).Rect_Width_Num_Of_Last_Steps = 6; % XXX
+	
+	% Auto_Tracing_Parameters(1).Rect_Length = 1.7/Scale_Factor; % 1.6
+	Auto_Tracing_Parameters(1).Rect_Scan_Length_Width_Ratio = 1.5; % 2. 1.4, 1.5, 1.8, 2, 2.5;
+	% Auto_Tracing_Parameters(1).Rect_Length_Width_Ratio = 2; % 2. 1.4, 1.5, 1.8, 2, 2.5;
+	% Auto_Tracing_Parameters(1).Rect_Width_StepLength_Ratio = 2.5; % 4.
+	% Auto_Tracing_Parameters(1).Rect_Step_Length_Ratio = 5; % 4.
+	
+	Auto_Tracing_Parameters.Zoom_Box = 10/Scale_Factor;
+	Auto_Tracing_Parameters(1).Rect_Rotation_Origin = 14; % Center: 0 ; Between corners 1&4: 14.
+	Auto_Tracing_Parameters(1).Rect_Rotation_Range = 70; % Rotation angle (to one side, in degrees).
+	Auto_Tracing_Parameters(1).Rotation_Res = 5; % 5,10; % Rotation resolution (in degrees).
+	Auto_Tracing_Parameters(1).Max_Angle_Diff = 150; % Max angle diff between succesive steps.
+	Auto_Tracing_Parameters(1).Step_Min_Peak_Distance = 15; % [degrees]. Used in 'findpeaks' to merge peaks with distance smaller than this value (using the smallest x-value as the resolution).
+	Auto_Tracing_Parameters(1).Step_Min_Peak_Prominence = 0.4; % 0.5, 0.3, 0.1, 60, 400, 1000, 0.02; % Definition: the vertical distance between a peak and it's heighest minima.
+	Auto_Tracing_Parameters(1).Branch_First_Steps_Num_Limit_Angle = 3; % Including the first step.
+	% Auto_Tracing_Parameters(1).Branch_First_Steps_Limit_Angle = 30; % Including the first step.
+	% Auto_Tracing_Parameters(1).Min_Signal_Noise_diff = ; % 60, 400, 1000, 0.02; % Definition: the vertical distance between a peak and it's heighest minima.
+				 % Left\Right minimum - the end of the peak or a minimum point between the peak and a higher peak.
+				 % http://www.mathworks.com/help/signal/ref/findpeaks.html#buff2uu
+	% Auto_Tracing_Parameters(1).Filter_Box = 2/Scale_Factor; %
+	Auto_Tracing_Parameters.Rect_Width_Filter_Raduis_Ratio = 2;
+	% Auto_Tracing_Parameters.Skel_Overlap_Treshold = 0.25;
+	Auto_Tracing_Parameters.Trace_Skel_Max_Distance = .5/Scale_Factor; % In pixels (converted to micrometers).
+	Auto_Tracing_Parameters.Normalization_Width_Factor = 3; % Multiplication factor of the width of the BG sampling rectnangles.
+	% Auto_Tracing_Parameters(1).Filter_Rect_Width = 3/Scale_Factor;
+	Auto_Tracing_Parameters.Hist_Bins_Res = 5;
+	Auto_Tracing_Parameters.Step_Scores_Smoothing_Parameter = 0.99;
+	% Auto_Tracing_Parameters.Step_Normalization_Min_Peak_Prominence = 0.07; % 0.8; % 1,1.5,1.7,2.
+	Auto_Tracing_Parameters.Step_Normalization_Min_Peak_Height = 0.07; % 0.8; % 1,1.5,1.7,2.
+	Auto_Tracing_Parameters.Step_Normalization_Min_Peak_Distance = 30; % 20.
+	
+	Auto_Tracing_Parameters.OverLap_Min_Distance = .7/Scale_Factor; % Used in 'Locations_Mat'.
+	Auto_Tracing_Parameters.OverLap_Ignore_Last_Steps_Distance = .5/Scale_Factor; % Used in 'Locations_Mat'.
+	Auto_Tracing_Parameters.OverLap_Num_Of_Steps = 1; % max(round(.4/Scale_Factor),3); % Used in 'Locations_Mat'. 'max' so that this value is always >0 pixels.
+	
+	% Auto_Tracing_Parameters(1).Sub_Rects_Num = 4;
+	% Auto_Tracing_Parameters(1).Sub_Rects_Threshold = 27;
+	Auto_Tracing_Parameters.Tip_Scores_Ratio = 2; % 1.8,1.9,1.41; % Main route.
+	Auto_Tracing_Parameters.Tip_Scores_Ratio_Minor = 1.66; % Minor Route. TODO: Currently not in use.
+	Auto_Tracing_Parameters.Tip_Step_Probing_Length = 0.3/Scale_Factor; % Length to sum up scores of previous steps for one step.
+	Auto_Tracing_Parameters.Tip_Steps_Probing_Length = 1.5/Scale_Factor; % Length for comparing sums.
+	Auto_Tracing_Parameters.Trial_Steps_Num = 3; % TODO: Add Explaination.
+	Auto_Tracing_Parameters.Min_Branch_Length = 1;
+	Auto_Tracing_Parameters.Min_Branch_Steps = 5;
+	
+	Auto_Tracing_Parameters.Tracing_Scores_Weights = [0;0;1];
+	
+	Auto_Tracing_Parameters.Self_Collision_Overlap_Ratio = 0.6;
+	
+	Manual_Tracing_Parameters.Closing_Disk = 1;
+	Manual_Tracing_Parameters.BW_Threshold = 0.1;
+	Manual_Tracing_Parameters.Zoom_Length = round(1/Scale_Factor);
+	Manual_Tracing_Parameters.Save_Steps_Num = 500;
+	
+	Analysis.Curvature.SmoothingParameter = 0.01;
+	Analysis.Curvature.Sample_Length = 1.8;
+	Analysis.Curvature.Distance_From_Tips = 0;
+	Analysis.Curvature.Min_Points_Num = 3;
+	% Analysis.Persistence_Length.BinSize = .4;
+	
+	% Segmentation_Parameters
+		Branch_Parameters.Auto_Tracing_Parameters.Segment_Smoothing_Parameter = 0.01; % 0.9.
+		Branch_Parameters.Branching_Angle_Threshold = sin(22*pi/180); % Max angle diff for two segments to form a Branches.
+		Branch_Parameters.Min_Segment_Length = 0.16; % micrometers.(2^0.5);
+	
+	% Orders Parameters:
+		Menorah_Orders.Min_Segment_Length1 = 4.5; % Micrometers. For 1st order only.
+		Menorah_Orders.Min_Segment_Length = 2.2; % 2.6. Micrometers.
+		% 1st Order:
+			Menorah_Orders.CB_Max_Angle = 60; % In degrees.
+			Menorah_Orders.Angle_Diff_Threshold_11 = 20; % In degrees.
+			Menorah_Orders.Max_Angle_Diff1 = 60; % In degrees.
+			% Menorah_Orders.Min_Segment_Length = 3; % 2.6.
+			Menorah_Orders.Smoothing_Parameter = 0.000001;
+		% 2nd Order:
+			Menorah_Orders.Max_Angle_Diff2 = 75; % In degrees.
+			% Menorah_Orders.Min_Segment_Length = 3; % In micrometers.
+			Menorah_Orders.Max_Distance_From_Tertiary = 5;
+			Menorah_Orders.Max_Tertiary_Orientation = 50;
+			Menorah_Orders.Min_Orientation = 45; % 60.
+		% 3rd Order:
+			Menorah_Orders.Max_Angle_Diff3 = 90; % In degrees.
+			% Menorah_Orders.Max_Orientation = 50; % In degrees.
+			% Menorah_Orders.Min_Segment_Length = 2; % In micrometers.
+			% Menorah_Orders.Min_Terminal_Segment_Length = 10; % In micrometers.
+			Menorah_Orders.Max_Terminal_Segment_Orientaion = 40; % In micrometers.
+			Menorah_Orders.Max_First_Segment_Orientaion = 70;
+			Menorah_Orders.Min_First_Segment_Length = 4;
+		% 4th Order:
+			Menorah_Orders.Max_Angle_Diff4 = 40; % In degrees.
+			% Menorah_Orders.Min_Segment_Length = 2; % In micrometers.
+	%
+	
+	Neural_Network.Default_Pixel_Classification_Threshold = .65;
+	
+	Parameters1.General_Parameters = General_Parameters;
+	Parameters1.Cell_Body = Cell_Body;
+	Parameters1.Auto_Tracing_Parameters = Auto_Tracing_Parameters;
+	Parameters1.Manual_Tracing_Parameters = Manual_Tracing_Parameters;
+	Parameters1.Menorah_Orders = Menorah_Orders;
+	% Parameters1(1).Segmentation_Parameters;
+	Parameters1.Branch_Parameters = Branch_Parameters;
+	Parameters1.Analysis = Analysis;
+	Parameters1.Neural_Network = Neural_Network;
+	
+end
