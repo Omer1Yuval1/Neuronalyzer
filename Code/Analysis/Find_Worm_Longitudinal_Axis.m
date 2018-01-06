@@ -1,5 +1,9 @@
 function Find_Worm_Longitudinal_Axis(Workspace)
 	
+	% This functions uses a higher level perspective (the entire neuron) to detect the longitudinal axis of the worm.
+	% It first performs closing to transform the neuron into a large blob.
+	% Then it skeltonizes this blob to get its midline.
+	
 	% Better_Skeletonization_Threshold = 1000;
 	BW_Threshold = 0.5;
 	

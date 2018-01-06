@@ -11,6 +11,7 @@ function Workspace = Connect_Vertices(Workspace)
 	
 	Skel_Vertex_Overlap_Factor = 2;
 	
+	Scale_Factor = Workspace.User_Input.Scale_Factor;
 	% Set Initial Background Normalization Values (used in case local normalization fails):
 		% (currently only used for the 1st step in each segment (from both sides)).
 	Hist_Bins_Res = Workspace.Parameters(1).Auto_Tracing_Parameters(1).Hist_Bins_Res;
@@ -333,8 +334,8 @@ function Workspace = Connect_Vertices(Workspace)
 					
 					Workspace.Segments(s).(Field0)(end+1).Coordinates = Step_Params.Rotation_Origin;
 					
-					Workspace.Segments(s).(Field0)(end).Width = W;
-					Workspace.Segments(s).(Field0)(end).Length = Step_Length; % Width / Workspace.Parameters.Auto_Tracing_Parameters.Rect_Width_StepLength_Ratio;
+					Workspace.Segments(s).(Field0)(end).Width = W * Scale_Factor;
+					Workspace.Segments(s).(Field0)(end).Length = Step_Length * Scale_Factor; % Width / Workspace.Parameters.Auto_Tracing_Parameters.Rect_Width_StepLength_Ratio;
 					Workspace.Segments(s).(Field0)(end).BG_Intensity = Step_Params.BG_Intensity;
 					Workspace.Segments(s).(Field0)(end).BG_Peak_Width = Step_Params.BG_Peak_Width;
 					Workspace.Segments(s).(Field0)(end).Angle = mod(Locs1,360)*pi/180; % Make sure the angle is positive (mod) and convert to radians.

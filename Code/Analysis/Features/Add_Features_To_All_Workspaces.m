@@ -30,14 +30,16 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 		
 		for s=1:numel(W(i).Workspace.Segments) % For each segment.
 			if(~isempty(W(i).Workspace.Segments(s).Rectangles))
-				W(i).Workspace.Segments(s).Width = GetSegmentWidth(W(i).Workspace.Segments(s).Rectangles,Scale_Factor);
-				W(i).Workspace.Segments(s).Length = GetSegmentLength(W(i).Workspace.Segments(s).Rectangles,Scale_Factor);
+				W(i).Workspace.Segments(s).Width = mean([W(i).Workspace.Segments(s).Rectangles.Width]);
+				W(i).Workspace.Segments(s).Length = sum([W(i).Workspace.Segments(s).Rectangles.Length]);
+				
 				D = ((W(i).Workspace.Segments(s).Rectangles(1).Coordinates(1) - W(i).Workspace.Segments(s).Rectangles(end).Coordinates(1))^2 + ...
 					(W(i).Workspace.Segments(s).Rectangles(1).Coordinates(2) - W(i).Workspace.Segments(s).Rectangles(end).Coordinates(2))^2)^.5;
 				W(i).Workspace.Segments(s).End2End_Length = D*Scale_Factor;
 				
-				[DataSet,MeanR,MeanR2] = Calc_Mean_Curvature(W(i).Workspace.Segments(s).Rectangles,Scale_Factor,Parameters);
-				W(i).Workspace.Segments(s).Curvature = MeanR2;
+				XY = [W(i).Workspace.Segments(s).Rectangles.Coordinates];
+				[Point_Curvature_Values,Mean_Curvature,Mean_Squared_Curvature] = Calc_Mean_Curvature(XY(1:2:end-1),XY(2:2:end),[W(i).Workspace.Segments(s).Rectangles.Length],Scale_Factor,Parameters);
+				W(i).Workspace.Segments(s).Curvature = Mean_Squared_Curvature;
 			else
 				W(i).Workspace.Segments(s).Width = -1;
 				W(i).Workspace.Segments(s).Length = -1;

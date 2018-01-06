@@ -15,5 +15,4 @@ function R = Calc_Radius_Of_Curvature(X,Y)
 	R = sqrt(dx2 + dy2 + a0^2 + b0^2);
 	% a = a0 + mx; % Center.
 	% b = b0 + my; % ".
-	
 end

@@ -98,7 +98,7 @@ function Parameters1 = Parameters_Func(Scale_Factor)
 	Manual_Tracing_Parameters.Save_Steps_Num = 500;
 	
 	Analysis.Curvature.SmoothingParameter = 0.01;
-	Analysis.Curvature.Sample_Length = 1.8;
+	Analysis.Curvature.Sample_Length = 1.8; % Micrometers. Sample length from each side of the point. ~5 pixels for Scale_Factor=50/40.
 	Analysis.Curvature.Distance_From_Tips = 0;
 	Analysis.Curvature.Min_Points_Num = 3;
 	% Analysis.Persistence_Length.BinSize = .4;
