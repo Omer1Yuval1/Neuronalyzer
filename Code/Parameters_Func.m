@@ -34,15 +34,16 @@ function Parameters1 = Parameters_Func(Scale_Factor)
 	Auto_Tracing_Parameters(1).Plot_Steps_Num = -10;
 	Auto_Tracing_Parameters(1).Semi_Mode_Auto_Steps_Num = 10; % Number of steps to jump forward in manual mode.
 	
-	% Auto_Tracing_Parameters(1).Rect_Width_Range = [0.1 3.5]./Scale_Factor; % [0.1 1.3]./Scale_Factor;
+	Auto_Tracing_Parameters(1).Global_Step_Length = 1; % In pixels.
 	Auto_Tracing_Parameters(1).Min_Rect_Width = .35/Scale_Factor; % Micrometers converted to pixels.
 	Auto_Tracing_Parameters(1).Max_Rect_Width_Ratio = 2; % Uppoer bound for width scanning (2 rects on both sides of the signal rect). Multiplication factor with the previous step width. Micrometers converted to pixels.
-	Auto_Tracing_Parameters(1).MaxMin_Rect_Width_Ratio = 3/Scale_Factor; % Global upper bound. Micrometers converted to pixels.
+	Auto_Tracing_Parameters(1).MaxMin_Rect_Width_Ratio = 8; % Global upper bound ratio (in Micrometers).
 	Auto_Tracing_Parameters(1).Width_Ratio = 0.95; % Ratio of the calculated width.
 	% TODO: This value may too big - bigger than the pixel resolution:
 	Auto_Tracing_Parameters(1).Rect_Width_Res = 0.1/Scale_Factor; % The scanning resolution for adjusting the rectangle's width.
 	Auto_Tracing_Parameters(1).Rect_Width_Smoothing_Parameter = 0.5; % TODO: should also be a function of Scale_Factor.
 	Auto_Tracing_Parameters(1).Rect_Width_Num_Of_Last_Steps = 6; % XXX
+	Auto_Tracing_Parameters(1).Skel_Vertex_Overlap_Factor = 2;
 	
 	% Auto_Tracing_Parameters(1).Rect_Length = 1.7/Scale_Factor; % 1.6
 	Auto_Tracing_Parameters(1).Rect_Scan_Length_Width_Ratio = 1.5; % 2. 1.4, 1.5, 1.8, 2, 2.5;

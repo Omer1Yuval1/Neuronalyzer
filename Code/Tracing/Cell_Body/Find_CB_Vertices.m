@@ -50,7 +50,7 @@ function [CB_Vertices,Pixels0,Pixels1] = Find_CB_Vertices(Im,CB_Perimeter,CB_Pix
 	Angles = zeros(1,Np);
 	for p=1:Np % For each perimeter pixel.
 		Angle = atan2d(Pixels_List(p,2) - CB_Center(2),Pixels_List(p,1) - CB_Center(1));
-		Score = Rect_Scan_Generalized(Im,Pixels_List(p,:),Angle,Rect_Width,Rect_Length,Rotation_Range,Rotation_Res,14);
+		Score = Rect_Scan_Generalized(Im,Pixels_List(p,:),Angle,Rect_Width,Rect_Length,Rotation_Range,Rotation_Res,14,Sr,Sc);
 		
 		M = find([Score(:,2)] == max([Score(:,2)]));
 		Scores(p) = Score(M(1),2); % Mean Pixel Value.

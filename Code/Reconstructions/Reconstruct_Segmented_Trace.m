@@ -3,6 +3,7 @@ function Reconstruct_Segmented_Trace(Workspace1)
 	% Scale_Factor = Workspace1.User_Input.Scale_Factor;
 	MarkerConstant = 10;
 	LineWidthConstant = 1;
+	Scale_Factor = Workspace1.User_Input.Scale_Factor;
 	
 	figure(1);
 	hold on;
@@ -25,8 +26,8 @@ function Reconstruct_Segmented_Trace(Workspace1)
 		for r=1:numel(Workspace1.Vertices(v).Rectangles)
 			Origin1 = Workspace1.Vertices(v).Rectangles(r).Origin;
 			Angle1 = Workspace1.Vertices(v).Rectangles(r).Angle;
-			Width1 = Workspace1.Vertices(v).Rectangles(r).Width;
-			Length1 = Workspace1.Vertices(v).Rectangles(r).Length;
+			Width1 = Workspace1.Vertices(v).Rectangles(r).Width / Scale_Factor; % Conversion to pixels.
+			Length1 = Workspace1.Vertices(v).Rectangles(r).Length / Scale_Factor; % Conversion to pixels.
 			[XV,YV] = Get_Rect_Vector(Origin1,Angle1*180/pi,Width1,Length1,14);
 		
 			plot(XV,YV,'LineWidth',2);

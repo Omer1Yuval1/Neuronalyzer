@@ -30,7 +30,7 @@ function Reconstruction_Index(GUI_Parameters)
 		case 'Longitudinal Gradient'
 			Reconstruct_Gradient(GUI_Parameters.Workspace(1).Workspace);
 		case 'Curvature'
-			Reconstruct_Curvature(GUI_Parameters.Workspace(1).Workspace,2,GUI_Parameters.Handles.Slider.Value);
+			Reconstruct_Curvature(GUI_Parameters.Workspace(1).Workspace,GUI_Parameters.Handles.Analysis.Slider.Value);
 			% Reconstruct_Curviness(GUI_Parameters.Workspace(1).Workspace,GUI_Parameters.Slider_Value,GUI_Parameters.Reconstruction_Value);
 		case 'Persistence Length'
 			Reconstruct_Persistence_Length(GUI_Parameters.Workspace(1).Workspace,GUI_Parameters.Reconstruction_Value,GUI_Parameters.Slider_Value);

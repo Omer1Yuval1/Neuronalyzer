@@ -32,6 +32,7 @@ function Tracer_UI()
 		GUI_Parameters.Handles.Analysis.Analysis_Tab = uitab('Parent',GUI_Parameters.Handles.Analysis_Tabs,'Title','Analysis','BackgroundColor',[0.5,0.6,1]);
 			GUI_Parameters.Handles.Error_Bars_CheckBox = uicontrol(GUI_Parameters.Handles.Analysis.Analysis_Tab,'Style','checkbox','Value',0,'String','Display Error Bars','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0.8 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Merge_Dorsal_Ventral_Func);			
 			GUI_Parameters.Handles.Significance_Bars_CheckBox = uicontrol(GUI_Parameters.Handles.Analysis.Analysis_Tab,'Style','checkbox','Value',0,'String','Display Significance Bars','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0.9 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Display_Significance_Bars_Func);
+			% GUI_Parameters.Handles.Analysis.Slider = uicontrol('Parent',GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','slider','Min',0,'Max',1,'Value',GUI_Parameters.General.Slider_Value,'Units','Normalized','Position',[0 0.01 1 GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@Slider_Func);
 			% GUI_Parameters.Handles.Normalization_List = uicontrol(GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','popup','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0.5 1 GUI_Parameters.Visuals.Button1_Height], ...
 				% 'String',{'Not Normalized'},'Callback',@Display_Normalized_Resutls_Func);
 			% Display_Original_Image_CheckBox = uicontrol(GUI_Parameters.Handles.Display_Tab,'Style','checkbox','Value',0,'String','Display Original Image','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0.2 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Display_Original_Image);
@@ -924,45 +925,35 @@ function Tracer_UI()
 		
 		Reset_Axes();		
 		
-		if(GUI_Parameters.General.View_Category_Type > 0)
-			Categories_Filter_Lables(GUI_Parameters);
-			GUI_Parameters.General = Update_Categories_Filter_Values(GUI_Parameters.General,GUI_Parameters.Visuals.Active_Colormap);
-		end
+		% if(GUI_Parameters.General.View_Category_Type > 0)
+			% Categories_Filter_Lables(GUI_Parameters);
+			% GUI_Parameters.General = Update_Categories_Filter_Values(GUI_Parameters.General,GUI_Parameters.Visuals.Active_Colormap);
+		% end
 		
 		% Loading_Animation_Handle = gifplayer('Loading_Animation.gif',0.05);
-		imshow(GUI_Parameters.Workspace(1).Workspace.Image0,'Parent',GUI_Parameters.Handles.Axes);		
-		[jObj,hjObj,hContainer] = Display_Wait_Animation(1);
+		imshow(GUI_Parameters.Workspace(1).Workspace.Image0,'Parent',GUI_Parameters.Handles.Axes);
+		% [jObj,hjObj,hContainer] = Display_Wait_Animation(1);
 		Reconstruction_Index(GUI_Parameters);
 		set(GUI_Parameters.Handles.Axes,'YDir','normal');
-		Display_Wait_Animation(0,jObj,hjObj,hContainer);
+		% Display_Wait_Animation(0,jObj,hjObj,hContainer);
 		% delete(Loading_Animation_Handle.h1);
-		
-		if(strcmp(GUI_Parameters.General.Active_Plot,'Trace'))
-			set(GUI_Parameters.Single.Handles.Tracing.Delete_Segments_Button,'Enable','on');
-		else
-			% set(GUI_Parameters.Single.Handles.Tracing.Delete_Segments_Button,'Enable','off');
-		end
-		
-		if(strcmp(GUI_Parameters.General.Active_Plot,'Menorah Orders'))
-			set(allchild(GUI_Parameters.Single.Handles.Tracing.Orders_Panel),'Enable','on');
-		else
-			set(allchild(GUI_Parameters.Single.Handles.Tracing.Orders_Panel),'Enable','off');
-		end
 	end
 	
 	function Slider_Func(source,callbackdata)
-		
-		set(GUI_Parameters.Handles.Slider,'Enable','off');
+		%{
+		set(GUI_Parameters.Handles.Analysis.Slider,'Enable','off');
 		
 		Reset_Axes();
 		hold on;
 		if(GUI_Parameters.General.Active_View == 1)
+			imshow(GUI_Parameters.Workspace(1).Workspace.Image0,'Parent',GUI_Parameters.Handles.Axes);
 			Reconstruction_Index(GUI_Parameters);
 		else
 			Multiple_Choose_Plot(GUI_Parameters);
 		end
 		
-		set(GUI_Parameters.Handles.Slider,'Enable','on');
+		set(GUI_Parameters.Handles.Analysis.Slider,'Enable','on');
+		%}
 	end
 	
 	function Tree_Center_CheckBox_Func(source,callbackdata)

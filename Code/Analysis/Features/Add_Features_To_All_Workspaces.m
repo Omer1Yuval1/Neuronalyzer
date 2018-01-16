@@ -4,8 +4,9 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 	% This affects many things (e.g. curvature).
 	
 	Features = struct('Feature_Name',{},'Values',{},'Num_Of_Options',{});
+	N = numel(W);
 	
-	for i=1:numel(W) % For each workspace.
+	for i=1:N % For each workspace.
 		
 		Scale_Factor = W(i).Workspace.User_Input.Scale_Factor;
 		Parameters = Parameters_Func(Scale_Factor);
@@ -40,6 +41,11 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 				XY = [W(i).Workspace.Segments(s).Rectangles.Coordinates];
 				[Point_Curvature_Values,Mean_Curvature,Mean_Squared_Curvature] = Calc_Mean_Curvature(XY(1:2:end-1),XY(2:2:end),[W(i).Workspace.Segments(s).Rectangles.Length],Scale_Factor,Parameters);
 				W(i).Workspace.Segments(s).Curvature = Mean_Squared_Curvature;
+				if(N == 1) % If only one workspace, add the curvature values for individual coordinates.
+					for j=1:numel(W(i).Workspace.Segments(s).Rectangles) % For each coordinate. TODO: find a way to do this without a for loop.
+						W(i).Workspace.Segments(s).Rectangles(j).Curvature = Point_Curvature_Values(j);
+					end
+				end
 			else
 				W(i).Workspace.Segments(s).Width = -1;
 				W(i).Workspace.Segments(s).Length = -1;

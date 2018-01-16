@@ -5,7 +5,7 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Field_Name,Si
 	
 	% This function filters workspaces based on the chosen features and concentrates values from different workspaces
 		% that belong to the same group.
-	
+	% assignin('base','Input_Struct',Input_Struct);
 	switch length(Field_Name)
 		case 1
 			Input_Struct = struct('Group_Name',{},'Values',{},'Normalization',{},'Worms_Number',{},'Color',{},'Labels',{});

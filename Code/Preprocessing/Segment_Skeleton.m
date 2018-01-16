@@ -3,7 +3,7 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 	Messages = 0;
 	
 	[Im_Rows,Im_Cols] = size(Im1_branchpoints);
-	BP_Min_Dis = 3;
+	BP_Min_Dis = 4;
 	
 	if(Messages)
 		assignin('base','Im1_NoiseReduction',Im1_NoiseReduction);
@@ -169,22 +169,23 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 		Vertices(v).Coordinate = [J,I];
 	end
 	
-	% assignin('base','Vertices',Vertices);
+	% Merge close vertices:
 	V = [Segments.Vertices];
 	V1 = V(1:2:end);
 	V2 = V(2:2:end);
-	for v=1:numel(Vertices) % Merge close vertices.
-		I = zeros(0,3); % [index,x,y].
+	for v=1:numel(Vertices)
+		I = zeros(0,4); % [index,x,y,order].
 		for v1=1:numel(Vertices)
 			D = ((Vertices(v).Coordinate(1) - Vertices(v1).Coordinate(1))^2 + (Vertices(v).Coordinate(2) - Vertices(v1).Coordinate(2))^2)^.5;
 			if(D <= BP_Min_Dis)
-				I(end+1,:) = [v1,Vertices(v1).Coordinate];
+				I(end+1,:) = [v1,Vertices(v1).Coordinate,Vertices(v1).Order];
 			end
 		end
-		if(length(I) > 1) % One element means that it is only vertex v compared to itself.
+		if(size(I,1) > 1) % One element means that it is only vertex v compared to itself.
 			Vertices(I(1,1)).Coordinate = [mean(I(:,2)),mean(I(:,3))];
+			Vertices(I(1,1)).Order = sum(I(:,4)) - 2*(size(I,1)-1);
 			[Vertices(I(2:end,1)).Vertex_Index] = deal(0);
-			for i=2:size(I,1) % For redundant each vertex
+			for i=2:size(I,1) % For each redundant vertex.
 				% Update the vertices changes in the Segments struct.
 				% Assuming each segment is assigned with exactly 2 vertices.
 				for j=find(V1 == I(i,1))
@@ -197,7 +198,8 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 		end
 
 	end
-	Vertices(find([Vertices.Vertex_Index] == 0)) = [];	
+	Vertices(find([Vertices.Vertex_Index] == 0)) = [];
+	% TODO: delete the segments that are supposed to be deleted.
 	
 	% ColorMap = jet(20);
 	% imshow(Im1_NoiseReduction);

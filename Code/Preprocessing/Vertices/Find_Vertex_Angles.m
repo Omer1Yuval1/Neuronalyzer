@@ -8,8 +8,9 @@ function Rectangles = Find_Vertex_Angles(Im_BW,Cxy,Rc,Im_Rows,Im_Cols,Scale_Fact
 	SmoothingParameter = 0.99;
 	MinWidth = .5;
 	MaxWidth = 6;
-	Width_Fit_Threshold = .95;
+	Width_Ratio = .9;
 	Width_SmoothingParameter = 0.5;
+	Min_Final_Width = 1;
 	
 	Angle_Res = 1*(pi/180); % 1 degree. old version: round(60 * Rc); % 360*
 	N = round(2*pi/Angle_Res);
@@ -23,7 +24,7 @@ function Rectangles = Find_Vertex_Angles(Im_BW,Cxy,Rc,Im_Rows,Im_Cols,Scale_Fact
 	W = 3; % Scanning rectangle width.
 	Va = 0; % (-5:5)*pi/180; % Angle range for rotation around each perimeter point. Not in Use!!!
 	Vw = 2:.1:8; % :.5:5; % TODO: scale.
-	Rect_Length = 15*Scale_Factor; % TODO: scale with width or width center circle radius?
+	Rect_Length = 5; % In pixels.
 	
 	Min_Score_Ratio = 0.95;
 	MinPeakDis = 20*(pi/180); % 10 degrees.
@@ -109,7 +110,7 @@ function Rectangles = Find_Vertex_Angles(Im_BW,Cxy,Rc,Im_Rows,Im_Cols,Scale_Fact
 	Scores = zeros(1,length(Peaks));
 	Widths = zeros(1,length(Peaks));
 	for p=1:length(Peaks)
-		Widths(p) = max([1,Adjust_Rect_Width_Rot_Generalized(Im_BW,Cxy,Locs(p)*180/pi,Rect_Length,[MinWidth,MaxWidth],14,Width_SmoothingParameter,Width_Fit_Threshold)]);
+		Widths(p) = max([Min_Final_Width,Adjust_Rect_Width_Rot_Generalized(Im_BW,Cxy,Locs(p)*180/pi,Rect_Length,[MinWidth,MaxWidth],14,Width_SmoothingParameter,Width_Ratio)]);
 		[XV,YV] = Get_Rect_Vector(Cxy,Locs(p)*180/pi,Widths(p),Rect_Length,14);
 		InRect1 = InRect_Coordinates(Im_BW,[XV',YV']);
 		Scores(p) = length(sum(Im_BW(InRect1))) ./ length(InRect1); % Number of "1" pixels divided by the total # of pixels within the rectangle.
@@ -120,7 +121,7 @@ function Rectangles = Find_Vertex_Angles(Im_BW,Cxy,Rc,Im_Rows,Im_Cols,Scale_Fact
 	% Overlaps = zeros(1,length(Peaks));
 	% if(Vertex_Type == 1) % If it's a tip.
 		% for p=1:length(Peaks) % Assign a score to each peak based on it's pixel overlap with the corresponding segment.
-			% W = max([1,Adjust_Rect_Width_Rot_Generalized(Im_BW,Cxy,Locs(p)*180/pi,Rect_Length,[MinWidth,MaxWidth],14,Width_SmoothingParameter,Width_Fit_Threshold)]);
+			% W = max([1,Adjust_Rect_Width_Rot_Generalized(Im_BW,Cxy,Locs(p)*180/pi,Rect_Length,[MinWidth,MaxWidth],14,Width_SmoothingParameter,Width_Ratio)]);
 			% [XV,YV] = Get_Rect_Vector(Cxy,Locs(p)*180/pi,W,Rect_Length,14);
 			% InRect1 = InRect_Coordinates(Im_BW,[XV',YV']);
 			% Overlaps(p) = length(intersect(Segment_Coordinates,InRect1)) / length(InRect1);
@@ -167,21 +168,20 @@ function Rectangles = Find_Vertex_Angles(Im_BW,Cxy,Rc,Im_Rows,Im_Cols,Scale_Fact
 		set(gca,'FontSize',20);
 		xlim([0,max(Theta)]);
 	end
-	
+	% disp(Widths);
 	Rectangles = struct('Origin',{},'Angle',{},'Width',{},'Length',{});
 	for p=1:length(Peaks)
 		F1 = find(Theta == Locs(p)); % Find the central angle that corresponds to this peak.		
 		Rectangles(p).Angle = Filtered_Scores(2,F1);
 		% Rectangles(p).Width = Adjust_Rect_Width_Rot_Generalized(Im_BW,Pxy(F1,:),Theta(F1)*180/pi,Rect_Length,[1,6],14,0.5,0.8);
-		Rectangles(p).Width = Widths(p); % max([1,Adjust_Rect_Width_Rot_Generalized(Im_BW,Pxy(F1,:),Theta(F1)*180/pi,Rect_Length,[MinWidth,MaxWidth],14,Width_SmoothingParameter,Width_Fit_Threshold)]);
+		Rectangles(p).Width = Widths(p) * Scale_Factor; % Conversion to micrometers.
 		% Rectangles(p).Width = max([1,Widths(p)]);
 		% Rectangles(p).Width = Filtered_Scores(3,F1);
-		Rectangles(p).Length = Rect_Length;
-		
-		[XV,YV] = Get_Rect_Vector(Pxy(F1,:),Rectangles(p).Angle*180/pi,Rectangles(p).Width,Rectangles(p).Length,14);
-		
+		Rectangles(p).Length = Rect_Length * Scale_Factor; % Conversion from pixels to micrometers.
 		Rectangles(p).Origin = Pxy(F1,:);
+		
 		if(Plot1)
+			[XV,YV] = Get_Rect_Vector(Pxy(F1,:),Rectangles(p).Angle*180/pi,Widths(p),Rect_Length,14);
 			plot([XV,XV(1)],[YV,YV(1)],'Color',[0,0.7,0],'LineWidth',3);
 			drawnow;
 			% plot(Pxy(F1,1),Pxy(F1,2),'.b','MarkerSize',15);
