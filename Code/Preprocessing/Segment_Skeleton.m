@@ -160,7 +160,7 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 			end
 		end
 	end
-
+	
 	Vertices = Vertices(1:Vi); % Delete extra rows.
 	Segments = Segments(1:Si); % Delete extra rows.
 	
@@ -169,13 +169,20 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 		Vertices(v).Coordinate = [J,I];
 	end
 	
+	% TODO: instead of merging, just use the skeleton to trace the short segment and find the relevant angles (and update the order accordingly).
 	% Merge close vertices:
 	V = [Segments.Vertices];
 	V1 = V(1:2:end);
 	V2 = V(2:2:end);
 	for v=1:numel(Vertices)
 		I = zeros(0,4); % [index,x,y,order].
+		if(Vertices(v).Order == 1)
+			continue; % Don't merge tips.
+		end
 		for v1=1:numel(Vertices)
+			if(Vertices(v1).Order == 1)
+				continue; % Don't merge tips.
+			end
 			D = ((Vertices(v).Coordinate(1) - Vertices(v1).Coordinate(1))^2 + (Vertices(v).Coordinate(2) - Vertices(v1).Coordinate(2))^2)^.5;
 			if(D <= BP_Min_Dis)
 				I(end+1,:) = [v1,Vertices(v1).Coordinate,Vertices(v1).Order];
@@ -189,16 +196,24 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 				% Update the vertices changes in the Segments struct.
 				% Assuming each segment is assigned with exactly 2 vertices.
 				for j=find(V1 == I(i,1))
-					Segments(j).Vertices(1) = I(1,1);
+					if(Segments(j).Vertices(2) == I(1,1)) % If the short segment will have the same vertex as v1 & v2, mark it for deletion.
+						Segments(j).Segment_Index = 0;
+					else
+						Segments(j).Vertices(1) = I(1,1);
+					end
 				end
 				for j=find(V2 == I(i,1))
-					Segments(j).Vertices(2) = I(1,1);
+					if(Segments(j).Vertices(1) == I(1,1)) % If the short segment will have the same vertex as v1 & v2, mark it for deletion.
+						Segments(j).Segment_Index = 0;
+					else
+						Segments(j).Vertices(2) = I(1,1);
+					end
 				end
 			end
 		end
-
 	end
 	Vertices(find([Vertices.Vertex_Index] == 0)) = [];
+	Segments(find([Segments.Segment_Index] == 0)) = [];
 	% TODO: delete the segments that are supposed to be deleted.
 	
 	% ColorMap = jet(20);

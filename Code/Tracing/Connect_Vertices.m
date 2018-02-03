@@ -12,6 +12,8 @@ function Workspace = Connect_Vertices(Workspace)
 	end
 	
 	[Workspace,Locations_Map,Locations_Map_Steps] = Match_Segments_And_Vertices_Rectangles(Workspace,Messages);
+	[Workspace,Traced_Segments] = Trace_Short_Segments(Workspace); % TODO: detect width. Currently using 1pixel.
+	
 	if(Messages)
 		assignin('base','Workspace01',Workspace);
 	end
@@ -71,8 +73,10 @@ function Workspace = Connect_Vertices(Workspace)
 	
 	% return;
 	Segments_Array = ones(1,numel(Workspace.Segments));
+	Segments_Array(Traced_Segments) = 1;
+	
 	% Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array([127:141,118,119]) = 1;
-	% Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array([58,66]) = 1;
+	% Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array([82]) = 1;
 	
 	Step_Num = 0;
 	while(1)
@@ -103,7 +107,7 @@ function Workspace = Connect_Vertices(Workspace)
 					Field0 = 'Rectangles2';
 				end
 				
-				Step_Params.Rotation_Origin = Workspace.Segments(s).(Field0)(end).Coordinates;
+				Step_Params.Rotation_Origin = [Workspace.Segments(s).(Field0)(end).X,Workspace.Segments(s).(Field0)(end).Y];
 				Step_Params.Angle = (Workspace.Segments(s).(Field0)(end).Angle)*180/pi;
 				Step_Params.Width = (Workspace.Segments(s).(Field0)(end).Width) / Scale_Factor; % Conversion from micrometers to pixels.
 				Step_Params.Step_Length = Step_Length; % Step_Params.Width / Workspace.Parameters.Auto_Tracing_Parameters.Rect_Width_StepLength_Ratio; % Workspace.Segments(s).(Field0)(end).Length;
@@ -130,7 +134,7 @@ function Workspace = Connect_Vertices(Workspace)
 												Rotation_Res,Origin_Type,Im_Rows,Im_Cols);
 				
 				[Scores,Step_Params.BG_Intensity,Step_Params.BG_Peak_Width] = Normalize_Rects_Values_Generalized(Workspace.Image0,Scores,Step_Params.Rotation_Origin,Step_Params.Angle,Step_Params.Width,Step_Params.Scan_Length, ...
-																Step_Params.BG_Intensity,Step_Params.BG_Peak_Width,Workspace.Parameters);
+													Step_Params.BG_Intensity,Step_Params.BG_Peak_Width,Workspace.Parameters,Im_Rows,Im_Cols);
 				
 				FitObject = fit(Scores(:,1),Scores(:,2),'smoothingspline','SmoothingParam',Step_Scores_Smoothing_Parameter);
 				Scores(:,2) = FitObject(Scores(:,1));
@@ -166,6 +170,7 @@ function Workspace = Connect_Vertices(Workspace)
 				[XV,YV] = Get_Rect_Vector(Step_Params.Rotation_Origin,Locs1,Step_Params.Width,Step_Params.Step_Length,Workspace.Parameters.Auto_Tracing_Parameters.Rect_Rotation_Origin);
 				InRect1 = InRect_Coordinates(Workspace.Image0,[XV',YV']); % Get the linear indices of the pixels within the rectangle.
 				
+				% TODO: replace the use of the location maps with the skeleton:
 				Lv = Locations_Map(InRect1);
 				Ls = Locations_Map_Steps(InRect1);
 				F1 = []; % find(Lv ~= 0 & Lv ~= Segment_Index); % Look for pixels of other segments in the locations map.
@@ -191,7 +196,7 @@ function Workspace = Connect_Vertices(Workspace)
 					% assignin('base','Step_Params',Step_Params);
 					W = Adjust_Rect_Width_Rot_Generalized(Workspace.Image0,Step_Params.Rotation_Origin,Step_Params.Angle,...
 									Step_Params.Scan_Length,[Wmin,Max_Rect_Width_Ratio*Workspace.Segments(s).(Field0)(end).Width/Scale_Factor], ...
-																Origin_Type,Width_Smoothing_Parameter,Width_Ratio); % Input width in pixels.
+																Origin_Type,Width_Smoothing_Parameter,Width_Ratio,Im_Rows,Im_Cols); % Input width in pixels.
 					if(0 && Step_Num == 4) % Used to test the width calculation at a specific step.
 						assignin('base','Workspace',Workspace);
 						assignin('base','Step_Params.Rotation_Origin',Step_Params.Rotation_Origin);
@@ -202,19 +207,20 @@ function Workspace = Connect_Vertices(Workspace)
 						assignin('base','Width_Smoothing_Parameter',Width_Smoothing_Parameter);
 						assignin('base','Width_Ratio',Width_Ratio);
 					end
-					if(W == -1) % Detection failed.
+					if(W < 0) % Detection failed.
 						% TODO: in the n 1st steps, use also the vertex rectangle in the average.
 						W = mean([Workspace.Segments(s).(Field0)(max(1,end-Rect_Width_Num_Of_Last_Steps):end).Width]); % Value is in micrometers.
 						if(Messages)
 							disp('Width Detection Failed.');
 						end
+						% TODO: if (-2), then terminate because it's an image boundaries alert.
 					else
 						W = mean([W*Scale_Factor,[Workspace.Segments(s).(Field0)(max(1,end-Rect_Width_Num_Of_Last_Steps):end).Width]]); % In micrometers.
 						W = min(W,Global_Max_Rect_Width); % Both in micrometers.
 					end
 					
-					Workspace.Segments(s).(Field0)(end+1).Coordinates = Step_Params.Rotation_Origin;
-					
+					Workspace.Segments(s).(Field0)(end+1).X = Step_Params.Rotation_Origin(1);
+					Workspace.Segments(s).(Field0)(end).Y = Step_Params.Rotation_Origin(2);
 					Workspace.Segments(s).(Field0)(end).Width = W; % Value already in micrometers.
 					Workspace.Segments(s).(Field0)(end).Length = Step_Length * Scale_Factor; % Conversion from pixels to micrometers.
 					Workspace.Segments(s).(Field0)(end).BG_Intensity = Step_Params.BG_Intensity;
@@ -240,6 +246,7 @@ function Workspace = Connect_Vertices(Workspace)
 						Segments_Array(s) = 0; 
 						% Merge the Rectangles structs of the two directions:
 						Workspace.Segments(s).Rectangles = [Workspace.Segments(s).Rectangles1,flip(Workspace.Segments(s).Rectangles2)]; % Flipping only the order of points and ***not the angle***.
+						Workspace.Segments(s).Rectangles = rmfield(Workspace.Segments(s).Rectangles,{'Length','Angle','BG_Intensity','BG_Peak_Width'}); % Delete uncessary fields.
 						if(Messages)
 							disp('YooHoo! I Found My Twin!');
 						end

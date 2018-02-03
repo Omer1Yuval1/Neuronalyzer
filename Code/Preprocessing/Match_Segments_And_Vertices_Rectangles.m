@@ -29,8 +29,8 @@ function [Workspace,Locations_Map,Locations_Map_Steps] = Match_Segments_And_Vert
 			continue;
 		end
 		
-		Workspace.Segments(s).Rectangles1 = struct('Coordinates',{},'Angle',{},'Width',{},'Length',{});
-		Workspace.Segments(s).Rectangles2 = struct('Coordinates',{},'Angle',{},'Width',{},'Length',{});
+		Workspace.Segments(s).Rectangles1 = struct('X',{},'Y',{},'Angle',{},'Width',{},'Length',{});
+		Workspace.Segments(s).Rectangles2 = struct('X',{},'Y',{},'Angle',{},'Width',{},'Length',{});
 		
 		Sv = Workspace.Segments(s).Skeleton_Linear_Coordinates;
 		[Sy,Sx] = ind2sub([Im_Rows,Im_Cols],Sv);
@@ -88,7 +88,8 @@ function [Workspace,Locations_Map,Locations_Map_Steps] = Match_Segments_And_Vert
 			% end
 			
 			if(v == 1)
-				Workspace.Segments(s).Rectangles1(1).Coordinates = Workspace.Vertices(V(v)).Rectangles(Fi).Origin; % Add the coordinate on the vertex circle and the center of the rectangle.
+				Workspace.Segments(s).Rectangles1(1).X = Workspace.Vertices(V(v)).Rectangles(Fi).Origin(1); % Add the coordinate on the vertex circle and the center of the rectangle.
+				Workspace.Segments(s).Rectangles1(1).Y = Workspace.Vertices(V(v)).Rectangles(Fi).Origin(2); % Add the coordinate on the vertex circle and the center of the rectangle.
 				Workspace.Segments(s).Rectangles1(1).Angle = Workspace.Vertices(V(v)).Rectangles(Fi).Angle;
 				Workspace.Segments(s).Rectangles1(1).Width = Workspace.Vertices(V(v)).Rectangles(Fi).Width;
 				Workspace.Segments(s).Rectangles1(1).Length = Step_Length * Scale_Factor; % Vertices(V(v)).Rectangles(Fi).Length;
@@ -99,7 +100,8 @@ function [Workspace,Locations_Map,Locations_Map_Steps] = Match_Segments_And_Vert
 				Locations_Map(InRect1) = Workspace.Segments(s).Segment_Index; % TODO: check collision even here.
 				Locations_Map_Steps(InRect1) = 1;
 			elseif(v == 2)
-				Workspace.Segments(s).Rectangles2(1).Coordinates = Workspace.Vertices(V(v)).Rectangles(Fi).Origin; % Add the coordinate on the vertex circle and the center of the rectangle.
+				Workspace.Segments(s).Rectangles2(1).X = Workspace.Vertices(V(v)).Rectangles(Fi).Origin(1); % Add the coordinate on the vertex circle and the center of the rectangle.
+				Workspace.Segments(s).Rectangles2(1).Y = Workspace.Vertices(V(v)).Rectangles(Fi).Origin(2); % Add the coordinate on the vertex circle and the center of the rectangle.
 				Workspace.Segments(s).Rectangles2(1).Angle = Workspace.Vertices(V(v)).Rectangles(Fi).Angle;
 				Workspace.Segments(s).Rectangles2(1).Width = Workspace.Vertices(V(v)).Rectangles(Fi).Width;
 				Workspace.Segments(s).Rectangles2(1).Length = Step_Length * Scale_Factor; % Convert pixels to length.

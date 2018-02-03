@@ -30,6 +30,8 @@ function Parameters1 = Parameters_Func(Scale_Factor)
 	Cell_Body(1).Ellipse_Axes_Extension_Factor = 1.1/Scale_Factor;
 	Cell_Body(1).Ellipse_Resolution = 0.035 / Scale_Factor;
 	
+	Tracing(1).Min_Segment_Length = 20*Scale_Factor; % Min segment length. Micrometers converted to pixels.
+	
 	Auto_Tracing_Parameters(1).Step_Smoothing_Parameter = 0.01; % 0.01. % TODO: should also be a function of Scale_Factor.
 	Auto_Tracing_Parameters(1).Plot_Steps_Num = -10;
 	Auto_Tracing_Parameters(1).Semi_Mode_Auto_Steps_Num = 10; % Number of steps to jump forward in manual mode.
@@ -141,6 +143,7 @@ function Parameters1 = Parameters_Func(Scale_Factor)
 	
 	Parameters1.General_Parameters = General_Parameters;
 	Parameters1.Cell_Body = Cell_Body;
+	Parameters1.Tracing = Tracing;
 	Parameters1.Auto_Tracing_Parameters = Auto_Tracing_Parameters;
 	Parameters1.Manual_Tracing_Parameters = Manual_Tracing_Parameters;
 	Parameters1.Menorah_Orders = Menorah_Orders;

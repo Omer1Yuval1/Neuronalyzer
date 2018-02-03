@@ -1,4 +1,4 @@
-function [Scores,BG_Intensity,BG_Peak_Width] = Normalize_Rects_Values_Generalized(Image0,Scores,Step_Origin,Previous_Angle,Rect_Width,Rect_Length,BG_Intensity,BG_Peak_Width,Parameters1)
+function [Scores,BG_Intensity,BG_Peak_Width] = Normalize_Rects_Values_Generalized(Image0,Scores,Step_Origin,Previous_Angle,Rect_Width,Rect_Length,BG_Intensity,BG_Peak_Width,Parameters1,Im_Rows,Im_Cols)
 	
 	% TODO: replace 260 & 265 with parameters.
 	
@@ -16,9 +16,16 @@ function [Scores,BG_Intensity,BG_Peak_Width] = Normalize_Rects_Values_Generalize
 	
 	% Extract the values of the pixels inside the oriented rectangle in the filtered sub-matrix:
 	% [Rect_Value0,Values_Vector0] = Get_Rect_Score(Image0,[XVs',YVs']); % The signal values.
-	[Rect_Value1,Values_Vector1] = Get_Rect_Score(Image0,[XV1,YV1]);
-	[Rect_Value2,Values_Vector2] = Get_Rect_Score(Image0,[XV2,YV2]);
-	
+	if(any([XV1',YV1',XV2',YV2'] < 1) || any([XV1',XV2'] > Im_Cols) || any([YV1',YV2'] > Im_Rows)) % If any of the rectangle's corners is out of the image boundaries.
+		Values_Vector1 = 0;
+		Values_Vector2 = 0;
+		if(0)
+			disp('Image Boundaries Alert.');
+		end
+	else
+		[~,Values_Vector1] = Get_Rect_Score(Image0,[XV1,YV1]);
+		[~,Values_Vector2] = Get_Rect_Score(Image0,[XV2,YV2]);
+	end
 	Values_Vector12 = [Values_Vector1 ; Values_Vector2];
 	
 	Hist_Bins_Res = Parameters1(1).Auto_Tracing_Parameters(1).Hist_Bins_Res;

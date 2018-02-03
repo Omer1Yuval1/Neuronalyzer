@@ -1,4 +1,4 @@
-function Rectangles = Find_Vertex_Angles(Im_BW,Cxy,Rc,Im_Rows,Im_Cols,Scale_Factor,Peaks_Max_Num)
+function Rectangles = Find_Vertex_Angles(Im_BW,Cxy,Rc,Scale_Factor,Peaks_Max_Num,Im_Rows,Im_Cols)
 	
 	Plot1 = 0;
 	Plot2 = 0;
@@ -110,7 +110,8 @@ function Rectangles = Find_Vertex_Angles(Im_BW,Cxy,Rc,Im_Rows,Im_Cols,Scale_Fact
 	Scores = zeros(1,length(Peaks));
 	Widths = zeros(1,length(Peaks));
 	for p=1:length(Peaks)
-		Widths(p) = max([Min_Final_Width,Adjust_Rect_Width_Rot_Generalized(Im_BW,Cxy,Locs(p)*180/pi,Rect_Length,[MinWidth,MaxWidth],14,Width_SmoothingParameter,Width_Ratio)]);
+		Widths(p) = max([Min_Final_Width,Adjust_Rect_Width_Rot_Generalized(Im_BW,Cxy,Locs(p)*180/pi,Rect_Length,...
+								[MinWidth,MaxWidth],14,Width_SmoothingParameter,Width_Ratio,Im_Rows,Im_Cols)]);
 		[XV,YV] = Get_Rect_Vector(Cxy,Locs(p)*180/pi,Widths(p),Rect_Length,14);
 		InRect1 = InRect_Coordinates(Im_BW,[XV',YV']);
 		Scores(p) = length(sum(Im_BW(InRect1))) ./ length(InRect1); % Number of "1" pixels divided by the total # of pixels within the rectangle.

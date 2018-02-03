@@ -13,12 +13,12 @@ function Reconstruct_Curvature(Workspace,Slider_Value)
 			if(C >= 0) % If the coordinate has a positive curvature value.
 				if(C <= Slider_Value) % If the curvature value is below the maximum set by the Slider_Value.
 					% MLS = min(M,Workspace.Segments(s).Rectangles(p).Curvature)/M;
-					plot(Workspace.Segments(s).Rectangles(p).Coordinates(1),Workspace.Segments(s).Rectangles(p).Coordinates(2),'.','Color',[C 0 1-C],'MarkerSize',Workspace.Segments(s).Width/Scale_Factor);
+					plot(Workspace.Segments(s).Rectangles(p).X,Workspace.Segments(s).Rectangles(p).Y,'.','Color',[C 0 1-C],'MarkerSize',Workspace.Segments(s).Width/Scale_Factor);
 				else %  % If the curvature value is below the maximum set by the Slider_Value.
-					plot(Workspace.Segments(s).Rectangles(p).Coordinates(1),Workspace.Segments(s).Rectangles(p).Coordinates(2),'*','Color','r','MarkerSize',Workspace.Segments(s).Width/Scale_Factor);
+					% plot(Workspace.Segments(s).Rectangles(p).X,Workspace.Segments(s).Rectangles(p).Y,'*','Color','r','MarkerSize',Workspace.Segments(s).Width/Scale_Factor);
 				end
 			else
-				plot(Workspace.Segments(s).Rectangles(p).Coordinates(1),Workspace.Segments(s).Rectangles(p).Coordinates(2),'.','Color',[0,.8,0],'MarkerSize',Workspace.Segments(s).Width/Scale_Factor);
+				plot(Workspace.Segments(s).Rectangles(p).X,Workspace.Segments(s).Rectangles(p).Y,'.','Color',[0,.8,0],'MarkerSize',Workspace.Segments(s).Width/Scale_Factor);
 			end
 		end
 	end

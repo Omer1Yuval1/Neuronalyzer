@@ -76,7 +76,12 @@ function Tracer_UI()
 	GUI_Parameters.Single.Handles.Tracing(1).New_Trace_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Project_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Start a New Project',...
 		'Units','Normalized','Position',[0 0.9 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Start_A_New_Project_Func,'TooltipString','Load a New Image to Trace and Analyze It');
 	GUI_Parameters.Single.Handles.Tracing.Edit_Trace_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Project_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Load an Existing Project',...
-			'Units','Normalized','Position',[0 0.8 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Load_An_Existing_Project_File,'TooltipString','Load a .mat File Containing One or More Projects of Previously Analyzed Image\s');	
+			'Units','Normalized','Position',[0 0.8 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Load_An_Existing_Project_File,'TooltipString','Load a .mat File Containing One or More Projects of Previously Analyzed Image.');	
+	GUI_Parameters.Single.Handles.Tracing.Create_Multiple_DB = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Project_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Create a Multiple Neurons DB',...
+			'Units','Normalized','Position',[0 0.6 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Collect_Multiple_Workspaces,'TooltipString','Choose a directory that contains multiple workspaces of single neurons (also in subfolders) and create a new workspace that contains all of them.');	
+	GUI_Parameters.Single.Handles.Tracing.Update_Multiple_DB = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Project_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Update Multiple Workspaces',...
+			'Units','Normalized','Position',[0 0.5 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Update_Multiple_Workspaces,'TooltipString','Choose a directory that contains multiple workspaces of single neurons (also in subfolders) and run the current version of the code using the same parameters.');	
+	
 	Edit_Properties_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Project_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Change Project Properties',...
 		'Units','Normalized','Position',[0 0.21 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@User_Input_Single_Func,'TooltipString','Click Here to Display and Change The Current Parameters Values of Your Project');
 	Save_Project_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Project_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Save Project',...
@@ -85,6 +90,8 @@ function Tracer_UI()
 	% Tracing Tab:
 	GUI_Parameters.Single.Handles.Tracing.Start_Tracing_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Tracing_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Start Tracing',...
 			'Units','Normalized','Position',[0 0.9 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Start_Tracing_Func);
+	GUI_Parameters.Single.Handles.Tracing.Trace_Multiple_Neurons = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Tracing_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Trace Multiple Neurons',...
+			'Units','Normalized','Position',[0 0.7 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Trace_Multiple_Neurons);
 	% Get_Object_Details_Button = uicontrol(GUI_Parameters.Handles.Analysis.Details_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Get Details','Units','Normalized','Position',[0 0.9 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Get_Object_Details_Func);
 	
 	% Multiple Images Analysis Panel:
@@ -794,6 +801,17 @@ function Tracer_UI()
 		end
 	end
 	
+	function Collect_Multiple_Workspaces(source,callbackdata)
+		Workspace = Collect_All_Workspaces();
+		uisave('Workspace',['All_Workspaces_',datestr(datetime,30),'.mat']);
+	end
+	
+	function Update_Multiple_Workspaces(source,callbackdata)
+		An = inputdlg('Please enter a probability matrix threshold:','Threshold Input',1,{'0.65'});
+		NN_Threshold = str2num(An{1,1});
+		Trace_Any_Multiple_Images(0,NN_Threshold); % Currently running without applying the CNN again.
+	end
+	
 	function Delete_Segments_Func(source,callbackdata)
 		GUI_Parameters.Workspace(1).Workspace = Delete_Segment(GUI_Parameters.Workspace(1).Workspace,0,1);
 		Reset_Axes();
@@ -884,7 +902,7 @@ function Tracer_UI()
 		% set(allchild(GUI_Parameters.Handles.Tracing.Tracing_Tab),'Enable','on');
 	end
 	
-	function Start_Multiple_Tracing_Func(source,callbackdata)
+	function Trace_Multiple_Neurons(source,callbackdata)
 		
 		User_Input = GUI_Parameters.Workspace(1).Workspace.User_Input;
 		

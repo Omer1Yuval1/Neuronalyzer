@@ -14,10 +14,7 @@ function Reconstruct_Segmented_Trace(Workspace1)
 	Vs = zeros(1,numel(Workspace1.Segments));
 	for s=1:numel(Workspace1.Segments) % Go over each segment.
 		if(~isempty(Workspace1.Segments(s).Rectangles));
-			Coordinates1 = reshape([Workspace1.Segments(s).Rectangles.Coordinates]',2,[])';
-			if(length(Coordinates1))
-				Vs(s) = plot(Coordinates1(:,1),Coordinates1(:,2),'.'); % ,'LineWidth',Workspace1.Segments(s).Width);
-			end
+				Vs(s) = plot([Workspace1.Segments(s).Rectangles.X],[Workspace1.Segments(s).Rectangles.Y],'.'); % ,'LineWidth',Workspace1.Segments(s).Width);
 		end
 	end
 	

@@ -24,16 +24,17 @@ function [New_Cxy,Rc] = Find_Vertex_Center(Im_BW,Cxy,Theta,Vr,Center_Frame_Size,
 			Cv1 = Im_Rows*(Cv(:,1)-1)+Cv(:,2);
 			
 			if(length(find(Im_BW(Cv1) == 0))) % If there's is at least one black (background) pixel, stop.
-				Cr(j) = Vr(max(1,ri-1)); % Cr(end+1) = r;
+				Cr(j) = Vr(max(1,ri-1)); % Cr(j) = Vr(ri);
 				
-				if(Plot2 && rand(1,1) >= 0 && Cr(j) > 2)
+				if(Plot2 && rand(1,1) >= 0 && Cr(j) > 0)
 					C = rand(1,3);
 					hold on;
 					plot(Cx(j),Cy(j),'.','MarkerSize',15,'Color',C); % The center.
 					% % viscircles([Cx(j),Cy(j)],r,'Color',[rand(1,1),rand(1,1),0.5]);
-					for k=0:.3:Cr(j)
-						viscircles([Cx(j),Cy(j)],k,'Color',C);
-					end
+					% viscircles([Cx(j),Cy(j)],Cr(j),'Color',C);
+					% for k=0:.3:Cr(j)
+						% viscircles([Cx(j),Cy(j)],k,'Color',C);
+					% end
 					% plot(Cv(:,1),Cv(:,2),'.','MarkerSize',15);
 				end
 				break;
@@ -43,10 +44,11 @@ function [New_Cxy,Rc] = Find_Vertex_Center(Im_BW,Cxy,Theta,Vr,Center_Frame_Size,
 	Cm = find(Cr == max(Cr));
 	
 	if(length(Cm))
-		New_Cxy = [mean([Cx(Cm),Cxy(1)]),mean([Cy(Cm),Cxy(2)])]; % The original center might already be included in Cx,Cy. This gives it more weight.
+		% New_Cxy = [mean([Cx(Cm),Cxy(1)]),mean([Cy(Cm),Cxy(2)])]; % The original center might already be included in Cx,Cy. This gives it more weight.
+		New_Cxy = [mean(Cx(Cm)),mean(Cy(Cm))]; % The original center might already be included in Cx,Cy. This gives it more weight.
 		Rc = max(max(Cr),Min_Center_Radius); % Take the maximal radius but don't let it be too small (Min_Center_Radius).
 	else % No potential centers - all on black pixels.
-		New_Cxy = Cxy;
+		New_Cxy = Cxy; % Just use the original center.
 		Rc = 0;
 	end
 	

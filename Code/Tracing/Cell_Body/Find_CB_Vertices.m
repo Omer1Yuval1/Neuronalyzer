@@ -31,6 +31,7 @@ function [CB_Vertices,Pixels0,Pixels1] = Find_CB_Vertices(Im,CB_Perimeter,CB_Pix
 	% Generate a CB perimeter matrix:
 	[Sr,Sc] = size(Im);
 	Im_BW = logical(zeros(Sr,Sc));
+	Pixels_List = zeros(0,2); % Pixels_List = [round(Sc/2),round(Sr/2)];
 	if(length(CB_Perimeter))
 		Im_BW(sub2ind([Sr,Sc],CB_Perimeter(:,2),CB_Perimeter(:,1))) = 1;
 		Pixels_List = Order_Connected_Pixels(Im_BW,[CB_Perimeter(1,1),CB_Perimeter(1,2)],[CB_Perimeter(2,1),CB_Perimeter(2,2)]);
@@ -104,7 +105,7 @@ function [CB_Vertices,Pixels0,Pixels1] = Find_CB_Vertices(Im,CB_Perimeter,CB_Pix
 			CB_Vertices(p).Score = Y(Locs(p)); % Y is the extended Scores array.
 			CB_Vertices(p).Rect_Length = Rect_Length;
 			CB_Vertices(p).Rect_Width = Adjust_Rect_Width_Rot_Generalized(Im,CB_Vertices(end).Coordinate,CB_Vertices(end).Angle, ...
-														Rect_Length,Width_Scan_Range,14,Width_Smoothing_Parameter,Width_Ratio);
+											Rect_Length,Width_Scan_Range,14,Width_Smoothing_Parameter,Width_Ratio,Sr,Sc);
 			% Width can be used to detect the primary branch (and probably also the axon).
 			
 			[XV,YV] = Get_Rect_Vector(CB_Vertices(p).Coordinate,CB_Vertices(p).Angle,CB_Vertices(p).Rect_Width,CB_Vertices(p).Rect_Length,14);

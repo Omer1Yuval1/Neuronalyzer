@@ -6,7 +6,8 @@ function Save_Multiple_Demos
 	SaveDir = 'D:\Omer\Dropbox (Technion)\Neuronalizer\PVD Images\Sharon\DEG_for_Menorah_analyser_Filtered_Format_Names\Results_Demos\0.65';
 	% SaveDir = uigetdir;
 	
-	for f=1:numel(Files_List) % For each file (image\neuron).
+	% for f=1:numel(Files_List) % For each file (image\neuron).
+	for f=1:107
 		
 		File_Path = [Files_List(f).folder,filesep,Files_List(f).name]; % Full path + name of the current file.
 		File1 = load(File_Path,'Workspace');

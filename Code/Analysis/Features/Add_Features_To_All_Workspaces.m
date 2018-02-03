@@ -32,14 +32,19 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 		for s=1:numel(W(i).Workspace.Segments) % For each segment.
 			if(~isempty(W(i).Workspace.Segments(s).Rectangles))
 				W(i).Workspace.Segments(s).Width = mean([W(i).Workspace.Segments(s).Rectangles.Width]);
-				W(i).Workspace.Segments(s).Length = sum([W(i).Workspace.Segments(s).Rectangles.Length]);
 				
-				D = ((W(i).Workspace.Segments(s).Rectangles(1).Coordinates(1) - W(i).Workspace.Segments(s).Rectangles(end).Coordinates(1))^2 + ...
-					(W(i).Workspace.Segments(s).Rectangles(1).Coordinates(2) - W(i).Workspace.Segments(s).Rectangles(end).Coordinates(2))^2)^.5;
+				X = [W(i).Workspace.Segments(s).Rectangles.X];
+				Y = [W(i).Workspace.Segments(s).Rectangles.Y];
+				
+				Li = sum( [(X(2:end) - X(1:end-1)).^2 ; (Y(2:end) - Y(1:end-1)).^2] );
+				L = sum(Li);
+				W(i).Workspace.Segments(s).Length = L; % sum([W(i).Workspace.Segments(s).Rectangles.Length]);
+				
+				D = ((W(i).Workspace.Segments(s).Rectangles(1).X - W(i).Workspace.Segments(s).Rectangles(end).X)^2 + ...
+					(W(i).Workspace.Segments(s).Rectangles(1).Y - W(i).Workspace.Segments(s).Rectangles(end).Y)^2)^.5;
 				W(i).Workspace.Segments(s).End2End_Length = D*Scale_Factor;
 				
-				XY = [W(i).Workspace.Segments(s).Rectangles.Coordinates];
-				[Point_Curvature_Values,Mean_Curvature,Mean_Squared_Curvature] = Calc_Mean_Curvature(XY(1:2:end-1),XY(2:2:end),[W(i).Workspace.Segments(s).Rectangles.Length],Scale_Factor,Parameters);
+				[Point_Curvature_Values,Mean_Curvature,Mean_Squared_Curvature] = Calc_Mean_Curvature(X,Y,Li,Scale_Factor,Parameters);
 				W(i).Workspace.Segments(s).Curvature = Mean_Squared_Curvature;
 				if(N == 1) % If only one workspace, add the curvature values for individual coordinates.
 					for j=1:numel(W(i).Workspace.Segments(s).Rectangles) % For each coordinate. TODO: find a way to do this without a for loop.

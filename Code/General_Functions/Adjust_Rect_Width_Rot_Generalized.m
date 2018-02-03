@@ -1,4 +1,4 @@
-function W = Adjust_Rect_Width_Rot_Generalized(Im,Rotation_Origin,Rect_Angle,Rect_Length,Rect_Width_Min_Max,Origin_Type,Smoothing_Parameter,Width_Ratio)
+function W = Adjust_Rect_Width_Rot_Generalized(Im,Rotation_Origin,Rect_Angle,Rect_Length,Rect_Width_Min_Max,Origin_Type,Smoothing_Parameter,Width_Ratio,Im_Rows,Im_Cols)
 	
 	% Description:
 		% This function detects the local apparent width of the neuron.
@@ -18,6 +18,15 @@ function W = Adjust_Rect_Width_Rot_Generalized(Im,Rotation_Origin,Rect_Angle,Rec
 	Plot2 = 0; % Set to 1 to visualize results.
 	
 	[XV,YV] = Get_Rect_Vector(Rotation_Origin,Rect_Angle,Rect_Width_Min_Max(2),Rect_Length,Origin_Type); % The vector of the biggest rectangle.
+	
+	if(any([XV,YV] < 1) || any(XV > Im_Cols) || any(YV > Im_Rows)) % If any of the rectangle's corners is out of the image boundaries.
+		W = -2;
+		if(1)
+			disp('Image Boundaries Alert.');
+		end
+		return;
+	end	
+	
 	Im_Cropped = Im(floor(min(YV)):ceil(max(YV)),floor(min(XV)):ceil(max(XV)));
 	
 	Im_Cropped_Rotated = imrotate(Im_Cropped,Rect_Angle);
@@ -67,7 +76,9 @@ function W = Adjust_Rect_Width_Rot_Generalized(Im,Rotation_Origin,Rect_Angle,Rec
 		end
 	else
 		W = -1;
-		disp('Width Detection Failed.');
+		if(1)
+			disp('Width Detection Failed.');
+		end
 	end
 	
 end
