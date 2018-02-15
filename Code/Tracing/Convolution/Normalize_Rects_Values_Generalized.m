@@ -1,6 +1,8 @@
 function [Scores,BG_Intensity,BG_Peak_Width] = Normalize_Rects_Values_Generalized(Image0,Scores,Step_Origin,Previous_Angle,Rect_Width,Rect_Length,BG_Intensity,BG_Peak_Width,Parameters1,Im_Rows,Im_Cols)
 	
-	% TODO: replace 260 & 265 with parameters.
+	% TODO:
+		% replace 260 & 265 with parameters.
+		% *** I get negative values in histcounts. ***
 	
 	% Create a sub-matrix:
 	Origin_Type = Parameters1.Auto_Tracing_Parameters(1).Rect_Rotation_Origin;
@@ -30,7 +32,7 @@ function [Scores,BG_Intensity,BG_Peak_Width] = Normalize_Rects_Values_Generalize
 	
 	Hist_Bins_Res = Parameters1(1).Auto_Tracing_Parameters(1).Hist_Bins_Res;
 	% [Counts0,Intensities0] = histcounts([Values_Vector0],[-Hist_Bins_Res:Hist_Bins_Res:260],'Normalization','probability');
-	[Counts12,Intensities12] = histcounts([Values_Vector12],[-Hist_Bins_Res:Hist_Bins_Res:265],'Normalization','probability');
+	[Counts12,Intensities12] = histcounts([Values_Vector12],[0:Hist_Bins_Res:255],'Normalization','probability');
 	
 	% Intensities0 = (Intensities0(1:end-1) + Intensities0(2:end)) / 2; % Convert bins to bins centers.
 	Intensities12 = (Intensities12(1:end-1) + Intensities12(2:end)) / 2; % Convert bins to bins centers.
@@ -49,7 +51,7 @@ function [Scores,BG_Intensity,BG_Peak_Width] = Normalize_Rects_Values_Generalize
 			findpeaks(Counts0,Intensities0,'MinPeakProminence',Parameters1(1).Auto_Tracing_Parameters(1).Step_Normalization_Min_Peak_Prominence,'MinPeakDistance',Parameters1(1).Auto_Tracing_Parameters(1).Step_Normalization_Min_Peak_Distance,'SortStr','descend');
 			findpeaks(Counts12,Intensities12,'MinPeakProminence',Parameters1(1).Auto_Tracing_Parameters(1).Step_Normalization_Min_Peak_Prominence,'MinPeakDistance',Parameters1(1).Auto_Tracing_Parameters(1).Step_Normalization_Min_Peak_Distance,'SortStr','descend');
 			axis([-Hist_Bins_Res,265,0,1.2]);
-			
+			Counts12,Intensities12
 		if(0)
 			figure(1); % Draw the rectangles 
 				hold on;

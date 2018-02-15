@@ -30,7 +30,7 @@ function Parameters1 = Parameters_Func(Scale_Factor)
 	Cell_Body(1).Ellipse_Axes_Extension_Factor = 1.1/Scale_Factor;
 	Cell_Body(1).Ellipse_Resolution = 0.035 / Scale_Factor;
 	
-	Tracing(1).Min_Segment_Length = 20*Scale_Factor; % Min segment length. Micrometers converted to pixels.
+	Tracing(1).Min_Segment_Length = 5/Scale_Factor; % Min segment length. Micrometers converted to pixels.
 	
 	Auto_Tracing_Parameters(1).Step_Smoothing_Parameter = 0.01; % 0.01. % TODO: should also be a function of Scale_Factor.
 	Auto_Tracing_Parameters(1).Plot_Steps_Num = -10;
@@ -72,7 +72,7 @@ function Parameters1 = Parameters_Func(Scale_Factor)
 	Auto_Tracing_Parameters.Normalization_Width_Factor = 3; % Multiplication factor of the width of the BG sampling rectnangles.
 	% Auto_Tracing_Parameters(1).Filter_Rect_Width = 3/Scale_Factor;
 	Auto_Tracing_Parameters.Hist_Bins_Res = 5;
-	Auto_Tracing_Parameters.Step_Scores_Smoothing_Parameter = 0.99;
+	Auto_Tracing_Parameters.Step_Scores_Smoothing_Parameter = 0.05;
 	% Auto_Tracing_Parameters.Step_Normalization_Min_Peak_Prominence = 0.07; % 0.8; % 1,1.5,1.7,2.
 	Auto_Tracing_Parameters.Step_Normalization_Min_Peak_Height = 0.07; % 0.8; % 1,1.5,1.7,2.
 	Auto_Tracing_Parameters.Step_Normalization_Min_Peak_Distance = 30; % 20.

@@ -20,6 +20,8 @@ function Reconstruct_Segmented_Trace(Workspace1)
 	
 	hold on; % Plot Vertices rectangles (branches outsets):
 	for v=1:numel(Workspace1.Vertices) % Go over each vertex.
+		plot(Workspace1.Vertices(v).Coordinate(1),Workspace1.Vertices(v).Coordinate(2),'.r','MarkerSize',10);
+		%{
 		for r=1:numel(Workspace1.Vertices(v).Rectangles)
 			Origin1 = Workspace1.Vertices(v).Rectangles(r).Origin;
 			Angle1 = Workspace1.Vertices(v).Rectangles(r).Angle;
@@ -29,6 +31,7 @@ function Reconstruct_Segmented_Trace(Workspace1)
 		
 			plot(XV,YV,'LineWidth',2);
 		end
+		%}
 	end
 	
 	return;

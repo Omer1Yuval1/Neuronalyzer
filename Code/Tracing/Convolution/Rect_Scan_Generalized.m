@@ -32,10 +32,12 @@ function Scores = Rect_Scan_Generalized(im,Origin0,Angle,Rect_Width,Rect_Length,
 		end
 		Scores(i,:) = [Angle,Mean_Pixel_Value]; % i = rect index. Mean_Pixel_Value = rect mean value. Angle = angle (global). abs(Angle-aa) = angle diff with the previous rect.
 		
-		% if(mod(i,3) == 0)
-			% % figure(1);
+		% if(1 && ismember(i,1:2:2*Rects_Num+1))
+			% % disp(2*Rects_Num+1);
+			% figure(1);
 			% hold on;
 			% plot([XV1,XV1(1)],[YV1,YV1(1)],'LineWidth',2);
+			% % plot([XV1,XV1(1)],[YV1,YV1(1)],'--','LineWidth',4);
 			% % assignin('base','XV1',XV1);
 			% % assignin('base','YV1',YV1);
 		% end

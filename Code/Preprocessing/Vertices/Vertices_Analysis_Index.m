@@ -1,5 +1,7 @@
 function Workspace = Vertices_Analysis_Index(Workspace)
 	
+	assignin('base','Workspace_Pre_0',Workspace);
+	
 	CB_BW_Threshold = Workspace.Parameters.Cell_Body.BW_Threshold;
 	Scale_Factor = Workspace.User_Input.Scale_Factor;
 	
@@ -22,5 +24,5 @@ function Workspace = Vertices_Analysis_Index(Workspace)
 	
 	Workspace.Vertices = Match_CB_Vertices(Workspace.Vertices,CB_Vertices);
 	
-	% assignin('base','Im1_NoiseReduction',Im1_NoiseReduction);
+	% assignin('base','Workspace_Pre_1',Workspace);
 end

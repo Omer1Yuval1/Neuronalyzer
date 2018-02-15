@@ -9,9 +9,8 @@ function Generate_Result_Demo(Workspace)
 	
 	for s=1:numel(Workspace.Segments)
 		for r=1:numel(Workspace.Segments(s).Rectangles)
-			XY = [Workspace.Segments(s).Rectangles.Coordinates];
 			hold on;
-			plot(XY(1:2:end-1),XY(2:2:end),'LineWidth',2);
+			plot([Workspace.Segments(s).Rectangles.X],[Workspace.Segments(s).Rectangles.Y],'LineWidth',2);
 		end
 	end
 	

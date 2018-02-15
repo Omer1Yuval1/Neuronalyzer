@@ -1,25 +1,30 @@
-function Reconstruct_Curvature(Workspace,Slider_Value)
+function Reconstruct_Curvature(Workspace)
 	
-	% Plot a heatmap of curvature.
-	% Maximal value set by the slide bar.
-	Slider_Value = 0.3;
-	
-	Scale_Factor = Workspace.User_Input.Scale_Factor;
-	ColorMap1 = jet(64);
-	
-	for s=1:numel(Workspace.Segments) % For each segment. 
-		for p=1:numel(Workspace.Segments(s).Rectangles) % For each coordinate within segment s.
-			C = Workspace.Segments(s).Rectangles(p).Curvature;
-			if(C >= 0) % If the coordinate has a positive curvature value.
-				if(C <= Slider_Value) % If the curvature value is below the maximum set by the Slider_Value.
-					% MLS = min(M,Workspace.Segments(s).Rectangles(p).Curvature)/M;
-					plot(Workspace.Segments(s).Rectangles(p).X,Workspace.Segments(s).Rectangles(p).Y,'.','Color',[C 0 1-C],'MarkerSize',Workspace.Segments(s).Width/Scale_Factor);
-				else %  % If the curvature value is below the maximum set by the Slider_Value.
-					% plot(Workspace.Segments(s).Rectangles(p).X,Workspace.Segments(s).Rectangles(p).Y,'*','Color','r','MarkerSize',Workspace.Segments(s).Width/Scale_Factor);
-				end
-			else
-				plot(Workspace.Segments(s).Rectangles(p).X,Workspace.Segments(s).Rectangles(p).Y,'.','Color',[0,.8,0],'MarkerSize',Workspace.Segments(s).Width/Scale_Factor);
-			end
-		end
+	Min_Eval_Points = 5;
+	XYC = zeros(0,3);
+	for s=1:numel(Workspace.Segments)
+		if(numel(Workspace.Segments(s).Rectangles) > Min_Eval_Points)
+			X = [Workspace.Segments(s).Rectangles.X];
+			Y = [Workspace.Segments(s).Rectangles.Y];
+			
+			[Mean_Curvature,Xs,Ys,Cxy] = Get_Segment_Curvature(X,Y);
+			
+			XYC = [XYC ; [X' , Y' , Cxy']];
+        end
 	end
+	assignin('base','XYC0',XYC);
+    
+	M = 0.1;
+	XYC(XYC(:,3) > M,3) = M;
+	XYC(:,3) = XYC(:,3) ./ M;
+	Colors = XYC(:,3) ./ max(XYC(:,3));
+	% XYC(XYC(:,3)<0,3) = 0;
+	
+	Colors = [XYC(:,3),0.*XYC(:,3),1-XYC(:,3)];
+	figure;
+	imshow(Workspace.Image0);
+	hold on;
+	scatter(XYC(:,1),XYC(:,2),10,Colors,'filled');
+	
+	assignin('base','XYC',XYC);
 end

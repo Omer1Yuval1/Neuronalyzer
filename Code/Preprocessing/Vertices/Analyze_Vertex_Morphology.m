@@ -33,12 +33,10 @@ function Vertices = Analyze_Vertex_Morphology(Vertices,Segments,Im_BW,Im_branchp
 	end
 	
 	% Delete_Vertices = [];
-	% Segments_Vertices = [Segments.Vertices];
-	% Segments_Vertices = [Segments_Vertices(1:2:end-1)' , Segments_Vertices(2:2:end)'];
+	Segments_Vertices = [Segments.Vertices];
+	Segments_Vertices = [Segments_Vertices(1:2:end-1)' , Segments_Vertices(2:2:end)'];
 	
 	% parfor i=1:length(Yb) % For each approximate center.
-	% for i=1:length(Yb) % For each approximate center.
-	% for i=[63] % For each approximate center.
 	for i=1:numel(Vertices) % For each approximate center.
 		if(Vertices(i).Order >= 3) % If it's a junction.
 			[New_Cxy,Rc] = Find_Vertex_Center(Im_BW,Vertices(i).Coordinate,Theta,Vr,Center_Frame_Size,Centers_Scan_Res,Im_Rows,Min_Center_Radius);
@@ -47,6 +45,9 @@ function Vertices = Analyze_Vertex_Morphology(Vertices,Segments,Im_BW,Im_branchp
 			Rc = 0; % Vertex center radius. Tips are assigned with a 0 radius.
 		end
 		Rectangles = Find_Vertex_Angles(Im_BW,New_Cxy,Rc,Scale_Factor,Vertices(i).Order,Im_Rows,Im_Cols);
+		
+		% Match_Vertex_Rects_To_Segments(Vertices(i).Vertex_Index,Rectangles,Segments_Vertices,Segments);
+		
 		Vertices(i).Coordinate = New_Cxy;
 		Vertices(i).Rectangles = Rectangles;
 		Vertices(i).Center_Radius = Rc;

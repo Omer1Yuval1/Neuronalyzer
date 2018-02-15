@@ -7,6 +7,7 @@ function Locs1 = Trace_Peak_Analysis(Workspace,Step_Params,s,v,Scores,ImSize)
 	% assignin('base','s',s);
 	
 	[Peaks1,Locs1,~,Proms1] = findpeaks(Scores(:,2),Scores(:,1),'MinPeakProminence',Workspace.Parameters.Auto_Tracing_Parameters.Step_Min_Peak_Prominence,'MinPeakDistance',Workspace.Parameters.Auto_Tracing_Parameters.Step_Min_Peak_Distance);
+	% findpeaks(Scores(:,2),Scores(:,1),'MinPeakProminence',Workspace.Parameters.Auto_Tracing_Parameters.Step_Min_Peak_Prominence,'MinPeakDistance',Workspace.Parameters.Auto_Tracing_Parameters.Step_Min_Peak_Distance);
 	
 	if(~isempty(Peaks1)) % If at least one peak was found.
 		
