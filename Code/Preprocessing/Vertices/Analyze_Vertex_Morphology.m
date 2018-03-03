@@ -1,6 +1,8 @@
-function Vertices = Analyze_Vertex_Morphology(Vertices,Segments,Im_BW,Im_branchpoints,Scale_Factor)
+function Workspace = Analyze_Vertex_Morphology(Workspace,Im_branchpoints)
+	% function Vertices = Analyze_Vertex_Morphology(Vertices,Segments,Im_BW,Im_branchpoints,Scale_Factor)
 	
 	Plot1 = 0;
+	Scale_Factor = Workspace.User_Input.Scale_Factor;
 	
 	if(0)
 		assignin('base','Vertices0',Vertices);
@@ -11,7 +13,7 @@ function Vertices = Analyze_Vertex_Morphology(Vertices,Segments,Im_BW,Im_branchp
 	end
 	
 	% TODO: Move to the parameters func:
-	[Im_Rows,Im_Cols] = size(Im_BW);
+	[Im_Rows,Im_Cols] = size(Workspace.Im_BW);
 	Vr = .1:.01:5; % Radii (of increasing concentric circles) vector for junction center detection.
 	N = 500*Scale_Factor;
 	Min_Center_Radius = 4*Scale_Factor;
@@ -33,28 +35,28 @@ function Vertices = Analyze_Vertex_Morphology(Vertices,Segments,Im_BW,Im_branchp
 	end
 	
 	% Delete_Vertices = [];
-	Segments_Vertices = [Segments.Vertices];
+	Segments_Vertices = [Workspace.Segments.Vertices];
 	Segments_Vertices = [Segments_Vertices(1:2:end-1)' , Segments_Vertices(2:2:end)'];
 	
 	% parfor i=1:length(Yb) % For each approximate center.
-	for i=1:numel(Vertices) % For each approximate center.
-		if(Vertices(i).Order >= 3) % If it's a junction.
-			[New_Cxy,Rc] = Find_Vertex_Center(Im_BW,Vertices(i).Coordinate,Theta,Vr,Center_Frame_Size,Centers_Scan_Res,Im_Rows,Min_Center_Radius);
-		elseif(Vertices(i).Order == 1) % If it's a tip.
-			New_Cxy = Vertices(i).Coordinate; % Do not correct the center of end-point.
+	for i=1:numel(Workspace.Vertices) % For each approximate center.
+		if(Workspace.Vertices(i).Order >= 3) % If it's a junction.
+			[New_Cxy,Rc] = Find_Vertex_Center(Workspace.Im_BW,Workspace.Vertices(i).Coordinate,Theta,Vr,Center_Frame_Size,Centers_Scan_Res,Im_Rows,Min_Center_Radius);
+		elseif(Workspace.Vertices(i).Order == 1) % If it's a tip.
+			New_Cxy = Workspace.Vertices(i).Coordinate; % Do not correct the center of end-point.
 			Rc = 0; % Vertex center radius. Tips are assigned with a 0 radius.
 		end
-		Rectangles = Find_Vertex_Angles(Im_BW,New_Cxy,Rc,Scale_Factor,Vertices(i).Order,Im_Rows,Im_Cols);
+		Rectangles = Find_Vertex_Angles(Workspace.Im_BW,New_Cxy,Rc,Scale_Factor,Workspace.Vertices(i).Order,Im_Rows,Im_Cols);
 		
-		% Match_Vertex_Rects_To_Segments(Vertices(i).Vertex_Index,Rectangles,Segments_Vertices,Segments);
+		% [Workspace,Rectangles] = Match_Vertex_Rects_To_Segments(Workspace,i,Rectangles,Segments_Vertices);
 		
-		Vertices(i).Coordinate = New_Cxy;
-		Vertices(i).Rectangles = Rectangles;
-		Vertices(i).Center_Radius = Rc;
+		Workspace.Vertices(i).Coordinate = New_Cxy;
+		Workspace.Vertices(i).Rectangles = Rectangles;
+		Workspace.Vertices(i).Center_Radius = Rc;
 		
 		% assignin('base','Rectangles',Rectangles);		
 		if(Plot1 && numel(Rectangles) == 0)
-			disp(['No peaks found for vertex ',num2str(Vertices(i).Vertex_Index)]);
+			disp(['No peaks found for vertex ',num2str(Workspace.Vertices(i).Vertex_Index)]);
 		end
 	end
 	
