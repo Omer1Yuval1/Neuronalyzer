@@ -2,7 +2,7 @@ function Workspace = Connect_Vertices(Workspace)
 	
 	% TODO: I'm currently not using the collision condition.
 	
-	Plot0 = 0;
+	Plot0 = 1;
 	Plot1 = 0;
 	Plot2 = 0;
 	Messages = 0;
@@ -19,12 +19,22 @@ function Workspace = Connect_Vertices(Workspace)
 		% h = animatedline('Color','r','LineWidth',3);
 	end
 	
-	Workspace = Match_Segments_And_Vertices_Rectangles(Workspace,Messages);
+	Workspace = Match_Vertex_Rects_To_Segments(Workspace);
+	
+	% assignin('base','Workspace_SSS',Workspace);
+	% return;
+	
+	% Workspace = Match_Segments_And_Vertices_Rectangles(Workspace,Messages);
+	Workspace = Add_Starting_Tracing_Steps(Workspace);
+	
+	
+	% TODO: choose the threshold to be the length of the scanning rectangle (based on the width):
 	[Workspace,Traced_Segments] = Trace_Short_Segments(Workspace); % TODO: detect width. Currently using 1pixel.
 	% disp(Traced_Segments);
+	% return;
 	
 	if(Messages)
-		assignin('base','Workspace01',Workspace);
+		assignin('base','Workspace_Pre',Workspace);
 	end
 	
 	[Im_Rows,Im_Cols] = size(Workspace.Image0);
@@ -33,7 +43,10 @@ function Workspace = Connect_Vertices(Workspace)
 	% Set Initial Background Normalization Values (used in case local normalization fails):
 		% (currently only used for the 1st step in each segment (from both sides)).
 	Step_Length = Workspace.Parameters.Auto_Tracing_Parameters.Global_Step_Length;
-	Rect_Scan_Length_Width_Ratio = Workspace.Parameters.Auto_Tracing_Parameters.Rect_Scan_Length_Width_Ratio;
+	
+	% Rect_Scan_Length_Width_Ratio = Workspace.Parameters.Auto_Tracing_Parameters.Rect_Scan_Length_Width_Ratio;
+	Rect_Length_Width_Func = Workspace.Parameters.Tracing.Rect_Length_Width_Func;
+	
 	MinPeakProminence = Workspace.Parameters.Auto_Tracing_Parameters.Step_Min_Peak_Prominence;
 	MinPeakDistance = Workspace.Parameters.Auto_Tracing_Parameters.Step_Min_Peak_Distance;
 	% Skel_Overlap_Treshold = Workspace.Parameters.Auto_Tracing_Parameters.Skel_Overlap_Treshold;
@@ -76,19 +89,21 @@ function Workspace = Connect_Vertices(Workspace)
 		end
 	end
 	
-	% Generate a matrix of segment indices at each segment's set of pixels:
+	% Generate a matrix of segment indices at each segment's set of pixels (using the skeleton):
 	Segments_Map = zeros(Im_Rows,Im_Cols);
 	for s=1:numel(Workspace.Segments)
 		Segments_Map([Workspace.Segments(s).Skeleton_Linear_Coordinates]) = Workspace.Segments(s).Segment_Index;
-		
 	end
+	Vi = [Workspace.Vertices.Coordinate];
+	Vi = [Vi(1:2:end-1)',Vi(2:2:end)'];
+	viscircles(Vi,[Workspace.Vertices.Center_Radius]');
+	% return;
 	if(Plot0)
 		for s=Traced_Segments % Plot the short segment for which the skeleton is used.
 			hold on;
 			plot([Workspace.Segments(s).Rectangles.X],[Workspace.Segments(s).Rectangles.Y],'r','LineWidth',2);
 		end
-	end
-	% assignin('base','Segments_Map',Segments_Map);
+	end % assignin('base','Segments_Map',Segments_Map);
 	
 	% return;
 	Segments_Array = ones(1,numel(Workspace.Segments));
@@ -96,7 +111,7 @@ function Workspace = Connect_Vertices(Workspace)
 	
 	% Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array([127:141,118,119]) = 1;
 	% Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array([139]) = 1;
-	% Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array([68]) = 1;
+	% Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array([129]) = 1;
 	
 	Step_Num = 0;
 	while(1)
@@ -120,7 +135,7 @@ function Workspace = Connect_Vertices(Workspace)
 			% Go one step forward (using the center of mass of the rectangle as a rotation origin):
 			for v=1:2 % For each end-point of segment s.
 				% disp(['v = ',num2str(v)]);
-				Segment_Index = ((-1)^(v-1))*Workspace.Segments(s).Segment_Index;
+				% Segment_Index = ((-1)^(v-1))*Workspace.Segments(s).Segment_Index;
 				if(v == 1)
 					Field0 = 'Rectangles1';
 				elseif(v == 2)
@@ -131,7 +146,8 @@ function Workspace = Connect_Vertices(Workspace)
 				Step_Params.Angle = (Workspace.Segments(s).(Field0)(end).Angle)*180/pi;
 				Step_Params.Width = (Workspace.Segments(s).(Field0)(end).Width) / Scale_Factor; % Conversion from micrometers to pixels.
 				Step_Params.Step_Length = Step_Length; % Step_Params.Width / Workspace.Parameters.Auto_Tracing_Parameters.Rect_Width_StepLength_Ratio; % Workspace.Segments(s).(Field0)(end).Length;
-				Step_Params.Scan_Length = Step_Params.Width .* Rect_Scan_Length_Width_Ratio;
+				Step_Params.Scan_Length = Rect_Length_Width_Func(Step_Params.Width);
+				Step_Params.Scan_Width = Step_Params.Width ./ Width_Scan_Ratio;
 				Step_Params.BG_Intensity = Workspace.Segments(s).(Field0)(end).BG_Intensity;
 				Step_Params.BG_Peak_Width = Workspace.Segments(s).(Field0)(end).BG_Peak_Width;
 				
@@ -150,7 +166,7 @@ function Workspace = Connect_Vertices(Workspace)
 					assignin('base','Origin_Type',Origin_Type);
 				end
 				
-				Scores = Rect_Scan_Generalized(Workspace.Image0,Step_Params.Rotation_Origin,Step_Params.Angle,max(Min_Scan_Width,Step_Params.Width/Width_Scan_Ratio),Step_Params.Scan_Length,Rotation_Range, ...
+				Scores = Rect_Scan_Generalized(Workspace.Image0,Step_Params.Rotation_Origin,Step_Params.Angle,max(Min_Scan_Width,Step_Params.Scan_Width),Step_Params.Scan_Length,Rotation_Range, ...
 												Rotation_Res,Origin_Type,Im_Rows,Im_Cols);
 				
 				[Scores,Step_Params.BG_Intensity,Step_Params.BG_Peak_Width] = Normalize_Rects_Values_Generalized(Workspace.Image0,Scores,Step_Params.Rotation_Origin,Step_Params.Angle,Step_Params.Width,Step_Params.Scan_Length, ...
@@ -187,12 +203,16 @@ function Workspace = Connect_Vertices(Workspace)
 				% TODO: Check what pixels lie within the ragion of the current step:
 				F1 = []; % An array of pixels overlap between the current step and the skeleton.
 				if(~isempty(Locs1)) % If a peak was detected.
-					[XV,YV] = Get_Rect_Vector(Step_Params.Rotation_Origin,Locs1,Step_Params.Width,Step_Params.Scan_Length,Workspace.Parameters.Auto_Tracing_Parameters.Rect_Rotation_Origin);
+					
+					% Note: using the Scan_Width to detect overlaps with other segments:
+					[XV,YV] = Get_Rect_Vector(Step_Params.Rotation_Origin,Locs1,Step_Params.Scan_Width,Step_Params.Scan_Length,Workspace.Parameters.Auto_Tracing_Parameters.Rect_Rotation_Origin);
 					if(min(XV) > 0 && min(YV) > 0 && max(XV) <= Im_Cols && max(YV) <= Im_Rows)
 						InRect1 = InRect_Coordinates(Workspace.Image0,[XV',YV']); % Get the linear indices of the pixels within the rectangle.
 						f1 = Segments_Map(InRect1);
 						F1 = find(f1 ~= Workspace.Segments(s).Segment_Index & f1 > 0); % Detect collisions with other segments.
 						% F2 = find(f1 == Segment_Index); % Detect "BG tracing".
+						% hold on;
+						% plot(XV,YV,'r','LineWidth',3);
 					end
 				end
 				
@@ -204,18 +224,19 @@ function Workspace = Connect_Vertices(Workspace)
 					end
 					break;
 				else % If we're still on the corrent path (according to the skeleton), OR if there's no peak.
-					if(isempty(Locs1))
+					if(isempty(Locs1)) % If no peaks were detected.
 						NoPeaks_V12_Flag = NoPeaks_V12_Flag + 1;
 						if(NoPeaks_V12_Flag == 2) % If both directions have no peaks.
-							Segment = Connect_Using_Skeleton(Workspace.Segments(s),Im_Rows,Im_Cols,Scale_Factor);
-							Workspace.Segments(s) = Segment;
+							Workspace.Segments(s) = Connect_Using_Skeleton(Workspace.Segments(s),Im_Rows,Im_Cols,Scale_Factor);
 							Segments_Array(s) = 0;
 							if(Messages)
 								disp(['I could not find any peaks for both direction. Using skeleton to complete the missing part. Segment ',num2str(s),' tracing is terminated.']);
 							end
 							break; % If both vertices have no peaks, do not continue, break (to avoid inf).
+						else
+							continue;
 						end
-					else
+					else % If a peak was detected.
 						W = Adjust_Rect_Width_Rot_Generalized(Workspace.Image0,Step_Params.Rotation_Origin,Step_Params.Angle,...
 										Step_Params.Scan_Length,[Wmin,Max_Rect_Width_Ratio*Workspace.Segments(s).(Field0)(end).Width/Scale_Factor], ...
 																	Origin_Type,Width_Smoothing_Parameter,Width_Ratio,Im_Rows,Im_Cols); % Input width in pixels.
@@ -285,6 +306,7 @@ function Workspace = Connect_Vertices(Workspace)
 						figure(1);
 						hold on;
 						plot(XV,YV,'LineWidth',3);
+						hold on;
 						[SkelY,SkelX] = ind2sub([Im_Rows,Im_Cols],Workspace.Segments(s).Skeleton_Linear_Coordinates);
 						plot(SkelX,SkelY,'r');
 						plot(SkelX,SkelY,'.r');
@@ -304,7 +326,7 @@ function Workspace = Connect_Vertices(Workspace)
 	% assignin('base','Segments1',Workspace.Segments);
 	% figure; imshow(abs(Locations_Map));
 	
-	% Clean Database:
+	% Clean the Database:
 	Workspace.Segments = rmfield(Workspace.Segments,'Skeleton_Linear_Coordinates');
 	Workspace.Segments = rmfield(Workspace.Segments,'Rectangles1');
 	Workspace.Segments = rmfield(Workspace.Segments,'Rectangles2');

@@ -32,6 +32,14 @@ function Parameters1 = Parameters_Func(Scale_Factor)
 	
 	Tracing(1).Min_Segment_Length = 5/Scale_Factor; % Min segment length. Micrometers converted to pixels.
 	
+	% TODO: generalize and use micrometers instead of pixels.
+	W_Min = 1;
+	W_Max = 8;
+	L_Min = 3;
+	L_Max = 10;
+	m = (L_Max - L_Min) ./ (W_Max - W_Min);
+	Tracing(1).Rect_Length_Width_Func = @(w) (w<=W_Min).*(L_Min) + (w>W_Max).*L_Max + (w>W_Min).*(w<=W_Max).*(m .* (w-W_Min)+L_Min);
+	
 	Auto_Tracing_Parameters(1).Step_Smoothing_Parameter = 0.01; % 0.01. % TODO: should also be a function of Scale_Factor.
 	Auto_Tracing_Parameters(1).Plot_Steps_Num = -10;
 	Auto_Tracing_Parameters(1).Semi_Mode_Auto_Steps_Num = 10; % Number of steps to jump forward in manual mode.
@@ -48,7 +56,7 @@ function Parameters1 = Parameters_Func(Scale_Factor)
 	Auto_Tracing_Parameters(1).Skel_Vertex_Overlap_Factor = 2;
 	
 	% Auto_Tracing_Parameters(1).Rect_Length = 1.7/Scale_Factor; % 1.6
-	Auto_Tracing_Parameters(1).Rect_Scan_Length_Width_Ratio = 1.5; % 2. 1.4, 1.5, 1.8, 2, 2.5;
+	% Auto_Tracing_Parameters(1).Rect_Scan_Length_Width_Ratio = 2; % 2. 1.4, 1.5, 1.8, 2, 2.5;
 	% Auto_Tracing_Parameters(1).Rect_Length_Width_Ratio = 2; % 2. 1.4, 1.5, 1.8, 2, 2.5;
 	% Auto_Tracing_Parameters(1).Rect_Width_StepLength_Ratio = 2.5; % 4.
 	% Auto_Tracing_Parameters(1).Rect_Step_Length_Ratio = 5; % 4.

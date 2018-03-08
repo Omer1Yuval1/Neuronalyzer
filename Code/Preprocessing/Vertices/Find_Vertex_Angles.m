@@ -31,13 +31,6 @@ function Rectangles = Find_Vertex_Angles(Im_BW,Cxy,Rc,Scale_Factor,Peaks_Max_Num
 	MinPeakWidth = 5*(pi/180); % 5 degrees.
 	MinPeakProm = .15; % .15
 	
-	% switch Vertex_Type
-		% case 3
-			% Peaks_Max_Num = 4;
-		% case 1
-			% Peaks_Max_Num = 1;
-	% end
-	
 	Filtered_Scores = zeros(3,length(Theta)); % An array of scores for each perimeter point. 1st row  = score. 2nd row = angle. 3rd row = width.
 	Pxy = [Rc*cos(Theta') + Cxy(1) , Rc*sin(Theta') + Cxy(2)]; % Coordinates on the perimeter of the center circle.
 	
@@ -83,6 +76,7 @@ function Rectangles = Find_Vertex_Angles(Im_BW,Cxy,Rc,Scale_Factor,Peaks_Max_Num
 	Raw_Scores = Filtered_Scores(1,:); % TODO: delete.
 	Filtered_Scores(1,:) = FitObject(Theta);
 	
+	% Find Peaks:
 	[Peaks,Locs,~,Proms] = findpeaks(Filtered_Scores(1,:),Theta,'MinPeakProminence',MinPeakProm,...
 											'MinPeakDistance',MinPeakDis,'MinPeakWidth',MinPeakWidth);
 	

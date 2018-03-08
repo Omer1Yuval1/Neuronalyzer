@@ -1,6 +1,6 @@
 function Workspace = Vertices_Analysis_Index(Workspace)
 	
-	assignin('base','Workspace_Pre_0',Workspace);
+	% assignin('base','Workspace_Pre_0',Workspace);
 	
 	CB_BW_Threshold = Workspace.Parameters.Cell_Body.BW_Threshold;
 	Scale_Factor = Workspace.User_Input.Scale_Factor;
@@ -8,7 +8,7 @@ function Workspace = Vertices_Analysis_Index(Workspace)
 	[CB_Pixels,CB_Perimeter] = Detect_Cell_Body(Workspace.Image0,CB_BW_Threshold,Scale_Factor,0); % Detect cell-body.
 	[CB_Vertices,Pixels0,Pixels1] = Find_CB_Vertices(Workspace.Image0,CB_Perimeter,CB_Pixels,Scale_Factor,CB_BW_Threshold,0);
 	
-	assignin('base','CB_Vertices',CB_Vertices);
+	% assignin('base','CB_Vertices',CB_Vertices);
 	
 	Workspace.Im_BW(CB_Pixels) = 0; % Delete cell-body pixels. TODO: use the CB to find the outsets of the branches connected to it.
 	Workspace.Im_BW(Pixels0) = 0;
