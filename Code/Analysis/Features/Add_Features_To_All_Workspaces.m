@@ -36,12 +36,12 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 				X = [W(i).Workspace.Segments(s).Rectangles.X];
 				Y = [W(i).Workspace.Segments(s).Rectangles.Y];
 				
-				Li = sum( [(X(2:end) - X(1:end-1)).^2 ; (Y(2:end) - Y(1:end-1)).^2] );
-				L = sum(Li);
+				Li = (sum( [(X(2:end) - X(1:end-1)).^2 ; (Y(2:end) - Y(1:end-1)).^2] )).^0.5; % Arc length between successive points.
+				L = sum(Li); % Arc length.
 				W(i).Workspace.Segments(s).Length = L; % sum([W(i).Workspace.Segments(s).Rectangles.Length]);
 				
 				D = ((W(i).Workspace.Segments(s).Rectangles(1).X - W(i).Workspace.Segments(s).Rectangles(end).X)^2 + ...
-					(W(i).Workspace.Segments(s).Rectangles(1).Y - W(i).Workspace.Segments(s).Rectangles(end).Y)^2)^.5;
+					(W(i).Workspace.Segments(s).Rectangles(1).Y - W(i).Workspace.Segments(s).Rectangles(end).Y)^2)^.5; % end2end length.
 				W(i).Workspace.Segments(s).End2End_Length = D*Scale_Factor;
 				
 				[Point_Curvature_Values,Mean_Curvature,Mean_Squared_Curvature] = Calc_Mean_Curvature(X,Y,Li,Scale_Factor,Parameters);

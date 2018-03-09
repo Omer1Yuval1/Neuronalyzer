@@ -29,5 +29,5 @@ function Workspace = Vertices_Analysis_Index(Workspace)
 	Workspace.Vertices = Match_CB_Vertices(Workspace.Vertices,CB_Vertices);
 	
 	% assignin('base','Workspace_Pre_1',Workspace);
-	assignin('base','CB_Vertices',CB_Vertices);
+	% assignin('base','CB_Vertices',CB_Vertices);
 end

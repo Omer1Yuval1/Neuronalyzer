@@ -27,7 +27,6 @@ function Workspace = Connect_Vertices(Workspace)
 	% Workspace = Match_Segments_And_Vertices_Rectangles(Workspace,Messages);
 	Workspace = Add_Starting_Tracing_Steps(Workspace);
 	
-	
 	% TODO: choose the threshold to be the length of the scanning rectangle (based on the width):
 	[Workspace,Traced_Segments] = Trace_Short_Segments(Workspace); % TODO: detect width. Currently using 1pixel.
 	% disp(Traced_Segments);
@@ -94,11 +93,12 @@ function Workspace = Connect_Vertices(Workspace)
 	for s=1:numel(Workspace.Segments)
 		Segments_Map([Workspace.Segments(s).Skeleton_Linear_Coordinates]) = Workspace.Segments(s).Segment_Index;
 	end
-	Vi = [Workspace.Vertices.Coordinate];
-	Vi = [Vi(1:2:end-1)',Vi(2:2:end)'];
-	viscircles(Vi,[Workspace.Vertices.Center_Radius]');
 	% return;
 	if(Plot0)
+		Vi = [Workspace.Vertices.Coordinate];
+		Vi = [Vi(1:2:end-1)',Vi(2:2:end)'];
+		viscircles(Vi,[Workspace.Vertices.Center_Radius]');
+		
 		for s=Traced_Segments % Plot the short segment for which the skeleton is used.
 			hold on;
 			plot([Workspace.Segments(s).Rectangles.X],[Workspace.Segments(s).Rectangles.Y],'r','LineWidth',2);

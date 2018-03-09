@@ -30,19 +30,21 @@ function Parameters1 = Parameters_Func(Scale_Factor)
 	Cell_Body(1).Ellipse_Axes_Extension_Factor = 1.1/Scale_Factor;
 	Cell_Body(1).Ellipse_Resolution = 0.035 / Scale_Factor;
 	
-	Tracing(1).Min_Segment_Length = 5/Scale_Factor; % Min segment length. Micrometers converted to pixels.
+	Tracing(1).Min_Segment_Length = 5 ./ Scale_Factor; % Min segment length. Micrometers converted to pixels.
 	
 	% TODO: generalize and use micrometers instead of pixels.
-	W_Min = 1;
-	W_Max = 8;
-	L_Min = 3;
-	L_Max = 10;
+	W_Min = 0.3571 ./ Scale_Factor; % 1 pixel for Scale_Factor = 50/140.
+	W_Max = 2.8571 ./ Scale_Factor; % 8 pixels for Scale_Factor = 50/140.
+	L_Min = 1.0714 ./ Scale_Factor; % 3 pixels for Scale_Factor = 50/140.
+	L_Max = 3.5714 ./ Scale_Factor; % 10 pixels for Scale_Factor = 50/140.
 	m = (L_Max - L_Min) ./ (W_Max - W_Min);
 	Tracing(1).Rect_Length_Width_Func = @(w) (w<=W_Min).*(L_Min) + (w>W_Max).*L_Max + (w>W_Min).*(w<=W_Max).*(m .* (w-W_Min)+L_Min);
 	
+	Tracing(1).Skel_Angle_Min_Length = 1.7857 ./ Scale_Factor; % In particular used with the skeleton since the segment width is 1 (=W_Min).	
+	
 	Auto_Tracing_Parameters(1).Step_Smoothing_Parameter = 0.01; % 0.01. % TODO: should also be a function of Scale_Factor.
-	Auto_Tracing_Parameters(1).Plot_Steps_Num = -10;
-	Auto_Tracing_Parameters(1).Semi_Mode_Auto_Steps_Num = 10; % Number of steps to jump forward in manual mode.
+	% Auto_Tracing_Parameters(1).Plot_Steps_Num = -10;
+	% Auto_Tracing_Parameters(1).Semi_Mode_Auto_Steps_Num = 10; % Number of steps to jump forward in manual mode.
 	
 	Auto_Tracing_Parameters(1).Global_Step_Length = 1; % In pixels.
 	Auto_Tracing_Parameters(1).Min_Rect_Width = .35/Scale_Factor; % Micrometers converted to pixels.
@@ -113,38 +115,6 @@ function Parameters1 = Parameters_Func(Scale_Factor)
 	Analysis.Curvature.Distance_From_Tips = 0;
 	Analysis.Curvature.Min_Points_Num = 3;
 	% Analysis.Persistence_Length.BinSize = .4;
-	
-	% Segmentation_Parameters
-		Branch_Parameters.Auto_Tracing_Parameters.Segment_Smoothing_Parameter = 0.01; % 0.9.
-		Branch_Parameters.Branching_Angle_Threshold = sin(22*pi/180); % Max angle diff for two segments to form a Branches.
-		Branch_Parameters.Min_Segment_Length = 0.16; % micrometers.(2^0.5);
-	
-	% Orders Parameters:
-		Menorah_Orders.Min_Segment_Length1 = 4.5; % Micrometers. For 1st order only.
-		Menorah_Orders.Min_Segment_Length = 2.2; % 2.6. Micrometers.
-		% 1st Order:
-			Menorah_Orders.CB_Max_Angle = 60; % In degrees.
-			Menorah_Orders.Angle_Diff_Threshold_11 = 20; % In degrees.
-			Menorah_Orders.Max_Angle_Diff1 = 60; % In degrees.
-			% Menorah_Orders.Min_Segment_Length = 3; % 2.6.
-			Menorah_Orders.Smoothing_Parameter = 0.000001;
-		% 2nd Order:
-			Menorah_Orders.Max_Angle_Diff2 = 75; % In degrees.
-			% Menorah_Orders.Min_Segment_Length = 3; % In micrometers.
-			Menorah_Orders.Max_Distance_From_Tertiary = 5;
-			Menorah_Orders.Max_Tertiary_Orientation = 50;
-			Menorah_Orders.Min_Orientation = 45; % 60.
-		% 3rd Order:
-			Menorah_Orders.Max_Angle_Diff3 = 90; % In degrees.
-			% Menorah_Orders.Max_Orientation = 50; % In degrees.
-			% Menorah_Orders.Min_Segment_Length = 2; % In micrometers.
-			% Menorah_Orders.Min_Terminal_Segment_Length = 10; % In micrometers.
-			Menorah_Orders.Max_Terminal_Segment_Orientaion = 40; % In micrometers.
-			Menorah_Orders.Max_First_Segment_Orientaion = 70;
-			Menorah_Orders.Min_First_Segment_Length = 4;
-		% 4th Order:
-			Menorah_Orders.Max_Angle_Diff4 = 40; % In degrees.
-			% Menorah_Orders.Min_Segment_Length = 2; % In micrometers.
 	%
 	
 	Neural_Network.Default_Pixel_Classification_Threshold = .65;
@@ -154,9 +124,6 @@ function Parameters1 = Parameters_Func(Scale_Factor)
 	Parameters1.Tracing = Tracing;
 	Parameters1.Auto_Tracing_Parameters = Auto_Tracing_Parameters;
 	Parameters1.Manual_Tracing_Parameters = Manual_Tracing_Parameters;
-	Parameters1.Menorah_Orders = Menorah_Orders;
-	% Parameters1(1).Segmentation_Parameters;
-	Parameters1.Branch_Parameters = Branch_Parameters;
 	Parameters1.Analysis = Analysis;
 	Parameters1.Neural_Network = Neural_Network;
 	

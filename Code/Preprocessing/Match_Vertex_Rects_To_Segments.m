@@ -24,6 +24,9 @@ function Workspace = Match_Vertex_Rects_To_Segments(Workspace)
 	[Im_Rows,Im_Cols] = size(Workspace.Image0);
 	Scale_Factor = Workspace.User_Input.Scale_Factor;
 	
+	Skel_Angle_Min_Length = round(Workspace.Parameters.Tracing.Skel_Angle_Min_Length); % In pixels.
+	Min_Segment_Length = Workspace.Parameters.Tracing.Min_Segment_Length;
+	
 	for v=1:numel(Workspace.Vertices)
 		% disp(v);
 		
@@ -35,17 +38,17 @@ function Workspace = Match_Vertex_Rects_To_Segments(Workspace)
 		F1 = find(Segments_Vertices(:,1) == Workspace.Vertices(v).Vertex_Index | ...
 				Segments_Vertices(:,2) == Workspace.Vertices(v).Vertex_Index);
 		
-		Rectangles = Workspace.Vertices(v).Rectangles;
+		% Rectangles = Workspace.Vertices(v).Rectangles;
 		% S = struct('Segment_Row',{},'Min_Distances',{},'Overlaps',{},'Rectangle_Index',{});
-		Min_Distances = zeros(numel(Rectangles),length(F1));
-		Overlaps = zeros(numel(Rectangles),length(F1));
+		Min_Distances = zeros(numel(Workspace.Vertices(v).Rectangles),length(F1));
+		Overlaps = zeros(numel(Workspace.Vertices(v).Rectangles),length(F1));
 		
-		for r=1:numel(Rectangles) % For each rectnalge r in vertex v.
+		for r=1:numel(Workspace.Vertices(v).Rectangles) % For each rectnalge r in vertex v.
 			
-			Width = Rectangles(r).Width ./ Scale_Factor; % Micrometers to pixels conversion.
-			Length = Rectangles(r).Length ./ Scale_Factor; % Micrometers to pixels conversion.
+			Width = Workspace.Vertices(v).Rectangles(r).Width ./ Scale_Factor; % Micrometers to pixels conversion.
+			Length = Workspace.Vertices(v).Rectangles(r).Length ./ Scale_Factor; % Micrometers to pixels conversion.
 			
-			[XV,YV] = Get_Rect_Vector(Rectangles(r).Origin,Rectangles(r).Angle*180/pi,Width,Length,14);
+			[XV,YV] = Get_Rect_Vector(Workspace.Vertices(v).Rectangles(r).Origin,Workspace.Vertices(v).Rectangles(r).Angle*180/pi,Width,Length,14);
 			InRect1 = InRect_Coordinates(Workspace.Image0,[XV',YV']); % Get the linear indices of the pixels within the rectangle.
 			[Ay,Ax] = ind2sub([Im_Rows,Im_Cols],InRect1); % Convert linear coordinates to subscripts.
 
@@ -58,24 +61,68 @@ function Workspace = Match_Vertex_Rects_To_Segments(Workspace)
 				for a=1:length(Ax)
 					D(a) = min(( (Ax(a) - Sx).^2 + (Ay(a) - Sy).^2 ).^0.5); % Minimal distance between pixel [Ax(a),Ay(a)] and the segment.
 				end
-				%%% S(s).Segment_Index = Workspace.Segments(F1(s)).Segment_Index;
-				% S(s).Segment_Row = F1(s);
-				% S(s).Min_Distances(r) = mean(D); % Mean distance of rectangle r from segment s.
-				% S(s).Overlaps(r) = length(find(D == 0)); % Number of overlapping points.
-				% disp(D);
 				
 				Min_Distances(r,s) = mean(D); % Mean distance of rectangle r from segment s.
 				Overlaps(r,s) = length(find(D == 0)); % Number of overlapping points.;
 				
 				%%% if(v == 113)
-				% if(Workspace.Vertices(v).Vertex_Index == 136)
+				% if(Workspace.Vertices(v).Vertex_Index == 132)
 					% hold on;
 					% plot(XV,YV);
 					% hold on;
 					% plot(Sx,Sy,'.r');
+					% % disp(1);
 				% end
 			end
 		end
+		
+		% if(Workspace.Vertices(v).Vertex_Index == 2)
+			% disp(1);
+		% end
+		
+		% Determine the angle of short segments using their skeleton coordinates:
+		for s=1:length(F1)
+			Sv = Workspace.Segments(F1(s)).Skeleton_Linear_Coordinates; % Get the segment's linear coordinates.
+			[Sy,Sx] = ind2sub([Im_Rows,Im_Cols],Sv); % Convert linear coordinates to subscripts.
+			N = length(Sv);
+			Ls = sum((sum( [(Sx(2:end) - Sx(1:end-1)).^2 ; (Sy(2:end) - Sy(1:end-1)).^2] )).^0.5); % Segment arc length.
+			
+			if(Ls < Min_Segment_Length)
+				Lr = min([N,Skel_Angle_Min_Length]);
+				
+				if(Workspace.Segments(F1(s)).Vertices(1) == Workspace.Vertices(v).Vertex_Index)
+					O = [Sx(1),Sy(1)]; % Origin.
+					% Pv = min(N,2):Lr;
+					a = mod(atan2(mean(Sy(1:Lr)) - Sy(1) , mean(Sx(1:Lr)) - Sx(1)),2*pi);
+				elseif(Workspace.Segments(F1(s)).Vertices(2) == Workspace.Vertices(v).Vertex_Index) % If it's the 2nd vertex, flip the coordinates order.
+					O = [Sx(N),Sy(N)]; % Origin.
+					a = mod(atan2(mean(Sy(N-Lr+1:N)) - Sy(N) , mean(Sx(N-Lr+1:N)) - Sx(N)),2*pi);
+				end
+				
+				Workspace.Vertices(v).Rectangles(end+1).Origin = O;
+				Workspace.Vertices(v).Rectangles(end).Angle = a;
+				Workspace.Vertices(v).Rectangles(end).Width = 1 .* Scale_Factor;
+				Workspace.Vertices(v).Rectangles(end).Length = Lr .* Scale_Factor;
+				
+				Overlaps(end+1,:) = 0; % Add a rectangle to the overlaps matrix.
+				Overlaps(:,s) = 0; % Set the values of the overlaps between the segmnt s and all the rects to 0.
+				Overlaps(end,s) = 1; % Set the overlap value between the segment and the new(=end) retangle to 1 (so that it's always chosen).
+				
+				% if(Sx(1) == 208 && Sy(1) == 238)
+				if(0)
+					[XV,YV] = Get_Rect_Vector(O,a*180/pi,1,Lr,14);					
+					hold on;
+					plot(XV,YV);
+					plot(Sx,Sy,'.r');
+					
+					% disp(N);
+					% disp(Ls);
+					% disp(Lr);
+					
+				end
+			end
+		end		
+		
 		% if(Workspace.Vertices(v).Vertex_Index == 134)
             % disp(222);
         % end
@@ -84,30 +131,38 @@ function Workspace = Match_Vertex_Rects_To_Segments(Workspace)
 		[Workspace.Vertices(v).Rectangles.Segment_Index] = deal(0); % Reset all values to 0 (not a possible segment index).
 		[Workspace.Vertices(v).Rectangles.Segment_Row] = deal(0); % Reset all values to 0 (not a possible segment index).
 		M = max(Min_Distances(:)) + 1; % Save the max distance +1 to mark chosen segment and avoid them in the next iterations.
-		for r=1:numel(Rectangles) % For each rectnalge r in vertex v.
+		N_Overlap = size(Overlaps,1); % The number of retangles in the "Min_Distances" matrix (does not include the added rectangles).
+		N_Dis = size(Min_Distances,1); % The number of retangles in the "Min_Distances" matrix (does not include the added rectangles).
+		for r=1:numel(Workspace.Vertices(v).Rectangles) % For each rectnalge r in vertex v.
 			f1 = find([Overlaps(r,:)] == max([Overlaps(r,:)]));
-			if(length(f1) == 1) % If only one best match.
+			if(r <= N_Dis) % If r>N_Dis, then only the "Overlaps" matrix can be used.
+				f2 = find([Min_Distances(r,:)] == min([Min_Distances(r,:)]) & [Min_Distances(r,:)] <= M);
+			end
+			f3 = [];
+			if( (length(f1) > 1 || N_Overlap > N_Dis) && max([Overlaps(r,:)]) == 0) % If multiple zeros OR extra(added) rects => skip (meaning it will be deleted).
+				continue;
+			elseif(length(f1) == 1) % If exactly one best match.
 				Workspace.Vertices(v).Rectangles(r).Segment_Index = Workspace.Segments(F1(f1)).Segment_Index;
 				Workspace.Vertices(v).Rectangles(r).Segment_Row = F1(f1);
-			else % Use the mean distance to determine the best match.
-				f1 = find([Min_Distances(r,:)] == min([Min_Distances(r,:)])); % Taking 'abs' to avoid the (-1).
+				f3 = f1;
+			elseif(~isempty(f2)) % Use the mean distance to determine the best match.
 				% Note: in case there are 2+ minimal distances, just take the 1st.
-				Workspace.Vertices(v).Rectangles(r).Segment_Index = Workspace.Segments(F1(f1(1))).Segment_Index;
-				Workspace.Vertices(v).Rectangles(r).Segment_Row = F1(f1(1));
-				if(length(f1) > 1)
+				Workspace.Vertices(v).Rectangles(r).Segment_Index = Workspace.Segments(F1(f2(1))).Segment_Index;
+				Workspace.Vertices(v).Rectangles(r).Segment_Row = F1(f2(1));
+				f3 = f2;
+				if(length(f2) > 1)
 					disp('I found multiple minimal distance values (in "Match_Vertex_Rects_To_Segments")');
 				end
+			else % If f2 is empty (no matches by overlap or distace), the values in these cells will remain 0.
+				continue; % Used to avoid updating the arrays.
 			end
-			Overlaps(:,f1(1)) = -1; % Set to (-1) all the values of the chosen segment so it won't be taken into account in the next iterations.
-			Min_Distances(:,f1(1)) = M; % ...Assuming (-1) is always below the minimum (since the minimum overlap or distance is 0).
+			
+			Overlaps(:,f3(1)) = -1; % Set to (-1) all the values of the chosen segment so it won't be taken into account in the next iterations.
+			Min_Distances(:,f3(1)) = M+1;
 		end
 		
 		% Delete unmatched rectangles (marked as Segment_Index=0):
 		Workspace.Vertices(v).Rectangles(find([Workspace.Vertices(v).Rectangles.Segment_Index] == 0)) = [];
-		
-		% if(Workspace.Vertices(v).Vertex_Index == 134)
-			% disp(111);
-		% end
 		
 		% **** TODO: counting the number of rects doesn't make sense. I have to count the number of matches.
 		if(numel(Workspace.Vertices(v).Rectangles) < length(F1)) % If the # of rects is smaller than the # of segment connected to vertex v.

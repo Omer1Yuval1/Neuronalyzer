@@ -35,6 +35,7 @@ function Workspace = Add_Starting_Tracing_Steps(Workspace)
 			
 			% Add the point on the vertex perimeter as the 1st tracing point of segment s (for both vertices):
 			if(v == 1)
+				% disp(V(v));
 				Workspace.Segments(s).Rectangles1(1).X = Workspace.Vertices(V(v)).Rectangles(Fi).Origin(1); % Add the coordinate on the vertex circle and the center of the rectangle.
 				Workspace.Segments(s).Rectangles1(1).Y = Workspace.Vertices(V(v)).Rectangles(Fi).Origin(2); % Add the coordinate on the vertex circle and the center of the rectangle.
 				Workspace.Segments(s).Rectangles1(1).Angle = Workspace.Vertices(V(v)).Rectangles(Fi).Angle;
