@@ -35,6 +35,7 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 				
 				X = [W(i).Workspace.Segments(s).Rectangles.X];
 				Y = [W(i).Workspace.Segments(s).Rectangles.Y];
+				Step_Lengths = [W(i).Workspace.Segments(s).Rectangles.Length];
 				
 				Li = (sum( [(X(2:end) - X(1:end-1)).^2 ; (Y(2:end) - Y(1:end-1)).^2] )).^0.5; % Arc length between successive points.
 				L = sum(Li); % Arc length.
@@ -42,13 +43,14 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 				
 				D = ((W(i).Workspace.Segments(s).Rectangles(1).X - W(i).Workspace.Segments(s).Rectangles(end).X)^2 + ...
 					(W(i).Workspace.Segments(s).Rectangles(1).Y - W(i).Workspace.Segments(s).Rectangles(end).Y)^2)^.5; % end2end length.
-				W(i).Workspace.Segments(s).End2End_Length = D*Scale_Factor;
+				W(i).Workspace.Segments(s).End2End_Length = D.*Scale_Factor;
 				
-				[Point_Curvature_Values,Mean_Curvature,Mean_Squared_Curvature] = Calc_Mean_Curvature(X,Y,Li,Scale_Factor,Parameters);
-				W(i).Workspace.Segments(s).Curvature = Mean_Squared_Curvature;
+				[~,~,~,Cxy] = Get_Segment_Curvature(X,Y);
+				Squared_Curvature = ((Cxy .* (1./Scale_Factor)).^2); % Also converted to micrometers.
+				W(i).Workspace.Segments(s).Curvature = dot(Step_Lengths,Squared_Curvature); % Integral of squared curvature.
 				if(N == 1) % If only one workspace, add the curvature values for individual coordinates.
 					for j=1:numel(W(i).Workspace.Segments(s).Rectangles) % For each coordinate. TODO: find a way to do this without a for loop.
-						W(i).Workspace.Segments(s).Rectangles(j).Curvature = Point_Curvature_Values(j);
+						W(i).Workspace.Segments(s).Rectangles(j).Curvature = Squared_Curvature(j);
 					end
 				end
 			else

@@ -66,17 +66,19 @@ function Workspace = Match_Vertex_Rects_To_Segments(Workspace)
 				Overlaps(r,s) = length(find(D == 0)); % Number of overlapping points.;
 				
 				%%% if(v == 113)
-				% if(Workspace.Vertices(v).Vertex_Index == 132)
+				% if(Workspace.Vertices(v).Vertex_Index == 57)
 					% hold on;
 					% plot(XV,YV);
 					% hold on;
-					% plot(Sx,Sy,'.r');
+					% if(1 || Workspace.Segments(F1(s)).Segment_Index == 58)
+						% plot(Sx,Sy,'.r');
+					% end
 					% % disp(1);
 				% end
 			end
 		end
 		
-		% if(Workspace.Vertices(v).Vertex_Index == 2)
+		% if(Workspace.Vertices(v).Vertex_Index == 57)
 			% disp(1);
 		% end
 		

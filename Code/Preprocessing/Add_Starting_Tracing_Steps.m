@@ -24,7 +24,7 @@ function Workspace = Add_Starting_Tracing_Steps(Workspace)
 		
 		v1 = find([Workspace.Vertices.Vertex_Index] == Workspace.Segments(s).Vertices(1)); % Find the 1st vertex.
 		v2 = find([Workspace.Vertices.Vertex_Index] == Workspace.Segments(s).Vertices(2)); % Find the 2nd vertex.
-		V = [v1,v2];
+		V = unique([v1,v2]); % If it's a loop, v1 and v2 are identical, thus, no need to visit this vertex twice.
 		
 		for v=1:length(V) % For each of the two vertices of segment s.
 			
@@ -33,26 +33,28 @@ function Workspace = Add_Starting_Tracing_Steps(Workspace)
 			
 			Fi = find([Workspace.Vertices(V(v)).Rectangles.Segment_Index] == Workspace.Segments(s).Segment_Index);
 			
-			% Add the point on the vertex perimeter as the 1st tracing point of segment s (for both vertices):
-			if(v == 1)
-				% disp(V(v));
-				Workspace.Segments(s).Rectangles1(1).X = Workspace.Vertices(V(v)).Rectangles(Fi).Origin(1); % Add the coordinate on the vertex circle and the center of the rectangle.
-				Workspace.Segments(s).Rectangles1(1).Y = Workspace.Vertices(V(v)).Rectangles(Fi).Origin(2); % Add the coordinate on the vertex circle and the center of the rectangle.
-				Workspace.Segments(s).Rectangles1(1).Angle = Workspace.Vertices(V(v)).Rectangles(Fi).Angle;
-				Workspace.Segments(s).Rectangles1(1).Width = Workspace.Vertices(V(v)).Rectangles(Fi).Width;
-				Workspace.Segments(s).Rectangles1(1).Length = Step_Length * Scale_Factor; % Vertices(V(v)).Rectangles(Fi).Length;
-				
-				Workspace.Segments(s).Rectangles1(1).BG_Intensity = BG_Intensity0;
-				Workspace.Segments(s).Rectangles1(1).BG_Peak_Width = BG_Peak_Width0;
-			elseif(v == 2)
-				Workspace.Segments(s).Rectangles2(1).X = Workspace.Vertices(V(v)).Rectangles(Fi).Origin(1); % Add the coordinate on the vertex circle and the center of the rectangle.
-				Workspace.Segments(s).Rectangles2(1).Y = Workspace.Vertices(V(v)).Rectangles(Fi).Origin(2); % Add the coordinate on the vertex circle and the center of the rectangle.
-				Workspace.Segments(s).Rectangles2(1).Angle = Workspace.Vertices(V(v)).Rectangles(Fi).Angle;
-				Workspace.Segments(s).Rectangles2(1).Width = Workspace.Vertices(V(v)).Rectangles(Fi).Width;
-				Workspace.Segments(s).Rectangles2(1).Length = Step_Length * Scale_Factor; % Convert pixels to length.
-				
-				Workspace.Segments(s).Rectangles2(1).BG_Intensity = BG_Intensity0;
-				Workspace.Segments(s).Rectangles2(1).BG_Peak_Width = BG_Peak_Width0;
+			for f=1:length(Fi) % In the case of a loop, Fi will have multiple values (2 rectangles for one of the segments, and maybe more for others). These two rectnalges are the two starting points of the segment.
+				% Add the point on the vertex perimeter as the 1st tracing point of segments (for both vertices):
+				if(v == 1)
+					% disp(V(v));
+					Workspace.Segments(s).Rectangles1(1).X = Workspace.Vertices(V(v)).Rectangles(Fi(f)).Origin(1); % Add the coordinate on the vertex circle and the center of the rectangle.
+					Workspace.Segments(s).Rectangles1(1).Y = Workspace.Vertices(V(v)).Rectangles(Fi(f)).Origin(2); % Add the coordinate on the vertex circle and the center of the rectangle.
+					Workspace.Segments(s).Rectangles1(1).Angle = Workspace.Vertices(V(v)).Rectangles(Fi(f)).Angle;
+					Workspace.Segments(s).Rectangles1(1).Width = Workspace.Vertices(V(v)).Rectangles(Fi(f)).Width;
+					Workspace.Segments(s).Rectangles1(1).Length = Step_Length * Scale_Factor; % Vertices(V(v)).Rectangles(Fi).Length;
+					
+					Workspace.Segments(s).Rectangles1(1).BG_Intensity = BG_Intensity0;
+					Workspace.Segments(s).Rectangles1(1).BG_Peak_Width = BG_Peak_Width0;
+				elseif(v == 2)
+					Workspace.Segments(s).Rectangles2(1).X = Workspace.Vertices(V(v)).Rectangles(Fi(f)).Origin(1); % Add the coordinate on the vertex circle and the center of the rectangle.
+					Workspace.Segments(s).Rectangles2(1).Y = Workspace.Vertices(V(v)).Rectangles(Fi(f)).Origin(2); % Add the coordinate on the vertex circle and the center of the rectangle.
+					Workspace.Segments(s).Rectangles2(1).Angle = Workspace.Vertices(V(v)).Rectangles(Fi(f)).Angle;
+					Workspace.Segments(s).Rectangles2(1).Width = Workspace.Vertices(V(v)).Rectangles(Fi(f)).Width;
+					Workspace.Segments(s).Rectangles2(1).Length = Step_Length * Scale_Factor; % Convert pixels to length.
+					
+					Workspace.Segments(s).Rectangles2(1).BG_Intensity = BG_Intensity0;
+					Workspace.Segments(s).Rectangles2(1).BG_Peak_Width = BG_Peak_Width0;
+				end
 			end
 		end
 	end
