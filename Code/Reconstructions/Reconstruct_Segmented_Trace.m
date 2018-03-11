@@ -14,11 +14,16 @@ function Reconstruct_Segmented_Trace(Workspace1)
 	Vs = zeros(1,numel(Workspace1.Segments));
 	for s=1:numel(Workspace1.Segments) % Go over each segment.
 		if(~isempty(Workspace1.Segments(s).Rectangles));
-				Vs(s) = plot([Workspace1.Segments(s).Rectangles.X],[Workspace1.Segments(s).Rectangles.Y],'.'); % ,'LineWidth',Workspace1.Segments(s).Width);
+			Color1 = rand(1,3);
+			Vs(s) = plot([Workspace1.Segments(s).Rectangles.X],[Workspace1.Segments(s).Rectangles.Y],'Color',Color1,'LineWidth',2); % ,'LineWidth',Workspace1.Segments(s).Width);
 		end
 	end
 	
 	hold on; % Plot Vertices rectangles (branches outsets):
+	Vi = [Workspace1.Vertices.Coordinate];
+	Vi = [Vi(1:2:end-1)',Vi(2:2:end)'];
+	viscircles(Vi,[Workspace1.Vertices.Center_Radius]');
+	%{
 	for v=1:numel(Workspace1.Vertices) % Go over each vertex.
 		plot(Workspace1.Vertices(v).Coordinate(1),Workspace1.Vertices(v).Coordinate(2),'.r','MarkerSize',10);
 		%{
@@ -33,7 +38,7 @@ function Reconstruct_Segmented_Trace(Workspace1)
 		end
 		%}
 	end
-	
+	%}
 	return;
 	
 	Fj = find([Workspace1.Vertices.Vertex_Index] > 0);

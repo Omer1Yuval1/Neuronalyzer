@@ -32,7 +32,7 @@ function Parameters1 = Parameters_Func(Scale_Factor)
 	
 	Tracing(1).Min_Segment_Length = 5 ./ Scale_Factor; % Min segment length. Micrometers converted to pixels.
 	
-	% TODO: generalize and use micrometers instead of pixels.
+	% Note: the result is in pixels:
 	W_Min = 0.3571 ./ Scale_Factor; % 1 pixel for Scale_Factor = 50/140.
 	W_Max = 2.8571 ./ Scale_Factor; % 8 pixels for Scale_Factor = 50/140.
 	L_Min = 1.0714 ./ Scale_Factor; % 3 pixels for Scale_Factor = 50/140.
