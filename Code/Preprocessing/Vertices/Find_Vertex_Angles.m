@@ -64,7 +64,7 @@ function Rectangles = Find_Vertex_Angles(Im_BW,Cxy,Rc,Scale_Factor,Peaks_Max_Num
 			end
 		% end
 	end
-	if(max(Filtered_Scores) > 0)
+	if(max(Filtered_Scores(1,:)) > 0)
 		Filtered_Scores(1,:) = Filtered_Scores(1,:) ./ max(Filtered_Scores(1,:)); % Normalize Scores to [0,1].
 	end
 	
@@ -161,7 +161,8 @@ function Rectangles = Find_Vertex_Angles(Im_BW,Cxy,Rc,Scale_Factor,Peaks_Max_Num
 		xlabel('Angle (radians)','FontSize',20);
 		ylabel('Score','FontSize',20);
 		set(gca,'FontSize',20);
-		xlim([0,max(Theta)]);
+		xlim([0,2.*pi]); % xlim([0,max(Theta)]);
+		ylim([-0.02,1.02]);
 	end
 	% disp(Widths);
 	Rectangles = struct('Origin',{},'Angle',{},'Width',{},'Length',{});
@@ -176,8 +177,13 @@ function Rectangles = Find_Vertex_Angles(Im_BW,Cxy,Rc,Scale_Factor,Peaks_Max_Num
 		Rectangles(p).Origin = Pxy(F1,:);
 		
 		if(Plot1)
+			
+			D = 8;
+			axis([Cxy(1)+[-D,+D],Cxy(2)+[-D,+D]]);
+			
 			[XV,YV] = Get_Rect_Vector(Pxy(F1,:),Rectangles(p).Angle*180/pi,Widths(p),Rect_Length,14);
-			plot([XV,XV(1)],[YV,YV(1)],'Color',[0,0.7,0],'LineWidth',3);
+			% plot([XV,XV(1)],[YV,YV(1)],'Color',[0,0.7,0],'LineWidth',3);
+			plot([XV,XV(1)],[YV,YV(1)],'LineWidth',4);
 			drawnow;
 			% plot(Pxy(F1,1),Pxy(F1,2),'.b','MarkerSize',15);
 		end
@@ -185,7 +191,7 @@ function Rectangles = Find_Vertex_Angles(Im_BW,Cxy,Rc,Scale_Factor,Peaks_Max_Num
 	if(Plot1 || Plot3)
 		figure(1);
 		hold on;
-		viscircles(Cxy,Rc,'Color','r');
+		viscircles(Cxy,Rc,'Color','r','LineWidth',4);
 		plot(Cxy(1),Cxy(2),'.r','MarkerSize',30);
 	end
 	

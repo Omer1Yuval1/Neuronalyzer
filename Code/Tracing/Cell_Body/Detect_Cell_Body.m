@@ -56,6 +56,10 @@ function [CB_Pixels,CB_Perimeter] = Detect_Cell_Body(Im,GS2BW_Threshold,Scale_Fa
 		plot(CBx,CBy,'.g');
 		plot(cols,rows,'.b');
 		figure(1);
+		
+		D = 60;
+		CB_Center = [mean(CB_Perimeter(:,1)),mean(CB_Perimeter(:,2))];
+		axis([CB_Center(1)-D,CB_Center(1)+D,CB_Center(2)-D,CB_Center(2)+D]);
 	end
 	
 	if(Plot1 == 3)

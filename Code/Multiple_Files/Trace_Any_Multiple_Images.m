@@ -18,7 +18,7 @@ function Trace_Any_Multiple_Images(NN_Object,NN_Threshold)
 	N = length(Files_List);
 	Multiple_NN_WaitBar = waitbar(0,'Please Wait');
 	
-	for f=101:numel(Files_List) % For each file (image\neuron). TODO: check 84.
+	for f=1:numel(Files_List) % For each file (image\neuron). TODO: check 84.
 		
 		% disp(Files_List(f).name);
 		

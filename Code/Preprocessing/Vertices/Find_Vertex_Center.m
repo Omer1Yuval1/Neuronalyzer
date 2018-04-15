@@ -1,7 +1,13 @@
 function [New_Cxy,Rc] = Find_Vertex_Center(Im_BW,Cxy,Theta,Vr,Center_Frame_Size,Centers_Scan_Res,Im_Rows,Min_Center_Radius)
 	
-	Plot1 = 0;
+	Plot1 = 1;
 	Plot2 = 0;
+	Plot3 = 0;
+	
+	if(Plot1 || Plot2)
+		Centers_Scan_Res = 0.3;
+		% Centers_Scan_Res = 0.5;
+	end
 	
 	Potential_Centers_X = Cxy(1)-Center_Frame_Size:Centers_Scan_Res:Cxy(1)+Center_Frame_Size;
 	Potential_Centers_Y = Cxy(2)-Center_Frame_Size:Centers_Scan_Res:Cxy(2)+Center_Frame_Size;
@@ -26,15 +32,17 @@ function [New_Cxy,Rc] = Find_Vertex_Center(Im_BW,Cxy,Theta,Vr,Center_Frame_Size,
 			if(length(find(Im_BW(Cv1) == 0))) % If there's is at least one black (background) pixel, stop.
 				Cr(j) = Vr(max(1,ri-1)); % Cr(j) = Vr(ri);
 				
-				if(Plot2 && rand(1,1) >= 0 && Cr(j) > 0)
+				if(Plot2 && rand(1,1) >= 0.93 && Cr(j) > 0.1)
 					C = rand(1,3);
 					hold on;
+					% plot(Cx(j),Cy(j),'.','MarkerSize',15,'Color',[.8,0,0]); % The center.
 					plot(Cx(j),Cy(j),'.','MarkerSize',15,'Color',C); % The center.
+					
 					% % viscircles([Cx(j),Cy(j)],r,'Color',[rand(1,1),rand(1,1),0.5]);
-					% viscircles([Cx(j),Cy(j)],Cr(j),'Color',C);
-					% for k=0:.3:Cr(j)
-						% viscircles([Cx(j),Cy(j)],k,'Color',C);
-					% end
+					viscircles([Cx(j),Cy(j)],Cr(j),'Color',C);
+					for k=0:.3:Cr(j)
+						viscircles([Cx(j),Cy(j)],k,'Color',C);
+					end
 					% plot(Cv(:,1),Cv(:,2),'.','MarkerSize',15);
 				end
 				break;
@@ -53,16 +61,31 @@ function [New_Cxy,Rc] = Find_Vertex_Center(Im_BW,Cxy,Theta,Vr,Center_Frame_Size,
 	end
 	
 	if(Plot1)
-		% plot(Cxy(1),Cxy(2),'.b','MarkerSize',30); % Approximate center.
-		% plot(Cx,Cy,'.r','MarkerSize',15); % Potential Centers.
-		plot(New_Cxy(1),New_Cxy(2),'.r','MarkerSize',30); % The centers.
+		plot(Cx,Cy,'.','MarkerSize',15,'Color',[.8,0,0]); % Potential Centers.
+		plot(Cxy(1),Cxy(2),'.b','MarkerSize',30); % Approximate center.
+		
+		%% Cv = [Rc*cos(Theta') + New_Cxy(1) , Rc*sin(Theta') + New_Cxy(2)]; % A vector of circle coordinates.
+		%% plot(Cv(:,1),Cv(:,2),'.','MarkerSize',1);
+		D = 8;
+		axis([Cxy(1)+[-D,+D],Cxy(2)+[-D,+D]]);
+	end
+	if(Plot2)
+		plot(Cxy(1),Cxy(2),'.b','MarkerSize',30); % Approximate center.
+		D = 8;
+		axis([Cxy(1)+[-D,+D],Cxy(2)+[-D,+D]]);
+	end
+	
+	if(Plot3)
+		
+		D = 8;
+		axis([Cxy(1)+[-D,+D],Cxy(2)+[-D,+D]]);
+		
 		for k=0:.3:Rc
 			viscircles(New_Cxy,k,'Color','r');
 		end
 		viscircles(New_Cxy,Rc,'Color','r','LineWidth',4);
-		
-		%% Cv = [Rc*cos(Theta') + New_Cxy(1) , Rc*sin(Theta') + New_Cxy(2)]; % A vector of circle coordinates.
-		%% plot(Cv(:,1),Cv(:,2),'.','MarkerSize',1);
+		plot(New_Cxy(1),New_Cxy(2),'.','MarkerSize',30,'Color',[0,0.8,0]); % The new center.
+		plot(Cxy(1),Cxy(2),'.b','MarkerSize',30); % Approximate center.
 	end
 	% assignin('base','Theta',Theta);
 	

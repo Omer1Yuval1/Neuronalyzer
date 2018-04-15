@@ -35,6 +35,7 @@ function H = Get_Statistically_Significance_Bars(Groups_Struct,Bar_Color)
 							if(M > YMax)
 								YMax = M;
 							end
+							disp(1);
 						end
 					elseif(H_MWU && PV_MWU <= Max_PValue) % If Mann-Whitney is successful.
 						Pairs_Array(end+1,1) = F1(i); % First in the pair.
@@ -42,10 +43,11 @@ function H = Get_Statistically_Significance_Bars(Groups_Struct,Bar_Color)
 						Pairs_Array(end,3) = PV_MWU; % P-Value.
 						Pairs_Array(end,4) = 2; % U-Test index.
 						
-							M = max(Groups_Struct(F1(i)).Mean+Groups_Struct(F1(i)).SE,Groups_Struct(F1(j)).Mean+Groups_Struct(F1(j)).SE);
+						M = max(Groups_Struct(F1(i)).Mean+Groups_Struct(F1(i)).SE,Groups_Struct(F1(j)).Mean+Groups_Struct(F1(j)).SE);
 						if(M > YMax)
 							YMax = M;
 						end
+						disp(2);
 					end
 				end
 			end

@@ -444,6 +444,7 @@ function Tracer_UI()
 		
 		set(GUI_Parameters.Handles.Start_Edit_BW,'Enable','off');
 		GUI_Parameters.Handles.Finish_Edit_BW = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Editing_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Apply Changes','Units','Normalized','Position',[0 0.01 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Finish_Edit_BW_Func);
+		GUI_Parameters.Handles.Save_BW = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Editing_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Save Binary Image','Units','Normalized','Position',[0 0.11 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Save_BW_Func);
 		
 		% TODO: Add a check (if) to see if a BW exists...
 		
@@ -456,10 +457,12 @@ function Tracer_UI()
 		set(GUI_Parameters.Handles.Edit_BW_View_Radio_Group,'SelectedObject',GUI_Parameters.Handles.Machine_Learning.BW);
 		% ":
 		GUI_Parameters.Handles.Edit_BW_MarkerSize_Radio_Group = uibuttongroup(GUI_Parameters.Handles.Tracing.Editing_Tab,'Position',[.05,0.4,1,0.1],'BorderType','none','SelectionChangedFcn',@Edit_BW_Radio_MarkerSize_Func);
-		GUI_Parameters.Handles.Machine_Learning.MarkerSize1 = uicontrol(GUI_Parameters.Handles.Edit_BW_MarkerSize_Radio_Group,'Style','radiobutton','String','1','UserData',1,'Units','normalized','FontSize',18,'Position',[0,0.5,0.5,.5]);
-		GUI_Parameters.Handles.Machine_Learning.MarkerSize5 = uicontrol(GUI_Parameters.Handles.Edit_BW_MarkerSize_Radio_Group,'Style','radiobutton','String','5','UserData',5,'Units','normalized','FontSize',18,'Position',[0.2,0.5,0.5,.5]);
-		GUI_Parameters.Handles.Machine_Learning.MarkerSize11 = uicontrol(GUI_Parameters.Handles.Edit_BW_MarkerSize_Radio_Group,'Style','radiobutton','String','11','UserData',11,'Units','normalized','FontSize',18,'Position',[0.4,0.5,0.5,.5]);
-		GUI_Parameters.Handles.Machine_Learning.MarkerSize15 = uicontrol(GUI_Parameters.Handles.Edit_BW_MarkerSize_Radio_Group,'Style','radiobutton','String','15','UserData',15,'Units','normalized','FontSize',18,'Position',[0.6,0.5,0.5,.5]);
+		GUI_Parameters.Handles.Machine_Learning.MarkerSize1 = uicontrol(GUI_Parameters.Handles.Edit_BW_MarkerSize_Radio_Group,'Style','radiobutton','String','1','UserData',1,'Units','normalized','FontSize',18,'Position',[0,0.4,0.5,.5]);
+		GUI_Parameters.Handles.Machine_Learning.MarkerSize2 = uicontrol(GUI_Parameters.Handles.Edit_BW_MarkerSize_Radio_Group,'Style','radiobutton','String','2','UserData',2,'Units','normalized','FontSize',18,'Position',[0.15,0.4,0.5,.5],'Enable','off');
+		GUI_Parameters.Handles.Machine_Learning.MarkerSize3 = uicontrol(GUI_Parameters.Handles.Edit_BW_MarkerSize_Radio_Group,'Style','radiobutton','String','3','UserData',3,'Units','normalized','FontSize',18,'Position',[0.3,0.4,0.5,.5]);
+		GUI_Parameters.Handles.Machine_Learning.MarkerSize5 = uicontrol(GUI_Parameters.Handles.Edit_BW_MarkerSize_Radio_Group,'Style','radiobutton','String','5','UserData',5,'Units','normalized','FontSize',18,'Position',[0.45,0.4,0.5,.5]);
+		GUI_Parameters.Handles.Machine_Learning.MarkerSize11 = uicontrol(GUI_Parameters.Handles.Edit_BW_MarkerSize_Radio_Group,'Style','radiobutton','String','11','UserData',11,'Units','normalized','FontSize',18,'Position',[0.6,0.4,0.5,.5]);
+		GUI_Parameters.Handles.Machine_Learning.MarkerSize15 = uicontrol(GUI_Parameters.Handles.Edit_BW_MarkerSize_Radio_Group,'Style','radiobutton','String','15','UserData',15,'Units','normalized','FontSize',18,'Position',[0.75,0.4,0.5,.5]);
 		
 		[Im_Rows,Im_Cols] = size(GUI_Parameters.Workspace(1).Workspace.Image0);
 		Im_RGB = zeros(Im_Rows,Im_Cols,3);
@@ -510,8 +513,8 @@ function Tracer_UI()
 						plot(x,y,'.','MarkerSize',7);
 					end
 					
-					assignin('base','Ims',Im1_NoiseReduction);
-					assignin('base','Workspace',GUI_Parameters.Workspace(1).Workspace);
+					% assignin('base','Ims',Im1_NoiseReduction);
+					% assignin('base','Workspace',GUI_Parameters.Workspace(1).Workspace);
 			end
 			set(gca,'YDir','normal','PickableParts','all','ButtonDownFcn',@Mouse_Edit_BW_Func);
 			% Mouse_Edit_BW_Func();
@@ -555,6 +558,11 @@ function Tracer_UI()
 			Edit_BW_Radio_View_Func();
 		end
 		
+		function Save_BW_Func(source,callbackdata)
+			imwrite(GUI_Parameters.Workspace(1).Workspace.Image0,[uigetdir,filesep,GUI_Parameters.Handles.FileName,'Source.tif']);
+			imwrite(GUI_Parameters.Workspace(1).Workspace.Im_BW,[uigetdir,filesep,GUI_Parameters.Handles.FileName,'_Annotated.tif']);
+		end
+		
 		function Finish_Edit_BW_Func(source,callbackdata)
 			
 			% GUI_Parameters.Workspace(1).Workspace.Im_BW = ;
@@ -573,6 +581,7 @@ function Tracer_UI()
 			return;
 		end
 		Current_Dir = cd(PathName);
+		GUI_Parameters.Handles.FileName = FileName;
 		
 		H1 = uipanel(GUI_Parameters.Handles.Main_Panel,'BackgroundColor',[0.5,0.5,0.5],'Position',[0.3 0.1 0.4 0.8]);
 		

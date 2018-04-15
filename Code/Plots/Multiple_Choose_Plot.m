@@ -27,7 +27,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
 			
 		case 'Curvature Of Segments'
-			Single_Workspace_Operation = @(x) x(x>=0); % The length of a segment has to be positive.
+			Single_Workspace_Operation = @(x) x(x>=0 & x<=0.1); % The curvature of a segment has to be positive.
 			Y_Label = 'Mean Squared Curvature (1/(\mum)^2)';
 			Title = 'Curvature Of Segments';
 			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Segments',{'Curvature'},Single_Workspace_Operation);
@@ -57,7 +57,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Single_Workspace_Operation = @(x) x; % The length of a segment has to be positive.
 			Y_Label = 'Linearity';
 			X_Label = 'Symmetry';
-			Title = 'Linearity-Symmetry of 3-Way junctions'
+			Title = 'Linearity-Symmetry of 3-Way junctions';
 			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Symmetry','Linearity'},Single_Workspace_Operation);
 			Two_Vars_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Label,Y_Label,Title);
 		

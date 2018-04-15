@@ -8,16 +8,17 @@ function [CB_Vertices,Pixels0,Pixels1] = Find_CB_Vertices(Im,CB_Perimeter,CB_Pix
 	Pixels1 = [];
 	Pixels0 = [];
 	
-	SmoothingParameter = 0.95;
+	SmoothingParameter = 0.3;
 	Rect_Length = 25 * Scale_Factor;
 	Rect_Width = 10 * Scale_Factor;
 	Peak_Analysis_X_Extension = 1/6;
 	Extension_Neglect_Length = Peak_Analysis_X_Extension / 3;
+	Fit_Angle_Res = 360; % 1 point per 1 degree.
 	
 	Diff01 = 1; % TODO: scale. Difference in pixels between the rectangle length of 0 and 1 rectangles. The idea is to delete the 0s and assign 1 for the 1s rects in such a way that doesn't create gaps in the BW image.
 	
-	Rotation_Range = 20;
-	Rotation_Res = 2;
+	Rotation_Range = 60;
+	Rotation_Res = 1;
 	MinPeakProm = 0.2;
 	% MinPeakDis = ;
 	
@@ -78,15 +79,16 @@ function [CB_Vertices,Pixels0,Pixels1] = Find_CB_Vertices(Im,CB_Perimeter,CB_Pix
 		
 		Np_Add = round(Np*Peak_Analysis_X_Extension); % Number of points to add to the x-axis.
 		X = 1:Np;
-		X = [X , Np+X(1:Np_Add)]; % X must be increasing.
+		X = [X , Np+X(1:Np_Add)]; % X must be increasing. X is a vector of discrete points (pixels) along the CB perimeter.
 		Y = [Scores , Scores(1:Np_Add)];
 		Angles = [Angles , Angles(1:Np_Add)]; % Extend also the angles vector to match angles and peaks (after peak analysis).
 		Pixels_List = [Pixels_List ; Pixels_List(1:Np_Add,:)];
 		
-		% FitObject = fit(X',Y','smoothingspline','SmoothingParam',SmoothingParameter);
-		% Y = FitObject(X);
+		FitObject = fit(X',Y','smoothingspline','SmoothingParam',SmoothingParameter);
+		Xf = linspace(X(1),X(end),Fit_Angle_Res);
+		Yf = FitObject(Xf);
 		
-		[Peaks,Locs] = findpeaks(Y,X,'MinPeakProminence',MinPeakProm);
+		[Peaks,Locs] = findpeaks(Yf,Xf,'MinPeakProminence',MinPeakProm);
 		
 		% Delete peaks at the edges (using Extension_Neglect_Length):
 		F = find(Locs >= Extension_Neglect_Length & Locs <= (Np + Np_Add - Extension_Neglect_Length));
@@ -99,10 +101,20 @@ function [CB_Vertices,Pixels0,Pixels1] = Find_CB_Vertices(Im,CB_Perimeter,CB_Pix
 		ia = sort(ia); % Sort just to have increasing indices. This doesn't make a significant difference.
 		Peaks = Peaks(ia);
 		Locs = Locs(ia);
+		
 		for p=1:length(Peaks) % For each peak.
-			CB_Vertices(p).Coordinate = Pixels_List(Locs(p),1:2); % The coordinate on the CB perimeter.
-			CB_Vertices(p).Angle = Angles(Locs(p));
-			CB_Vertices(p).Score = Y(Locs(p)); % Y is the extended Scores array.
+			
+			% Find the closest pixel on the CB perimeter in the smoothed data:
+			X_Peak_Diff = abs(X - Locs(p)); % Absolute distances of each pixel from the peak.
+			F1 = find(X_Peak_Diff == min(X_Peak_Diff)); % Finding the closest pixel to the peak.
+			
+			% CB_Vertices(p).Coordinate = Pixels_List(Locs(p),1:2); % The coordinate on the CB perimeter.
+			% CB_Vertices(p).Angle = Angles(Locs(p));
+			% CB_Vertices(p).Score = Y(Locs(p)); % Y is the extended Scores array.
+			CB_Vertices(p).Coordinate = Pixels_List(X(F1(1)),1:2); % The coordinate on the CB perimeter.
+			CB_Vertices(p).Angle = Angles(X(F1(1)));
+			CB_Vertices(p).Score = Y(X(F1(1))); % Y is the extended Scores array.
+			
 			CB_Vertices(p).Rect_Length = Rect_Length;
 			CB_Vertices(p).Rect_Width = Adjust_Rect_Width_Rot_Generalized(Im,CB_Vertices(end).Coordinate,CB_Vertices(end).Angle, ...
 											Rect_Length,Width_Scan_Range,14,Width_Smoothing_Parameter,Width_Ratio,Sr,Sc);
@@ -129,13 +141,15 @@ function [CB_Vertices,Pixels0,Pixels1] = Find_CB_Vertices(Im,CB_Perimeter,CB_Pix
 			axis([CB_Center(1)-D,CB_Center(1)+D,CB_Center(2)-D,CB_Center(2)+D]);
 			
 			figure;
-			% plot(X,Y,'.','MarkerSize',20);
-			% hold on;
-			% plot(X,Y);
-			% hold on;
-			findpeaks(Y,X,'MinPeakProminence',MinPeakProm);
+			plot(X,Y,'.k','MarkerSize',20);
 			hold on;
-			plot(X,Y,'k','LineWidth',3);
+			% FitObject = fit(X',Y','smoothingspline','SmoothingParam',SmoothingParameter);
+			% Yf = FitObject(X);
+			plot(Xf,Yf,'r','LineWidth',3);
+			% hold on;
+			% findpeaks(Y,X,'MinPeakProminence',MinPeakProm);
+			% hold on;
+			% plot(X,Y,'k','LineWidth',3);
 			
 			xlabel('Perimeter Pixels Indices','FontSize',20);
 			ylabel('Score','FontSize',20);

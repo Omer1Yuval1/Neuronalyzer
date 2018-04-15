@@ -27,20 +27,21 @@ function Multiple_Means_Func(Input_Struct,GUI_Parameters,Visuals,YLabel,Title1)
 			for i=1:Groups_Num % For each group (a unique combination of selected features).
 				
 				Mean1 = nanmean(Input_Struct(i).Values);
+				STD_SE = nanstd(Input_Struct(i).Values) ./ sqrt(length(Input_Struct(i).Values));
 				C = Input_Struct(i).Color;
 				hold on;
 				scatter(i*ones(1,length(Input_Struct(i).Values)),Input_Struct(i).Values,Visuals.Scatter_Dot_Size1,'MarkerFaceColor',Input_Struct(i).Color,'MarkerEdgeColor',Input_Struct(i).Color,'jitter','on','jitterAmount',Visuals.Jitter1);
-				errorbar(i,Mean1,nanstd(Input_Struct(i).Values),'LineWidth',Visuals.ErrorBar_Width1,'Color',Visuals.ErrorBar_Color1);
-				Legend_Handles_Array(i) = plot(i+[-1,+1]*Visuals.Jitter1,[Mean1,Mean1],'Color',Input_Struct(i).Color,'LineWidth',Visuals.Mean_Line_Width);
+				errorbar(i,Mean1,STD_SE,'LineWidth',Visuals.ErrorBar_Width1,'Color',Visuals.ErrorBar_Color1);
+				Legend_Handles_Array(i) = plot(i+[-1,+1]*Visuals.Jitter1,[Mean1,Mean1],'Color',Input_Struct(1).Color,'LineWidth',Visuals.Mean_Line_Width);
 				
 				Groups_Struct(end+1).Group_ID = i;
 				Groups_Struct(end).Values = Input_Struct(i).Values;
 				Groups_Struct(end).Mean = Mean1;
-				Groups_Struct(end).SE = nanstd(Input_Struct(i).Values);
+				Groups_Struct(end).SE = STD_SE;
 				Groups_Struct(end).Category = 0;
 			end
 			
-			if(GUI_Parameters.Handles.Significance_Bars_CheckBox.Value)
+			if(1 || GUI_Parameters.Handles.Significance_Bars_CheckBox.Value)
 				Get_Statistically_Significance_Bars(Groups_Struct,Visuals.Active_Colormap(1,:));
 			end
 			
