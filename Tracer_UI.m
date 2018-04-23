@@ -203,10 +203,15 @@ function Tracer_UI()
 		Apply_NN();
 		
 		function Apply_NN()
+			% assignin('base','NN1',NN1);
+			% assignin('base','Image0',GUI_Parameters.Workspace(1).Workspace.Image0);
+			% profile on;
 			GUI_Parameters.Workspace(1).Workspace.NN_Probabilities = Apply_Trained_Network(NN1,GUI_Parameters.Workspace(1).Workspace.Image0);
 			
 			Im_BW(find(GUI_Parameters.Workspace(1).Workspace.NN_Probabilities >= Default_Pixel_Classification_Threshold)) = 1;
 			% assignin('base','Im_BW',Im_BW);
+			% profile off;
+			% profile viewer;
 			
 			Reset_Axes();
 			imshow(Im_BW,'Parent',GUI_Parameters.Handles.Axes);
@@ -240,7 +245,7 @@ function Tracer_UI()
 			Y0 = 0.65;
 			
 			Properties_Handles(1).Property_Name = uicontrol(H1,'style','edit','units','Normalized','position',[0.04,Y0-0.06,0.45,0.05],'String','Creator Name','UserData','','FontSize',20);
-				Properties_Handles(1).Property_Value = uicontrol(H1,'style','edit','units','Normalized','position',[0.51,Y0-0.06,0.45,0.05],'String','Sharon Inberg','UserData','','FontSize',20);
+				Properties_Handles(1).Property_Value = uicontrol(H1,'style','edit','units','Normalized','position',[0.51,Y0-0.06,0.45,0.05],'String','','UserData','','FontSize',20);
 				
 				Properties_Handles(2).Property_Name = uicontrol(H1,'style','edit','units','Normalized','position',[0.04,Y0-0.06*2,0.45,0.05],'String','Neuron Name','UserData','','FontSize',20);
 				Properties_Handles(2).Property_Value = uicontrol(H1,'style','edit','units','Normalized','position',[0.51,Y0-0.06*2,0.45,0.05],'String','PVDL','UserData','','FontSize',20);
@@ -611,7 +616,7 @@ function Tracer_UI()
 		Y0 = 0.65;
 		
 		Properties_Handles(1).Property_Name = uicontrol(H1,'style','edit','units','Normalized','position',[0.04,Y0-0.06,0.45,0.05],'String','Creator Name','UserData','','FontSize',20);
-			Properties_Handles(1).Property_Value = uicontrol(H1,'style','edit','units','Normalized','position',[0.51,Y0-0.06,0.45,0.05],'String','Sharon Inberg','UserData','','FontSize',20);
+			Properties_Handles(1).Property_Value = uicontrol(H1,'style','edit','units','Normalized','position',[0.51,Y0-0.06,0.45,0.05],'String','','UserData','','FontSize',20);
 			
 			Properties_Handles(2).Property_Name = uicontrol(H1,'style','edit','units','Normalized','position',[0.04,Y0-0.06*2,0.45,0.05],'String','Neuron Name','UserData','','FontSize',20);
 			Properties_Handles(2).Property_Value = uicontrol(H1,'style','edit','units','Normalized','position',[0.51,Y0-0.06*2,0.45,0.05],'String','PVDL','UserData','','FontSize',20);
@@ -691,18 +696,21 @@ function Tracer_UI()
 	end
 	
 	function Load_An_Existing_Project_File(source,callbackdata)
-		if isunix
-			filetypestr = '../../*.mat';
-		else
-			filetypestr = '..\..\*.mat';
+		
+		if(nargin == 2) % Default: user loads a file with 1+ neurons. else: A single neuron at the end of the tracing.
+			if isunix
+				filetypestr = '../../*.mat';
+			else
+				filetypestr = '..\..\*.mat';
+			end
+			[FileName,PathName] = uigetfile(filetypestr,'Please Choose a .mat File.',cd); % Lets the user choose a file.
+			if(FileName == 0)
+				return;
+			end
+			Current_Dir = cd(PathName);
+			File1 = load(strcat(PathName,FileName));
+			GUI_Parameters.Workspace = File1.Workspace;
 		end
-		[FileName,PathName] = uigetfile(filetypestr,'Please Choose a .mat File.',cd); % Lets the user choose a file.
-		if(FileName == 0)
-			return;
-		end
-		Current_Dir = cd(PathName);
-		File1 = load(strcat(PathName,FileName));
-		GUI_Parameters.Workspace = File1.Workspace;
 		
 		[GUI_Parameters.Workspace,GUI_Parameters.Features] = Add_Features_To_All_Workspaces(GUI_Parameters.Workspace); % TODO: replace with automatic detection of features.
 		
@@ -731,6 +739,8 @@ function Tracer_UI()
 			[CB_Vertices,Pixels0,Pixels1] = Find_CB_Vertices(GUI_Parameters.Workspace.Workspace.Image0,CB_Perimeter,CB_Pixels,Scale_Factor,CB_BW_Threshold,1);
 			
 			set(allchild(Reconstructions_Menu_Handle),'Enable','on');
+			
+			Generate_Filter_Buttons;
 		else % Multiple Projects.
 			Generate_Filter_Buttons;
 		end
@@ -903,6 +913,8 @@ function Tracer_UI()
 		imshow(GUI_Parameters.Workspace(1).Workspace.Image0,'Parent',GUI_Parameters.Handles.Axes);
 		Reconstruct_Segmented_Trace(GUI_Parameters.Workspace(1).Workspace);
 		set(GUI_Parameters.Handles.Axes,'YDir','normal');
+		
+		Load_An_Existing_Project_File();
 		
 		% set(GUI_Parameters.Handles.Display_Panel,'Enable','on');
 		% set(GUI_Parameters.Handles.Edit_Panel,'Enable','on');

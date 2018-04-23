@@ -2,7 +2,7 @@ function Workspace = Connect_Vertices(Workspace)
 	
 	% TODO: I'm currently not using the collision condition.
 	
-	Plot0 = 0;
+	Plot0 = 1;
 	Plot1 = 0;
 	Plot2 = 0;
 	Messages = 0;

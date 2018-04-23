@@ -1,6 +1,6 @@
 function [New_Cxy,Rc] = Find_Vertex_Center(Im_BW,Cxy,Theta,Vr,Center_Frame_Size,Centers_Scan_Res,Im_Rows,Min_Center_Radius)
 	
-	Plot1 = 1;
+	Plot1 = 0;
 	Plot2 = 0;
 	Plot3 = 0;
 	

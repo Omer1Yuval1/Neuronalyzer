@@ -11,7 +11,7 @@ function Multiple_Means_Func(Input_Struct,GUI_Parameters,Visuals,YLabel,Title1)
 	% Output:
 		% No output.
 	
-	% assignin('base','Input_Struct',Input_Struct);
+	assignin('base','Input_Struct',Input_Struct);
 	
 	Ncat = 0; % length(GUI_Parameters.General.Categories_Filter_Values);
 	Groups_Num = numel(Input_Struct);

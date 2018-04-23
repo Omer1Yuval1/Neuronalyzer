@@ -1,7 +1,7 @@
 function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Field_Name,Single_Workspace_Operation)
 	
 	% TODOs:
-		% 1. why do I have a workspace(16) with Grouping value = 3.
+		% 1. seems like the numbers in the features (2) do not match the numbers here and that's why F is empty.
 	
 	% This function filters workspaces based on the chosen features and concentrates values from different workspaces
 		% that belong to the same group.
