@@ -75,7 +75,7 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 			end
 		end
 		
-		% Go over each feature value and add it if it doesn't exist yet (but the feature names list cannot change anymore):
+		% Go over each feature *value* and add it if it doesn't exist yet (but the feature *names* cannot change anymore):
 		for j=1:length(FN) % For each feature field.
 			c = 0;
 			for k=1:length(Features(j).Values) % For each existing value assigned to the j-feature field.
@@ -87,9 +87,9 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 			if(~c) % The value does not exist yet, add it.
 				Features(j).Values(end+1).Name = W(i).Workspace.User_Input.Features.(FN{j});
 				Features(j).Values(end).ON_OFF = 1;
-				c = numel(Features(j).Values) + 1;
+				c = numel(Features(j).Values);
 			end
-			 W(i).(FN{j}) = c;
+			W(i).(FN{j}) = c;
 		end
 	end
 	

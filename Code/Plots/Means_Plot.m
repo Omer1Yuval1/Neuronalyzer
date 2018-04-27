@@ -45,12 +45,18 @@ function Multiple_Means_Func(Input_Struct,GUI_Parameters,Visuals,YLabel,Title1)
 				Get_Statistically_Significance_Bars(Groups_Struct,Visuals.Active_Colormap(1,:));
 			end
 			
-			set(gca,'XTick',1:Groups_Num,'XTickLabel',{Input_Struct.Labels},'FontSize',Visuals.Axes_Lables_Font_Size/(Groups_Num/5)); % ,'XTickLabelRotation',Visuals.Axss_Lables_Orientation
+			set(gca,'XTick',1:Groups_Num,'XTickLabel',{Input_Struct.Labels},'FontSize',Visuals.Axes_Lables_Font_Size/(Groups_Num)); % ,'XTickLabelRotation',Visuals.Axss_Lables_Orientation
 			% set(gca,'XTick',1:Groups_Num,'XTickLabel',{Input_Struct.Labels},'FontSize',Visuals.Axes_Lables_Font_Size); % ,'XTickLabelRotation',Visuals.Axss_Lables_Orientation
 			ylabel(YLabel,'FontSize',Visuals.Axes_Titles_Font_Size);
 			set(gca,'YColor',Visuals.Active_Colormap(1,:));
 			title(Title1,'FontSize',Visuals.Main_Title_Font_Size,'Color',Visuals.Active_Colormap(1,:));
 			xlim([0.5,Groups_Num+0.5]);
+			
+			% XTickLabel.FontSize = 54;
+			% hhh = get(gca,'XTickLabel');
+			% assignin('base','hhh',hhh);
+			% set(hhh,'FontSize',Visuals.Axes_Lables_Font_Size/(Groups_Num/5));
+			
 			grid on;
 			
 			% No need for a legend if the x-axis labels are the groups' names:

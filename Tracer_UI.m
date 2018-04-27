@@ -714,11 +714,11 @@ function Tracer_UI()
 		
 		[GUI_Parameters.Workspace,GUI_Parameters.Features] = Add_Features_To_All_Workspaces(GUI_Parameters.Workspace); % TODO: replace with automatic detection of features.
 		
-		if(numel(GUI_Parameters.Workspace) == 1) % If only one file (= image).
+		if(numel(GUI_Parameters.Workspace) == 1 && isfield(GUI_Parameters.Workspace.Workspace,'Image0')) % If only one file that contains the original image (right after tracing).
 			[Im_Rows,Im_Cols] = size(GUI_Parameters.Workspace(1).Workspace.Image0);
 			GUI_Parameters.Workspace(1).Workspace.Parameters.General_Parameters.Im_Rows = Im_Rows;
 			GUI_Parameters.Workspace(1).Workspace.Parameters.General_Parameters.Im_Cols = Im_Cols;
-		
+			
 			% Load the features of this file:
 			Fields_Names = fieldnames(GUI_Parameters.Workspace(1).Workspace.User_Input.Features);
 			for i=1:numel(Fields_Names)
@@ -739,11 +739,9 @@ function Tracer_UI()
 			[CB_Vertices,Pixels0,Pixels1] = Find_CB_Vertices(GUI_Parameters.Workspace.Workspace.Image0,CB_Perimeter,CB_Pixels,Scale_Factor,CB_BW_Threshold,1);
 			
 			set(allchild(Reconstructions_Menu_Handle),'Enable','on');
-			
-			Generate_Filter_Buttons;
-		else % Multiple Projects.
-			Generate_Filter_Buttons;
 		end
+		
+		Generate_Filter_Buttons();
 		
 		% GUI_Parameters.General.Single_Multiple = 1; % Single Image Analysis.
 		% set(Groups_Buttons(1),'Enable','on');
