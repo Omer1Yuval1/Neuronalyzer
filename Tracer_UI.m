@@ -200,6 +200,7 @@ function Tracer_UI()
 		
 		[Im_Rows,Im_Cols] = size(GUI_Parameters.Workspace(1).Workspace.Image0);
 		Im_BW = zeros(Im_Rows,Im_Cols);
+		GUI_Parameters.Workspace(1).Workspace.Im_BW = [];
 		Apply_NN();
 		
 		function Apply_NN()
@@ -410,13 +411,11 @@ function Tracer_UI()
 		function Save_Training_Sample_Func(source,event)
 			Dir1 = uigetdir; % Let the user choose a directory.
 			Files_List = dir(Dir1); % List of files.
-			f = 0;
-			for i=1:numel(Files_List)
-				ci = strfind(Files_List(i).name,'_');
-				f = max(f,Files_List(i).name(1:ci-1));
+			f = (length(find([Files_List.isdir] == 0)) / 2) + 1; % A unique integer for the new sample.
+			if(~isempty(GUI_Parameters.Workspace(1).Workspace.Im_BW))
+				imwrite(GUI_Parameters.Workspace(1).Workspace.Image0,[Dir1,filesep,num2str(f),'_GS_',GUI_Parameters.Handles.FileName]);
+				imwrite(GUI_Parameters.Workspace(1).Workspace.Im_BW,[Dir1,filesep,num2str(f),'_BW_',GUI_Parameters.Handles.FileName]);
 			end
-			imwrite(GUI_Parameters.Workspace(1).Workspace.Image0,[Dir1,num2str(f+1),'_GS.tif']);
-			imwrite(GUI_Parameters.Workspace(1).Workspace.Im_BW,[Dir1,num2str(f+1),'_BW.tif']);
 		end
 		
 		function Save_NN_View_To_Workspace(source,event)
