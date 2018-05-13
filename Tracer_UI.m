@@ -483,7 +483,7 @@ function Tracer_UI()
 		set(Im_Handle,'HitTest','off');
 		
 		set(GUI_Parameters.Handles.Axes,'YDir','normal','PickableParts','all','ButtonDownFcn',@Mouse_Edit_BW_Func,'Position',[0,0,1,1]);
-
+		
 		function Edit_BW_Radio_View_Func(source,event)
 			XL = xlim;
 			YL = ylim;
@@ -907,11 +907,11 @@ function Tracer_UI()
 		GUI_Parameters.Workspace(1).Workspace = rmfield(GUI_Parameters.Workspace(1).Workspace,'Im_BW'); % The probabilities matrix is saved instead.
 		waitfor(msgbox('The Tracing Completed Successully.'));
 		
+		Load_An_Existing_Project_File();
+		
 		imshow(GUI_Parameters.Workspace(1).Workspace.Image0,'Parent',GUI_Parameters.Handles.Axes);
 		Reconstruct_Segmented_Trace(GUI_Parameters.Workspace(1).Workspace);
 		set(GUI_Parameters.Handles.Axes,'YDir','normal');
-		
-		Load_An_Existing_Project_File();
 		
 		% set(GUI_Parameters.Handles.Display_Panel,'Enable','on');
 		% set(GUI_Parameters.Handles.Edit_Panel,'Enable','on');

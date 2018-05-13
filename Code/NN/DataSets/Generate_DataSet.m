@@ -1,5 +1,7 @@
 function [Data_Frames,Data_Classes] = Generate_DataSet(Frame_Half_Size,BG_Samples_Num,Image_MAT,XY_Cell_Cols)
 	
+	Pixel_Filter_Func = @(M) std(M) > 10; % Filter BG pixels based on the std of the grayscale frame.
+	
 	DataSet_MaxSize = 10^6;
 	DataSet_MaxSize0 = 10^5;
 	% Min_Num_of_Neuron_Pixels = 0;
@@ -11,15 +13,27 @@ function [Data_Frames,Data_Classes] = Generate_DataSet(Frame_Half_Size,BG_Sample
 			Data_Frames = {};
 			Data_Frames(DataSet_MaxSize) = {1};
 	end
-	Data_Classes = []; % tTrain.
+	Data_Classes = []; % Train.
 	Data_Classes(2,DataSet_MaxSize) = 0;
 	
 	Dir1 = uigetdir; % Let the user choose a directory.
 	if(Image_MAT == 1)
-		Source_Files_List = dir([Dir1,'\Source']); % List of source files.
-		Annotated_Files_List = dir([Dir1,'\Annotated']); % List of annotated files.
-		Source_Files_List(find([Source_Files_List.isdir])) = []; % ".
-		Annotated_Files_List(find([Annotated_Files_List.isdir])) = []; % ".
+		
+		Files_List = dir(Dir1); % List of files names.
+		Files_List(find([Files_List.isdir])) = [];
+		
+		for d=1:numel(Files_List)
+			f1 = strfind(Files_List(d).name,'_');
+			if(strcmp(Files_List(d).name(f1(1)+1:f1(2)-1),'GS'))
+				Files_List(d).Is_Source = 1;
+			elseif(strcmp(Files_List(d).name(f1(1)+1:f1(2)-1),'BW'))
+				Files_List(d).Is_Source = 0;
+			end
+		end
+		
+		Source_Files_List = Files_List(find([Files_List.Is_Source])); % List of source images (grayscale).
+		Annotated_Files_List = Files_List(find(~[Files_List.Is_Source])); % List of annotated images (binary).
+		
 	elseif(Image_MAT == 2)
 		Source_Files_List = dir(Dir1); % List of files names.
 		Source_Files_List(find([Source_Files_List.isdir])) = []; % ".
@@ -41,8 +55,8 @@ function [Data_Frames,Data_Classes] = Generate_DataSet(Frame_Half_Size,BG_Sample
 		T0 = 0;
 		
 		if(Image_MAT == 1)
-			Im_Source = imread([Dir1,filesep,'Source',filesep,Source_Files_List(i).name]);
-			Im_Annotated = imread([Dir1,filesep,'Annotated',filesep,Annotated_Files_List(i).name]);
+			Im_Source = imread([Dir1,filesep,Source_Files_List(i).name]);
+			Im_Annotated = imread([Dir1,filesep,filesep,Annotated_Files_List(i).name]);
 		elseif(Image_MAT == 2)
 			Im_Annotated = load(strcat(Dir1,filesep,Source_Files_List(i).name)); % Load the file.
 			Im_Source = Im_Annotated.Workspace1.Image0;
@@ -78,7 +92,8 @@ function [Data_Frames,Data_Classes] = Generate_DataSet(Frame_Half_Size,BG_Sample
 							end
 							Data_Classes0(:,T0) = [0 ; 1];
 						end
-					elseif(length(find(FrameBW))) % If the central pixel is 0 (non-neuron pixel) && At least one neuron pixel.
+					elseif(Pixel_Filter_Func(Frame0)) % Filter BG pixels.
+						% elseif(length(find(FrameBW))) % If the central pixel is 0 (non-neuron pixel) && At least one neuron pixel.
 						% assignin('base','FrameBW',FrameBW);
 						T0 = T0 + 1;
 						switch(XY_Cell_Cols)

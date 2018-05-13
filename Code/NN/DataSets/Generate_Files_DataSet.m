@@ -1,6 +1,6 @@
 function Generate_Files_DataSet(Frame_Half_Size,Dir2)
 	
-	% The user chooses a directory containing MAT files containing grayscale image (under field "Image0".
+	% The user chooses a directory containing MAT files containing a grayscale image each (under field "Image0").
 	% For each pixel within each image it saves a frame as a .tif file and names it 1 or 0 (1 if it's a neuron pixel, 0 if it's a BG pixel).
 	
 	Dir1 = uigetdir; % Let the user choose a directory.
