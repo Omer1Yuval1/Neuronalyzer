@@ -6,6 +6,7 @@ function NN_Probabilities = Apply_Trained_Network(Net,Im0)
 	
 	% profile on;
 	
+	Im0 = Im0(:,:,1);
 	[R0,C0] = size(Im0);
 	NN_Probabilities = zeros(R0,C0);
 	

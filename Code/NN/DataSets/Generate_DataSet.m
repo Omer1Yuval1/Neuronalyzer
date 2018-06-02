@@ -45,7 +45,7 @@ function [Data_Frames,Data_Classes] = Generate_DataSet(Frame_Half_Size,BG_Sample
 		
 		switch(XY_Cell_Cols)
 			case 1
-				Data_Frames0 = zeros(2*Frame_Half_Size+1,2*Frame_Half_Size+1,1,DataSet_MaxSize0);
+				Data_Frames0 = zeros(2*Frame_Half_Size+1,2*Frame_Half_Size+1,1,DataSet_MaxSize0); % [height,width,channel,index].
 			case 2
 				Data_Frames0 = {};
 				Data_Frames0(DataSet_MaxSize0) = {1};
@@ -70,7 +70,7 @@ function [Data_Frames,Data_Classes] = Generate_DataSet(Frame_Half_Size,BG_Sample
 			for c=1+Frame_Half_Size:Cols1-Frame_Half_Size % For each col (without the margins).			
 				
 				Frame0 = double(Im_Source(r-Frame_Half_Size:r+Frame_Half_Size,c-Frame_Half_Size:c+Frame_Half_Size));
-				FrameBW = (Im_Annotated(r-Frame_Half_Size:r+Frame_Half_Size,c-Frame_Half_Size:c+Frame_Half_Size));
+				% FrameBW = (Im_Annotated(r-Frame_Half_Size:r+Frame_Half_Size,c-Frame_Half_Size:c+Frame_Half_Size));
 				if(std(Frame0(:))) % If the std of all pixels in the frame > 0.
 					if(Im_Annotated(r,c)) % If the central pixel is 1 (= neuron).
 						for Roti=[0,90,180,270] % Rotate 3 times in 90 degrees (both the original and the mirror image).
@@ -111,9 +111,9 @@ function [Data_Frames,Data_Classes] = Generate_DataSet(Frame_Half_Size,BG_Sample
 		% assignin('base','Data_Classes0',Data_Classes0);
 		% TODO: mark BG frames based on their neighborhood and use this to choose the subset.
 		F = find(Data_Classes0(1,:) == 1); % Find background samples.
-		I = datasample(F,length(F) - min(length(F),BG_Samples_Num),'Replace',false); % Choose BG_Samples_Num randomally.
-		Data_Classes0(:,T0+1:end) = [];
-		Data_Classes0(:,I) = [];
+		I = datasample(F,length(F) - min(length(F),BG_Samples_Num),'Replace',false); % Randomally choose unique BG_Samples_Num indices to delete.
+		Data_Classes0(:,T0+1:end) = []; % Delete empty cells in the matrix.
+		Data_Classes0(:,I) = []; % Delete the randomally chosen BG samples and leave only BG_Samples_Num.
 		
 		L = size(Data_Classes0,2);
 		switch(XY_Cell_Cols)
