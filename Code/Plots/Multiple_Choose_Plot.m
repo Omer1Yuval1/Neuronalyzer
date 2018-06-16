@@ -2,7 +2,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 	
 	% Single_Workspace_Operation is a function to operate on the values vector of each single workspace (= animal).
 	
-	assignin('base','GUI_Parameters',GUI_Parameters);
+	% assignin('base','GUI_Parameters',GUI_Parameters);
 	
 	switch GUI_Parameters.General.Active_Plot
 		case 'Mean Segment Length'
@@ -47,14 +47,24 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
 			
 		case 'Distances Of Vertices From The CB'
-			Single_Workspace_Operation = @(x) x; % The length of a segment has to be positive.
+			Single_Workspace_Operation = @(x) x;
 			Y_Label = 'Length (\mum)';
 			Title = 'Distances Of Vertices From The CB';
 			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Distance_From_CB'},Single_Workspace_Operation);
 			Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
 			
+		case 'Histogram of all Angles'
+			Single_Workspace_Operation = @(x) x(x>=0).*180./pi; % Exclude tips (appear as angle = -1) and convert to degrees.
+			Y_Label = 'Probability';
+			Title = 'Histogram of all Angles';
+			X_Min_Max = [30,200];
+			BinSize = 20 .* GUI_Parameters.Handles.Analysis.Slider.Value;
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Angles'},Single_Workspace_Operation);
+			% assignin('base','Input_Struct',Input_Struct);
+			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,Y_Label,Title);
+			
 		case 'Linearity-Symmetry of 3-Way junctions'
-			Single_Workspace_Operation = @(x) x; % The length of a segment has to be positive.
+			Single_Workspace_Operation = @(x) x;
 			Y_Label = 'Linearity';
 			X_Label = 'Symmetry';
 			Title = 'Linearity-Symmetry of 3-Way junctions';

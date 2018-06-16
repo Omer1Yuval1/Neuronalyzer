@@ -145,7 +145,8 @@ function Tracer_UI()
 		H_Menu3_Vertices = uimenu(Graphs_Menu_Handle,'Label','Vertices','Callback','');
 			H_Menu31_Angles = uimenu(H_Menu3_Vertices,'Label','Angles','Callback','');
 				% H_Mene311 = uimenu(H_Menu31_Angles,'Label','Symmetry of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);				
-				H_Menu311 = uimenu(H_Menu31_Angles,'Label','Linearity-Symmetry of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);
+				H_Menu311 = uimenu(H_Menu31_Angles,'Label','Histogram of all Angles','UserData',2,'Callback',@Menu1_Plots_Func);
+				H_Menu312 = uimenu(H_Menu31_Angles,'Label','Linearity-Symmetry of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);
 			H_Menu32_Angles = uimenu(H_Menu3_Vertices,'Label','Distances','Callback','');
 				H_Menu1311 = uimenu(H_Menu32_Angles,'Label','Distances Of Vertices From The CB','UserData',2,'Callback',@Menu1_Plots_Func);				
 			% H_Menu132_Distances = uimenu(H_Menu13_Vertices,'Label','Distances','Callback','');
@@ -789,6 +790,7 @@ function Tracer_UI()
 				GUI_Parameters.Features(source.UserData(1)).Values(source.UserData(2)).ON_OFF = 1;
 			end
 			Reset_Axes();
+			hold on;
 			Multiple_Choose_Plot(GUI_Parameters);
 			% assignin('base','Features',GUI_Parameters.Features);
 		end
@@ -990,6 +992,9 @@ function Tracer_UI()
 		
 		set(GUI_Parameters.Handles.Analysis.Slider,'Enable','on');
 		%}
+		Reset_Axes();
+		hold on;
+		Multiple_Choose_Plot(GUI_Parameters);
 	end
 	
 	function Tree_Center_CheckBox_Func(source,callbackdata)
