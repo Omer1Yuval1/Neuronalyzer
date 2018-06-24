@@ -45,7 +45,7 @@ function Histogram_Plot(Input_Struct,GUI_Parameters,Visuals,X_Min_Max,BinSize,YL
 			Lg = legend(Legend_Handles_Array,Groups_Names,'Location','best','Interpreter','none');
 			Lg.TextColor = Visuals.Active_Colormap(1,:);
 			Lg.EdgeColor = Visuals.Active_Colormap(1,:);
-			Lg.FontSize = Visuals.Legend_Font_Size2/2;
+			Lg.FontSize = Visuals.Legend_Font_Size2;
 		end
 	end
 end

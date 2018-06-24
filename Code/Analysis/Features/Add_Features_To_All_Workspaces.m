@@ -45,6 +45,7 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 					(W(i).Workspace.Segments(s).Rectangles(1).Y - W(i).Workspace.Segments(s).Rectangles(end).Y)^2)^.5; % end2end length.
 				W(i).Workspace.Segments(s).End2End_Length = D.*Scale_Factor;
 				
+				Squared_Curvature = [];
 				if(length(X) > 2)
 					[~,~,~,Cxy] = Get_Segment_Curvature(X,Y);
 					Squared_Curvature = ((Cxy .* (1./Scale_Factor)).^2); % Also converted to micrometers.
@@ -54,8 +55,12 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 				end
 				
 				if(N == 1) % If only one workspace, add the curvature values for individual coordinates.
-					for j=1:numel(W(i).Workspace.Segments(s).Rectangles) % For each coordinate. TODO: find a way to do this without a for loop.
-						W(i).Workspace.Segments(s).Rectangles(j).Curvature = Squared_Curvature(j);
+					if(~isempty(Squared_Curvature))
+						for j=1:numel(W(i).Workspace.Segments(s).Rectangles) % For each coordinate. TODO: find a way to do this without a for loop.
+							W(i).Workspace.Segments(s).Rectangles(j).Curvature = Squared_Curvature(j);
+						end
+					else
+						[W(i).Workspace.Segments(s).Rectangles.Curvature] = deal(-1);
 					end
 				end
 			else

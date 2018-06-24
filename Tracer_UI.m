@@ -146,7 +146,11 @@ function Tracer_UI()
 			H_Menu31_Angles = uimenu(H_Menu3_Vertices,'Label','Angles','Callback','');
 				% H_Mene311 = uimenu(H_Menu31_Angles,'Label','Symmetry of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);				
 				H_Menu311 = uimenu(H_Menu31_Angles,'Label','Histogram of all Angles','UserData',2,'Callback',@Menu1_Plots_Func);
-				H_Menu312 = uimenu(H_Menu31_Angles,'Label','Linearity-Symmetry of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);
+				H_Menu312 = uimenu(H_Menu31_Angles,'Label','Minimal and Maximal Angles of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);
+				H_Menu313 = uimenu(H_Menu31_Angles,'Label','The Two Minimal Angles of each 3-Way junction','UserData',2,'Callback',@Menu1_Plots_Func);
+				H_Menu314 = uimenu(H_Menu31_Angles,'Label','Linearity-Symmetry of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);
+				H_Menu315 = uimenu(H_Menu31_Angles,'Label','Sum of 2 Smallest VS Product of 2 Smallest','UserData',2,'Callback',@Menu1_Plots_Func);
+				H_Menu315 = uimenu(H_Menu31_Angles,'Label','Smallest Angle VS Diff between 2 Smallest','UserData',2,'Callback',@Menu1_Plots_Func);
 			H_Menu32_Angles = uimenu(H_Menu3_Vertices,'Label','Distances','Callback','');
 				H_Menu1311 = uimenu(H_Menu32_Angles,'Label','Distances Of Vertices From The CB','UserData',2,'Callback',@Menu1_Plots_Func);				
 			% H_Menu132_Distances = uimenu(H_Menu13_Vertices,'Label','Distances','Callback','');
@@ -708,11 +712,18 @@ function Tracer_UI()
 				return;
 			end
 			Current_Dir = cd(PathName);
+			
+			WB_H = waitbar(0,'Please wait...');
+			waitbar(0,WB_H);
+			
 			File1 = load(strcat(PathName,FileName));
+			waitbar(1/3,WB_H);
+			
 			GUI_Parameters.Workspace = File1.Workspace;
 		end
 		
 		[GUI_Parameters.Workspace,GUI_Parameters.Features] = Add_Features_To_All_Workspaces(GUI_Parameters.Workspace); % TODO: replace with automatic detection of features.
+		waitbar(2/3,WB_H);
 		
 		if(numel(GUI_Parameters.Workspace) == 1 && isfield(GUI_Parameters.Workspace.Workspace,'Image0')) % If only one file that contains the original image (right after tracing).
 			[Im_Rows,Im_Cols] = size(GUI_Parameters.Workspace(1).Workspace.Image0);
@@ -742,6 +753,8 @@ function Tracer_UI()
 		end
 		
 		Generate_Filter_Buttons();
+		waitbar(1,WB_H);
+		delete(WB_H);
 		
 		% GUI_Parameters.General.Single_Multiple = 1; % Single Image Analysis.
 		% set(Groups_Buttons(1),'Enable','on');

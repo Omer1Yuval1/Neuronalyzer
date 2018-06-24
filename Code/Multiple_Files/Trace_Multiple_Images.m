@@ -12,7 +12,7 @@ function Trace_Multiple_Images(User_Input,NN_Object,NN_Threshold)
 	[Files_List,PathName] = uigetfile({'*.tif';'*.jpg'},'Please Choose a Set of Images.','MultiSelect','on');
 	mkdir([PathName,'My_Neuronalizer_Projects']);
 	N = length(Files_List);
-	Multiple_NN_WaitBar = waitbar(0,'Please Wait');
+	Multiple_NN_WaitBar = waitbar(0,['Tracing In Progress (0/',num2str(N),')']);
 	
 	for f=1:numel(Files_List) % For each file (image\neuron).
 		
@@ -65,12 +65,12 @@ function Trace_Multiple_Images(User_Input,NN_Object,NN_Threshold)
 		Workspace.Workspace = Workspace0;
 		
 		% 4. Save .tif files for BW, skeleton, trace and segmentation:
-		save(strcat(Dir1,filesep,'Workspace0.mat'),'Workspace0');
+		save(strcat(Dir1,filesep,'Workspace.mat'),'Workspace');
 		% saveas(gcf,strcat(Dir1,filesep,'Trace'),'tiffn');
 		% imwrite(Workspace0.Image0,'Raw_Image.tif');
 		% imwrite(Im1_NoiseReduction,'Skeleton.tif');
 		
-		waitbar(f/N,Multiple_NN_WaitBar);
+		waitbar(f/N,Multiple_NN_WaitBar,['Tracing In Progress (',num2str(f),'/',num2str(N),')']);
 		% return;
 	end
 	delete(Multiple_NN_WaitBar);
