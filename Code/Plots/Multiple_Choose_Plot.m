@@ -2,7 +2,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 	
 	% Workspace_Operations is a function to operate on the values vector of each single workspace (= animal).
 	
-	% assignin('base','GUI_Parameters',GUI_Parameters);
+	% assignin('base','GUI_Parameters2',GUI_Parameters);
 	
 	switch GUI_Parameters.General.Active_Plot
 		case 'Mean Segment Length'
@@ -70,7 +70,16 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Angles'},Workspace_Operations,RowWise);
 			% assignin('base','Input_Struct',Input_Struct);
 			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,Y_Label,Title);
-			
+		case 'Histogram of Symmetry Indices'
+			Workspace_Operations = @(x) x(x>=0);
+			Y_Label = 'Probability';
+			Title = 'Symmetry Indices';
+			X_Min_Max = [0,1];
+			BinSize = 0.1 .* GUI_Parameters.Handles.Analysis.Slider.Value;
+			RowWise = 0;
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Symmetry'},Workspace_Operations,RowWise);
+			% assignin('base','Input_Struct',Input_Struct);
+			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,Y_Label,Title);
 		case 'Minimal and Maximal Angles of 3-Way junctions'
 			Workspace_Operations{1} = @(x) x(x == min(x) & x>0);
 			Workspace_Operations{2} = @(x) x(x == max(x) & x>0); % x(x ~= min(x) & x~=max(x) & x>0);

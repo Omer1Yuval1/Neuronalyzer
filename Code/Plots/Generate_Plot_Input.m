@@ -1,5 +1,6 @@
 function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Field_Name,Workspace_Operations,RowWise)
 	
+	% assignin('base','GUI_Parameters3',GUI_Parameters);
 	% TODOs:
 		% 1. seems like the numbers in the features (2) do not match the numbers here and that's why F is empty.
 	
@@ -17,21 +18,51 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Field_Name,Wo
 	Grouping = find([GUI_Parameters.Features(7).Values.ON_OFF]); % Grouping. Indices of ON fields.
 	Genotype = find([GUI_Parameters.Features(5).Values.ON_OFF]); % Genotype. Indices of ON fields.
 	
-	F1 = find(ismember([GUI_Parameters.Workspace.Grouping],Grouping)); % Find the workspaces that have a Grouping value that is ON.
-	F2 = find(ismember([GUI_Parameters.Workspace.Genotype],Genotype)); % Find the workspaces that have a Genotype value that is ON.
-	Selected_Workspaces = intersect(F1,F2); % Take the intersection of the workspaces indices.
+	% F1 = find(ismember([GUI_Parameters.Workspace.Grouping],Grouping)); % Find the workspaces that have a non-zero Grouping value.
+	% F2 = find(ismember([GUI_Parameters.Workspace.Genotype],Genotype)); % Find the workspaces that have a non-zero Genotype value.
+	% Selected_Workspaces = intersect(F1,F2); % Take the intersection of the workspaces indices.
 	
 	Selected_Groups = zeros(0,2); % A [n,2] matrix containing pairs of features indices [Grouping,Genotype].
-	for i=1:length(Grouping) % TODO: this is temporary. Generating all possible pairs between these two features.
+	for i=1:length(Grouping) % TODO: this is temporary. Generating all possible pairs between these two features (5 & 7).
 		Selected_Groups = [Selected_Groups ; combvec(Grouping(i),Genotype)'];
 	end
 	
-	for i=1:size(Selected_Groups,1) % For each group (a unique combination of features).
-		Input_Struct(i).Group_Name = [GUI_Parameters.Features(5).Values(Selected_Groups(i,2)).Name,'_',GUI_Parameters.Features(7).Values(Selected_Groups(i,1)).Name];
+	Groups = struct('Name',{},'Features',{},'Workspaces',{},'Delete',{});
+	for i=1:size(Selected_Groups,1)
+		F = find([GUI_Parameters.Workspace.Grouping] == Selected_Groups(i,1) & [GUI_Parameters.Workspace.Genotype] == Selected_Groups(i,2));
+		Groups(i).Workspaces = F; % Row numbers of workspaces.
+		Groups(i).Name = [GUI_Parameters.Features(5).Values(Selected_Groups(i,2)).Name,'_',GUI_Parameters.Features(7).Values(Selected_Groups(i,1)).Name];
+	end
+	
+	% Merge features for which the main button if OFF.
+	F = [7,5];
+	for i=1:length(F)
+		User_Data = get(GUI_Parameters.Handles.Analysis.Features_OnOff_Buttons_Handles(i),'UserData');
+		if(User_Data(3) == 0) % If it's switched OFF.
+			Selected_Groups(:,i) = 0;
+		end
+	end
+	[~,~,ic] = unique(Selected_Groups,'rows'); % ic gives a uniqe index to each set of identical rows [N,1].
+	% disp(ic);
+	for i=1:max(ic) % For each new group (after merging indices).
+		F = find(ic == i);
+		Groups(F(1)).Features = Selected_Groups(F(1),:);
+		Groups(F(1)).Delete = 0;
+		for j=2:length(F)
+			Groups(F(1)).Workspaces = [Groups(1).Workspaces,Groups(F(j)).Workspaces];
+			Groups(F(j)).Delete = 1;
+		end
+	end
+	Groups(find([Groups.Delete] == 1)) = [];
+	
+	% assignin('base','Groups',Groups);
+	for i=1:numel(Groups) % For each group (a unique combination of features).
+		Input_Struct(i).Group_Name = Groups(i).Name;
 		Input_Struct(i).Normalization = 1;
 		vi = 0;
 		
-		F = find([GUI_Parameters.Workspace.Grouping] == Selected_Groups(i,1) & [GUI_Parameters.Workspace.Genotype] == Selected_Groups(i,2)); % Find all the relevant workspaces.
+		F = Groups(i).Workspaces;
+		% F = find([GUI_Parameters.Workspace.Grouping] == Selected_Groups(i,1) & [GUI_Parameters.Workspace.Genotype] == Selected_Groups(i,2)); % Find all the relevant workspaces.
 		for j=1:length(F) % For each workspace within group i.
 			switch length(Field_Name)
 				case 1

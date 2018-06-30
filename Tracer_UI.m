@@ -144,8 +144,10 @@ function Tracer_UI()
 
 		H_Menu3_Vertices = uimenu(Graphs_Menu_Handle,'Label','Vertices','Callback','');
 			H_Menu31_Angles = uimenu(H_Menu3_Vertices,'Label','Angles','Callback','');
-				% H_Mene311 = uimenu(H_Menu31_Angles,'Label','Symmetry of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);				
-				H_Menu311 = uimenu(H_Menu31_Angles,'Label','Histogram of all Angles','UserData',2,'Callback',@Menu1_Plots_Func);
+				% H_Mene311 = uimenu(H_Menu31_Angles,'Label','Symmetry of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);
+					H_Menu311 = uimenu(H_Menu31_Angles,'Label','Histograms','Callback','');
+					H_Menu3111 = uimenu(H_Menu311,'Label','Histogram of all Angles','UserData',2,'Callback',@Menu1_Plots_Func);
+					H_Menu3112 = uimenu(H_Menu311,'Label','Histogram of Symmetry Indices','UserData',2,'Callback',@Menu1_Plots_Func);
 				H_Menu312 = uimenu(H_Menu31_Angles,'Label','Minimal and Maximal Angles of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);
 				H_Menu313 = uimenu(H_Menu31_Angles,'Label','The Two Minimal Angles of each 3-Way junction','UserData',2,'Callback',@Menu1_Plots_Func);
 				H_Menu314 = uimenu(H_Menu31_Angles,'Label','Linearity-Symmetry of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);
@@ -752,6 +754,9 @@ function Tracer_UI()
 			set(allchild(Reconstructions_Menu_Handle),'Enable','on');
 		end
 		
+		Features_Buttons_Handles = [];
+		GUI_Parameters.Handles.Analysis.Features_OnOff_Buttons_Handles = [];
+		% Remove_Feature_Buttons_Handles = [];
 		Generate_Filter_Buttons();
 		waitbar(1,WB_H);
 		delete(WB_H);
@@ -765,16 +770,12 @@ function Tracer_UI()
 		
 		% assignin('base','GUI_Parameters',GUI_Parameters);
 		% assignin('base','Features_Buttons_Handles',Features_Buttons_Handles);
-		
-		Features_Buttons_Handles = [];
-		Features_OnOff_Buttons_Handles = [];
-		Remove_Feature_Buttons_Handles = [];
 		function Generate_Filter_Buttons
 			% Field_Names = fieldnames(GUI_Parameters.Workspace); % Extract feature fields names.
 			F1 = [7,5]; % TODO: temporarily choosing these features only. find([GUI_Parameters.Features.Num_Of_Options] > 1);
 			Field_Names = {GUI_Parameters.Features(F1).Feature_Name}; % Extract feature fields names.
 			Features_Buttons_Handles = zeros(10,length(Field_Names)); % Features buttons. 10 is the maximal number of buttons per feature (1st row is an ON\OFF button).
-			Features_OnOff_Buttons_Handles = zeros(1,length(Field_Names)); % ON\OFF title buttons. 10 is the maximal number of buttons per feature (1st row is an ON\OFF button).
+			GUI_Parameters.Handles.Analysis.Features_OnOff_Buttons_Handles = zeros(1,length(Field_Names)); % ON\OFF title buttons. 10 is the maximal number of buttons per feature (1st row is an ON\OFF button).
 			for f=1:length(F1) % For each field (=feature) (except the 1st field which is the workspace).
 				V = unique([GUI_Parameters.Workspace.(Field_Names{f})]);
 				N = length(V); % Number of values in a specific field.
@@ -784,14 +785,16 @@ function Tracer_UI()
 						'UserData',[F1(f),b],'Callback',@Categories_Filter_Func,'Units','normalized','Position',[.03+(f-1)*(.44),(.9-.1*b),0.42,0.09], ...
 						'FontSize',GUI_Parameters.Visuals.Button3_Font_Size,'BackgroundColor',[.9,.9,.9],'Callback',@Features_Buttons_Func);
 				end
-				Features_OnOff_Buttons_Handles(f) = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'UserData',[f,F1(f)], ...
-						'Units','Normalized','Position',[.03+(f-1)*(.44),0.9,0.42,0.09],'BackgroundColor',[.2,.8,.4],'String',Field_Names{f},'Callback',@Features_OnOff_Buttons_Func);
-						
+				GUI_Parameters.Handles.Analysis.Features_OnOff_Buttons_Handles(f) = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,...
+				'UserData',[f,F1(f),1],'Units','Normalized','Position',[.03+(f-1)*(.44),0.9,0.42,0.09],... % UserData=[,,ON\OFF].
+				'BackgroundColor',[.2,.8,.4],'String',Field_Names{f},'Callback',@Features_OnOff_Buttons_Func);
+				
 				% Remove_Feature_Buttons_Handles(f) = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'UserData',[f,F1(f)], ...
 				% 		'Units','Normalized','Position',[.03+(f-1)*(.44),0.1,0.42,0.09],'BackgroundColor',[.2,.8,.4],'String','Remove','Callback',@Remove_Feature_Buttons_Func);
 				% set(Remove_Feature_Buttons_Handles,'Enable','off');
 			end
 			% % set(allchild(GUI_Parameters.Handles.Groups_Filter_Panel),'Enable','off');
+			% assignin('base','GUI_Parameters1',GUI_Parameters);
 		end
 		
 		function Features_Buttons_Func(source,callbackdata)
@@ -809,24 +812,22 @@ function Tracer_UI()
 		end
 		
 		function Features_OnOff_Buttons_Func(source,callbackdata)
-			Fb = find(Features_Buttons_Handles(:,source.UserData(1)) > 0);
-			V = [GUI_Parameters.Features(source.UserData(2)).Values(Fb).ON_OFF];
-			if(sum(V) > length(V)/2)% Most features are switched ON -> Switch ALL OFF.
-				[GUI_Parameters.Features(source.UserData(2)).Values.ON_OFF] = deal(0);
-				set([Features_Buttons_Handles(Fb,source.UserData(1))],'BackgroundColor',[.3,.3,.3]);
-			else % Most features are switched OFF -> Switch ALL ON.
-				[GUI_Parameters.Features(source.UserData(2)).Values.ON_OFF] = deal(1);
-				set([Features_Buttons_Handles(Fb,source.UserData(1))],'BackgroundColor',[.9,.9,.9]);
+			if(source.UserData(3)) % If ON ->  Switch OFF.
+				source.UserData(3) = 0; % Switch OFF (meaning all features under this category will be merged and treated as one).
+				set(source,'BackgroundColor',[.3,.3,.3]);
+			else % If OFF -> Switch ON.
+				source.UserData(3) = 1; % Switch ON.
+				set(source,'BackgroundColor',[.2,.8,.4]);
 			end
 			Reset_Axes();
+			hold on;
 			Multiple_Choose_Plot(GUI_Parameters);
-			% assignin('base','Features',GUI_Parameters.Features);
 		end
 		
 		function Remove_Feature_Buttons_Func(source,callbackdata)
 			GUI_Parameters.Features(source.UserData(2)) = []; % Delete the chosen feature from the features struct.
 			delete(Features_Buttons_Handles); % Clear the features panel.
-			delete(Features_OnOff_Buttons_Handles); % Clear the features panel.
+			delete(GUI_Parameters.Handles.Analysis.Features_OnOff_Buttons_Handles); % Clear the features panel.
 			% delete(Remove_Feature_Buttons_Handles); % Clear the features panel.
 			Generate_Filter_Buttons; % Recreate the features panel.
 		end
