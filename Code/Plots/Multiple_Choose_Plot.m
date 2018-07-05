@@ -143,7 +143,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Histogram_Plot(GUI_Parameters,Property_Func,[-500,500],[1,100],0,XLable,YLable,Title1,'reverse',1,1);
 		case 'Symmetry of 3-Way junctions'
 			Plot_Junctions_Symmetry(GUI_Parameters);
-
+		
 		case 'Smallest Angles of 3-Way Junctions'
 			Smallest_Angles_2D_Menorah_Orders(GUI_Parameters);
 		case 'Linearity VS Assymetry'
@@ -157,5 +157,6 @@ function Multiple_Choose_Plot(GUI_Parameters)
 		case 'Density of Vertices'
 			Means_Plot(GUI_Parameters,'Vertices_Density','# of Branch-Points Per Branch Length (\mum)','Density of Vertices');
 		%}
-		assignin('base','Input_Struct',Input_Struct);
+	end
+	assignin('base','Input_Struct',Input_Struct);
 end

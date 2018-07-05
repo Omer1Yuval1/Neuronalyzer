@@ -1323,7 +1323,6 @@ function Tracer_UI()
 	end
 	
 	function Merge_Dorsal_Ventral_Func(source,callbackdata)
-		
 		if(GUI_Parameters.General.Active_View > 1)
 			Reset_Axes();
 			hold on;
@@ -1332,11 +1331,11 @@ function Tracer_UI()
 	end
 	
 	function Display_Significance_Bars_Func(source,callbackdata)
-		
-		delete(allchild(GUI_Parameters.Handles.Main_Panel));
-		GUI_Parameters.Handles.Axes = axes('Units','normalized','Position',GUI_Parameters.Visuals.Main_Axes_Size,'Parent',GUI_Parameters.Handles.Main_Panel);
-		
-		Multiple_Choose_Plot(GUI_Parameters);
+		if(GUI_Parameters.General.Active_View > 1)
+			Reset_Axes();
+			hold on;
+			Multiple_Choose_Plot(GUI_Parameters);
+		end
 	end
 	
 	function Display_Normalized_Resutls_Func(source,callbackdata)
