@@ -67,7 +67,7 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Field_Name,Wo
 			switch length(Field_Name)
 				case 1
 					Input_Struct(i).Values = [Input_Struct(i).Values,Workspace_Operations([GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name).(Field_Name{1})])];
-				case 2
+				case {2,3}
 					if(~RowWise) % Apply operation to the entire column at once.
 						Input_Struct(i).XValues = [Input_Struct(i).XValues,Workspace_Operations([GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name).(Field_Name{1})])];
 						Input_Struct(i).YValues = [Input_Struct(i).YValues,Workspace_Operations([GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name).(Field_Name{2})])];
@@ -78,17 +78,48 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Field_Name,Wo
 								% ...*** thus, taking the 1st result for each in case there are duplicates.
 							% disp(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Field_Name{1}));
 							% disp([i,j,k]);
-							X = GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Field_Name{1});
-							Y = GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Field_Name{2});
-							if(length(unique(X)) == length(X) && length(unique(Y)) == length(Y))
-								X = Workspace_Operations{1}(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Field_Name{1}));
-								Y = Workspace_Operations{2}(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Field_Name{2}));
-								if(~isempty(X) && ~isempty(Y))
-									vi = vi + 1;
-									Input_Struct(i).XValues(vi) = X(1); % ***.
-									Input_Struct(i).YValues(vi) = Y(1); % ***.
+							Names = {'XValues','YValues','ZValues'};
+							V = {};
+							L = {};
+							Lu = {}; % Length of the unique vector.
+							Leq = 1;
+							for l=1:length(Workspace_Operations) % For each variable.
+								V{l} = GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Field_Name{l});
+								L{l} = length(V{l});
+								Lu{l} = length(unique(V{l}));
+								if(L{l} ~= Lu{l})
+									Leq = 0;
 								end
 							end
+							
+							if(Leq)
+								Lem = 0; % Flag to test if any vector is empty.
+								for l=1:length(Workspace_Operations)
+									V{l} = Workspace_Operations{l}(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Field_Name{l}));
+									if(isempty(V{l}))
+										Lem = 1;
+									end
+								end
+								
+								if(~Lem) % If non are empty.
+									vi = vi + 1;
+									for l=1:length(Workspace_Operations)
+										Input_Struct(i).(Names{l})(vi) = V{l};
+									end
+								end
+							end
+							
+							% X = GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Field_Name{1});
+							% Y = GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Field_Name{2});
+							% if(length(unique(X)) == length(X) && length(unique(Y)) == length(Y))
+								% X = Workspace_Operations{1}(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Field_Name{1}));
+								% Y = Workspace_Operations{2}(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Field_Name{2}));
+								% if(~isempty(X) && ~isempty(Y))
+									% vi = vi + 1;
+									% Input_Struct(i).XValues(vi) = X(1); % ***.
+									% Input_Struct(i).YValues(vi) = Y(1); % ***.
+								% end
+							% end
 						end
 					end
 			end

@@ -3,7 +3,6 @@ function Reconstruct_Trace_Dots(Workspace1)
 	Scale_Factor = Workspace1.User_Input.Scale_Factor;
 	MarkerConstant = 3;
 	
-	figure(1);
 	hold on;
 	
 	F = find([Workspace1.Path.Is_Mapped] > -1);

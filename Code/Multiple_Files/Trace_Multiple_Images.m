@@ -1,4 +1,4 @@
-function Trace_Multiple_Images(User_Input,NN_Object,NN_Threshold)
+function Trace_Multiple_Images(User_Input,NN_Object,NN_Threshold,Figure_Handle)
 	
 	% This function has to be run on each group of animals separately.
 	
@@ -15,6 +15,8 @@ function Trace_Multiple_Images(User_Input,NN_Object,NN_Threshold)
 	Multiple_NN_WaitBar = waitbar(0,['Tracing In Progress (0/',num2str(N),')']);
 	
 	for f=1:numel(Files_List) % For each file (image\neuron).
+		
+		set(0,'CurrentFigure',Figure_Handle);
 		
 		disp(Files_List{f});
 		
@@ -70,9 +72,10 @@ function Trace_Multiple_Images(User_Input,NN_Object,NN_Threshold)
 		% imwrite(Workspace0.Image0,'Raw_Image.tif');
 		% imwrite(Im1_NoiseReduction,'Skeleton.tif');
 		
+		set(0,'CurrentFigure',Multiple_NN_WaitBar);
 		waitbar(f/N,Multiple_NN_WaitBar,['Tracing In Progress (',num2str(f),'/',num2str(N),')']);
-		% return;
+		
 	end
-	delete(Multiple_NN_WaitBar);
+	close(Multiple_NN_WaitBar);
 	
 end

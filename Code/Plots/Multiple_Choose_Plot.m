@@ -126,6 +126,19 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			RowWise = 1;
 			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Angles','Angles'},Workspace_Operations,RowWise);
 			Two_Vars_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Label,Y_Label,Title);
+			
+		case 'Smallest-Mid-largest'
+			Workspace_Operations{1} = @(x) x(x == min(x) & x>0);
+			Workspace_Operations{2} = @(x) x(x ~= min(x) & x~=max(x) & x>0);
+			Workspace_Operations{3} = @(x) x(x == max(x) & x>0);
+			X_Label = 'Minimal Angle';
+			Y_Label = 'Mid-size Angle';			
+			Z_Label = 'Maximal Angle';			
+			Title = 'Smallest-Mid-largest';
+			RowWise = 1;
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Angles','Angles','Angles'},Workspace_Operations,RowWise);
+			Three_Vars_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Label,Y_Label,Z_Label,Title);
+		
 		
 		%{
 		case 'Segments Length Distribution'

@@ -12,7 +12,7 @@ function Reconstruct_Curvature(Workspace)
 			XYC = [XYC ; [X' , Y' , Cxy']];
         end
 	end
-	assignin('base','XYC0',XYC);
+	% assignin('base','XYC0',XYC);
     
 	M = 0.1;
 	XYC(XYC(:,3) > M,3) = M;
@@ -26,5 +26,5 @@ function Reconstruct_Curvature(Workspace)
 	hold on;
 	scatter(XYC(:,1),XYC(:,2),10,Colors,'filled');
 	
-	assignin('base','XYC',XYC);
+	% assignin('base','XYC',XYC);
 end

@@ -107,26 +107,26 @@ function Tracer_UI()
 	
 	Reconstructions_Menu_Handle = uimenu(GUI_Parameters.Handles.Figure,'Label','Reconstructions');
 		H0_0_1 = uimenu(Reconstructions_Menu_Handle,'Label','Original Image','UserData',0,'Callback',@Reconstruction_Func);
-		H0_1_1 = uimenu(Reconstructions_Menu_Handle,'Label','Initial Guess');
-			H0_1_1_1 = uimenu(H0_1_1,'Label','Volume - Initial Guess','UserData',0,'Callback',@Reconstruction_Func);
-			H0_1_1_2 = uimenu(H0_1_1,'Label','Skeleton - Initial Guess','UserData',0,'Callback',@Reconstruction_Func);
-			H0_1_1_3 = uimenu(H0_1_1,'Label','Segmentation - Initial Guess','UserData',0,'Callback',@Reconstruction_Func);
-		H0_1_2 = uimenu(Reconstructions_Menu_Handle,'Label','Trace');
-			H0_1_2_1 = uimenu(H0_1_2,'Label','Trace','UserData',0,'Callback',@Reconstruction_Func);
-			H0_1_2_2 = uimenu(H0_1_2,'Label','Full Trace','UserData',0,'Callback',@Reconstruction_Func);
-			H0_1_2_3 = uimenu(H0_1_2,'Label','Skeleton','UserData',0,'Callback',@Reconstruction_Func);
+		% H0_1_1 = uimenu(Reconstructions_Menu_Handle,'Label','Initial Guess');
+		% 	H0_1_1_1 = uimenu(H0_1_1,'Label','Volume - Initial Guess','UserData',0,'Callback',@Reconstruction_Func);
+		% 	H0_1_1_2 = uimenu(H0_1_1,'Label','Skeleton - Initial Guess','UserData',0,'Callback',@Reconstruction_Func);
+		% 	H0_1_1_3 = uimenu(H0_1_1,'Label','Segmentation - Initial Guess','UserData',0,'Callback',@Reconstruction_Func);
+		% H0_1_2 = uimenu(Reconstructions_Menu_Handle,'Label','Trace');
+		% 	H0_1_2_1 = uimenu(H0_1_2,'Label','Trace','UserData',0,'Callback',@Reconstruction_Func);
+		% 	H0_1_2_2 = uimenu(H0_1_2,'Label','Full Trace','UserData',0,'Callback',@Reconstruction_Func);
+		% 	H0_1_2_3 = uimenu(H0_1_2,'Label','Skeleton','UserData',0,'Callback',@Reconstruction_Func);
 		H0_1_3 = uimenu(Reconstructions_Menu_Handle,'Label','Segmentation','UserData',0,'Callback',@Reconstruction_Func);
-		H0_1_4 = uimenu(Reconstructions_Menu_Handle,'Label','Menorah Orders','UserData',1,'Callback',@Reconstruction_Func);
-		H0_1_5 = uimenu(Reconstructions_Menu_Handle,'Label','Individual Menorahs','UserData',0,'Callback',@Reconstruction_Func);
+		% H0_1_4 = uimenu(Reconstructions_Menu_Handle,'Label','Menorah Orders','UserData',1,'Callback',@Reconstruction_Func);
+		% H0_1_5 = uimenu(Reconstructions_Menu_Handle,'Label','Individual Menorahs','UserData',0,'Callback',@Reconstruction_Func);
 		H0_1_6 = uimenu(Reconstructions_Menu_Handle,'Label','Vertices Angles');
 			H0_1_6_1 = uimenu(H0_1_6,'Label','Vertices Angles','UserData',2,'Callback',@Reconstruction_Func);
-			H0_1_6_2 = uimenu(H0_1_6,'Label','Vertices Angles - Skeleton','UserData',2,'Callback',@Reconstruction_Func);
-		H0_1_7 = uimenu(Reconstructions_Menu_Handle,'Label','Dorsal-Ventral','UserData',0,'Callback',@Reconstruction_Func);
-		H0_1_8 = uimenu(Reconstructions_Menu_Handle,'Label','Longitudinal Gradient','UserData',0,'Callback',@Reconstruction_Func);		
-		H0_1_9 = uimenu(Reconstructions_Menu_Handle,'Label','Curvature','UserData',0,'Callback',@Reconstruction_Func);
-		H0_1_10 = uimenu(Reconstructions_Menu_Handle,'Label','Persistence Length','UserData',0,'Callback',@Reconstruction_Func);
-		H0_1_11 = uimenu(Reconstructions_Menu_Handle,'Label','Curviness Length','UserData',0,'Callback',@Reconstruction_Func);
-	set(allchild(Reconstructions_Menu_Handle),'Enable','off');
+		% 	H0_1_6_2 = uimenu(H0_1_6,'Label','Vertices Angles - Skeleton','UserData',2,'Callback',@Reconstruction_Func);
+		% H0_1_7 = uimenu(Reconstructions_Menu_Handle,'Label','Dorsal-Ventral','UserData',0,'Callback',@Reconstruction_Func);
+		% H0_1_8 = uimenu(Reconstructions_Menu_Handle,'Label','Longitudinal Gradient','UserData',0,'Callback',@Reconstruction_Func);		
+		% H0_1_9 = uimenu(Reconstructions_Menu_Handle,'Label','Curvature','UserData',0,'Callback',@Reconstruction_Func);
+		% H0_1_10 = uimenu(Reconstructions_Menu_Handle,'Label','Persistence Length','UserData',0,'Callback',@Reconstruction_Func);
+		% H0_1_11 = uimenu(Reconstructions_Menu_Handle,'Label','Curviness Length','UserData',0,'Callback',@Reconstruction_Func);
+	set(Reconstructions_Menu_Handle,'Enable','off');
 	% set(H0_1_2_4,'Enable','off');
 	Graphs_Menu_Handle = uimenu(GUI_Parameters.Handles.Figure,'Label','Analysis Plots');
 		% H_Menu1_Length = uimenu(Graphs_Menu_Handle,'Label','Length');
@@ -141,18 +141,21 @@ function Tracer_UI()
 		H_Menu2_CB = uimenu(Graphs_Menu_Handle,'Label','Cell Body','Callback','');
 			H_Menu21_CB = uimenu(H_Menu2_CB,'Label','CB Intensity','UserData',1,'Callback',@Menu1_Plots_Func);
 			H_Menu22_CB = uimenu(H_Menu2_CB,'Label','CB Area','UserData',1,'Callback',@Menu1_Plots_Func);
-
+		
 		H_Menu3_Vertices = uimenu(Graphs_Menu_Handle,'Label','Vertices','Callback','');
 			H_Menu31_Angles = uimenu(H_Menu3_Vertices,'Label','Angles','Callback','');
 				% H_Mene311 = uimenu(H_Menu31_Angles,'Label','Symmetry of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);
-					H_Menu311 = uimenu(H_Menu31_Angles,'Label','Histograms','Callback','');
+				H_Menu311 = uimenu(H_Menu31_Angles,'Label','Histograms','Callback','');
 					H_Menu3111 = uimenu(H_Menu311,'Label','Histogram of all Angles','UserData',2,'Callback',@Menu1_Plots_Func);
 					H_Menu3112 = uimenu(H_Menu311,'Label','Histogram of Symmetry Indices','UserData',2,'Callback',@Menu1_Plots_Func);
-				H_Menu312 = uimenu(H_Menu31_Angles,'Label','Minimal and Maximal Angles of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);
-				H_Menu313 = uimenu(H_Menu31_Angles,'Label','The Two Minimal Angles of each 3-Way junction','UserData',2,'Callback',@Menu1_Plots_Func);
-				H_Menu314 = uimenu(H_Menu31_Angles,'Label','Linearity-Symmetry of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);
-				H_Menu315 = uimenu(H_Menu31_Angles,'Label','Sum of 2 Smallest VS Product of 2 Smallest','UserData',2,'Callback',@Menu1_Plots_Func);
-				H_Menu315 = uimenu(H_Menu31_Angles,'Label','Smallest Angle VS Diff between 2 Smallest','UserData',2,'Callback',@Menu1_Plots_Func);
+				H_Menu312 = uimenu(H_Menu31_Angles,'Label','Two Angles Plots','Callback','');
+					H_Menu3121 = uimenu(H_Menu312,'Label','Minimal and Maximal Angles of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);
+					H_Menu3122 = uimenu(H_Menu312,'Label','The Two Minimal Angles of each 3-Way junction','UserData',2,'Callback',@Menu1_Plots_Func);
+					H_Menu3123 = uimenu(H_Menu312,'Label','Linearity-Symmetry of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);
+					H_Menu3124 = uimenu(H_Menu312,'Label','Sum of 2 Smallest VS Product of 2 Smallest','UserData',2,'Callback',@Menu1_Plots_Func);
+					H_Menu3126 = uimenu(H_Menu312,'Label','Smallest Angle VS Diff between 2 Smallest','UserData',2,'Callback',@Menu1_Plots_Func);
+				H_Menu313 = uimenu(H_Menu31_Angles,'Label','Three Angles Plots','Callback','');
+					H_Menu3131 = uimenu(H_Menu313,'Label','Smallest-Mid-largest','UserData',2,'Callback',@Menu1_Plots_Func);
 			H_Menu32_Angles = uimenu(H_Menu3_Vertices,'Label','Distances','Callback','');
 				H_Menu1311 = uimenu(H_Menu32_Angles,'Label','Distances Of Vertices From The CB','UserData',2,'Callback',@Menu1_Plots_Func);				
 			% H_Menu132_Distances = uimenu(H_Menu13_Vertices,'Label','Distances','Callback','');
@@ -750,8 +753,7 @@ function Tracer_UI()
 			Scale_Factor = GUI_Parameters.Workspace.Workspace.User_Input.Scale_Factor;
 			[CB_Pixels,CB_Perimeter] = Detect_Cell_Body(GUI_Parameters.Workspace.Workspace.Image0,CB_BW_Threshold,Scale_Factor,0); % Detect cell-body.
 			[CB_Vertices,Pixels0,Pixels1] = Find_CB_Vertices(GUI_Parameters.Workspace.Workspace.Image0,CB_Perimeter,CB_Pixels,Scale_Factor,CB_BW_Threshold,1);
-			
-			set(allchild(Reconstructions_Menu_Handle),'Enable','on');
+			set(Reconstructions_Menu_Handle,'Enable','on');
 		end
 		
 		Features_Buttons_Handles = [];
@@ -944,7 +946,7 @@ function Tracer_UI()
 		File1 = load(GUI_Parameters(1).Neural_Network(1).Directory);
 		NN_Threshold = GUI_Parameters.Workspace(1).Workspace.Parameters.Neural_Network.Default_Pixel_Classification_Threshold;
 		
-		Trace_Multiple_Images(User_Input,File1.deepnet,NN_Threshold);
+		Trace_Multiple_Images(User_Input,File1.deepnet,NN_Threshold,GUI_Parameters.Handles.Figure);
 		clear File1;
 	end
 	
@@ -1425,7 +1427,7 @@ function Tracer_UI()
 		
 		Th.Data = [A,B];
 		
-		function Continue_Func(source1,callbackdata1)	
+		function Continue_Func(source1,callbackdata1)
 			delete(H1);
 		end
 	end

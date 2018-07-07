@@ -22,7 +22,7 @@ function Reconstruction_Index(GUI_Parameters)
 		case 'Individual Menorahs'
 			Reconstruct_Menorahs(GUI_Parameters.Workspace(1).Workspace);
 		case 'Vertices Angles'
-			Reconstruct_Vertices(GUI_Parameters);
+			Reconstruct_Vertices(GUI_Parameters.Workspace(1).Workspace);
 		case 'Vertices Angles - Skeleton'
 			Reconstruct_Skeleton_Vertices(GUI_Parameters);
 		case 'Dorsal-Ventral'
