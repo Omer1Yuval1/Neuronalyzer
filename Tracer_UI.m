@@ -838,6 +838,7 @@ function Tracer_UI()
 	function Collect_Multiple_Workspaces(source,callbackdata)
 		Workspace = Collect_All_Workspaces();
 		uisave('Workspace',['All_Workspaces_',datestr(datetime,30),'.mat']);
+		Load_An_Existing_Project_File();
 	end
 	
 	function Update_Multiple_Workspaces(source,callbackdata)
