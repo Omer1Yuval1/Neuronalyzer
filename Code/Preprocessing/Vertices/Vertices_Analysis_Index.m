@@ -24,6 +24,9 @@ function Workspace = Vertices_Analysis_Index(Workspace)
 	[Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints,Im_Skel_Rad] = Pixel_Trace_Post_Proccessing(Workspace.Im_BW);
 	[Workspace.Vertices,Workspace.Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints,Im_Skel_Rad);
 	% Workspace.Vertices = Analyze_Vertex_Morphology(Workspace.Vertices,Workspace.Segments,Workspace.Im_BW,Im1_branchpoints,Scale_Factor);
+	
+	% assignin('base','Wi_1_5',Workspace);
+	
 	Workspace = Analyze_Vertex_Morphology(Workspace,Im1_branchpoints);
 	
 	Workspace.Vertices = Match_CB_Vertices(Workspace.Vertices,CB_Vertices);

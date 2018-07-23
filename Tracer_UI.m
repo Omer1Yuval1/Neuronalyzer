@@ -697,8 +697,8 @@ function Tracer_UI()
 			GUI_Parameters.Workspace(1).Workspace.Path = struct('Rectangle_Index',{});
 			
 			% Enable the tracing list:
-			set(H0_1_2,'Enable','on');
-			set(allchild(H0_1_2),'Enable','on');
+			% set(H0_1_2,'Enable','on');
+			% set(allchild(H0_1_2),'Enable','on');
 		end
 		
 		set(GUI_Parameters.Handles.Machine_Learning.Load_Trained_NN_Button,'Enable','on');

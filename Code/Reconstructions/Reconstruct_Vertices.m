@@ -22,5 +22,10 @@ function Reconstruct_Vertices(W)
 			hold on;
 			plot(XV,YV,'Color',C,'LineWidth',2); % ,'Color',[.9,0,.4].
 		end
-	end	
+	end
+	
+	% hold on;
+	% for s=1:numel(W.Segments)
+		% plot(W.Segments(s).Skel_X,W.Segments(s).Skel_Y,'k');
+	% end
 end

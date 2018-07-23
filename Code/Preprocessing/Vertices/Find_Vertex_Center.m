@@ -1,4 +1,4 @@
-function [New_Cxy,Rc] = Find_Vertex_Center(Im_BW,Cxy,Theta,Vr,Center_Frame_Size,Centers_Scan_Res,Im_Rows,Min_Center_Radius)
+function [New_Cxy,Rc] = Find_Vertex_Center(Im_BW,Cxy,Vr,Circles_X,Circles_Y,Potential_Centers_XY,Im_Rows,Min_Center_Radius)
 	
 	Plot1 = 0;
 	Plot2 = 0;
@@ -9,10 +9,7 @@ function [New_Cxy,Rc] = Find_Vertex_Center(Im_BW,Cxy,Theta,Vr,Center_Frame_Size,
 		% Centers_Scan_Res = 0.5;
 	end
 	
-	Potential_Centers_X = Cxy(1)-Center_Frame_Size:Centers_Scan_Res:Cxy(1)+Center_Frame_Size;
-	Potential_Centers_Y = Cxy(2)-Center_Frame_Size:Centers_Scan_Res:Cxy(2)+Center_Frame_Size;
-	
-	Potential_Centers_XY = combvec(Potential_Centers_X,Potential_Centers_Y);
+	Potential_Centers_XY = Potential_Centers_XY + [Cxy(1) ; Cxy(2)]; % Translate the matrix of potential centers to the current center Cxy.
 	
 	% Find the indices of the potential centers that has a "1" (white) value in the binary image:
 	F = find(Im_BW(sub2ind(size(Im_BW),round(Potential_Centers_XY(2,:)),round(Potential_Centers_XY(1,:)))));
@@ -20,16 +17,17 @@ function [New_Cxy,Rc] = Find_Vertex_Center(Im_BW,Cxy,Theta,Vr,Center_Frame_Size,
 	Cy = Potential_Centers_XY(2,F);
 	
 	Cr = zeros(1,length(Cy));
-	for j=1:length(Cy) % For each potential center.
-		for ri=1:length(Vr) % For each potential center generate a series of circles with increasing radii.
-			Cv = [Vr(ri)*cos(Theta') + Cx(j) , Vr(ri)*sin(Theta') + Cy(j)]; % A vector of circle coordinates.
+	parfor j=1:length(Cy) % For each potential center.
+		
+		Circles_Xj = round(Circles_X + Cx(j)); % A matrix of circle coordinates [X,Y].
+		Circles_Yj = round(Circles_Y + Cy(j));
+		% Cv = round([Circles_X(ri,:)' + Cx(j) , Circles_Y(ri,:)' + Cy(j)]); % A matrix of circle coordinates [X,Y].
+		
+		Circles_XYj = Im_Rows*(Circles_Xj-1)+Circles_Yj;
+		
+		for ri=1:length(Vr) % For each circle radius.
 			
-			% TODO: I might want to do more than simple rounding to exclude circles that even touch a black pixel.
-			Cv = round(Cv); % Cv = [floor(Cv) ; ceil(Cv) ; [floor(Cv(:,1)),ceil(Cv(:,2))] ; [ceil(Cv(:,1)),floor(Cv(:,2))]];
-			
-			Cv1 = Im_Rows*(Cv(:,1)-1)+Cv(:,2);
-			
-			if(length(find(Im_BW(Cv1) == 0))) % If there's is at least one black (background) pixel, stop.
+			if(isempty(find(Im_BW(Circles_XYj(ri,:))))) % If there's is at least one black (background) pixel, stop.
 				Cr(j) = Vr(max(1,ri-1)); % Cr(j) = Vr(ri);
 				
 				if(Plot2 && rand(1,1) >= 0.93 && Cr(j) > 0.1)
@@ -51,7 +49,7 @@ function [New_Cxy,Rc] = Find_Vertex_Center(Im_BW,Cxy,Theta,Vr,Center_Frame_Size,
 	end
 	Cm = find(Cr == max(Cr));
 	
-	if(length(Cm))
+	if(~isempty(Cm))
 		% New_Cxy = [mean([Cx(Cm),Cxy(1)]),mean([Cy(Cm),Cxy(2)])]; % The original center might already be included in Cx,Cy. This gives it more weight.
 		New_Cxy = [mean(Cx(Cm)),mean(Cy(Cm))]; % The original center might already be included in Cx,Cy. This gives it more weight.
 		Rc = max(max(Cr),Min_Center_Radius); % Take the maximal radius but don't let it be too small (Min_Center_Radius).

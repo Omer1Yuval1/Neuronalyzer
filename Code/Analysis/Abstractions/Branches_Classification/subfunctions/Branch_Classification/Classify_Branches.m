@@ -10,8 +10,11 @@ function Workspace = Classify_Branches(Workspace)
 	for b=1:numel(Workspace.Branches)
 		L = 0;
 		for s=1:length(Workspace.Branches(b).Segments_Indices)
+			% disp(Workspace.Branches(b).Segments_Indices(s));
 			F1 = find([Workspace.Segments.Segment_Index] == Workspace.Branches(b).Segments_Indices(s));
-			L = L + Workspace.Segments(F1).Length;
+			if(~isempty(F1))
+				L = L + Workspace.Segments(F1).Length;
+			end
 		end
 		Workspace.Branches(b).Length = L;
 	end

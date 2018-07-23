@@ -1,4 +1,4 @@
-function Workspace = Reduce_Connectivity(Workspace,Length_Threshold)
+function [Workspace,Deleted_Segments] = Reduce_Connectivity(Workspace,Length_Threshold)
 	
 	% Length_Threshold is in micrometers.
 	
@@ -7,19 +7,19 @@ function Workspace = Reduce_Connectivity(Workspace,Length_Threshold)
 	
 	[Vertices_Reduced.Delete] = deal(0);
 	[Segments_Reduced.Delete] = deal(0);
-        
+    
     f1 = find([Workspace.Segments.Length] < Length_Threshold); % Find short segments.
 	
 	for i=f1 % For each short segment. Exclude short segments and merge their vertices.
 		Segments_Vertices = [Segments_Reduced.Vertices];
-		Segments_Vertices = [Segments_Vertices(1:2:end)', Segments_Vertices(2:2:end)']; % [v1,v2].
+		Segments_Vertices = [Segments_Vertices(1:2:end-1)',Segments_Vertices(2:2:end)']; % [v1,v2].
 		
 		% Find the row numbers of the two vertices connected by the i-th segment:
 		v1 = find([Vertices_Reduced.Vertex_Index] == Segments_Reduced(i).Vertices(1)); % 1st vertex.
 		v2 = find([Vertices_Reduced.Vertex_Index] == Segments_Reduced(i).Vertices(2)); % 2nd vertex.         
-		
+		% disp(Segments_Reduced(i).Vertices(2));
 		if(Vertices_Reduced(v1).Order > 1 && Vertices_Reduced(v2).Order > 1) % If neither v1 nor v2 is a tip.
-			Vertices_Reduced(v1).Rectangles = [Vertices_Reduced(v1).Rectangles , Vertices_Reduced(v2).Rectangles]; % Merge the rectangles structs into v1's.
+			Vertices_Reduced(v1).Rectangles = [Vertices_Reduced(v1).Rectangles,Vertices_Reduced(v2).Rectangles]; % Merge the rectangles structs into v1's.
             
             f2 = find([Vertices_Reduced(v1).Rectangles.Segment_Index] == Segments_Reduced(i).Segment_Index); % Find the row numbers of the rectangles that correspond to segment i within the merged rectangles struct.
 			Vertices_Reduced(v1).Rectangles(f2) = []; % Delete the two rectangle entries that belong to the i-th segment.
@@ -50,7 +50,7 @@ function Workspace = Reduce_Connectivity(Workspace,Length_Threshold)
 	% Delete the excluded segments and vertices:
 	Vertices_Reduced(find([Vertices_Reduced.Delete] == 1)) = [];
 	Segments_Reduced(find([Segments_Reduced.Delete] == 1)) = [];
-	% Deleted_Segments = Segments_Reduced(find([Segments_Reduced.Delete] == 1));
+	Deleted_Segments = Segments_Reduced(find([Segments_Reduced.Delete] == 1));
 	
 	Workspace.Segments = Segments_Reduced;
 	Workspace.Vertices = Vertices_Reduced;

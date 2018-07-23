@@ -169,8 +169,9 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 		Vertices(v).Coordinate = [J,I];
 	end
 	
-	% TODO: instead of merging, just use the skeleton to trace the short segment and find the relevant angles (and update the order accordingly).
+	%{
 	% Merge close vertices:
+		% TODO: instead of merging, just use the skeleton to trace the short segment and find the relevant angles (and update the order accordingly).
 	V = [Segments.Vertices];
 	V1 = V(1:2:end);
 	V2 = V(2:2:end);
@@ -179,6 +180,7 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 		if(Vertices(v).Order == 1)
 			continue; % Don't merge tips.
 		end
+		
 		for v1=1:numel(Vertices)
 			if(Vertices(v1).Order == 1)
 				continue; % Don't merge tips.
@@ -188,6 +190,7 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 				I(end+1,:) = [v1,Vertices(v1).Coordinate,Vertices(v1).Order];
 			end
 		end
+		
 		if(size(I,1) > 1) % One element means that it is only vertex v compared to itself.
 			Vertices(I(1,1)).Coordinate = [mean(I(:,2)),mean(I(:,3))];
 			Vertices(I(1,1)).Order = sum(I(:,4)) - 2*(size(I,1)-1);
@@ -195,14 +198,14 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 			for i=2:size(I,1) % For each redundant vertex.
 				% Update the vertices changes in the Segments struct.
 				% Assuming each segment is assigned with exactly 2 vertices.
-				for j=find(V1 == I(i,1))
+				for j=find(V1 == Vertices(I(i,1)).Vertex_Index) % V1 is a vector of all the "source" vertices indices. I(?,1) is the index of the i-th redundant vertex.
 					if(Segments(j).Vertices(2) == I(1,1)) % If the short segment will have the same vertex as v1 & v2, mark it for deletion.
 						Segments(j).Segment_Index = 0;
 					else
 						Segments(j).Vertices(1) = I(1,1);
 					end
 				end
-				for j=find(V2 == I(i,1))
+				for j=find(V2 == Vertices(I(i,1)).Vertex_Index) % V2 is a vector of all the "target" vertices indices.
 					if(Segments(j).Vertices(1) == I(1,1)) % If the short segment will have the same vertex as v1 & v2, mark it for deletion.
 						Segments(j).Segment_Index = 0;
 					else
@@ -215,6 +218,7 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 	Vertices(find([Vertices.Vertex_Index] == 0)) = [];
 	Segments(find([Segments.Segment_Index] == 0)) = [];
 	% TODO: delete the segments that are supposed to be deleted.
+	%}
 	
 	% ColorMap = jet(20);
 	% imshow(Im1_NoiseReduction);

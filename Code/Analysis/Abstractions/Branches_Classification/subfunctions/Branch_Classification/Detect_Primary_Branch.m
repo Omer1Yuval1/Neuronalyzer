@@ -11,7 +11,6 @@ function Workspace = Detect_Primary_Branch(Workspace,CB_Distance_Threshold)
         for v=1:numel(Workspace.Vertices)
             D = ( (Workspace.CB.Vertices(c).Coordinate(1) - Workspace.Vertices(v).Coordinate(1)).^2 + ...
 					(Workspace.CB.Vertices(c).Coordinate(2) - Workspace.Vertices(v).Coordinate(2)).^2 )^.5;
-			
 			if(D <= CB_Distance_Threshold)
 				Workspace.CB.Vertices(c).Vertices_Indices(end+1) = Workspace.Vertices(v).Vertex_Index;
 				CB_Vertices(end+1) = Workspace.Vertices(v).Vertex_Index;

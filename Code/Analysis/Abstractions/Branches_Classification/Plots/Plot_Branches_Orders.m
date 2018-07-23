@@ -1,4 +1,4 @@
-function plot_branches(Workspace)
+function Plot_Branches_Orders(Workspace)
 	
 	% This function plots the branches overlayed on the original grayscale image.
 	
@@ -15,7 +15,9 @@ function plot_branches(Workspace)
 		end
 		for si = [Workspace.Branches(b).Segments_Indices]
 			sr = find([Workspace.Segments.Segment_Index] == si);
-			plot(Workspace.Segments(sr).Skel_X,Workspace.Segments(sr).Skel_Y,'Color',C,'linewidth',3);
+			if(~isempty(sr))
+				plot(Workspace.Segments(sr).Skel_X,Workspace.Segments(sr).Skel_Y,'Color',C,'linewidth',3);
+			end
 		end
 	end
 	hold off;

@@ -10,14 +10,18 @@ function [Segments] = calculate_chunk(Segments,Vertices,idx,curvature_threshold)
         coordinates1 = Vertices([Vertices.Vertex_Index] == vertices(1)).Coordinate;        
         
         % assure that coordinates go from first vertex to second vertex
-        if (Segments(idx).Skel_X(1) - coordinates1(1)) > (Segments(idx).Skel_X(end) - coordinates1(1))
+        if( (Segments(idx).Skel_X(1) - coordinates1(1)) > (Segments(idx).Skel_X(end) - coordinates1(1)) )
             Segments(idx).Skel_Y = fliplr(Segments(idx).Skel_Y);
             Segments(idx).Skel_X = fliplr(Segments(idx).Skel_X);
         end
+		
+		if(length(Segments(idx).Skel_X) > 1)
+			Segments(idx).Curve = Get_Segment_Curvature(Segments(idx).Skel_X,Segments(idx).Skel_Y);
+        else
+			Segments(idx).Curve = 0;
+		end
         
-        Segments(idx).Curve = Get_Segment_Curvature(Segments(idx).Skel_X,Segments(idx).Skel_Y);
-        
-        Fc = find([Segments(idx).Curve] > curvature_threshold);
+		Fc = find([Segments(idx).Curve] > curvature_threshold);
         if(~isempty(Fc))
             
             j = Fc(1); % index of first value above curvature_threshold starting from vertex1

@@ -19,6 +19,15 @@ function Workspace = Analyze_Vertex_Morphology(Workspace,Im_branchpoints)
 	Centers_Scan_Res = .25*Scale_Factor; % vertical\horizontal distance between potential centers. ~0.35 pixels for Scale_Factor=50/140.
 	Im_Cropped_Half_Size = 30*Scale_Factor; % 30 micrometers.
 	
+	% TODO: I might want to do more than simple rounding to exclude circles that even touch a black pixel.
+	Circles_X = Vr' * cos(Theta); % A vector of circle coordinates.
+	Circles_Y = Vr' * sin(Theta); % ". radii * angles = [N,1] x [1,M] = [N,M]. Each row contains the x or y coordinates for a single radii.
+	
+	Potential_Centers_X = -Center_Frame_Size:Centers_Scan_Res:+Center_Frame_Size;
+	Potential_Centers_Y = -Center_Frame_Size:Centers_Scan_Res:+Center_Frame_Size;
+	Potential_Centers_XY = combvec(Potential_Centers_X,Potential_Centers_Y);
+	
+	
 	if(Plot1)
 		[Yb,Xb] = find(Im_branchpoints);
 		% close all;
@@ -39,7 +48,7 @@ function Workspace = Analyze_Vertex_Morphology(Workspace,Im_branchpoints)
 	% for i=25 % For each approximate center (row number).
 	for i=1:numel(Workspace.Vertices) % For each approximate center.
 		if(Workspace.Vertices(i).Order >= 3) % If it's a junction.
-			[New_Cxy,Rc] = Find_Vertex_Center(Workspace.Im_BW,Workspace.Vertices(i).Coordinate,Theta,Vr,Center_Frame_Size,Centers_Scan_Res,Im_Rows,Min_Center_Radius);
+			[New_Cxy,Rc] = Find_Vertex_Center(Workspace.Im_BW,Workspace.Vertices(i).Coordinate,Vr,Circles_X,Circles_Y,Potential_Centers_XY,Im_Rows,Min_Center_Radius);
 		elseif(Workspace.Vertices(i).Order == 1) % If it's a tip.
 			New_Cxy = Workspace.Vertices(i).Coordinate; % Do not correct the center of end-point.
 			Rc = 0; % Vertex center radius. Tips are assigned with a 0 radius.
