@@ -92,7 +92,7 @@ function scores = probability_scores(Workspace,curvature_threshold)
 				% Write results to the scores struct:				
 				scores(end+1).Segment_Index_1 = Pi(1);
 				scores(end).Segment_Index_2 = Pi(2);
-				scores(end).Segments_Indices = Pi;
+				scores(end).Segments = Pi;
 				scores(end).Vertices = Vertices(i).Vertex_Index;
 				scores(end).Probabilities = probability;
 				scores(end).Score = dot(weight_vector,probability);
@@ -109,7 +109,7 @@ function scores = probability_scores(Workspace,curvature_threshold)
 		for j=1:length(Si)
 			scores(end+1).Segment_Index_1 = Si(j);
 			scores(end).Segment_Index_2 = 0;
-			scores(end).Segments_Indices = Si(j);
+			scores(end).Segments = Si(j);
 			scores(end).Vertices = Vertices(i).Vertex_Index;
 			scores(end).Probabilities = 0;
 			scores(end).Score = 0;

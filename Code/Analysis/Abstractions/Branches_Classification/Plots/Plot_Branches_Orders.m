@@ -8,12 +8,15 @@ function Plot_Branches_Orders(Workspace)
 	imshow(Workspace.Image0);
 	hold on;
 	for b=1:numel(Workspace.Branches)
-		if(Workspace.Branches(b).Order == 1)
-			C = [.3,.3,.3];
-		else
-			C = cmap(rows(b),:);
+		switch(Workspace.Branches(b).Order)
+			case 1
+				C = [.3,.3,.3];
+			case 2
+				C = [.8,0,0];
+			otherwise
+				C = cmap(rows(b),:);
 		end
-		for si = [Workspace.Branches(b).Segments_Indices]
+		for si = [Workspace.Branches(b).Segments]
 			sr = find([Workspace.Segments.Segment_Index] == si);
 			if(~isempty(sr))
 				plot(Workspace.Segments(sr).Skel_X,Workspace.Segments(sr).Skel_Y,'Color',C,'linewidth',3);

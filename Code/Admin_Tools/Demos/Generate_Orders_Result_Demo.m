@@ -13,7 +13,7 @@ function Generate_Orders_Result_Demo()
 	Curvature_Threshold = 1;
 	Length_Threshold = 3;
 	
-	for f=2 % :numel(Files_List) % For each file (image\neuron).
+	for f=1:numel(Files_List) % For each file (image\neuron).
 		
 		% Load File:
 		disp(f);
@@ -27,20 +27,20 @@ function Generate_Orders_Result_Demo()
 		Wi.Im_BW = zeros(Im_Rows,Im_Cols);
 		Wi.Im_BW(Wi.NN_Probabilities >= NN_Threshold) = 1;
 		
-		assignin('base','Wi_0',Wi);
+		% assignin('base','Wi_0',Wi);
 		Wi = Vertices_Analysis_Index(Wi);
-		assignin('base','Wi_1',Wi);
+		% assignin('base','Wi_1',Wi);
 		Wi = Match_Vertex_Rects_To_Segments(Wi); % Note: this algorithm is included in 'Connect_Vertices.m'.
         
 		Wi = add_length(Wi);
         
-		assignin('base','Wi_2',Wi);
-		% [Wi,Deleted_Segments] = Reduce_Connectivity(Wi,Length_Threshold);
-		assignin('base','Wi_3',Wi);
+		% assignin('base','Wi_2',Wi);
+		[Wi,Deleted_Segments] = Reduce_Connectivity(Wi,Length_Threshold);
+		% assignin('base','Wi_3',Wi);
 		Wi.Branches = construct_branches(Wi,Curvature_Threshold);
-		assignin('base','Wi_4',Wi);
+		% assignin('base','Wi_4',Wi);
 		Wi = Classify_Branches(Wi);
-		assignin('base','Wi_5',Wi);
+		% assignin('base','Wi_5',Wi);
 		
 		figure(1);
 		clf(1);

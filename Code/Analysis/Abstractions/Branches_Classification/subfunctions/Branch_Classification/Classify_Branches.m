@@ -9,9 +9,9 @@ function Workspace = Classify_Branches(Workspace)
 	% Add branches features:
 	for b=1:numel(Workspace.Branches)
 		L = 0;
-		for s=1:length(Workspace.Branches(b).Segments_Indices)
-			% disp(Workspace.Branches(b).Segments_Indices(s));
-			F1 = find([Workspace.Segments.Segment_Index] == Workspace.Branches(b).Segments_Indices(s));
+		for s=1:length(Workspace.Branches(b).Segments)
+			% disp(Workspace.Branches(b).Segments(s));
+			F1 = find([Workspace.Segments.Segment_Index] == Workspace.Branches(b).Segments(s));
 			if(~isempty(F1))
 				L = L + Workspace.Segments(F1).Length;
 			end
@@ -19,6 +19,6 @@ function Workspace = Classify_Branches(Workspace)
 		Workspace.Branches(b).Length = L;
 	end
 	
-	Workspace = Detect_Primary_Branch(Workspace,5);
+	Workspace = Detect_Primary_Branch(Workspace,CB_Distance_Threshold);
 	
 end
