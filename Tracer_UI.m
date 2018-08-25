@@ -675,14 +675,19 @@ function Tracer_UI()
 			
 			delete(H1);
 			
+			GUI_Parameters.Workspace(1).Workspace.Parameters = Parameters_Func(GUI_Parameters.Workspace(1).Workspace.User_Input.Scale_Factor);
+			
 			GUI_Parameters.Workspace(1).Workspace.Image0 = imread(strcat(PathName,FileName));
-			GUI_Parameters.Workspace(1).Workspace.Image0 = flipud(GUI_Parameters.Workspace(1).Workspace.Image0(:,:,1));
+			
+			a = 0;
+			% Convert the loaded image to the default format (uint8, [0,255]):
+			GUI_Parameters.Workspace(1).Workspace.Image0 = ...
+			GUI_Parameters.Workspace(1).Workspace.Parameters.General_Parameters.Image_Format(GUI_Parameters.Workspace(1).Workspace.Image0);
+			
 			cla(GUI_Parameters.Handles.Axes,'reset');
 			imshow(GUI_Parameters.Workspace(1).Workspace.Image0,'Parent',GUI_Parameters.Handles.Axes);
 			set(gca,'YDir','normal','Position',[0,0,1,1]);
 			% set(Display_List,'Enable','off');
-			
-			GUI_Parameters.Workspace(1).Workspace.Parameters = Parameters_Func(GUI_Parameters.Workspace(1).Workspace.User_Input.Scale_Factor);
 			
 			% Detect and display CB and the outsets of the branches connected to it:
 			CB_BW_Threshold = GUI_Parameters.Workspace.Workspace.Parameters.Cell_Body.BW_Threshold;

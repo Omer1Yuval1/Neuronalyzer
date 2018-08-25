@@ -4,6 +4,8 @@ function Parameters1 = Parameters_Func(Scale_Factor)
 	
 	General_Parameters.Version_Num = '2.0';
 	
+	General_Parameters.Image_Format = @(x) im2uint8(x(:,:,1));
+	
 	General_Parameters.Plot1 = 0;
 	Auto_Tracing_Parameters.Plot_On_Off = General_Parameters(1).Plot1;
 	Auto_Tracing_Parameters.Plot_Trace = 1;
