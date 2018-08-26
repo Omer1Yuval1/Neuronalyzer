@@ -1,5 +1,14 @@
 function [New_DataSet,Pixels_To_Classify,Pre_Classified_Pixels] = Generate_New_DataSet(Im0,Input_Rows_Num,Input_Class)
 	
+	
+	
+	% TODO:
+		% Make sure this function is neutral.
+		% Change its name to a more indicative name.
+	
+	
+	
+	
 	[Rows1,Cols1] = size(Im0);
 	Frames_Max_Num = Rows1*Cols1;
 	Frame_Half_Size = (Input_Rows_Num - 1) / 2;
@@ -21,8 +30,8 @@ function [New_DataSet,Pixels_To_Classify,Pre_Classified_Pixels] = Generate_New_D
 	ptc = 0;
 	
 	% Set the probability of pixels in the margins regions to 0:
-	Cols_STD = std(double(Im0),0,1); % A row of coulmns std.
-	Rows_STD = std(double(Im0),0,2); % A column of rows std;
+	Cols_STD = std(double(Im0),0,1); % A row vector of coulmns std.
+	Rows_STD = std(double(Im0),0,2); % A column vector of rows std;
 	
 	F_Cols_Left = find(cumsum(Cols_STD)); % Find non-zero values in the cumsum vector.
 	F_Cols_Right = find(cumsum(fliplr(Cols_STD))); % Find non-zero values in the cumsum vector (from end to beginning).
