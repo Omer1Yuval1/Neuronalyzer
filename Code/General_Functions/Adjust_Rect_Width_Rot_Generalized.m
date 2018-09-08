@@ -58,27 +58,45 @@ function W = Adjust_Rect_Width_Rot_Generalized(Im,Rotation_Origin,Rect_Angle,Rec
 		xvf = linspace(min(xv),max(xv),2*length(xv)); % Width.
 		yvf = FitObject(xvf); % Mean pixel value.
 		
-		[XDer1 XDer2] = differentiate(FitObject,xvf);
+		[XDer1,XDer2] = differentiate(FitObject,xvf);
 		% f2 = find(XDer2 == min(XDer2)); % Minimal 2nd derivative point.
 		f2 = find(XDer1 == min(XDer1)); % Minimal 1st derivative point.
 		W = xvf(f2(1))*Width_Ratio; % Taking f2(1) just in case there's more than one value in f2.
 		
-		if(Plot2)
-			figure(2);
-			hold on;
-			plot(xvf,yvf,'LineWidth',3);
-			hold on;
-			plot(W,FitObject(W),'.','MarkerSize',30);
-			xlabel('Width (pixels)');
-			ylabel('Mean Pixel Value');
-			figure(1);
-			disp(W);
-		end
+        %{
+        Scale_Factor = 1; % 50/140;
+        
+        % Plot the rectangle with the chosen width:
+        figure(1);
+        [XV,YV] = Get_Rect_Vector(Rotation_Origin,Rect_Angle,W,Rect_Length,Origin_Type);
+        hold on; plot([XV,XV(1)],[YV,YV(1)],'Color',[0,.8,0],'LineWidth',4);  
+        
+        % Plot the width VS score:
+        figure;
+        % plot(xvf.*Scale_Factor,yvf,'r','LineWidth',3); % Plot the fit object.
+        plot([0,xvf.*Scale_Factor],FitObject([0,xvf.*Scale_Factor]),'r','LineWidth',3); % Plot the fit object.
+        hold on;
+        plot(xv.*Scale_Factor,yv,'.k','MarkerSize',30); % Plot raw points.
+        
+        plot([W.*Scale_Factor,W.*Scale_Factor],[0,FitObject(W)],'--','Color',[.5,.5,.5],'LineWidth',2);
+        plot([xvf(f2(1)).*Scale_Factor,xvf(f2(1)).*Scale_Factor],[0,FitObject(xvf(f2(1)))],'--','Color',[.5,.5,.5],'LineWidth',2);
+        
+        plot(xvf(f2(1)).*Scale_Factor,FitObject(xvf(f2(1))),'.b','MarkerSize',50); % Plot the minimal 1st derivative point.
+        plot(W.*Scale_Factor,FitObject(W),'.','Color',[0,.8,0],'MarkerSize',50); % Plot the final width value.
+        
+        xlabel('Width (\mum)');
+        ylabel('Score');
+        set(gca,'FontSize',24);
+        xlim([0,xv(1).*Scale_Factor]);
+        ylim([0,max(yvf)+5]);
+        
+        % disp(W);
+        %}
 	else
 		W = -1;
 		if(1)
-			disp('Width Detection Failed.');
+			disp('Width Detection Failed. Returning -1.');
 		end
-	end
-	
+    end
+    
 end

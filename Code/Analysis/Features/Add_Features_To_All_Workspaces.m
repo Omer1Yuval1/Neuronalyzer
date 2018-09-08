@@ -5,6 +5,7 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 	
 	Features = struct('Feature_Name',{},'Values',{},'Num_Of_Options',{});
 	N = numel(W);
+	Distance_Func = @(x0,y0,x,y) ( (x-x0).^2 + (y-y0).^2).^(.5);
 	
 	for i=1:N % For each workspace.
 		
@@ -23,8 +24,18 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 			
 			D = ( (W(i).Workspace.Vertices(v).Coordinate(1) - W(i).Workspace.CB.Center(1))^2 + ...
 				(W(i).Workspace.Vertices(v).Coordinate(2) - W(i).Workspace.CB.Center(2))^2 )^.5;
-			W(i).Workspace.Vertices(v).Distance_From_CB = D;
-			W(i).Workspace.Vertices(v).Distance_From_Longitudinal_Axis = -1;
+			W(i).Workspace.Vertices(v).Distance_From_CB = D.*Scale_Factor;
+			
+			x0 = W(i).Workspace.Vertices(v).Coordinate(1);
+			y0 = W(i).Workspace.Vertices(v).Coordinate(2);
+			
+			if(~isempty(W(i).Workspace.Medial_Axis))
+				D = Distance_Func(x0,y0,W(i).Workspace.Medial_Axis(:,1),W(i).Workspace.Medial_Axis(:,2));
+				W(i).Workspace.Vertices(v).Distance_From_Medial_Axis = min(D).*Scale_Factor;
+			else
+				W(i).Workspace.Vertices(v).Distance_From_Medial_Axis = -1;
+			end
+			
 		end
 		
 		% TODO: Calculate minimal distance from the CB.

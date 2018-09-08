@@ -41,33 +41,54 @@ function [Scores,BG_Intensity,BG_Peak_Width] = Normalize_Rects_Values_Generalize
 	% [yp0,xp0,Peaks_Width0,Peaks_Prominence0] = findpeaks(Counts0,Intensities0,'MinPeakProminence',Parameters1(1).Auto_Tracing_Parameters(1).Step_Normalization_Min_Peak_Prominence,'MinPeakDistance',Parameters1(1).Auto_Tracing_Parameters(1).Step_Normalization_Min_Peak_Distance);
 	[yp12,xp12,Peaks_Width12,Peaks_Prominence12] = findpeaks(Counts12,Intensities12,'MinPeakHeight',Parameters1(1).Auto_Tracing_Parameters(1).Step_Normalization_Min_Peak_Height,'MinPeakDistance',Parameters1(1).Auto_Tracing_Parameters(1).Step_Normalization_Min_Peak_Distance);
 	
-	if(0) % if(Parameters1.Auto_Tracing_Parameters.Plot_On_Off)
-		figure(5);
+    %{
+	if(1) % if(Parameters1.Auto_Tracing_Parameters.Plot_On_Off)
+		
+        [Rect_Value0,Values_Vector0] = Get_Rect_Score(Image0,[XVs',YVs']); % The signal values.
+        [Counts0,Intensities0] = histcounts([Values_Vector0],[-Hist_Bins_Res:Hist_Bins_Res:260],'Normalization','probability');
+        Intensities0 = (Intensities0(1:end-1) + Intensities0(2:end)) / 2; % Convert bins to bins centers.
+        
+        figure(5);
 			clf(5);
-			histogram([Values_Vector0],[-Hist_Bins_Res:Hist_Bins_Res:260],'Normalization','probability');
+			histogram([Values_Vector0],-Hist_Bins_Res:Hist_Bins_Res:260,'Normalization','probability');
 			hold on;
-			histogram([Values_Vector12],[-Hist_Bins_Res:Hist_Bins_Res:260],'Normalization','probability');
+			histogram([Values_Vector12],-Hist_Bins_Res:Hist_Bins_Res:260,'Normalization','probability');
 			hold on;
-			findpeaks(Counts0,Intensities0,'MinPeakProminence',Parameters1(1).Auto_Tracing_Parameters(1).Step_Normalization_Min_Peak_Prominence,'MinPeakDistance',Parameters1(1).Auto_Tracing_Parameters(1).Step_Normalization_Min_Peak_Distance,'SortStr','descend');
-			findpeaks(Counts12,Intensities12,'MinPeakProminence',Parameters1(1).Auto_Tracing_Parameters(1).Step_Normalization_Min_Peak_Prominence,'MinPeakDistance',Parameters1(1).Auto_Tracing_Parameters(1).Step_Normalization_Min_Peak_Distance,'SortStr','descend');
-			axis([-Hist_Bins_Res,265,0,1.2]);
-			Counts12,Intensities12
-		if(0)
+			
+			% findpeaks(Counts0,Intensities0,'MinPeakHeight',Parameters1(1).Auto_Tracing_Parameters(1).Step_Normalization_Min_Peak_Height,'MinPeakDistance',Parameters1(1).Auto_Tracing_Parameters(1).Step_Normalization_Min_Peak_Distance);
+			% findpeaks(Counts12,Intensities12,'MinPeakHeight',Parameters1(1).Auto_Tracing_Parameters(1).Step_Normalization_Min_Peak_Height,'MinPeakDistance',Parameters1(1).Auto_Tracing_Parameters(1).Step_Normalization_Min_Peak_Distance);
+            
+            F = fit(Intensities12',Counts12','SmoothingSpline','smoothingparam',0.5);
+            Xf = linspace(0,255,500);
+            
+            hold on;
+            plot(Xf,F(Xf),'r','LineWidth',3);
+            hold on; plot(Intensities12,Counts12,'.k','MarkerSize',20);
+            
+            axis([0,255,0,0.4]);
+            set(gca,'FontSize',24);
+            xlabel('Pixel Intensity');
+            ylabel('Count');
+            
+            % axis([-Hist_Bins_Res,265,0,.4]);
+		if(1)
 			figure(1); % Draw the rectangles 
 				hold on;
-				plot([XV1;XV1(1)],[YV1;YV1(1)],'b','LineWidth',3);
-				plot([XV2;XV2(1)],[YV2;YV2(1)],'b','LineWidth',3);
-				% plot(XVs,YVs,'r','LineWidth',3);
-				hold off;
-			
+				plot([XV1;XV1(1)],[YV1;YV1(1)],'r','LineWidth',4);
+				plot([XV2;XV2(1)],[YV2;YV2(1)],'r','LineWidth',4);
+				plot([XVs,XVs(1)],[YVs,YVs(1)],'--','Color',[.1,.7,0],'LineWidth',4);
+				hold off;			
+            %{
 			figure(8);
-				imshow(Im);
+				imshow(Image0);
 				hold on;
 				plot(InRect_ImF_Coordinates(:,1),InRect_ImF_Coordinates(:,2),'.r');
 				hold off;
 				set(gca,'YDir','normal');
+            %}
 		end
-	end
+    end
+    %}
 	
 	if(length(xp12)) % The BG peaks vector.
 		BG_Intensity = xp12(1); % The intensity (peak x-value) of the 1st (leftest) peak.

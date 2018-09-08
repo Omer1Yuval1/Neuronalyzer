@@ -2,6 +2,8 @@ function Multiple_Choose_Plot(GUI_Parameters)
 	
 	% Workspace_Operations is a function to operate on the values vector of each single workspace (= animal).
 	
+	% Note: RowWise must be set to 1 if: one of the field is a vector AND thes values won't be simply combined with all the rest (other rows).
+	
 	% assignin('base','GUI_Parameters2',GUI_Parameters);
 	
 	switch GUI_Parameters.General.Active_Plot
@@ -59,6 +61,37 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			RowWise = 0;
 			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Distance_From_CB'},Workspace_Operations,RowWise);
 			Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
+		
+		%%%%%%%%%%%%%%%%%%%%%%%%%
+		case 'Distances Of Vertices From The Medial Axis - Means'
+			Workspace_Operations = @(x) x(x>=0); % Only non-negative distance values.
+			Y_Label = 'Distance (\mum)';
+			Title = 'Mean Distance Of Vertices From The Medial Axis';
+			RowWise = 0;
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Distance_From_Medial_Axis'},Workspace_Operations,RowWise);
+			Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
+			
+		case 'Distances Of Vertices From The Medial Axis - Histogram'
+			Workspace_Operations = @(x) x(x>=0); % Only non-negative distance values.
+			Y_Label = 'Count';
+			Title = 'Distribution of Distances Of Vertices From The Medial Axis';
+			X_Min_Max = [0,150];
+			BinSize = 10 .* GUI_Parameters.Handles.Analysis.Slider.Value;
+			RowWise = 0;
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Distance_From_Medial_Axis'},Workspace_Operations,RowWise);
+			% Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
+			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,Y_Label,Title);
+			
+		case 'Smallest Angle VS Distance From Medial Axis'
+			Workspace_Operations{1} = @(x) x(x == min(x) & x>0); % Smallest Angle.
+			Workspace_Operations{2} = @(x) x(x>=0); % Distance from Medial Axis.
+			X_Label = 'Smallest Angle';
+			Y_Label = 'Distance (\mum)';			
+			Title = 'Smallest Angle VS Distance From Medial Axis';
+			RowWise = 1;
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Angles','Distance_From_Medial_Axis'},Workspace_Operations,RowWise);
+			Two_Vars_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Label,Y_Label,Title);
+		%%%%%%%%%%%%%%%%%%%%%%%%%	
 			
 		case 'Histogram of all Angles'
 			Workspace_Operations = @(x) x(x>=0).*180./pi; % Exclude tips (appear as angle = -1) and convert to degrees.

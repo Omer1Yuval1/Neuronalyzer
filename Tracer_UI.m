@@ -157,7 +157,10 @@ function Tracer_UI()
 				H_Menu313 = uimenu(H_Menu31_Angles,'Label','Three Angles Plots','Callback','');
 					H_Menu3131 = uimenu(H_Menu313,'Label','Smallest-Mid-largest','UserData',2,'Callback',@Menu1_Plots_Func);
 			H_Menu32_Angles = uimenu(H_Menu3_Vertices,'Label','Distances','Callback','');
-				H_Menu1311 = uimenu(H_Menu32_Angles,'Label','Distances Of Vertices From The CB','UserData',2,'Callback',@Menu1_Plots_Func);				
+				H_Menu321 = uimenu(H_Menu32_Angles,'Label','Distances Of Vertices From The Medial Axis - Means','UserData',2,'Callback',@Menu1_Plots_Func);
+				H_Menu322 = uimenu(H_Menu32_Angles,'Label','Distances Of Vertices From The Medial Axis - Histogram','UserData',2,'Callback',@Menu1_Plots_Func);
+				H_Menu323 = uimenu(H_Menu32_Angles,'Label','Smallest Angle VS Distance From Medial Axis','UserData',2,'Callback',@Menu1_Plots_Func);
+				H_Menu324 = uimenu(H_Menu32_Angles,'Label','Distances Of Vertices From The CB','UserData',2,'Callback',@Menu1_Plots_Func);				
 			% H_Menu132_Distances = uimenu(H_Menu13_Vertices,'Label','Distances','Callback','');
 				% H_Menu1321_Primary_Vertices_Mean_Distance = uimenu(H_Menu132_Distances,'Label','Primary_Vertices_Mean_Distance','UserData',1,'Callback',@Menu1_Plots_Func);
 			% H_Menu133_Vertices_Density = uimenu(H_Menu13_Vertices,'Label','Density of Vertices','UserData',1,'Callback',@Menu1_Plots_Func);			
