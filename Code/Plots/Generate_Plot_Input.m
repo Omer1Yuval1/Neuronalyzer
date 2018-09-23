@@ -8,8 +8,8 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Field_Name,Wo
 		% that belong to the same group.
 	% assignin('base','Input_Struct',Input_Struct);
 	switch length(Field_Name)
-		case 1
-			Input_Struct = struct('Group_Name',{},'Values',{},'Normalization',{},'Worms_Number',{},'Color',{},'Labels',{});
+		case 1 % Using the name "XValues" allows to use more than one field for single-field plots to filter out data.
+			Input_Struct = struct('Group_Name',{},'XValues',{},'Normalization',{},'Worms_Number',{},'Color',{},'Labels',{});
 		case 2
 			Input_Struct = struct('Group_Name',{},'XValues',{},'YValues',{},'Normalization',{},'Worms_Number',{},'Color',{},'Labels',{});
 	end
@@ -65,8 +65,8 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Field_Name,Wo
 		% F = find([GUI_Parameters.Workspace.Grouping] == Selected_Groups(i,1) & [GUI_Parameters.Workspace.Genotype] == Selected_Groups(i,2)); % Find all the relevant workspaces.
 		for j=1:length(F) % For each workspace within group i.
 			switch length(Field_Name)
-				case 1
-					Input_Struct(i).Values = [Input_Struct(i).Values,Workspace_Operations([GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name).(Field_Name{1})])];
+				case 1 % TODO: RowWise is not implemented in this case.
+					Input_Struct(i).XValues = [Input_Struct(i).XValues,Workspace_Operations([GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name).(Field_Name{1})])];
 				case {2,3}
 					if(~RowWise) % Apply operation to the entire column at once.
 						Input_Struct(i).XValues = [Input_Struct(i).XValues,Workspace_Operations([GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name).(Field_Name{1})])];
@@ -75,7 +75,7 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Field_Name,Wo
 						for k=1:numel(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)) % For each row in the chosen DB_Name.
 							% Note: not using (end+1) because the value may be an empty array.
 							% Note: Each function performs a find-like operation and thus returns all values that match the rule.
-								% ...*** thus, taking the 1st result for each in case there are duplicates.
+								% ...*** thus, taking the 1st result for each, in case there are duplicates.
 							% disp(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Field_Name{1}));
 							% disp([i,j,k]);
 							Names = {'XValues','YValues','ZValues'};

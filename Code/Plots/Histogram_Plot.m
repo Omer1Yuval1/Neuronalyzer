@@ -28,7 +28,8 @@ function Histogram_Plot(Input_Struct,GUI_Parameters,Visuals,X_Min_Max,BinSize,YL
 			% for i=Groups_Num:-1:1 % For each group (a unique combination of selected features).
 			for i=1:Groups_Num % For each group (a unique combination of selected features).
 				% Legend_Handles_Array(i) = histogram(Input_Struct(i).Values,X_Min_Max(1):BinSize:X_Min_Max(2),'FaceColor',ColorMap(i,:),'Normalization','probability');
-				Legend_Handles_Array(i) = histogram(Input_Struct(i).Values,X_Min_Max(1):BinSize:X_Min_Max(2),'Normalization','probability');
+				Legend_Handles_Array(i) = histogram(Input_Struct(i).XValues,X_Min_Max(1):BinSize:X_Min_Max(2)); % No normalization.
+				% Legend_Handles_Array(i) = histogram(Input_Struct(i).XValues,X_Min_Max(1):BinSize:X_Min_Max(2),'Normalization','probability');
 				hold on;
 			end
 			

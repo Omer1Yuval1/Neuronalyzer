@@ -1,7 +1,7 @@
 function Output = Calc_Junction_Angles(Rectangles)
-
-	if(numel(Rectangles) == 3) % Do only for 3-way junctions.		
-		m = 2*pi;
+	
+	m = 2*pi;
+	if(numel(Rectangles) == 3) % Do only for 3-way junctions.
 		
 		a1 = Rectangles(1).Angle;
 		a2 = Rectangles(2).Angle;
@@ -15,6 +15,8 @@ function Output = Calc_Junction_Angles(Rectangles)
 		A31 = m - A21 - A32;
 		
 		Output = [A21,A32,A31];
+	elseif(numel(Rectangles) == 1) % Tips.
+		Output = mod([Rectangles(1).Angle],m);
 	else
 		Output = -1;
 	end

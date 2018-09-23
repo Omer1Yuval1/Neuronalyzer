@@ -26,15 +26,16 @@ function Apply_And_Save()
 		
 		[Final_Curve,Approved] = Find_Center_Line(Workspace.Workspace.Image0,BW); % [V12,V21] = Hough_Midline_Detection(closeBW);
 		
-		Workspace.Workspace.Medial_Axis = Final_Curve;
-		
-		%{
+		%
 		F = getframe(gcf);
 		[Im_Save,Map] = frame2im(F);
 		imwrite(Im_Save,[SaveDir,num2str(f),'.tif']);
 		%}
 		
+		%
+		Workspace.Workspace.Medial_Axis = Final_Curve;
 		save(File_Path,'Workspace');
+		%}
 		
 		% assignin('base','Files_List',Files_List);
 		% k = strfind(Files_List(f).folder,'\');

@@ -11,44 +11,38 @@ function [Final_Curve,Approved] = Find_Center_Line(Im,BW)
 	
 	Approved = 0;
 	Final_Curve = [];
-	Distances_STD_Threshold = 10;
+	Distances_STD_Threshold = 12;
 	Eval_Factor = 4;
+	Small_Objects_Max_Size = 20; % TODO: scale.
+	First_Closing_Radius = 40;
+	Second_Closing_Radius = 90;
 	
-	Dxy = 25;
+	Dxy = 25; % Margin tolerance for the detection of edge perimeter pixels.
 	
 	Im = Im(:,:,1);
 	[Sr,Sc,Sz] = size(Im);
-	% ImP = zeros(Sr,Sc);
-	
-	% Nv = numel(Workspace.Workspace.Vertices);
-	% R = 100; % 400.*Workspace.Workspace.User_Input.Scale_Factor;
-	
-	% V = [Workspace.Workspace.Vertices.Coordinate];
-	% Xv = V(1:2:end-1);
-	% Yv = V(2:2:end);
-	
-	% Angles = (1:360)';
-	% Perim = [R.*cosd(Angles) , R.*sind(Angles)];
-	% Lp = length(Angles);
-	
-	%
 	
 	Distance_Func = @(x0,y0,x,y) ( (x-x0).^2 + (y-y0).^2).^(.5);
 	
 	% Convert grayscale to BW and close to get a single blob:
-	Max_Obj_Size = 20; % TODO: scale.
 	if(nargin == 1)
 		BW = imbinarize(Im,0.3); % Grayscale to BW.
 	end
-	BW = bwareaopen(BW,Max_Obj_Size); % Getting rid of small objects.
+	BW = bwareaopen(BW,Small_Objects_Max_Size); % Getting rid of small objects.
 	
-	se = strel('disk',90);
-	closeBW = imclose(BW,se);
+	% First closing to connect the neuron's branches without connecting them to other, non-neuron objects:
+	se = strel('disk',First_Closing_Radius);
+	closeBW_1 = imclose(BW,se);
+	closeBW_2 = bwareafilt(closeBW_1,1); % Getting rid of those non-neuron objects.
+	
+	% Second closing to form a large and smooth blob:
+	se = strel('disk',Second_Closing_Radius);
+	closeBW = imclose(closeBW_2,se);
 	
 	ImP = bwperim(closeBW); % figure; imshow(closeBW);
 	
 	% Find the inner-most rows and columns for which the std is 0:
-	[Nr,Nc] = Find_Blank_Boundaries(closeBW);
+	[Nr,Nc] = Find_Blank_Boundaries(Im); % closeBW,BW
 	
 	% Find perimeter pixels along the first non-empty (with some tolerance Dxy)...:
 	[Fc1_Y,Fc1_X] = find(ImP(:,Nc(1):Nc(1)+Dxy)); % ...column from the left.
@@ -125,50 +119,56 @@ function [Final_Curve,Approved] = Find_Center_Line(Im,BW)
 	[C1_Y,C1_X] = ind2sub([Sr,Sc],CC_Final.PixelIdxList{1}); % The coordinates of the first final perimeter object.
 	[C2_Y,C2_X] = ind2sub([Sr,Sc],CC_Final.PixelIdxList{2}); % The coordinates of the second final perimeter object.
 	
-	V12 = zeros(length(C1_Y),2);
+	V = zeros(length(C1_Y),2);
     D12 = zeros(length(C1_Y),1);
+    D21 = zeros(length(C1_Y),1);
+    D = zeros(length(C1_Y),1);
+    D_Diff = zeros(length(C1_Y),1);
 	for i=1:length(C1_Y)
-		D = ( (C1_X(i) - C2_X).^2 + (C1_Y(i) - C2_Y).^2 ).^(.5);
-		F = find(D == min(D));
-		D12(i) = D(F(1));
-		% A2 = [C2_X(F(1)),C2_Y(F(1))];
-		V12(i,:) = [mean([C1_X(i),C2_X(F(1))]) , mean([C1_Y(i),C2_Y(F(1))])];
-	end
-	
-	% Note: this is currently not used:
-	V21 = zeros(length(C2_Y),2);
-	for i=1:length(C2_Y)
-		D = ( (C2_X(i) - C1_X).^2 + (C2_Y(i) - C1_Y).^2 ).^(.5);
-		F = find(D == min(D));
+		d = ( (C1_X(i) - C2_X).^2 + (C1_Y(i) - C2_Y).^2 ).^(.5);
+		F1 = find(d == min(d));
+		D12(i) = d(F1(1));
+		Cxy1 = [mean([C1_X(i),C2_X(F1(1))]) , mean([C1_Y(i),C2_Y(F1(1))])]; % The mean coordinate with the closest perimenter pixel on the other side.
 		
-		% A2 = [C2_X(F(1)),C2_Y(F(1))];
-		V21(i,:) = [mean([C2_X(i),C1_X(F(1))]) , mean([C2_Y(i),C1_Y(F(1))])];
+		
+		d = ( (C2_X(F1(1)) - C1_X).^2 + (C2_Y(F1(1)) - C1_Y).^2 ).^(.5);
+		F2 = find(d == min(d)); % Now find the minimal distance from the pixel on the chosen other side.
+		D21(i) = d(F2(1));
+		Cxy2 = [mean([C2_X(F1(1)),C1_X(F2(1))]) , mean([C2_Y(F1(1)),C1_Y(F2(1))])];
+		
+		V(i,:) = mean([Cxy1 ; Cxy2]);
+		D(i) = mean([D12(i),D21(i)]);
+		D_Diff(i) = abs(D12(i) - D21(i));
 	end
 	
-	Final_Curve = [ [Pxy1(1),Pxy1(2)] ; V12 ; [Pxy2(1),Pxy2(2)]];
+	Final_Curve = [ [Pxy1(1),Pxy1(2)] ; V ; [Pxy2(1),Pxy2(2)]];
 	Fit_Object = cscvn(Final_Curve'); % Fit a cubic spline.
 	Final_Curve = fnval(Fit_Object,linspace(Fit_Object.breaks(1),Fit_Object.breaks(end),Eval_Factor.*size(Final_Curve,1)))';
+	Final_Curve_Plot = Final_Curve; % Used to plot the final curve in case it gets deleted because the analysis fails.
 	
-	if(std(D12) < Distances_STD_Threshold)
+	if(std(D_Diff) < Distances_STD_Threshold)
 		Approved = 1;
+	else
+		Final_Curve = [];
 	end
+	% disp(std(D));
 	
-	%{
+	% Plot the result:
 	figure(1);
 	clf(1);
 	subplot(1,3,1);
 	imshow(Im);
-	hold on; plot(Final_Curve(:,1),Final_Curve(:,2),'r','LineWidth',3);
+	hold on; plot(Final_Curve_Plot(:,1),Final_Curve_Plot(:,2),'r','LineWidth',3);
 	hold on; plot(C1_X,C1_Y,'.m','MarkerSize',10);
 	hold on; plot(C2_X,C2_Y,'.m','MarkerSize',10);
 	hold on; plot(x1,y1,'.b','MarkerSize',10);
 	hold on; plot(x2,y2,'.b','MarkerSize',10);
+	title(['D = ',num2str(std(D))]);
 	
 	subplot(1,3,2);
 	imshow(BW);
-	hold on; scatter(V12(:,1),V12(:,2),10,jet(size(V12,1)),'filled'); % plot(V12(:,1),V12(:,2),'.g','MarkerSize',20);		
-	hold on; scatter(V21(:,1),V21(:,2),10,jet(size(V21,1)),'filled'); % plot(V21(:,1),V21(:,2),'.g','MarkerSize',30);
-	title(num2str(Approved),'FontSize',30);
+	hold on; scatter(V(:,1),V(:,2),10,jet(size(V,1)),'filled'); % plot(V12(:,1),V12(:,2),'.g','MarkerSize',20);		
+	title(['Is Approved: ',num2str(Approved)],'FontSize',30);
 	
 	subplot(1,3,3);
 	imshow(closeBW);
@@ -177,10 +177,12 @@ function [Final_Curve,Approved] = Find_Center_Line(Im,BW)
 	hold on; plot(x1,y1,'.b','MarkerSize',10);
 	hold on; plot(x2,y2,'.b','MarkerSize',10);
 	
-	hold on; plot(Final_Curve(:,1),Final_Curve(:,2),'--r','LineWidth',3);
+	hold on; plot(Final_Curve_Plot(:,1),Final_Curve_Plot(:,2),'--r','LineWidth',3);
 	
 	hold on; plot([mean(x1),mean(x2)],[mean(y1),mean(y2)],'.k','MarkerSize',30);
 	hold on; plot([Pxy1(1),Pxy2(1)],[Pxy1(2),Pxy2(2)],'.g','MarkerSize',30);
+	
+	title(['D-Diff = ',num2str(std(D_Diff))]);
 	
 	% if(~isempty(V12) && ~isempty(V21))
 		% hold on; scatter(V12(:,1),V12(:,2),10,jet(size(V12,1)),'filled'); % plot(V12(:,1),V12(:,2),'.g','MarkerSize',20);
@@ -193,54 +195,5 @@ function [Final_Curve,Approved] = Find_Center_Line(Im,BW)
 	% assignin('base','V12',V12);
 	% assignin('base','V21',V21);
 	
-	
-	if(0)
-		
-		figure; imshow(ImP2);
-		% figure; imshow(ImP);
-		
-		% hold on; plot(Fc1_X,Fc1_Y,'.r');
-		% hold on; plot(Fc2_X,Fc2_Y,'.r');
-		% hold on; plot(Fr1_X,Fr1_Y,'.r');
-		% hold on; plot(Fr2_X,Fr2_Y,'.r');
-		
-	end
-	
-	
-	
-	%{ **** Old Approach ****
-	ImP = rescale(ImP);
-	BW = imbinarize(ImP,0.6);
-	%}
-	
-	%{
-	for x=1:size(ImP,2)
-		for y=1:size(ImP,1)
-			Dxy = ( (x - Xv).^2 + (y - Yv).^2 ).^.5;
-			Perim_i = Perim + [x,y]; % Traslate circle coordinates to the current center (pixel).
-			Fp = find([Perim_i(:,1)] <= Sc & [Perim_i(:,1)] > 1 & [Perim_i(:,2)] <= Sr & [Perim_i(:,2)] > 1); % Find circle coordinates within the image boundaries.
-			
-			ImP(y,x) = length(find(Dxy < R)) ./ (length(Fp) ./ Lp); % Save the # of vertices as the pixel value. Multiply by the portion of the circle that is within the image boundaries.
-			% ImP(y,x) = ImP(y,x) + Im(y,x) ./ 10;
-		end
-	end
-	%}
-	
-	%{
-	[Fy,Fx] = find(closeBW);
-	
-	for x=1:size(ImP,2)
-		for y=1:size(ImP,1)
-			
-			Dxy = ( (x - Fx).^2 + (y - Fy).^2 ).^.5;
-			
-			Perim_i = Perim + [x,y]; % Traslate circle coordinates to the current center (pixel).
-			Fp = find([Perim_i(:,1)] <= Sc & [Perim_i(:,1)] > 1 & [Perim_i(:,2)] <= Sr & [Perim_i(:,2)] > 1); % Find circle coordinates within the image boundaries.
-			
-			ImP(y,x) = length(find(Dxy < R)) ./ (length(Fp) ./ Lp); % Save the # of 1-pixels as the pixel value. Multiply by the portion of the circle that is within the image boundaries.
-			% ImP(y,x) = ImP(y,x) + Im(y,x) ./ 10;
-		end
-	end
-	% BW = imbinarize(ImP,0.6); % figure; imshow(BW);
-	%}
+	%} End of plotting code.
 end

@@ -6,6 +6,12 @@ function Multiple_Choose_Plot(GUI_Parameters)
 	
 	% assignin('base','GUI_Parameters2',GUI_Parameters);
 	
+	% Impotrant TODO:
+		% The Angles field now contains the angle for tips (instead of -1).
+		% Some of the plots here rely on that -1 to filter out tips.
+		% Instead, I should change it to use the order field as a filter.
+	%
+	
 	switch GUI_Parameters.General.Active_Plot
 		case 'Mean Segment Length'
 			Workspace_Operations = @(x) x(x>=0); % The length of a segment has to be positive.
@@ -74,22 +80,45 @@ function Multiple_Choose_Plot(GUI_Parameters)
 		case 'Distances Of Vertices From The Medial Axis - Histogram'
 			Workspace_Operations = @(x) x(x>=0); % Only non-negative distance values.
 			Y_Label = 'Count';
-			Title = 'Distribution of Distances Of Vertices From The Medial Axis';
-			X_Min_Max = [0,150];
+			Title = 'Distribution of Distances of Vertices From the Medial Axis';
+			X_Min_Max = [0,120];
 			BinSize = 10 .* GUI_Parameters.Handles.Analysis.Slider.Value;
 			RowWise = 0;
 			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Distance_From_Medial_Axis'},Workspace_Operations,RowWise);
-			% Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
+			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,Y_Label,Title);
+			
+		case 'Distances Of 3-Way Junctions From The Medial Axis - Histogram'
+			Workspace_Operations{1} = @(x) x(x>=0); % Only non-negative distance values.
+			Workspace_Operations{2} = @(x) x(x == 3); % Choose third order vertices only (= 3-way junctions).
+			Y_Label = 'Count';
+			Title = 'Distribution of Distances of 3-Way Junctions From the Medial Axis';
+			X_Min_Max = [0,120];
+			BinSize = 10 .* GUI_Parameters.Handles.Analysis.Slider.Value;
+			RowWise = 1;
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Distance_From_Medial_Axis','Order'},Workspace_Operations,RowWise);
+			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,Y_Label,Title);
+			
+		case 'Distances Of Tips From The Medial Axis - Histogram'
+			Workspace_Operations{1} = @(x) x(x>=0); % Only non-negative distance values.
+			Workspace_Operations{2} = @(x) x(x == 1); % Choose first order vertices only (= tips).
+			Y_Label = 'Count';
+			Title = 'Distribution of Distances of Tips From the Medial Axis';
+			X_Min_Max = [0,120];
+			BinSize = 10 .* GUI_Parameters.Handles.Analysis.Slider.Value;
+			RowWise = 1;
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Distance_From_Medial_Axis','Order'},Workspace_Operations,RowWise);
 			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,Y_Label,Title);
 			
 		case 'Smallest Angle VS Distance From Medial Axis'
+			% TODO: what if there are two minimums???????????
 			Workspace_Operations{1} = @(x) x(x == min(x) & x>0); % Smallest Angle.
 			Workspace_Operations{2} = @(x) x(x>=0); % Distance from Medial Axis.
+			Workspace_Operations{3} = @(x) x(x==3); % Distance from Medial Axis.
 			X_Label = 'Smallest Angle';
-			Y_Label = 'Distance (\mum)';			
+			Y_Label = 'Distance (\mum)';
 			Title = 'Smallest Angle VS Distance From Medial Axis';
 			RowWise = 1;
-			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Angles','Distance_From_Medial_Axis'},Workspace_Operations,RowWise);
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Angles','Distance_From_Medial_Axis','Order'},Workspace_Operations,RowWise);
 			Two_Vars_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Label,Y_Label,Title);
 		%%%%%%%%%%%%%%%%%%%%%%%%%	
 			
