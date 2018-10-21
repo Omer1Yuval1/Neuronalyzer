@@ -1,5 +1,17 @@
 function Multiple_Choose_Plot(GUI_Parameters)
 	
+	% This function...
+	% 
+	% 
+	% 
+	% The flag RowWise tells the Generate_Plot_Input() function to perform the field operation in a row-wise manner.
+		% For example, this is necessary in cases in which a second field is used to filter out rows (e.g. vertex order).
+	
+	
+	% Note: When using a field to filter-out rows, the # of values in different fields can be different.
+		% This means that values in corresponding positions don't correspond. But that's ok because the filtering field is not analyzed.
+		% Example: using the "order" field to include only 3rd order junctions, and the "Angle" field which can contain any number (>0) of values.	
+	
 	% Workspace_Operations is a function to operate on the values vector of each single workspace (= animal).
 	
 	% Note: RowWise must be set to 1 if: one of the field is a vector AND thes values won't be simply combined with all the rest (other rows).
@@ -79,95 +91,121 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			
 		case 'Distances Of Vertices From The Medial Axis - Histogram'
 			Workspace_Operations = @(x) x(x>=0); % Only non-negative distance values.
+			RowWise = 0;
+			%%%
+			X_Label = 'Distance (\mum)';
 			Y_Label = 'Count';
 			Title = 'Distribution of Distances of Vertices From the Medial Axis';
-			X_Min_Max = [0,120];
+			X_Min_Max = [0,70];
 			BinSize = 10 .* GUI_Parameters.Handles.Analysis.Slider.Value;
-			RowWise = 0;
+			%%%
 			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Distance_From_Medial_Axis'},Workspace_Operations,RowWise);
-			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,Y_Label,Title);
+			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
 			
 		case 'Distances Of 3-Way Junctions From The Medial Axis - Histogram'
 			Workspace_Operations{1} = @(x) x(x>=0); % Only non-negative distance values.
 			Workspace_Operations{2} = @(x) x(x == 3); % Choose third order vertices only (= 3-way junctions).
+			RowWise = 1;
+			%%%
+			X_Label = 'Distance (\mum)';
 			Y_Label = 'Count';
 			Title = 'Distribution of Distances of 3-Way Junctions From the Medial Axis';
 			X_Min_Max = [0,120];
 			BinSize = 10 .* GUI_Parameters.Handles.Analysis.Slider.Value;
-			RowWise = 1;
+			%%%
 			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Distance_From_Medial_Axis','Order'},Workspace_Operations,RowWise);
-			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,Y_Label,Title);
+			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
 			
 		case 'Distances Of Tips From The Medial Axis - Histogram'
 			Workspace_Operations{1} = @(x) x(x>=0); % Only non-negative distance values.
 			Workspace_Operations{2} = @(x) x(x == 1); % Choose first order vertices only (= tips).
+			RowWise = 1;
+			%%%
+			X_Label = 'Distance (\mum)';
 			Y_Label = 'Count';
 			Title = 'Distribution of Distances of Tips From the Medial Axis';
 			X_Min_Max = [0,120];
 			BinSize = 10 .* GUI_Parameters.Handles.Analysis.Slider.Value;
-			RowWise = 1;
+			%%%
 			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Distance_From_Medial_Axis','Order'},Workspace_Operations,RowWise);
-			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,Y_Label,Title);
+			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
 			
 		case 'Smallest Angle VS Distance From Medial Axis'
 			% TODO: what if there are two minimums???????????
 			Workspace_Operations{1} = @(x) x(x == min(x) & x>0); % Smallest Angle.
 			Workspace_Operations{2} = @(x) x(x>=0); % Distance from Medial Axis.
-			Workspace_Operations{3} = @(x) x(x==3); % Distance from Medial Axis.
+			Workspace_Operations{3} = @(x) x(x==3); % Only 3-way junctions (and specifically not tips)..
+			RowWise = 1;
+			%%%
 			X_Label = 'Smallest Angle';
 			Y_Label = 'Distance (\mum)';
 			Title = 'Smallest Angle VS Distance From Medial Axis';
-			RowWise = 1;
+			%%%
 			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Angles','Distance_From_Medial_Axis','Order'},Workspace_Operations,RowWise);
 			Two_Vars_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Label,Y_Label,Title);
-		%%%%%%%%%%%%%%%%%%%%%%%%%	
 			
 		case 'Histogram of all Angles'
-			Workspace_Operations = @(x) x(x>=0).*180./pi; % Exclude tips (appear as angle = -1) and convert to degrees.
-			Y_Label = 'Probability';
-			Title = 'Histogram of all Angles';
+			Workspace_Operations{1} = @(x) x.*180./pi; % Exclude tips (appear as angle = -1) and convert to degrees.
+			Workspace_Operations{2} = @(x) x(x==3); % Only 3-way junctions (and specifically not tips)..
+			Workspace_Operations{3} = @(x) x; % x(x>=25 & x<=35). Filter-out distances from medial axis (TODO: validate!).
+			RowWise = 1;
+			%%%
+			X_Label = ['Angle (',char(176),')'];
+			Y_Label = 'Count';
+			Title = 'Histogram of all Angles of 3-way Junctions';
+			%%%
 			X_Min_Max = [30,200];
 			BinSize = 20 .* GUI_Parameters.Handles.Analysis.Slider.Value;
-			RowWise = 0;
-			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Angles'},Workspace_Operations,RowWise);
+			%%%
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Angles','Order','Distance_From_Medial_Axis'},Workspace_Operations,RowWise);
 			% assignin('base','Input_Struct',Input_Struct);
-			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,Y_Label,Title);
+			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
 		case 'Histogram of Symmetry Indices'
 			Workspace_Operations = @(x) x(x>=0);
+			RowWise = 0;
+			%%%
+			X_Label = '';
 			Y_Label = 'Probability';
 			Title = 'Symmetry Indices';
 			X_Min_Max = [0,1];
 			BinSize = 0.1 .* GUI_Parameters.Handles.Analysis.Slider.Value;
-			RowWise = 0;
-			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Symmetry'},Workspace_Operations,RowWise);
-			% assignin('base','Input_Struct',Input_Struct);
-			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,Y_Label,Title);
+			%%%
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Symmetry'},Workspace_Operations,RowWise); % assignin('base','Input_Struct',Input_Struct);
+			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
 		case 'Minimal and Maximal Angles of 3-Way junctions'
-			Workspace_Operations{1} = @(x) x(x == min(x) & x>0);
-			Workspace_Operations{2} = @(x) x(x == max(x) & x>0); % x(x ~= min(x) & x~=max(x) & x>0);
+			Workspace_Operations{1} = @(x) x(x == min(x));
+			Workspace_Operations{2} = @(x) x(x == max(x)); % x(x ~= min(x) & x~=max(x) & x>0);
+			Workspace_Operations{3} = @(x) x(x == 3); % Only 3-way junctions.
+			RowWise = 1;
+			%%%
 			X_Label = 'Minimal Angle';
 			Y_Label = 'Maximal Angle';
 			Title = 'Minimal and Maximal Angles of 3-Way junctions';
-			RowWise = 1;
-			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Angles','Angles'},Workspace_Operations,RowWise);
+			%%%
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Angles','Angles','Order'},Workspace_Operations,RowWise);
 			Two_Vars_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Label,Y_Label,Title);
 		case 'The Two Minimal Angles of each 3-Way junction'
-			Workspace_Operations{1} = @(x) x(x == min(x) & x>0);
-			Workspace_Operations{2} = @(x) x(x ~= min(x) & x~=max(x) & x>0);
+			Workspace_Operations{1} = @(x) x(x == min(x));
+			Workspace_Operations{2} = @(x) x(x ~= min(x) & x~=max(x));
+			Workspace_Operations{3} = @(x) x(x == 3); % Only 3-way junctions.
+			RowWise = 1;
+			%%%
 			X_Label = 'Minimal Angle';
 			Y_Label = 'Mid-size Angle';			
 			Title = 'The Two Minimal Angles of each 3-Way junction';
-			RowWise = 1;
-			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Angles','Angles'},Workspace_Operations,RowWise);
+			%%%
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Angles','Angles','Order'},Workspace_Operations,RowWise);
 			Two_Vars_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Label,Y_Label,Title);
 		case 'Linearity-Symmetry of 3-Way junctions'
 			Workspace_Operations = @(x) x;
+			RowWise = 0;
+			%%%
 			X_Label = 'Symmetry';
 			Y_Label = 'Linearity';
 			Title = 'Linearity-Symmetry of 3-Way junctions';
-			RowWise = 0;
-			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Symmetry','Linearity'},Workspace_Operations,RowWise);
-			Two_Vars_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Label,Y_Label,Title);
+			%%%
+			% Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Symmetry','Linearity'},Workspace_Operations,RowWise);
+			% Two_Vars_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Label,Y_Label,Title);
 		
 		case 'Sum of 2 Smallest VS Product of 2 Smallest'
 			Workspace_Operations{1} = @(x) (x(x == min(x) & x>0)) + x(x ~= min(x) & x~=max(x) & x>0);
@@ -176,62 +214,71 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Y_Label = 'Product of 2 Smallest Angles';			
 			Title = 'Sum of 2 Smallest VS Product of 2 Smallest';
 			RowWise = 1;
-			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Angles','Angles'},Workspace_Operations,RowWise);
-			Two_Vars_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Label,Y_Label,Title);
-			
+			% Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Angles','Angles'},Workspace_Operations,RowWise);
+			% Two_Vars_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Label,Y_Label,Title);
+		
 		case 'Smallest Angle VS Diff between 2 Smallest'
 			Workspace_Operations{1} = @(x) x(x == min(x) & x>0);
 			Workspace_Operations{2} = @(x) abs((x(x == min(x) & x>0)) - x(x ~= min(x) & x~=max(x) & x>0));
+			RowWise = 1;
+			%%%
 			X_Label = 'Smallest Angle';
 			Y_Label = 'Diff between 2 Smallest Angles';			
 			Title = 'Smallest Angle VS Diff between 2 Smallest';
-			RowWise = 1;
-			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Angles','Angles'},Workspace_Operations,RowWise);
-			Two_Vars_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Label,Y_Label,Title);
-			
+			%%%
+			% Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Angles','Angles'},Workspace_Operations,RowWise);
+			% Two_Vars_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Label,Y_Label,Title);
+		
+		%{
 		case 'Smallest-Mid-largest'
 			Workspace_Operations{1} = @(x) x(x == min(x) & x>0);
 			Workspace_Operations{2} = @(x) x(x ~= min(x) & x~=max(x) & x>0);
 			Workspace_Operations{3} = @(x) x(x == max(x) & x>0);
 			X_Label = 'Minimal Angle';
-			Y_Label = 'Mid-size Angle';			
-			Z_Label = 'Maximal Angle';			
+			Y_Label = 'Mid-size Angle';
+			Z_Label = 'Maximal Angle';
 			Title = 'Smallest-Mid-largest';
 			RowWise = 1;
-			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Angles','Angles','Angles'},Workspace_Operations,RowWise);
-			Three_Vars_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Label,Y_Label,Z_Label,Title);
-		
-		
-		%{
-		case 'Segments Length Distribution'
-			% Property_Func = str2func('Segments_Length_Struct');
-			% XLable = 'Length (\mum)';
-			% YLable = 'Number of Segments';
-			% Title1 = 'Distribution of Segments Length';
-			% Histogram_Plot(GUI_Parameters,Property_Func,[0,40],[1,10],0,XLable,YLable,Title1,'normal',1,1);
-			Plot_Segments_Length(GUI_Parameters);
-		case 'Length Distribution'
-			Property_Func = str2func('Length_Gradient');
-			XLable = 'Length (\mum)';
-			YLable = 'Mean Length (\mum)';
-			Title1 = 'Distribution of Neuronal Length Along the Primary Branches';
-			Histogram_Plot(GUI_Parameters,Property_Func,[-500,500],[1,100],0,XLable,YLable,Title1,'reverse',1,1);
-		case 'Symmetry of 3-Way junctions'
-			Plot_Junctions_Symmetry(GUI_Parameters);
-		
-		case 'Smallest Angles of 3-Way Junctions'
-			Smallest_Angles_2D_Menorah_Orders(GUI_Parameters);
-		case 'Linearity VS Assymetry'
-			Two_Angles_Closest_To_Source_Rect(GUI_Parameters);
-		case 'Distribution of the "New" Angle in 3-way Junctions'
-			Property_Func = str2func('New_Angle_Distribution');
-			XLable = 'Angle (\^o)';
-			YLable = 'Number of Junctions';
-			Title1 = 'Distribution of the Branching Angle in 3-way Junctions';
-			Histogram_Plot(GUI_Parameters,Property_Func,[0,210],[1,60],0,XLable,YLable,Title1,'normal',1,0);
-		case 'Density of Vertices'
-			Means_Plot(GUI_Parameters,'Vertices_Density','# of Branch-Points Per Branch Length (\mum)','Density of Vertices');
+			% Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Angles','Angles','Angles'},Workspace_Operations,RowWise);
+			% Three_Vars_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Label,Y_Label,Z_Label,Title);
 		%}
+		
+		case '2D Histogram Angles of 3-Way Junctions'
+			Workspace_Operations{1} = @(x) x(x == min(x)).*180./pi;
+			Workspace_Operations{2} = @(x) x(x == max(x)).*180./pi;
+			Workspace_Operations{3} = @(x) x(x == 3); % Only 3-way junctions.
+			RowWise = 1;
+			%%%
+			X_Label = 'Smallest Angle';
+			Y_Label = 'Largest Angle'; % 'Maximal Angle';	
+			Title = 'Angles of 3-Way Junctions';
+			%%%
+			BinSize = 20 .* GUI_Parameters.Handles.Analysis.Slider.Value;
+			% disp(GUI_Parameters.Handles.Analysis.Slider.Value);
+			X_Min_Max = [30,120];
+			Y_Min_Max = [110,290];
+			%%%
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Angles','Angles','Order'},Workspace_Operations,RowWise);
+			Histogram_2D_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,Y_Min_Max,BinSize,X_Label,Y_Label,Title);
+		%%%
+		case '2D Histogram of Corrected Angles of 3-Way Junctions'
+			Workspace_Operations{1} = @(x) x(x == min(x)).*180./pi;
+			Workspace_Operations{2} = @(x) x(x == max(x)).*180./pi;
+			Workspace_Operations{3} = @(x) x(x == 3); % Only 3-way junctions.
+			RowWise = 1;
+			%%%
+			X_Label = 'Smallest Angle';
+			Y_Label = 'Largest Angle'; % 'Maximal Angle';	
+			Title = 'Angles of 3-Way Junctions';
+			%%%
+			BinSize = 20 .* GUI_Parameters.Handles.Analysis.Slider.Value;
+			% disp(GUI_Parameters.Handles.Analysis.Slider.Value);
+			X_Min_Max = [30,120];
+			Y_Min_Max = [110,290];
+			%%%
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Corrected_Angles','Corrected_Angles','Order'},Workspace_Operations,RowWise);
+			Histogram_2D_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,Y_Min_Max,BinSize,X_Label,Y_Label,Title);
+			
 	end
 	assignin('base','Input_Struct',Input_Struct);
 end

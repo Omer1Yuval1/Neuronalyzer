@@ -26,16 +26,16 @@ function Multiple_Means_Func(Input_Struct,GUI_Parameters,Visuals,YLabel,Title1)
 			Legend_Handles_Array = [];
 			for i=1:Groups_Num % For each group (a unique combination of selected features).
 				
-				Mean1 = nanmean(Input_Struct(i).Values);
-				STD_SE = nanstd(Input_Struct(i).Values) ./ sqrt(length(Input_Struct(i).Values));
+				Mean1 = nanmean(Input_Struct(i).XValues);
+				STD_SE = nanstd(Input_Struct(i).XValues) ./ sqrt(length(Input_Struct(i).XValues));
 				C = Input_Struct(i).Color;
 				hold on;
-				scatter(i*ones(1,length(Input_Struct(i).Values)),Input_Struct(i).Values,Visuals.Scatter_Dot_Size1,'MarkerFaceColor',Input_Struct(i).Color,'MarkerEdgeColor',Input_Struct(i).Color,'jitter','on','jitterAmount',Visuals.Jitter1);
+				scatter(i*ones(1,length(Input_Struct(i).XValues)),Input_Struct(i).XValues,Visuals.Scatter_Dot_Size1,'MarkerFaceColor',Input_Struct(i).Color,'MarkerEdgeColor',Input_Struct(i).Color,'jitter','on','jitterAmount',Visuals.Jitter1);
 				errorbar(i,Mean1,STD_SE,'LineWidth',Visuals.ErrorBar_Width1,'Color',Visuals.ErrorBar_Color1);
 				Legend_Handles_Array(i) = plot(i+[-1,+1]*Visuals.Jitter1,[Mean1,Mean1],'Color',Input_Struct(1).Color,'LineWidth',Visuals.Mean_Line_Width);
 				
 				Groups_Struct(end+1).Group_ID = i;
-				Groups_Struct(end).Values = Input_Struct(i).Values;
+				Groups_Struct(end).Values = Input_Struct(i).XValues;
 				Groups_Struct(end).Mean = Mean1;
 				Groups_Struct(end).SE = STD_SE;
 				Groups_Struct(end).Category = 0;

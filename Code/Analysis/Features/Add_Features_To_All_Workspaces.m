@@ -3,6 +3,10 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 	% TODO: the step length in the Rectangles struct is currently in ***pixels***
 	% This affects many things (e.g. curvature).
 	
+	% TODO: move out and scale:
+	Medial_Fit_Res = 1000;
+	Worm_Radius_um = 40;
+	
 	Features = struct('Feature_Name',{},'Values',{},'Num_Of_Options',{});
 	N = numel(W);
 	Distance_Func = @(x0,y0,x,y) ( (x-x0).^2 + (y-y0).^2).^(.5);
@@ -11,10 +15,11 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 		
 		Scale_Factor = W(i).Workspace.User_Input.Scale_Factor;
 		Parameters = Parameters_Func(Scale_Factor);
+		Worm_Radius_px = Worm_Radius_um ./ Scale_Factor; % Conversion to pixels.
 		
 		for v=1:numel(W(i).Workspace.Vertices) % For each vertex.
 			% disp(i); disp(v);
-			W(i).Workspace.Vertices(v).Angles = Calc_Junction_Angles(W(i).Workspace.Vertices(v).Rectangles);
+			W(i).Workspace.Vertices(v).Angles = Calc_Junction_Angles([W(i).Workspace.Vertices(v).Rectangles.Angle]);
 			Symmetry_A3_Linearity = Vertices_Symmetry_Linearity(W(i).Workspace.Vertices(v).Angles);
 			if(length(Symmetry_A3_Linearity) == 3)
 				W(i).Workspace.Vertices(v).Symmetry = Symmetry_A3_Linearity(1);
@@ -22,6 +27,7 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 			end
 			W(i).Workspace.Vertices(v).Num_of_Branches = numel(W(i).Workspace.Vertices(v).Rectangles);
 			
+			% Find the distance from the CB:
 			D = ( (W(i).Workspace.Vertices(v).Coordinate(1) - W(i).Workspace.CB.Center(1))^2 + ...
 				(W(i).Workspace.Vertices(v).Coordinate(2) - W(i).Workspace.CB.Center(2))^2 )^.5;
 			W(i).Workspace.Vertices(v).Distance_From_CB = D.*Scale_Factor;
@@ -29,11 +35,44 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 			x0 = W(i).Workspace.Vertices(v).Coordinate(1);
 			y0 = W(i).Workspace.Vertices(v).Coordinate(2);
 			
-			if(~isempty(W(i).Workspace.Medial_Axis))
+			if(isfield(W(i).Workspace,'Medial_Axis') && ~isempty(W(i).Workspace.Medial_Axis) && numel(W(i).Workspace.Vertices(v).Rectangles))
+				
 				D = Distance_Func(x0,y0,W(i).Workspace.Medial_Axis(:,1),W(i).Workspace.Medial_Axis(:,2));
 				W(i).Workspace.Vertices(v).Distance_From_Medial_Axis = min(D).*Scale_Factor;
+				
+				Xm = [W(i).Workspace.Medial_Axis(:,1)]';
+				Ym = [W(i).Workspace.Medial_Axis(:,2)]';
+				Medial_Fit_Object = cscvn([Xm ; Ym]);
+				Medial_Der_Fit_Object = fnder(Medial_Fit_Object,1); % 1st derivative.
+				Medial_Eval = linspace(Medial_Fit_Object.breaks(1),Medial_Fit_Object.breaks(end),Medial_Fit_Res);
+				Fxy = fnval(Medial_Fit_Object,Medial_Eval);
+				
+				% Find the closest point along the medial axis to the vertex center:
+				Cx = W(i).Workspace.Vertices(v).Coordinate(1); % x-coordinate of the vertex center.
+				Cy = W(i).Workspace.Vertices(v).Coordinate(2); % y-coordinate of the vertex center.
+				Dm = ( (Cx - Fxy(1,:)).^2 + (Cy - Fxy(2,:)).^2 ).^(.5);
+				f1 = find(Dm == min(Dm));
+				Dmin = Dm(f1(1)); % Minimal distance of the vertex center of the medial axis (= distance along the Y' axis).
+				Medial_Tangent = [fnval(Medial_Der_Fit_Object,Medial_Eval(f1(1))) ; 0]'; % The medial tangent vector is already from the origin.
+				
+				W(i).Workspace.Vertices(v).Rectangles(end).Medial_Angles = -1;
+				W(i).Workspace.Vertices(v).Rectangles(end).Medial_Angles_Corrected = -1;
+				for r=1:numel(W(i).Workspace.Vertices(v).Rectangles) % For each vertex rectangle.
+					a = W(i).Workspace.Vertices(v).Rectangles(r).Angle;
+					Vr = [cos(a) - Cx , sin(a) - Cy , 0];
+					W(i).Workspace.Vertices(v).Rectangles(r).Medial_Angles = atan2(norm(cross(Vr,Medial_Tangent)), dot(Vr,Medial_Tangent));
+					
+					% Projection Correction:
+					Lz = (Worm_Radius_px.^2 - Dmin.^2).^(.5); % sin(b) = Dmin./ Worm_Radius_px.
+					Vr_Corrected = Vr; % [Vr(1:2),Lz];
+					W(i).Workspace.Vertices(v).Rectangles(r).Medial_Angles_Corrected = atan2(norm(cross(Vr_Corrected,Medial_Tangent)), dot(Vr_Corrected,Medial_Tangent));
+				end
+				% Compute the corrected angles diffs:
+				W(i).Workspace.Vertices(v).Corrected_Angles = Calc_Junction_Angles([W(i).Workspace.Vertices(v).Rectangles.Medial_Angles_Corrected]);
+				
 			else
 				W(i).Workspace.Vertices(v).Distance_From_Medial_Axis = -1;
+				W(i).Workspace.Vertices(v).Corrected_Angles = -1;
 			end
 			
 		end

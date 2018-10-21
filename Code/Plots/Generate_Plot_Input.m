@@ -12,6 +12,8 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Field_Name,Wo
 			Input_Struct = struct('Group_Name',{},'XValues',{},'Normalization',{},'Worms_Number',{},'Color',{},'Labels',{});
 		case 2
 			Input_Struct = struct('Group_Name',{},'XValues',{},'YValues',{},'Normalization',{},'Worms_Number',{},'Color',{},'Labels',{});
+		case 3
+			Input_Struct = struct('Group_Name',{},'XValues',{},'YValues',{},'ZValues',{},'Normalization',{},'Worms_Number',{},'Color',{},'Labels',{});
 	end
 	
 	% Currently using only these two features:
@@ -59,7 +61,6 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Field_Name,Wo
 	for i=1:numel(Groups) % For each group (a unique combination of features).
 		Input_Struct(i).Group_Name = Groups(i).Name;
 		Input_Struct(i).Normalization = 1;
-		vi = 0;
 		
 		F = Groups(i).Workspaces;
 		% F = find([GUI_Parameters.Workspace.Grouping] == Selected_Groups(i,1) & [GUI_Parameters.Workspace.Genotype] == Selected_Groups(i,2)); % Find all the relevant workspaces.
@@ -93,7 +94,7 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Field_Name,Wo
 							end
 							
 							if(Leq)
-								Lem = 0; % Flag to test if any vector is empty.
+								Lem = 0; % Flag to test if any of the fields is empty after applying the operation.
 								for l=1:length(Workspace_Operations)
 									V{l} = Workspace_Operations{l}(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Field_Name{l}));
 									if(isempty(V{l}))
@@ -102,9 +103,13 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Field_Name,Wo
 								end
 								
 								if(~Lem) % If non are empty.
-									vi = vi + 1;
+									% Note: the # of values in different fields may be different, which means values in corresponding positions don't correspond.
+									% If any of the fields is empty (after applying the operation), the row will not be included.
+										% This is also how the filtering-out of rows is implemented (implicitly).
 									for l=1:length(Workspace_Operations)
-										Input_Struct(i).(Names{l})(vi) = V{l};
+										N = length(Input_Struct(i).(Names{l})) + 1; % The current total number of values in field l (of group i).
+										Ni = N : N + length(V{l}) - 1; % The indices to put the new values.
+										Input_Struct(i).(Names{l})(Ni) = V{l};
 									end
 								end
 							end

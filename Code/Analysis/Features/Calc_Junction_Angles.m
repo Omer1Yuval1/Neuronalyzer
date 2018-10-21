@@ -1,13 +1,9 @@
-function Output = Calc_Junction_Angles(Rectangles)
+function Output = Calc_Junction_Angles(Angles)
 	
 	m = 2*pi;
-	if(numel(Rectangles) == 3) % Do only for 3-way junctions.
-		
-		a1 = Rectangles(1).Angle;
-		a2 = Rectangles(2).Angle;
-		a3 = Rectangles(3).Angle;
-		
-		V = [[1:3]',(mod([Rectangles.Angle],m))'];
+	if(length(Angles) == 3) % Do only for 3-way junctions.
+        
+		V = [(1:3)',(mod(Angles,m))'];
 		V = sortrows(V,2); % Sort by angle size.
 		
 		A21 = V(2,2) - V(1,2);
@@ -15,8 +11,10 @@ function Output = Calc_Junction_Angles(Rectangles)
 		A31 = m - A21 - A32;
 		
 		Output = [A21,A32,A31];
-	elseif(numel(Rectangles) == 1) % Tips.
-		Output = mod([Rectangles(1).Angle],m);
+	elseif(length(Angles) == 1) % Tips.
+		Output = mod(Angles(1),m);
 	else
 		Output = -1;
 	end
+	
+end
