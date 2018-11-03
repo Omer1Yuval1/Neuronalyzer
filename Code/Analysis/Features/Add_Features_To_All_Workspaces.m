@@ -3,9 +3,14 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 	% TODO: the step length in the Rectangles struct is currently in ***pixels***
 	% This affects many things (e.g. curvature).
 	
+	Rx = @(a) [1,0,0 ; 0,cos(a),-sin(a) ; 0,sin(a),cos(a)]; % Rotation matrix around the x-axis.
+	Rz = @(a) [cos(a),-sin(a),0 ; sin(a),cos(a),0 ; 0,0,1]; % Rotation matrix around the z-axis (angle should be given in radians).
+	
 	% TODO: move out and scale:
 	Medial_Fit_Res = 1000;
-	Worm_Radius_um = 40;
+	Worm_Radius_um = 45;
+	SmoothingParameter = 3;
+	Corrected_Plane_Angle_Func = @(d) asin(d./Worm_Radius_um); % Input: distance (in um) from the medial axis.
 	
 	Features = struct('Feature_Name',{},'Values',{},'Num_Of_Options',{});
 	N = numel(W);
@@ -16,6 +21,19 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 		Scale_Factor = W(i).Workspace.User_Input.Scale_Factor;
 		Parameters = Parameters_Func(Scale_Factor);
 		Worm_Radius_px = Worm_Radius_um ./ Scale_Factor; % Conversion to pixels.
+		
+		if(isfield(W(i).Workspace,'Medial_Axis') && ~isempty(W(i).Workspace.Medial_Axis))
+			Xm = [W(i).Workspace.Medial_Axis(:,1)]';
+			Ym = [W(i).Workspace.Medial_Axis(:,2)]';
+			
+			Medial_Fit_Object = cscvn([Xm ; Ym]); % Medial_Fit_Object = csaps(Xm,Ym,0.5);
+			Medial_Der_Fit_Object = fnder(Medial_Fit_Object,1); % 1st derivative.
+			Medial_Eval = linspace(Medial_Fit_Object.breaks(1),Medial_Fit_Object.breaks(end),Medial_Fit_Res);
+			XY_Eval = fnval(Medial_Fit_Object,Medial_Eval);
+			Use_Medial_Axis = 1;
+		else
+			Use_Medial_Axis = 0;
+		end
 		
 		for v=1:numel(W(i).Workspace.Vertices) % For each vertex.
 			% disp(i); disp(v);
@@ -32,49 +50,29 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 				(W(i).Workspace.Vertices(v).Coordinate(2) - W(i).Workspace.CB.Center(2))^2 )^.5;
 			W(i).Workspace.Vertices(v).Distance_From_CB = D.*Scale_Factor;
 			
-			x0 = W(i).Workspace.Vertices(v).Coordinate(1);
-			y0 = W(i).Workspace.Vertices(v).Coordinate(2);
-			
-			if(isfield(W(i).Workspace,'Medial_Axis') && ~isempty(W(i).Workspace.Medial_Axis) && numel(W(i).Workspace.Vertices(v).Rectangles))
-				
-				D = Distance_Func(x0,y0,W(i).Workspace.Medial_Axis(:,1),W(i).Workspace.Medial_Axis(:,2));
-				W(i).Workspace.Vertices(v).Distance_From_Medial_Axis = min(D).*Scale_Factor;
-				
-				Xm = [W(i).Workspace.Medial_Axis(:,1)]';
-				Ym = [W(i).Workspace.Medial_Axis(:,2)]';
-				Medial_Fit_Object = cscvn([Xm ; Ym]);
-				Medial_Der_Fit_Object = fnder(Medial_Fit_Object,1); % 1st derivative.
-				Medial_Eval = linspace(Medial_Fit_Object.breaks(1),Medial_Fit_Object.breaks(end),Medial_Fit_Res);
-				Fxy = fnval(Medial_Fit_Object,Medial_Eval);
-				
+			if(Use_Medial_Axis && numel(W(i).Workspace.Vertices(v).Rectangles)) % Find the corrected angles only if the vertex is <= the length of the radius from the medial axis.
 				% Find the closest point along the medial axis to the vertex center:
-				Cx = W(i).Workspace.Vertices(v).Coordinate(1); % x-coordinate of the vertex center.
-				Cy = W(i).Workspace.Vertices(v).Coordinate(2); % y-coordinate of the vertex center.
-				Dm = ( (Cx - Fxy(1,:)).^2 + (Cy - Fxy(2,:)).^2 ).^(.5);
+				Cxy = W(i).Workspace.Vertices(v).Coordinate; % Just for readability.
+				Dm = Distance_Func(XY_Eval(1,:),XY_Eval(2,:),Cxy(1),Cxy(2));
 				f1 = find(Dm == min(Dm));
-				Dmin = Dm(f1(1)); % Minimal distance of the vertex center of the medial axis (= distance along the Y' axis).
-				Medial_Tangent = [fnval(Medial_Der_Fit_Object,Medial_Eval(f1(1))) ; 0]'; % The medial tangent vector is already from the origin.
-				
-				W(i).Workspace.Vertices(v).Rectangles(end).Medial_Angles = -1;
-				W(i).Workspace.Vertices(v).Rectangles(end).Medial_Angles_Corrected = -1;
-				for r=1:numel(W(i).Workspace.Vertices(v).Rectangles) % For each vertex rectangle.
-					a = W(i).Workspace.Vertices(v).Rectangles(r).Angle;
-					Vr = [cos(a) - Cx , sin(a) - Cy , 0];
-					W(i).Workspace.Vertices(v).Rectangles(r).Medial_Angles = atan2(norm(cross(Vr,Medial_Tangent)), dot(Vr,Medial_Tangent));
+				Medial_Distance = Dm(f1(1)); % Minimal distance of the vertex center of the medial axis (= distance along the Y' axis).
+				W(i).Workspace.Vertices(v).Distance_From_Medial_Axis = Medial_Distance.*Scale_Factor;
+				if(Medial_Distance <= Worm_Radius_px)
+					Medial_Tangent = [fnval(Medial_Der_Fit_Object,Medial_Eval(f1(1))) ; 0]'; % The medial tangent vector (from the origin).
+					Rects = W(i).Workspace.Vertices(v).Rectangles; % ".
+					Ap = Corrected_Plane_Angle_Func(Medial_Distance .* Scale_Factor); % Using the worm radius and the distance of the vertex from the medial axis to find the tilting angle of the vertex plane.
+					W(i).Workspace.Vertices(v).Rectangles = Projection_Correction(i,W(i).Workspace.NN_Probabilities,XY_Eval,Cxy,Rects,Ap,Medial_Tangent,Rx,Rz,Scale_Factor,Corrected_Plane_Angle_Func);
 					
-					% Projection Correction:
-					Lz = (Worm_Radius_px.^2 - Dmin.^2).^(.5); % sin(b) = Dmin./ Worm_Radius_px.
-					Vr_Corrected = Vr; % [Vr(1:2),Lz];
-					W(i).Workspace.Vertices(v).Rectangles(r).Medial_Angles_Corrected = atan2(norm(cross(Vr_Corrected,Medial_Tangent)), dot(Vr_Corrected,Medial_Tangent));
+					% Compute the corrected angles diffs:
+					W(i).Workspace.Vertices(v).Corrected_Angles = Calc_Junction_Angles([W(i).Workspace.Vertices(v).Rectangles.Medial_Angle_Corrected]);
+				else
+					W(i).Workspace.Vertices(v).Distance_From_Medial_Axis = -1;
+					W(i).Workspace.Vertices(v).Corrected_Angles = -1;
 				end
-				% Compute the corrected angles diffs:
-				W(i).Workspace.Vertices(v).Corrected_Angles = Calc_Junction_Angles([W(i).Workspace.Vertices(v).Rectangles.Medial_Angles_Corrected]);
-				
 			else
 				W(i).Workspace.Vertices(v).Distance_From_Medial_Axis = -1;
 				W(i).Workspace.Vertices(v).Corrected_Angles = -1;
 			end
-			
 		end
 		
 		% TODO: Calculate minimal distance from the CB.

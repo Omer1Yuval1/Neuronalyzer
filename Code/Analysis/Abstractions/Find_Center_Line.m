@@ -12,10 +12,11 @@ function [Final_Curve,Approved] = Find_Center_Line(Im,BW)
 	Approved = 0;
 	Final_Curve = [];
 	Distances_STD_Threshold = 12;
-	Eval_Factor = 4;
+	Eval_Factor = .5; % 4;
 	Small_Objects_Max_Size = 20; % TODO: scale.
 	First_Closing_Radius = 40;
 	Second_Closing_Radius = 90;
+	SmoothingParameter = 1000;
 	
 	Dxy = 25; % Margin tolerance for the detection of edge perimeter pixels.
 	
@@ -160,9 +161,16 @@ function [Final_Curve,Approved] = Find_Center_Line(Im,BW)
 		D_Diff(i) = abs(D12(i) - D21(i));
 	end
 	
-	Final_Curve = [ [Pxy1(1),Pxy1(2)] ; V ; [Pxy2(1),Pxy2(2)]];
+	Final_Curve = [ [Pxy1(1),Pxy1(2)] ; V ; [Pxy2(1),Pxy2(2)]]; % [N,2].
+		
 	Fit_Object = cscvn(Final_Curve'); % Fit a cubic spline.
 	Final_Curve = fnval(Fit_Object,linspace(Fit_Object.breaks(1),Fit_Object.breaks(end),Eval_Factor.*size(Final_Curve,1)))';
+	
+	% Smoothing:
+	Final_Curve = smoothn(num2cell(Final_Curve,1),SmoothingParameter);
+	Final_Curve = horzcat(Final_Curve{:});
+	Final_Curve = [ [Pxy1(1),Pxy1(2)] ; Final_Curve ; [Pxy2(1),Pxy2(2)]]; % [N,2].
+	
 	Final_Curve_Plot = Final_Curve; % Used to plot the final curve in case it gets deleted because the analysis fails.
 	
 	if(std(D_Diff) < Distances_STD_Threshold)
@@ -173,6 +181,7 @@ function [Final_Curve,Approved] = Find_Center_Line(Im,BW)
 	% disp(std(D));
 	
 	% Plot the result:
+	%
 	figure(1);
 	clf(1);
 	subplot(1,3,1);
