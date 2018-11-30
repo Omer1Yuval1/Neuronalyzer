@@ -6,10 +6,10 @@ function Apply_And_Save()
 	% SaveDir = 'D:\Dropbox (Technion Dropbox)\Omer Yuval\Neuronalizer\PVD Images\Sharon\Results_Demos\Midline\Midline_Detection_Results_Im2BW\';
 	% SaveDir = 'D:\Dropbox (Technion Dropbox)\Omer Yuval\Neuronalizer\PVD Images\Sharon\Results_Demos\Midline\Midline_Detection_Results_NN\';
 	
-	SaveDir = 'D:\Dropbox (Technion Dropbox)\Omer Yuval\Neuronalizer\PVD Images\Sharon\Results_Demos\Vertices_Angles\20181103\';
+	SaveDir = 'D:\Dropbox (Technion Dropbox)\Omer Yuval\Neuronalizer\PVD Images\Sharon\Results_Demos\Vertices_Angles\20181110\';
 	% SaveDir = uigetdir;
 	
-	for f=1:50 % 1:numel(Files_List) % For each file (image\neuron).
+	for f=1:numel(Files_List) % For each file (image\neuron).
 		
 		File_Path = [Files_List(f).folder,filesep,Files_List(f).name]; % Full path + name of the current file.
 		File1 = load(File_Path,'Workspace');
@@ -56,7 +56,8 @@ function Apply_And_Save()
 				title('Good');
 		end
 		
-		save(strcat(Files_List(f).folder,filesep,'Workspace.mat'),'Workspace');
+		% save(strcat(Files_List(f).folder,filesep,'Workspace.mat'),'Workspace');
+		
 		%}
 		
 		%

@@ -1,4 +1,4 @@
-function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Field_Name,Workspace_Operations,RowWise)
+function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Var_Fields,Filter_Fields,Var_Operations,Filter_Operations,RowWise)
 	
 	% assignin('base','GUI_Parameters3',GUI_Parameters);
 	% TODOs:
@@ -7,7 +7,7 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Field_Name,Wo
 	% This function filters workspaces based on the chosen features and concentrates values from different workspaces
 		% that belong to the same group.
 	% assignin('base','Input_Struct',Input_Struct);
-	switch length(Field_Name)
+	switch length(Var_Fields)
 		case 1 % Using the name "XValues" allows to use more than one field for single-field plots to filter out data.
 			Input_Struct = struct('Group_Name',{},'XValues',{},'Normalization',{},'Worms_Number',{},'Color',{},'Labels',{});
 		case 2
@@ -56,6 +56,7 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Field_Name,Wo
 		end
 	end
 	Groups(find([Groups.Delete] == 1)) = [];
+	Names = {'XValues','YValues','ZValues'};
 	
 	% assignin('base','Groups',Groups);
 	for i=1:numel(Groups) % For each group (a unique combination of features).
@@ -65,68 +66,51 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Field_Name,Wo
 		F = Groups(i).Workspaces;
 		% F = find([GUI_Parameters.Workspace.Grouping] == Selected_Groups(i,1) & [GUI_Parameters.Workspace.Genotype] == Selected_Groups(i,2)); % Find all the relevant workspaces.
 		for j=1:length(F) % For each workspace within group i.
-			switch length(Field_Name)
-				case 1 % TODO: RowWise is not implemented in this case.
-					Input_Struct(i).XValues = [Input_Struct(i).XValues,Workspace_Operations([GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name).(Field_Name{1})])];
-				case {2,3}
-					if(~RowWise) % Apply operation to the entire column at once.
-						Input_Struct(i).XValues = [Input_Struct(i).XValues,Workspace_Operations([GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name).(Field_Name{1})])];
-						Input_Struct(i).YValues = [Input_Struct(i).YValues,Workspace_Operations([GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name).(Field_Name{2})])];
-					else % Perform the operation per row.
-						for k=1:numel(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)) % For each row in the chosen DB_Name.
-							% Note: not using (end+1) because the value may be an empty array.
-							% Note: Each function performs a find-like operation and thus returns all values that match the rule.
-								% ...*** thus, taking the 1st result for each, in case there are duplicates.
-							% disp(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Field_Name{1}));
-							% disp([i,j,k]);
-							Names = {'XValues','YValues','ZValues'};
-							V = {};
-							L = {};
-							Lu = {}; % Length of the unique vector.
-							Leq = 1;
-							for l=1:length(Workspace_Operations) % For each variable.
-								V{l} = GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Field_Name{l});
-								L{l} = length(V{l});
-								Lu{l} = length(unique(V{l}));
-								if(L{l} ~= Lu{l})
-									Leq = 0;
-								end
-							end
-							
-							if(Leq)
-								Lem = 0; % Flag to test if any of the fields is empty after applying the operation.
-								for l=1:length(Workspace_Operations)
-									V{l} = Workspace_Operations{l}(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Field_Name{l}));
-									if(isempty(V{l}))
-										Lem = 1;
-									end
-								end
-								
-								if(~Lem) % If non are empty.
-									% Note: the # of values in different fields may be different, which means values in corresponding positions don't correspond.
-									% If any of the fields is empty (after applying the operation), the row will not be included.
-										% This is also how the filtering-out of rows is implemented (implicitly).
-									for l=1:length(Workspace_Operations)
-										N = length(Input_Struct(i).(Names{l})) + 1; % The current total number of values in field l (of group i).
-										Ni = N : N + length(V{l}) - 1; % The indices to put the new values.
-										Input_Struct(i).(Names{l})(Ni) = V{l};
-									end
-								end
-							end
-							
-							% X = GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Field_Name{1});
-							% Y = GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Field_Name{2});
-							% if(length(unique(X)) == length(X) && length(unique(Y)) == length(Y))
-								% X = Workspace_Operations{1}(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Field_Name{1}));
-								% Y = Workspace_Operations{2}(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Field_Name{2}));
-								% if(~isempty(X) && ~isempty(Y))
-									% vi = vi + 1;
-									% Input_Struct(i).XValues(vi) = X(1); % ***.
-									% Input_Struct(i).YValues(vi) = Y(1); % ***.
-								% end
-							% end
+			if(~RowWise) % Apply operation to the entire column at once.
+				for l=1:length(Var_Operations)
+					Input_Struct(i).(Names{l}) = [Input_Struct(i).(Names{l}),Var_Operations{l}([GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name).(Var_Fields{l})])];
+				end
+			else % Perform the operation per row.
+				for k=1:numel(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)) % For each row in the chosen DB_Name.
+					% Note: not using (end+1) because the value may be an empty array.
+					% Note: Each function performs a find-like operation and thus returns all values that match the rule.
+						% ...*** thus, taking the 1st result for each, in case there are duplicates.
+					% disp(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Var_Fields{1}));
+					% disp([i,j,k]);
+					
+					% Use filtering fields:							
+					Flag1 = 1;
+					for l=1:length(Filter_Operations) % For each filter operation.
+						IsValid = Filter_Operations{l}(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Filter_Fields{l}));
+						if(~IsValid)
+							Flag1 = 0;
 						end
 					end
+					
+					% Remove this (allow repeating value):
+					Flag2 = 1;
+					V = cell(1,length(Var_Fields));
+					for l=1:length(Var_Operations) % For each variable.
+						V{l} = GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Var_Fields{l});
+						if(length(V{l}) ~= length(unique(V{l})))
+							Flag2 = 0;
+							disp('Repeating values detected.');
+						end
+					end
+					
+					if(Flag1 && Flag2)
+						% Note: the # of values in different fields may be different, which means values in corresponding positions don't correspond.
+						% If any of the fields is empty (after applying the operation), the row will not be included.
+							% This is also how the filtering-out of rows is implemented (implicitly).
+						% disp(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).Order);
+						for l=1:length(Var_Operations)
+							Vi = Var_Operations{l}(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Var_Fields{l}));
+							N = length(Input_Struct(i).(Names{l})) + 1; % The current total number of values in field l (of group i).
+							Ni = N : N + length(Vi) - 1; % The indices to put the new values.
+							Input_Struct(i).(Names{l})(Ni) = Vi;
+						end
+					end
+				end
 			end
 		end
 		Input_Struct(i).Worms_Number = length(F);

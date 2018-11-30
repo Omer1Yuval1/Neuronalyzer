@@ -3,7 +3,7 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 	% TODO: the step length in the Rectangles struct is currently in ***pixels***
 	% This affects many things (e.g. curvature).
 	
-	Rx = @(a) [1,0,0 ; 0,cos(a),-sin(a) ; 0,sin(a),cos(a)]; % Rotation matrix around the x-axis.
+	Rx = @(a) [1,0,0 ; 0,cos(a),-sin(a) ; 0,sin(a),cos(a)]; % Rotation matrix around the x-axis (angle should be given in radians).
 	Rz = @(a) [cos(a),-sin(a),0 ; sin(a),cos(a),0 ; 0,0,1]; % Rotation matrix around the z-axis (angle should be given in radians).
 	
 	% TODO: move out and scale:
@@ -21,6 +21,9 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 		Scale_Factor = W(i).Workspace.User_Input.Scale_Factor;
 		Parameters = Parameters_Func(Scale_Factor);
 		Worm_Radius_px = Worm_Radius_um ./ Scale_Factor; % Conversion to pixels.
+		
+		[W(i).Workspace.Vertices.Angles_Medial] = deal(-1);
+		[W(i).Workspace.Vertices.Angles_Corrected_Medial] = deal(-1);		
 		
 		if(isfield(W(i).Workspace,'Medial_Axis') && ~isempty(W(i).Workspace.Medial_Axis))
 			Xm = [W(i).Workspace.Medial_Axis(:,1)]';
@@ -57,14 +60,18 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 				f1 = find(Dm == min(Dm));
 				Medial_Distance = Dm(f1(1)); % Minimal distance of the vertex center of the medial axis (= distance along the Y' axis).
 				W(i).Workspace.Vertices(v).Distance_From_Medial_Axis = Medial_Distance.*Scale_Factor;
-				if(Medial_Distance <= Worm_Radius_px)
+                if(Medial_Distance <= Worm_Radius_px)
 					Medial_Tangent = [fnval(Medial_Der_Fit_Object,Medial_Eval(f1(1))) ; 0]'; % The medial tangent vector (from the origin).
 					Rects = W(i).Workspace.Vertices(v).Rectangles; % ".
 					Ap = Corrected_Plane_Angle_Func(Medial_Distance .* Scale_Factor); % Using the worm radius and the distance of the vertex from the medial axis to find the tilting angle of the vertex plane.
-					W(i).Workspace.Vertices(v).Rectangles = Projection_Correction(i,W(i).Workspace.NN_Probabilities,XY_Eval,Cxy,Rects,Ap,Medial_Tangent,Rx,Rz,Scale_Factor,Corrected_Plane_Angle_Func);
+					W(i).Workspace.Vertices(v).Rectangles = Projection_Correction(i,v,W(i).Workspace.NN_Probabilities,XY_Eval,Cxy,Rects,Ap,Medial_Tangent,Rx,Rz,Scale_Factor,Corrected_Plane_Angle_Func);
+					
+					W(i).Workspace.Vertices(v).Angles_Medial = [W(i).Workspace.Vertices(v).Rectangles.Angle_Medial];
+					W(i).Workspace.Vertices(v).Angles_Corrected_Medial = [W(i).Workspace.Vertices(v).Rectangles.Angle_Corrected_Medial];
 					
 					% Compute the corrected angles diffs:
-					W(i).Workspace.Vertices(v).Corrected_Angles = Calc_Junction_Angles([W(i).Workspace.Vertices(v).Rectangles.Medial_Angle_Corrected]);
+					% W(i).Workspace.Vertices(v).Corrected_Angles = Calc_Junction_Angles([W(i).Workspace.Vertices(v).Rectangles.Angle_Corrected]);
+					W(i).Workspace.Vertices(v).Corrected_Angles = Calc_Junction_Angles([W(i).Workspace.Vertices(v).Rectangles.Angle_Corrected_Medial]);
 				else
 					W(i).Workspace.Vertices(v).Distance_From_Medial_Axis = -1;
 					W(i).Workspace.Vertices(v).Corrected_Angles = -1;

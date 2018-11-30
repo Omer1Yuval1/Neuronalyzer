@@ -148,6 +148,8 @@ function Tracer_UI()
 				H_Menu311 = uimenu(H_Menu31_Angles,'Label','Histograms','Callback','');
 					H_Menu3111 = uimenu(H_Menu311,'Label','Histogram of all Angles','UserData',2,'Callback',@Menu1_Plots_Func);
 					H_Menu3112 = uimenu(H_Menu311,'Label','Histogram of Symmetry Indices','UserData',2,'Callback',@Menu1_Plots_Func);
+					H_Menu3113 = uimenu(H_Menu311,'Label','Distribution of Vertices Angles Relative To The Medial Axis','UserData',2,'Callback',@Menu1_Plots_Func);
+					H_Menu3114 = uimenu(H_Menu311,'Label','Distribution of Vertices Angles Relative To The Medial Axis - Corrected','UserData',2,'Callback',@Menu1_Plots_Func);
 				H_Menu312 = uimenu(H_Menu31_Angles,'Label','Two Angles Plots','Callback','');
 					H_Menu3121 = uimenu(H_Menu312,'Label','Minimal and Maximal Angles of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);
 					H_Menu3122 = uimenu(H_Menu312,'Label','The Two Minimal Angles of each 3-Way junction','UserData',2,'Callback',@Menu1_Plots_Func);
@@ -156,7 +158,9 @@ function Tracer_UI()
 					H_Menu3126 = uimenu(H_Menu312,'Label','Smallest Angle VS Diff between 2 Smallest','UserData',2,'Callback',@Menu1_Plots_Func);
 				H_Menu313 = uimenu(H_Menu31_Angles,'Label','Three Angles Plots','Callback','');
 					H_Menu3131 = uimenu(H_Menu313,'Label','2D Histogram Angles of 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func);
-					H_Menu3131 = uimenu(H_Menu313,'Label','2D Histogram of Corrected Angles of 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func);
+					H_Menu3132 = uimenu(H_Menu313,'Label','2D Histogram of Corrected Angles of 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func);
+					H_Menu3133 = uimenu(H_Menu313,'Label','2D Histogram of Invariant Angles of 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func);
+					H_Menu3134 = uimenu(H_Menu313,'Label','2D Histogram of Invariant Corrected Angles of 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func);
 					% H_Menu3131 = uimenu(H_Menu313,'Label','Smallest-Mid-largest','UserData',2,'Callback',@Menu1_Plots_Func);
 			H_Menu32_Angles = uimenu(H_Menu3_Vertices,'Label','Distances','Callback','');
 				H_Menu321 = uimenu(H_Menu32_Angles,'Label','Distances Of Vertices From The Medial Axis - Means','UserData',2,'Callback',@Menu1_Plots_Func);

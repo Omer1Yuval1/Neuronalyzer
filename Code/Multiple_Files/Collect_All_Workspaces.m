@@ -15,7 +15,8 @@ function W = Collect_All_Workspaces()
 		File1 = [Files_List(i).folder,filesep,Files_List(i).name]; % Full path + name of the current file.
 		f = load(File1,'Workspace');
 		
-		if(f.Workspace.Workspace.User_Input.IsGood) % Include workspace only if it is annotated as good.
+		if(~isfield(f.Workspace.Workspace.User_Input,'IsGood') || ...
+					( isfield(f.Workspace.Workspace.User_Input,'IsGood') && f.Workspace.Workspace.User_Input.IsGood) ) % Include workspace only if it is annotated as good.
 			W(end+1).Workspace = f.Workspace.Workspace;
 			
 			W(end).Workspace = rmfield(W(end).Workspace,{'Image0','Parameters'});
