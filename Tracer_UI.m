@@ -455,8 +455,8 @@ function Tracer_UI()
 				% P(4) = P(4) * 1.2;
 				set(h,'Position',P);
 				% set(GUI_Parameters.Handles.Tracing.Editing_Tab,'Enable','on');
-				set(H0_1_1,'Enable','on');
-				set(H0_1_1_1,'Enable','on');
+				% set(H0_1_1,'Enable','on');
+				% set(H0_1_1_1,'Enable','on');
 				% TODO: Add popup explaining the next step in the pipeline...
 			end
 			
@@ -722,8 +722,7 @@ function Tracer_UI()
 	end
 	
 	function Load_An_Existing_Project_File(source,callbackdata)
-		
-		if(nargin == 2) % Default: user loads a file with 1+ neurons. else: A single neuron at the end of the tracing.
+		if(nargin == 2) % Default: user loads a file with 1+ neurons.
 			if isunix
 				filetypestr = '../../*.mat';
 			else
@@ -737,11 +736,13 @@ function Tracer_UI()
 			
 			WB_H = waitbar(0,'Please wait...');
 			waitbar(0,WB_H);
-			
 			File1 = load(strcat(PathName,FileName));
 			waitbar(1/3,WB_H);
 			
 			GUI_Parameters.Workspace = File1.Workspace;
+		else %  A single neuron at the end of the tracing OR after generating an All_Workspaces file.
+			WB_H = waitbar(0,'Please wait...');
+			waitbar(0,WB_H);
 		end
 		
 		[GUI_Parameters.Workspace,GUI_Parameters.Features] = Add_Features_To_All_Workspaces(GUI_Parameters.Workspace); % TODO: replace with automatic detection of features.
@@ -854,6 +855,7 @@ function Tracer_UI()
 	
 	function Collect_Multiple_Workspaces(source,callbackdata)
 		Workspace = Collect_All_Workspaces();
+		GUI_Parameters.Workspace = Workspace;
 		uisave('Workspace',['All_Workspaces_',datestr(datetime,30),'.mat']);
 		Load_An_Existing_Project_File();
 	end
@@ -940,6 +942,18 @@ function Tracer_UI()
 		
 		% Trace using skeleton vertices and Im_BW:
 		GUI_Parameters.Workspace(1).Workspace = Connect_Vertices(GUI_Parameters.Workspace(1).Workspace);
+		assignin('base','Workspace',GUI_Parameters.Workspace(1).Workspace);
+		
+		[Final_Curve,Approved] = Find_Center_Line(GUI_Parameters.Workspace(1).Workspace.Image0,GUI_Parameters.Workspace(1).Workspace.Im_BW); % Detect medial axis.
+		if(Approved)
+			GUI_Parameters.Workspace(1).Workspace.Medial_Axis = Final_Curve;
+			disp('Medial Axis Detected Successully.');
+		else
+			disp('Medial Axis Detection Failed.');
+		end
+		
+		assignin('base','Workspace',GUI_Parameters.Workspace(1).Workspace);
+		
 		GUI_Parameters.Workspace(1).Workspace = rmfield(GUI_Parameters.Workspace(1).Workspace,'Im_BW'); % The probabilities matrix is saved instead.
 		waitfor(msgbox('The Tracing Completed Successully.'));
 		

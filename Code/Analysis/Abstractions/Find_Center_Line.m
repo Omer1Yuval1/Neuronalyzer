@@ -181,7 +181,7 @@ function [Final_Curve,Approved] = Find_Center_Line(Im,BW)
 	% disp(std(D));
 	
 	% Plot the result:
-	%
+	%{
 	figure(1);
 	clf(1);
 	subplot(1,3,1);
