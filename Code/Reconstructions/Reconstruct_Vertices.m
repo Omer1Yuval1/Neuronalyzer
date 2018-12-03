@@ -33,7 +33,8 @@ function Reconstruct_Vertices(W,Display_Image)
 			
 			plot(W.Vertices(v).Coordinate(1),W.Vertices(v).Coordinate(2),'.','Color',[1,.2,0],'MarkerSize',30); % Orange.
 			hold on;
-			plot(XV,YV,'--','Color',C(r,:),'LineWidth',2); % ,'Color',[.9,0,.4].
+			% plot(XV,YV,'--','Color',C(r,:),'LineWidth',2); % ,'Color',[.9,0,.4].
+			plot(XV,YV,'Color',C(r,:),'LineWidth',3); % ,'Color',[.9,0,.4].
 			
 			if(isfield(W.Vertices(v).Rectangles,'Angle_Corrected') && all([W.Vertices(v).Rectangles(r).Angle_Corrected]))
 				Ac = W.Vertices(v).Rectangles(r).Angle_Corrected .* 180 ./ pi;

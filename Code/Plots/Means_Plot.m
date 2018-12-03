@@ -27,7 +27,7 @@ function Multiple_Means_Func(Input_Struct,GUI_Parameters,Visuals,YLabel,Title1)
 			for i=1:Groups_Num % For each group (a unique combination of selected features).
 				
 				Mean1 = nanmean(Input_Struct(i).XValues);
-				STD_SE = nanstd(Input_Struct(i).XValues) ./ sqrt(length(Input_Struct(i).XValues));
+				STD_SE = nanstd(Input_Struct(i).XValues); %  ./ sqrt(length(Input_Struct(i).XValues));
 				C = Input_Struct(i).Color;
 				hold on;
 				scatter(i*ones(1,length(Input_Struct(i).XValues)),Input_Struct(i).XValues,Visuals.Scatter_Dot_Size1,'MarkerFaceColor',Input_Struct(i).Color,'MarkerEdgeColor',Input_Struct(i).Color,'jitter','on','jitterAmount',Visuals.Jitter1);

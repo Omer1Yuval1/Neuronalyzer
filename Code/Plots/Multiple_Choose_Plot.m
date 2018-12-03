@@ -26,7 +26,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 	
 	switch GUI_Parameters.General.Active_Plot
 		case 'Mean Segment Length'
-			Var_Operations = @(x) x(x>=0); % The length of a segment has to be positive.
+			Var_Operations{1} = @(x) x(x>=0); % The length of a segment has to be positive.
 			Filter_Operations = [];
 			Var_Fields = {'Length'};
 			Filter_Fields = [];
@@ -38,7 +38,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
 			
 		case 'Total Length'
-			Var_Operations = @(x) sum(x(x>=0)); % Sum up all segments lengths of each individual animal (=workspace). The length of a segment has to be positive.
+			Var_Operations{1} = @(x) sum(x(x>=0)); % Sum up all segments lengths of each individual animal (=workspace). The length of a segment has to be positive.
 			Filter_Operations = [];
 			Var_Fields = {'Length'};
 			Filter_Fields = [];
@@ -50,7 +50,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
 			
 		case 'End2End Length Of Segments'
-			Var_Operations = @(x) x(x>=0); % The length of a segment has to be positive.
+			Var_Operations{1} = @(x) x(x>=0); % The length of a segment has to be positive.
 			Filter_Operations = [];
 			Var_Fields = {'End2End_Length'};
 			Filter_Fields = [];
@@ -61,17 +61,35 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Segments',Var_Fields,Filter_Fields,Var_Operations,Filter_Operations,RowWise);
 			Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
 			
-		case 'Curvature Of Segments'
-			Var_Operations = @(x) x(x>=0 & x<=0.1); % The curvature of a segment has to be positive.
-			Filter_Operations = [];
+		case 'Mean Curvature Of Segments'
+			Var_Operations{1} = @(x) x(x>=0 & x<=0.1); % The curvature of a segment has to be positive.
+			Filter_Operations = {};
 			Var_Fields = {'Curvature'};
-			Filter_Fields = [];
+			Filter_Fields = {};
 			%
 			Y_Label = 'Mean Squared Curvature (1/(\mum)^2)';
 			Title = 'Curvature Of Segments';
 			RowWise = 0;
 			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Segments',Var_Fields,Filter_Fields,Var_Operations,Filter_Operations,RowWise);
 			Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
+			
+		case 'Distribution of Curvature Of Segments'
+			Var_Operations{1} = @(x) x(x>=0 & x<=0.1); % The curvature of a segment has to be positive.
+			Filter_Operations = {};
+			Var_Fields = {'Curvature'};
+			Filter_Fields = {};
+			%
+			X_Label = 'Squared Curvature (1/(\mum)^2)';
+			Y_Label = 'Count';
+			Title = 'Curvature Of Segments';
+			%
+			RowWise = 0;
+			%
+			X_Min_Max = [0,0.1];
+			BinSize = 0.005 .* GUI_Parameters.Handles.Analysis.Slider.Value;
+			%
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Segments',Var_Fields,Filter_Fields,Var_Operations,Filter_Operations,RowWise);
+			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
 			
 		case 'CB Intensity'
 			Var_Operations = @(x) x; % Sum up all segments lengths of each individual animal (=workspace). The length of a segment has to be positive.
@@ -192,9 +210,9 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Two_Vars_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Label,Y_Label,Title);
 			
 		case 'Histogram of all Angles'
-			Var_Operations = @(x) x.*180./pi; % Exclude tips (appear as angle = -1) and convert to degrees.
+			Var_Operations{1} = @(x) x.*180./pi; % Exclude tips (appear as angle = -1) and convert to degrees.
 			Filter_Operations{1} = @(x) (x == 3); % Only 3-way junctions (and specifically not tips)..
-			Filter_Operations{2} = @(x) x; % x(x>=25 & x<=35). Filter-out distances from medial axis (TODO: validate!).
+			Filter_Operations{2} = @(x) (x>=25 & x<=35); % x(x>=25 & x<=35). Filter-out distances from medial axis (TODO: validate!).
 			Var_Fields = {'Angles'};
 			Filter_Fields = {'Order','Distance_From_Medial_Axis'};
 			%
@@ -211,8 +229,8 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			% assignin('base','Input_Struct',Input_Struct);
 			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
 		case 'Histogram of Symmetry Indices'
-			Var_Operations = @(x) x;
-			Filter_Operations = @(x) (x >= 0); % x(x>=25 & x<=35). Filter-out distances from medial axis (TODO: validate!).
+			Var_Operations{1} = @(x) x;
+			Filter_Operations{1} = @(x) (x >= 0); % x(x>=25 & x<=35). Filter-out distances from medial axis (TODO: validate!).
 			Var_Fields = {'Symmetry'};
 			Filter_Fields = {'Symmetry'};
 			%
@@ -229,7 +247,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 		case 'Minimal and Maximal Angles of 3-Way junctions'
 			Var_Operations{1} = @(x) x(x == min(x));
 			Var_Operations{2} = @(x) x(x == max(x)); % x(x ~= min(x) & x~=max(x) & x>0);
-			Filter_Operations = @(x) (x == 3); % Only 3-way junctions.
+			Filter_Operations{1} = @(x) (x == 3); % Only 3-way junctions.
 			Var_Fields = {'Angles','Angles'};
 			Filter_Fields = {'Order'};
 			%
@@ -244,7 +262,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 		case 'The Two Minimal Angles of each 3-Way junction'
 			Var_Operations{1} = @(x) x(x == min(x));
 			Var_Operations{2} = @(x) x(x ~= min(x) & x~=max(x));
-			Filter_Operations = @(x) (x == 3); % Only 3-way junctions.
+			Filter_Operations{1} = @(x) (x == 3); % Only 3-way junctions.
 			Var_Fields = {'Angles','Angles'};
 			Filter_Fields = {'Order'};
 			%
@@ -310,10 +328,10 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Var_Operations{1} = @(x) x(x == min(x)).*180./pi;
 			Var_Operations{2} = @(x) x(x == max(x)).*180./pi;
 			Filter_Operations{1} = @(x) (length(x) == 3); % Only 3-way junctions.
-			% Var_Operations{3} = @(x) x(x>=25 & x<=35); % Only 3-way junctions.
+			Filter_Operations{2} = @(x) (x>=10 & x<=20);
 			%
 			Var_Fields = {'Angles','Angles'};
-			Filter_Fields = {'Angles'};
+			Filter_Fields = {'Angles','Distance_From_Medial_Axis'};
 			%
 			RowWise = 1;
 			%%%

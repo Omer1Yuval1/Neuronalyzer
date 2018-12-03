@@ -135,7 +135,8 @@ function Tracer_UI()
 			H_Menu11_Segments = uimenu(H_Menu1_Segments,'Label','Total Length','UserData',1,'Callback',@Menu1_Plots_Func);
 			H_Menu12_Segments = uimenu(H_Menu1_Segments,'Label','Mean Segment Length','UserData',1,'Callback',@Menu1_Plots_Func);
 			H_Menu13_Segments = uimenu(H_Menu1_Segments,'Label','End2End Length Of Segments','UserData',1,'Callback',@Menu1_Plots_Func);
-			H_Menu14_Segments = uimenu(H_Menu1_Segments,'Label','Curvature Of Segments','UserData',1,'Callback',@Menu1_Plots_Func);
+			H_Menu14_Segments = uimenu(H_Menu1_Segments,'Label','Mean Curvature Of Segments','UserData',1,'Callback',@Menu1_Plots_Func);
+			H_Menu14_Segments = uimenu(H_Menu1_Segments,'Label','Distribution of Curvature Of Segments','UserData',1,'Callback',@Menu1_Plots_Func);
 			% H_Menu1151_Segments = uimenu(H_Menu115_Segments,'Label','Segments Length Distribution','UserData',1,'Callback',@Menu1_Plots_Func);
 		
 		H_Menu2_CB = uimenu(Graphs_Menu_Handle,'Label','Cell Body','Callback','');

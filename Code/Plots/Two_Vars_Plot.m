@@ -29,7 +29,7 @@ function Two_Vars_Plot(Input_Struct,GUI_Parameters,Visuals,XLabel,YLabel,Title1)
 				MeanY = nanmean(Input_Struct(i).YValues);
 				C = Input_Struct(i).Color;
 				hold on;
-				scatter(Input_Struct(i).XValues,Input_Struct(i).YValues,Visuals.Scatter_Dot_Size1,'MarkerFaceColor',Input_Struct(i).Color,'MarkerEdgeColor',Input_Struct(i).Color,'jitter','on','jitterAmount',Visuals.Jitter1);
+				scatter(Input_Struct(i).XValues,Input_Struct(i).YValues,Visuals.Scatter_Dot_Size1,'MarkerFaceColor',Input_Struct(i).Color,'MarkerEdgeColor',Input_Struct(i).Color);
 				% errorbar(i,Mean1,nanstd(Input_Struct(i).Values),'LineWidth',Visuals.ErrorBar_Width1,'Color',Visuals.ErrorBar_Color1);
 				Legend_Handles_Array(i) = plot(MeanX,MeanY,'.','Color',Input_Struct(i).Color,'MarkerSize',Visuals.Mean_Dot_Size);
 				
