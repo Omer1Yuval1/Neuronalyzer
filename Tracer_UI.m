@@ -6,7 +6,7 @@ function Tracer_UI()
 	
 	GUI_Parameters = Load_GUI_Parameters;
 		
-		GUI_Parameters(1).Handles(1).Figure = figure(1);
+		GUI_Parameters(1).Handles(1).Figure = figure('WindowState','maximized');
 		set(GUI_Parameters(1).Handles.Figure,'Name',['Neuronalizer ',GUI_Parameters.General.Version],'NumberTitle','off')
 		Screen_Size = get(groot,'Screensize');
 		% Screen_Size(2) = 0.03*Screen_Size(4);
