@@ -5,7 +5,7 @@ function Tracer_UI()
 	addpath(genpath(pwd));
 	
 	GUI_Parameters = Load_GUI_Parameters;
-		
+		close all;
 		GUI_Parameters(1).Handles(1).Figure = figure('WindowState','maximized');
 		set(GUI_Parameters(1).Handles.Figure,'Name',['Neuronalizer ',GUI_Parameters.General.Version],'NumberTitle','off')
 		Screen_Size = get(groot,'Screensize');
@@ -90,8 +90,6 @@ function Tracer_UI()
 	% Tracing Tab:
 	GUI_Parameters.Single.Handles.Tracing.Start_Tracing_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Tracing_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Start Tracing',...
 			'Units','Normalized','Position',[0 0.9 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Start_Tracing_Func);
-	GUI_Parameters.Single.Handles.Tracing.Trace_Multiple_Neurons = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Tracing_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Trace Multiple Neurons',...
-			'Units','Normalized','Position',[0 0.7 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Trace_Multiple_Neurons);
 	% Get_Object_Details_Button = uicontrol(GUI_Parameters.Handles.Analysis.Details_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Get Details','Units','Normalized','Position',[0 0.9 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Get_Object_Details_Func);
 	
 	% Multiple Images Analysis Panel:
@@ -191,9 +189,7 @@ function Tracer_UI()
 	
 	function Apply_NN_Func(source,callbackdata)
 		
-		Default_Pixel_Classification_Threshold = GUI_Parameters.Workspace(1).Workspace.Parameters.Neural_Network.Default_Pixel_Classification_Threshold;
-		
-		if isunix
+		if(isunix)
 			filetypestr = '../../*.mat';
 		else
 			filetypestr = '..\..\*.mat';
@@ -207,10 +203,12 @@ function Tracer_UI()
 		NN1 = File1.deepnet; % TODO: choose the only variable from the file without specifying the name.
 		clear File1;
 		
+		NN_Threshold = GUI_Parameters.Workspace(end).Workspace.Parameters.Neural_Network.Default_Pixel_Classification_Threshold;
+		
 		GUI_Parameters(1).Neural_Network(1).Directory = strcat(PathName,FileName);
 		
-		GUI_Parameters.Handles.Machine_Learning.Probability_Slider = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','slider','Min',0,'Max',1,'Value',Default_Pixel_Classification_Threshold,'SliderStep',[0.05,0.05],'Units','Normalized','Position',[0,.6,.8,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@NN_Probability_Slider_Func);
-		GUI_Parameters.Handles.Machine_Learning.Probability_Slider_Text = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','edit','String',Default_Pixel_Classification_Threshold,'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.8,.6,.2,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6]);
+		GUI_Parameters.Handles.Machine_Learning.Probability_Slider = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','slider','Min',0,'Max',1,'Value',NN_Threshold,'SliderStep',[0.05,0.05],'Units','Normalized','Position',[0,.6,.8,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@NN_Probability_Slider_Func);
+		GUI_Parameters.Handles.Machine_Learning.Probability_Slider_Text = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','edit','String',num2str(NN_Threshold),'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.8,.6,.2,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6]);
 		
 		GUI_Parameters.Handles.Machine_Learning.Min_Obejct_Size_Slider = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','slider','Min',0,'Max',500,'Value',0,'SliderStep',[.01,.01],'Units','Normalized','Position',[0,.4,.8,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@NN_Min_Obejct_Size_Slider_Func);
 		GUI_Parameters.Handles.Machine_Learning.Min_Obejct_Size_Text = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','edit','String',1,'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.8,.4,.2,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6]);
@@ -220,187 +218,34 @@ function Tracer_UI()
 		GUI_Parameters.Handles.Machine_Learning.Save_Training_Sample = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Save As Training Sample','Units','Normalized','Position',[0 .21 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Save_Training_Sample_Func);
 		GUI_Parameters.Handles.Machine_Learning.Update = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Update','Units','Normalized','Position',[0 .01 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Save_NN_View_To_Workspace);
 		
-		[Im_Rows,Im_Cols] = size(GUI_Parameters.Workspace(1).Workspace.Image0);
-		Im_BW = zeros(Im_Rows,Im_Cols);
-		GUI_Parameters.Workspace(1).Workspace.Im_BW = [];
-		Apply_NN();
+		[Im_Rows,Im_Cols] = size(GUI_Parameters.Workspace(end).Workspace.Image0);
 		
-		function Apply_NN()
-			% assignin('base','NN1',NN1);
-			% assignin('base','Image0',GUI_Parameters.Workspace(1).Workspace.Image0);
-			% profile on;
-			GUI_Parameters.Workspace(1).Workspace.NN_Probabilities = Apply_Trained_Network(NN1,GUI_Parameters.Workspace(1).Workspace.Image0);
-			
-			Im_BW(find(GUI_Parameters.Workspace(1).Workspace.NN_Probabilities >= Default_Pixel_Classification_Threshold)) = 1;
-			% assignin('base','Im_BW',Im_BW);
-			% profile off;
-			% profile viewer;
-			
-			Reset_Axes();
-			imshow(Im_BW,'Parent',GUI_Parameters.Handles.Axes);
-			set(gca,'YDir','normal');
-			set(GUI_Parameters.Handles.Machine_Learning.Apply_NN_Multiple_Button,'Enable','on');
-			% assignin('base','GUI_Parameters.Workspace(1).Workspace.Im_BW',GUI_Parameters.Workspace(1).Workspace.Im_BW);
-		end
+		[NN_Probabilities0,Im_BW0] = Apply_NN(GUI_Parameters.Workspace(end).Workspace.Image0,NN1,NN_Threshold,Im_Rows,Im_Cols,1);
 		
-		function Apply_NN_Multiple_Func(source,event)
+		function [NN_Probabilities,Im_BW] = Apply_NN(Image0,Neural_Net,NN_Threshold,Im_Rows,Im_Cols,Display_Me)
+			NN_Probabilities = Apply_Trained_Network(Neural_Net,Image0);
 			
-			% Workspace_Temp = Set_Project_Properties(GUI_Parameters); % Set global properties for the images to be chosen\analyzed.
+			Im_BW = zeros(Im_Rows,Im_Cols);
+			Im_BW(find(NN_Probabilities >= NN_Threshold)) = 1;
 			
-			H1 = uipanel(GUI_Parameters.Handles.Main_Panel,'BackgroundColor',[0.5,0.5,0.5],'Position',[0.3 0.1 0.4 0.8]);
-				uicontrol(H1,'Style','text','FontSize',20,'BackgroundColor',[0.7,0.7,0.7],'String','Project Properties','Units','Normalized','Position',[0 0.93 1 0.07],'FontSize',28);
-				Continue_Button = uicontrol(H1,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button2_Font_Size,'String','Continue','Units','Normalized','Position',[0 0 1 0.1],'Callback',@Continue_Func);
-				
-				uicontrol(H1,'Style','text','units','Normalized','Position',[0,.8,0.3,0.05],'String','Scale-Bar:','FontSize',18,'BackgroundColor',[0.5,0.5,0.5]);
-				
-				uicontrol(H1,'Style','text','units','Normalized','Position',[0.35,0.85,0.2,0.05],'String','Pixels','FontSize',18,'BackgroundColor',[0.5,0.5,0.5]);
-				uicontrol(H1,'Style','text','units','Normalized','Position',[0.6,0.85,0.2,0.05],'String','Length','FontSize',18,'BackgroundColor',[0.5,0.5,0.5]);
-				uicontrol(H1,'Style','text','units','Normalized','Position',[0.81,0.85,0.15,0.05],'String','Unit','FontSize',18,'BackgroundColor',[0.5,0.5,0.5]);
-				
-				User_Input.Scale_Bar.Pixels = uicontrol(H1,'style','edit','units','Normalized','position',[0.36,.8,0.2,0.05],'String','140','UserData','','FontSize',24); % 4.5.
-				User_Input.Scale_Bar.Length = uicontrol(H1,'style','edit','units','Normalized','position',[0.6,.8,0.2,0.05],'String','50','UserData','','FontSize',24); % 1.
-				User_Input.Scale_Bar.Unit = uicontrol(H1,'Style','popup','Units','Normalized','Position',[0.81,.8,0.15,0.05], ...
-						'FontSize',16,'String',{[char(181),'m'],'nm','mm','km'});
-			
-			Properties_Handles = struct('Property_Name',{},'Property_Value',{});
-			
-			p = 1;
-			Y0 = 0.65;
-			
-			Properties_Handles(1).Property_Name = uicontrol(H1,'style','edit','units','Normalized','position',[0.04,Y0-0.06,0.45,0.05],'String','Creator Name','UserData','','FontSize',20);
-				Properties_Handles(1).Property_Value = uicontrol(H1,'style','edit','units','Normalized','position',[0.51,Y0-0.06,0.45,0.05],'String','','UserData','','FontSize',20);
-				
-				Properties_Handles(2).Property_Name = uicontrol(H1,'style','edit','units','Normalized','position',[0.04,Y0-0.06*2,0.45,0.05],'String','Neuron Name','UserData','','FontSize',20);
-				Properties_Handles(2).Property_Value = uicontrol(H1,'style','edit','units','Normalized','position',[0.51,Y0-0.06*2,0.45,0.05],'String','PVDL','UserData','','FontSize',20);
-				
-				Properties_Handles(3).Property_Name = uicontrol(H1,'style','edit','units','Normalized','position',[0.04,Y0-0.06*3,0.45,0.05],'String','Age','UserData','','FontSize',20);
-				Properties_Handles(3).Property_Value = uicontrol(H1,'style','edit','units','Normalized','position',[0.51,Y0-0.06*3,0.45,0.05],'String','Young Adult','UserData','','FontSize',20);
-				
-				Properties_Handles(4).Property_Name = uicontrol(H1,'style','edit','units','Normalized','position',[0.04,Y0-0.06*4,0.45,0.05],'String','Sex','UserData','','FontSize',20);
-				Properties_Handles(4).Property_Value = uicontrol(H1,'style','edit','units','Normalized','position',[0.51,Y0-0.06*4,0.45,0.05],'String','Hermaphrodite','UserData','','FontSize',20);
-						
-				Properties_Handles(5).Property_Name = uicontrol(H1,'style','edit','units','Normalized','position',[0.04,Y0-0.06*5,0.45,0.05],'String','Genotype','UserData','','FontSize',20);
-				Properties_Handles(5).Property_Value = uicontrol(H1,'style','edit','units','Normalized','position',[0.51,Y0-0.06*5,0.45,0.05],'String','asic-1;degt-1','UserData','','FontSize',20);
-				
-				Properties_Handles(6).Property_Name = uicontrol(H1,'style','edit','units','Normalized','position',[0.04,Y0-0.06*6,0.45,0.05],'String','Strain','UserData','','FontSize',20);
-				Properties_Handles(6).Property_Value = uicontrol(H1,'style','edit','units','Normalized','position',[0.51,Y0-0.06*6,0.45,0.05],'String','BP1028','UserData','','FontSize',20);
-				
-				Properties_Handles(7).Property_Name = uicontrol(H1,'style','edit','units','Normalized','position',[0.04,Y0-0.06*7,0.45,0.05],'String','Grouping','UserData','','FontSize',20);
-				Properties_Handles(7).Property_Value = uicontrol(H1,'style','edit','units','Normalized','position',[0.51,Y0-0.06*7,0.45,0.05],'String','Crowded','UserData','','FontSize',20);
-			
-			Add_Property_Button = uicontrol(H1,'style','pushbutton','units','Normalized','position',[0.04,Y0-0.06*8.1,0.2,0.05],'String','+','FontSize',20,'Callback',@Add_Property_Func);
-			
-			p = 7;
-			
-			function Add_Property_Func(source1,callbackdata1)
-				p = p + 1;
-				set(Add_Property_Button,'Position',[0.04,Y0-0.06*(p+1.1),0.2,0.05]);
-				Properties_Handles(p).Property_Name = uicontrol(H1,'style','edit','units','Normalized','position',[0.04,Y0-0.06*p,0.45,0.05],'String','Property Name','UserData','','FontSize',20);
-				Properties_Handles(p).Property_Value = uicontrol(H1,'style','edit','units','Normalized','position',[0.51,Y0-0.06*p,0.45,0.05],'String','Property Value','UserData','','FontSize',20);
-			end
-			
-			function Continue_Func(source1,callbackdata1)
-				
-				Workspace_Temp = {}; % Reset the Workspace.
-				Workspace_Temp.Im_BW = [];
-				
-				% Set the scale-bar:
-				Workspace_Temp.User_Input(1).Scale_Factor = str2num(User_Input.Scale_Bar.Length.String) / str2num(User_Input.Scale_Bar.Pixels.String);
-				Workspace_Temp.User_Input(1).Scale_Unit = User_Input.Scale_Bar.Unit.String(User_Input.Scale_Bar.Unit.Value);
-				
-				for i=1:numel(Properties_Handles)
-					Workspace_Temp.User_Input.Features.(strrep(Properties_Handles(i).Property_Name.String,' ','_')) = ...
-						strrep(Properties_Handles(i).Property_Value.String,' ','_');
-				end
-				
-				Workspace_Temp.Parameters = Parameters_Func(Workspace_Temp.User_Input.Scale_Factor);
-				
-				delete(H1);
-				
-				[FileName,PathName] = uigetfile('*tif','Please Choose a Set of Images.','MultiSelect','on');
-				mkdir([PathName,'My_Neuronalizer_Projects']); % assignin('base','PathName',PathName);
-				N = length(FileName);
-				Multiple_NN_WaitBar = waitbar(0,'Please Wait');
-				for f=1:length(FileName) % For each animal\worm\neuron.
-					
-					Workspace_Temp.Image0 = flipud(imread(strcat(PathName,FileName{f}))); % The current image.
-					[Im_Rows,Im_Cols] = size(Workspace_Temp.Image0);
-					Workspace_Temp.Parameters.General_Parameters.Im_Rows = Im_Rows;
-					Workspace_Temp.Parameters.General_Parameters.Im_Cols = Im_Cols;
-					
-					[~,BW_Reconstruction_Temp] = Apply_Trained_Network(NN1,Workspace_Temp.Image0,GUI_Parameters.Handles.Machine_Learning.Probability_Slider.Value);
-					
-					Workspace_Temp.Im_BW = BW_Reconstruction_Temp;
-					
-					save(strcat(PathName,filesep,'My_Neuronalizer_Projects',filesep,FileName{f}(1:end-3),'mat'),'Workspace_Temp');
-					% save(strcat(PathName,filesep,'My_Neuronalizer_Projects',filesep,FileName{f}),'-struct','Workspace_Temp','Workspace');
-					
-					waitbar(f/N,Multiple_NN_WaitBar);
-				end
-				delete(Multiple_NN_WaitBar);
+			if(Display_Me)
+				Reset_Axes();
+				imshow(Im_BW,'Parent',GUI_Parameters.Handles.Axes);
+				set(gca,'YDir','normal');
+				set(GUI_Parameters.Handles.Machine_Learning.Apply_NN_Multiple_Button,'Enable','on');
+				% assignin('base','GUI_Parameters.Workspace(1).Workspace.Im_BW',GUI_Parameters.Workspace(1).Workspace.Im_BW);
 			end
 		end
-		
-		%{
-				if(w) % keyboard key.
-					set(GUI_Parameters.Handles.Figure,'KeyPressFcn',' ');
-					c1 = double(get(GUI_Parameters.Handles.Figure,'CurrentCharacter'));
-					if(isscalar(c1))
-						switch c1
-							case {27,48} % Esc OR 0.
-								set(GUI_Parameters.Handles.Edit_BW_View_Radio_Group,'SelectedObject',GUI_Parameters.Handles.Machine_Learning.BW);
-								set(gcf,'Pointer','arrow');
-								Edit_BW_Radio_View_Func();
-								% break;
-							case 61 % +. Zoom In.
-								xlim([ mean(XL) - ((mean(XL) - XL(1)) / 1.5) , mean(XL) + ((XL(2) - mean(XL)) / 1.5) ]);
-								ylim([ mean(YL) - ((mean(YL) - YL(1)) / 1.5) , mean(YL) + ((YL(2) - mean(YL)) / 1.5) ]);
-								XL = xlim;
-								YL = ylim;
-							case 45 % -. Zoom Out.
-								xlim([ mean(XL) - ((mean(XL) - XL(1)) * 1.5) , mean(XL) + ((XL(2) - mean(XL)) * 1.5) ]);
-								ylim([ mean(YL) - ((mean(YL) - YL(1)) * 1.5) , mean(YL) + ((YL(2) - mean(YL)) * 1.5) ]);
-								XL = xlim;
-								YL = ylim;
-							case 28 % <-
-								xlim(XL + 10);
-								XL = xlim;
-							case 29 % ->
-								xlim(XL - 10);
-								XL = xlim;
-							case 31 % \/
-								ylim(YL + 10);
-								YL = ylim;
-							case 30 % ^
-								ylim(YL - 10);
-								YL = ylim;
-							case 49 % #1. Show the original image.
-								set(GUI_Parameters.Handles.Edit_BW_View_Radio_Group,'SelectedObject', ...
-									GUI_Parameters.Handles.Machine_Learning.Grayscale);
-								Edit_BW_Radio_View_Func();
-								% break;
-							case 50
-								set(GUI_Parameters.Handles.Edit_BW_View_Radio_Group,'SelectedObject', ...
-									GUI_Parameters.Handles.Machine_Learning.BW);
-								Edit_BW_Radio_View_Func();
-							case 51
-								set(GUI_Parameters.Handles.Edit_BW_View_Radio_Group,'SelectedObject', ...
-									GUI_Parameters.Handles.Machine_Learning.RGB);
-								Edit_BW_Radio_View_Func();
-						end
-					end
-		
-		%}
 		
 		function NN_Probability_Slider_Func(source,event)
 			% [Scores,GUI_Parameters.Workspace(1).Workspace.Im_BW] = Apply_Trained_Network(NN1,GUI_Parameters.Workspace(1).Workspace.Image0,source.Value,Input_Type);
 			set(GUI_Parameters.Handles.Machine_Learning.Probability_Slider,'Enable','off');
 			
-			Im_BW(find(GUI_Parameters.Workspace(1).Workspace.NN_Probabilities >= source.Value)) = 1;
-			Im_BW(find(GUI_Parameters.Workspace(1).Workspace.NN_Probabilities < source.Value)) = 0;
+			Im_BW0(find(NN_Probabilities0 >= source.Value)) = 1;
+			Im_BW0(find(NN_Probabilities0 <  source.Value)) = 0;
 			
 			Reset_Axes();
-			imshow(Im_BW,'Parent',GUI_Parameters.Handles.Axes);
+			imshow(Im_BW0,'Parent',GUI_Parameters.Handles.Axes);
 			set(gca,'YDir','normal');
 			set(GUI_Parameters.Handles.Machine_Learning.Probability_Slider_Text,'String',source.Value);
 			
@@ -412,39 +257,57 @@ function Tracer_UI()
 			% [Scores,GUI_Parameters.Workspace(1).Workspace.Im_BW] = Apply_Trained_Network(NN1,GUI_Parameters.Workspace(1).Workspace.Image0,source.Value,Input_Type);
 			set(GUI_Parameters.Handles.Machine_Learning.Min_Obejct_Size_Slider,'Enable','off');
 			
-			Im_BW(find(GUI_Parameters.Workspace(1).Workspace.NN_Probabilities >= GUI_Parameters.Handles.Machine_Learning.Probability_Slider.Value)) = 1;
-			Im_BW(find(GUI_Parameters.Workspace(1).Workspace.NN_Probabilities < GUI_Parameters.Handles.Machine_Learning.Probability_Slider.Value)) = 0;
+			% Im_BW0(find(NN_Probabilities0 >= GUI_Parameters.Handles.Machine_Learning.Probability_Slider.Value)) = 1;
+			% Im_BW0(find(NN_Probabilities0 < GUI_Parameters.Handles.Machine_Learning.Probability_Slider.Value)) = 0;
 			
-			CC = bwconncomp(Im_BW);
+			CC = bwconncomp(Im_BW0);
 			for c=1:CC.NumObjects
 				if(length(CC.PixelIdxList{1,c}) <= source.Value)
-					Im_BW(CC.PixelIdxList{1,c}) = 0;
+					Im_BW0(CC.PixelIdxList{1,c}) = 0;
 				end
 			end
 			
 			Reset_Axes();
-			imshow(Im_BW,'Parent',GUI_Parameters.Handles.Axes);
+			imshow(Im_BW0,'Parent',GUI_Parameters.Handles.Axes);
 			set(gca,'YDir','normal');
 			set(GUI_Parameters.Handles.Machine_Learning.Min_Obejct_Size_Text,'String',source.Value);
-			
-			set(GUI_Parameters.Handles.Machine_Learning.Min_Obejct_Size_Slider,'Enable','on');
+			set(source,'Enable','on');
 		end
 		
 		function Save_Training_Sample_Func(source,event)
 			Dir1 = uigetdir; % Let the user choose a directory.
 			Files_List = dir(Dir1); % List of files.
 			f = (length(find([Files_List.isdir] == 0)) / 2) + 1; % A unique integer for the new sample.
-			if(~isempty(GUI_Parameters.Workspace(1).Workspace.Im_BW))
-				imwrite(GUI_Parameters.Workspace(1).Workspace.Image0,[Dir1,filesep,num2str(f),'_GS_',GUI_Parameters.Handles.FileName]);
-				imwrite(GUI_Parameters.Workspace(1).Workspace.Im_BW,[Dir1,filesep,num2str(f),'_BW_',GUI_Parameters.Handles.FileName]);
+			if(~isempty(GUI_Parameters.Workspace(end).Workspace.Im_BW))
+				imwrite(GUI_Parameters.Workspace(end).Workspace.Image0,[Dir1,filesep,num2str(f),'_GS_',GUI_Parameters.Handles.FileName]);
+				imwrite(GUI_Parameters.Workspace(end).Workspace.Im_BW,[Dir1,filesep,num2str(f),'_BW_',GUI_Parameters.Handles.FileName]);
 			end
 		end
 		
 		function Save_NN_View_To_Workspace(source,event)
-			if(isempty(Im_BW))
+			if(isempty(Im_BW0))
 				display('Im_BW was not found');
 			else % If the project does not have any BW reconstruction.
-				GUI_Parameters.Workspace(1).Workspace.Im_BW = Im_BW;
+				WB_H_NN = waitbar(0,'Please wait...');
+				waitbar(0,WB_H_NN);
+				for fi=1:length(GUI_Parameters.Handles.FileNames)
+					waitbar(fi/length(GUI_Parameters.Handles.FileNames),WB_H_NN);
+					
+					[Im_Rows,Im_Cols] = size(GUI_Parameters.Workspace(fi).Workspace.Image0);
+					NN_Threshold = GUI_Parameters.Handles.Machine_Learning.Probability_Slider;
+					[NN_Probabilities0,Im_BW0] = Apply_NN(GUI_Parameters.Workspace(fi).Workspace.Image0,NN1,NN_Threshold,Im_Rows,Im_Cols,0);
+					GUI_Parameters.Workspace(fi).Workspace.NN_Probabilities = NN_Probabilities0;
+					GUI_Parameters.Workspace(fi).Workspace.Im_BW = Im_BW0;
+					
+					CC = bwconncomp(GUI_Parameters.Workspace(fi).Workspace.Im_BW);
+					for c=1:CC.NumObjects
+						if(length(CC.PixelIdxList{1,c}) <= GUI_Parameters.Handles.Machine_Learning.Min_Obejct_Size_Slider.Value)
+							GUI_Parameters.Workspace(fi).Workspace.Im_BW(CC.PixelIdxList{1,c}) = 0;
+						end
+					end
+				end
+				delete(WB_H_NN);
+				
 				h = msgbox({'Binary Image Successully Updated as Initial Guess.'});
 				ah = get(h,'CurrentAxes');
 				ch = get(ah,'Children');
@@ -460,9 +323,8 @@ function Tracer_UI()
 				% TODO: Add popup explaining the next step in the pipeline...
 			end
 			
-			% assignin('base','GUI_Parameters',GUI_Parameters);
-			% assignin('base','Im_BW',Im_BW);
-			
+			assignin('base','GUI_Parameters',GUI_Parameters);
+			% assignin('base','Im_BW',Im_BW);		
 		end
 	end
 	
@@ -490,18 +352,18 @@ function Tracer_UI()
 		GUI_Parameters.Handles.Machine_Learning.MarkerSize11 = uicontrol(GUI_Parameters.Handles.Edit_BW_MarkerSize_Radio_Group,'Style','radiobutton','String','11','UserData',11,'Units','normalized','FontSize',18,'Position',[0.6,0.4,0.5,.5]);
 		GUI_Parameters.Handles.Machine_Learning.MarkerSize15 = uicontrol(GUI_Parameters.Handles.Edit_BW_MarkerSize_Radio_Group,'Style','radiobutton','String','15','UserData',15,'Units','normalized','FontSize',18,'Position',[0.75,0.4,0.5,.5]);
 		
-		[Im_Rows,Im_Cols] = size(GUI_Parameters.Workspace(1).Workspace.Image0);
+		[Im_Rows,Im_Cols] = size(GUI_Parameters.Workspace(end).Workspace.Image0);
 		Im_RGB = zeros(Im_Rows,Im_Cols,3);
-		Im_RGB(:,:,1) = im2double(GUI_Parameters.Workspace(1).Workspace.Image0);
-		Im_RGB(:,:,2) = GUI_Parameters.Workspace(1).Workspace.Im_BW .* Im_RGB(:,:,1);
-		Im_RGB(:,:,1) = Im_RGB(:,:,1) .* (1-GUI_Parameters.Workspace(1).Workspace.Im_BW);
+		Im_RGB(:,:,1) = im2double(GUI_Parameters.Workspace(end).Workspace.Image0);
+		Im_RGB(:,:,2) = GUI_Parameters.Workspace(end).Workspace.Im_BW .* Im_RGB(:,:,1);
+		Im_RGB(:,:,1) = Im_RGB(:,:,1) .* (1-GUI_Parameters.Workspace(end).Workspace.Im_BW);
 		
 		XL = xlim;
 		YL = ylim;
 		% Pointer_Shape_Mat = ones(32,32);
 		NN_MarkerSize = 1; % Default.
 		
-		Im_Handle = imshow(GUI_Parameters.Workspace(1).Workspace.Im_BW,'Parent',GUI_Parameters.Handles.Axes);
+		Im_Handle = imshow(GUI_Parameters.Workspace(end).Workspace.Im_BW,'Parent',GUI_Parameters.Handles.Axes);
 		set(Im_Handle,'HitTest','off');
 		
 		set(GUI_Parameters.Handles.Axes,'YDir','normal','PickableParts','all','ButtonDownFcn',@Mouse_Edit_BW_Func,'Position',[0,0,1,1]);
@@ -511,11 +373,11 @@ function Tracer_UI()
 			YL = ylim;
 			switch GUI_Parameters.Handles.Edit_BW_View_Radio_Group.SelectedObject.UserData
 				case 1
-					imshow(GUI_Parameters.Workspace(1).Workspace.Image0);
+					imshow(GUI_Parameters.Workspace(end).Workspace.Image0);
 					xlim(XL);
 					ylim(YL);
 				case 2
-					Im_Handle = imshow(GUI_Parameters.Workspace(1).Workspace.Im_BW);
+					Im_Handle = imshow(GUI_Parameters.Workspace(end).Workspace.Im_BW);
 					set(Im_Handle,'HitTest','off');
 					xlim(XL);
 					ylim(YL);
@@ -525,7 +387,7 @@ function Tracer_UI()
 					xlim(XL);
 					ylim(YL);
 				case 4
-					[Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints] = Pixel_Trace_Post_Proccessing(GUI_Parameters.Workspace(1).Workspace.Im_BW);
+					[Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints] = Pixel_Trace_Post_Proccessing(GUI_Parameters.Workspace(end).Workspace.Im_BW);
 					imshow(Im1_NoiseReduction);
 					assignin('base','Im1_NoiseReduction',Im1_NoiseReduction);
 					xlim(XL);
@@ -540,7 +402,7 @@ function Tracer_UI()
 					end
 					
 					% assignin('base','Ims',Im1_NoiseReduction);
-					% assignin('base','Workspace',GUI_Parameters.Workspace(1).Workspace);
+					% assignin('base','Workspace',GUI_Parameters.Workspace(end).Workspace);
 			end
 			set(gca,'YDir','normal','PickableParts','all','ButtonDownFcn',@Mouse_Edit_BW_Func);
 			% Mouse_Edit_BW_Func();
@@ -570,7 +432,7 @@ function Tracer_UI()
 					F = (Im_Rows*(Fx-1)+Fy);
 					Im_RGB(F + (Im_Rows*Im_Cols)) = Im_RGB(F); % Add point (change to green channel).
 					Im_RGB(F) = 0; % Delete the red channel.
-					GUI_Parameters.Workspace(1).Workspace.Im_BW(F) = 1;
+					GUI_Parameters.Workspace(end).Workspace.Im_BW(F) = 1;
 				case 3 % Right mouse click - delete pixels.
 					% display(3);
 					[Fy,Fx] = find(Im_RGB(C(3):C(4),C(1):C(2),1) == 0);
@@ -579,21 +441,21 @@ function Tracer_UI()
 					F = (Im_Rows*(Fx-1)+Fy);
 					Im_RGB(F) = Im_RGB(F + (Im_Rows*Im_Cols)); % Delete point (change to red channel).
 					Im_RGB(F + (Im_Rows*Im_Cols)) = 0; % Delete the green channel.
-					GUI_Parameters.Workspace(1).Workspace.Im_BW(F) = 0;
+					GUI_Parameters.Workspace(end).Workspace.Im_BW(F) = 0;
 			end
 			Edit_BW_Radio_View_Func();
 		end
 		
 		function Save_BW_Func(source,callbackdata)
-			imwrite(GUI_Parameters.Workspace(1).Workspace.Image0,[uigetdir,filesep,GUI_Parameters.Handles.FileName,'Source.tif']);
-			imwrite(GUI_Parameters.Workspace(1).Workspace.Im_BW,[uigetdir,filesep,GUI_Parameters.Handles.FileName,'_Annotated.tif']);
+			imwrite(GUI_Parameters.Workspace(end).Workspace.Image0,[uigetdir,filesep,GUI_Parameters.Handles.FileName,'Source.tif']);
+			imwrite(GUI_Parameters.Workspace(end).Workspace.Im_BW,[uigetdir,filesep,GUI_Parameters.Handles.FileName,'_Annotated.tif']);
 		end
 		
 		function Finish_Edit_BW_Func(source,callbackdata)
 			
 			% GUI_Parameters.Workspace(1).Workspace.Im_BW = ;
 			% TODO: update BW in workspace. Currently it is updated directly during the user editing.
-			GUI_Parameters.Workspace(1).Workspace.User_Input.BW_Edited = 1;
+			GUI_Parameters.Workspace(end).Workspace.User_Input.BW_Edited = 1;
 			
 			set(GUI_Parameters.Handles.Start_Edit_BW,'Enable','on');
 			set(GUI_Parameters.Handles.Finish_Edit_BW,'Enable','off');
@@ -602,39 +464,38 @@ function Tracer_UI()
 	
 	function Start_A_New_Project_Func(source,callbackdata)
 		% {['..',filesep,'*.tif'];['..',filesep,'*.jpg'],'Image Files'}
-		[FileName,PathName,FilterIndex] = uigetfile(fullfile(pwd,'..',filesep,'*.tif;*.jpg'),'Please Choose an Image File.',cd); % Lets the user choose a file.
-		if(FileName == 0)
+		[FileNames,PathName,~] = uigetfile(fullfile(pwd,'..',filesep,'*.tif;*.jpg'),'Please Choose an Image File.',cd,'MultiSelect','on'); % Lets the user choose a file.
+		if(~length(FileNames))
 			return;
 		end
 		Current_Dir = cd(PathName);
-		GUI_Parameters.Handles.FileName = FileName;
+		GUI_Parameters.Handles.FileNames = FileNames;
 		
 		H1 = uipanel(GUI_Parameters.Handles.Main_Panel,'BackgroundColor',[0.5,0.5,0.5],'Position',[0.3 0.1 0.4 0.8]);
-		
-		uicontrol(H1,'Style','text','FontSize',20,'BackgroundColor',[0.7,0.7,0.7],'String','Project Properties','Units','Normalized','Position',[0 0.93 1 0.07],'FontSize',28);
-		Continue_Button = uicontrol(H1,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button2_Font_Size,'String','Continue','Units','Normalized','Position',[0 0 1 0.1],'Callback',@Continue_Func);
-		
-		% uicontrol(H1,'Style','text','units','Normalized','Position',[0,0.7,0.35,0.05],'String','Tracing Method:','FontSize',18,'BackgroundColor',[0.5,0.5,0.5]);
-		% Tracing_Method_Buttons = uibuttongroup(H1,'Position',[0.35,0.7,0.6,0.05],'BorderType','none');
-		% uicontrol(Tracing_Method_Buttons,'Style','radiobutton','String','Manual','UserData',2,'Units','normalized','FontSize',18,'Position',[0,0,0.5,1],'BackgroundColor',[0.5,0.5,0.5]);
-		% uicontrol(Tracing_Method_Buttons,'Style','radiobutton','String','Automatic','UserData',1,'Units','normalized','FontSize',18,'Position',[0.5,0,0.5,1],'BackgroundColor',[0.5,0.5,0.5]);
-		
-		uicontrol(H1,'Style','text','units','Normalized','Position',[0,.8,0.3,0.05],'String','Scale-Bar:','FontSize',18,'BackgroundColor',[0.5,0.5,0.5]);
-		
-		uicontrol(H1,'Style','text','units','Normalized','Position',[0.35,0.85,0.2,0.05],'String','Pixels','FontSize',18,'BackgroundColor',[0.5,0.5,0.5]);
-		uicontrol(H1,'Style','text','units','Normalized','Position',[0.6,0.85,0.2,0.05],'String','Length','FontSize',18,'BackgroundColor',[0.5,0.5,0.5]);
-		uicontrol(H1,'Style','text','units','Normalized','Position',[0.81,0.85,0.15,0.05],'String','Unit','FontSize',18,'BackgroundColor',[0.5,0.5,0.5]);
-		
-		User_Input.Scale_Bar.Pixels = uicontrol(H1,'style','edit','units','Normalized','position',[0.36,.8,0.2,0.05],'String','140','UserData','','FontSize',24); % 4.5.
-		User_Input.Scale_Bar.Length = uicontrol(H1,'style','edit','units','Normalized','position',[0.6,.8,0.2,0.05],'String','50','UserData','','FontSize',24); % 1.
-		User_Input.Scale_Bar.Unit = uicontrol(H1,'Style','popup','Units','Normalized','Position',[0.81,.8,0.15,0.05], ...
-				'FontSize',16,'String',{[char(181),'m'],'nm','mm','km'});
-		User_Input.BW_Edited = 0;
+			uicontrol(H1,'Style','text','FontSize',20,'BackgroundColor',[0.7,0.7,0.7],'String','Project Properties','Units','Normalized','Position',[0 0.93 1 0.07],'FontSize',28);
+			Continue_Button = uicontrol(H1,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button2_Font_Size,'String','Continue','Units','Normalized','Position',[0 0 1 0.1],'Callback',@Continue_Func);
+			
+			% uicontrol(H1,'Style','text','units','Normalized','Position',[0,0.7,0.35,0.05],'String','Tracing Method:','FontSize',18,'BackgroundColor',[0.5,0.5,0.5]);
+			% Tracing_Method_Buttons = uibuttongroup(H1,'Position',[0.35,0.7,0.6,0.05],'BorderType','none');
+			% uicontrol(Tracing_Method_Buttons,'Style','radiobutton','String','Manual','UserData',2,'Units','normalized','FontSize',18,'Position',[0,0,0.5,1],'BackgroundColor',[0.5,0.5,0.5]);
+			% uicontrol(Tracing_Method_Buttons,'Style','radiobutton','String','Automatic','UserData',1,'Units','normalized','FontSize',18,'Position',[0.5,0,0.5,1],'BackgroundColor',[0.5,0.5,0.5]);
+			
+			uicontrol(H1,'Style','text','units','Normalized','Position',[0,.8,0.3,0.05],'String','Scale-Bar:','FontSize',18,'BackgroundColor',[0.5,0.5,0.5]);
+			
+			uicontrol(H1,'Style','text','units','Normalized','Position',[0.35,0.85,0.2,0.05],'String','Pixels','FontSize',18,'BackgroundColor',[0.5,0.5,0.5]);
+			uicontrol(H1,'Style','text','units','Normalized','Position',[0.6,0.85,0.2,0.05],'String','Length','FontSize',18,'BackgroundColor',[0.5,0.5,0.5]);
+			uicontrol(H1,'Style','text','units','Normalized','Position',[0.81,0.85,0.15,0.05],'String','Unit','FontSize',18,'BackgroundColor',[0.5,0.5,0.5]);
+			
+			User_Input.Scale_Bar.Pixels = uicontrol(H1,'style','edit','units','Normalized','position',[0.36,.8,0.2,0.05],'String','140','UserData','','FontSize',24); % 4.5.
+			User_Input.Scale_Bar.Length = uicontrol(H1,'style','edit','units','Normalized','position',[0.6,.8,0.2,0.05],'String','50','UserData','','FontSize',24); % 1.
+			User_Input.Scale_Bar.Unit = uicontrol(H1,'Style','popup','Units','Normalized','Position',[0.81,.8,0.15,0.05], ...
+					'FontSize',16,'String',{[char(181),'m'],'nm','mm','km'});
+			User_Input.BW_Edited = 0;
 		
 		Properties_Handles = struct('Property_Name',{},'Property_Value',{});
 		
-		p = 1;
-		Y0 = 0.65;
+		p = 1; % A GUI parameter.
+		Y0 = 0.65; % A GUI parameter.
 		
 		Properties_Handles(1).Property_Name = uicontrol(H1,'style','edit','units','Normalized','position',[0.04,Y0-0.06,0.45,0.05],'String','Creator Name','UserData','','FontSize',20);
 			Properties_Handles(1).Property_Value = uicontrol(H1,'style','edit','units','Normalized','position',[0.51,Y0-0.06,0.45,0.05],'String','','UserData','','FontSize',20);
@@ -670,52 +531,51 @@ function Tracer_UI()
 		function Continue_Func(source1,callbackdata1)
 			
 			GUI_Parameters.Workspace = struct('Workspace',{}); % Reset the Workspace.
-			GUI_Parameters.Workspace(1).Workspace.Im_BW = [];
-			
 			GUI_Parameters.General.Active_View = 1;
-			% Reset_Axes();
 			
-			% Set the scale-bar:
-			GUI_Parameters.Workspace(1).Workspace.User_Input(1).Scale_Factor = str2num(User_Input.Scale_Bar.Length.String) / ...
-																			str2num(User_Input.Scale_Bar.Pixels.String);
-			GUI_Parameters.Workspace(1).Workspace.User_Input(1).Scale_Unit = User_Input.Scale_Bar.Unit.String(User_Input.Scale_Bar.Unit.Value);
-			
-			for i=1:numel(Properties_Handles)
-				GUI_Parameters.Workspace(1).Workspace.User_Input.Features.(strrep(Properties_Handles(i).Property_Name.String,' ','_')) = ...
-					strrep(Properties_Handles(i).Property_Value.String,' ','_');
+			for fi=1:length(GUI_Parameters.Handles.FileNames)
+				GUI_Parameters.Workspace(fi).Workspace.Im_BW = [];
+				
+				% Set the scale-bar:
+				GUI_Parameters.Workspace(fi).Workspace.User_Input(1).Scale_Factor = str2num(User_Input.Scale_Bar.Length.String) / ...
+																				str2num(User_Input.Scale_Bar.Pixels.String);
+				GUI_Parameters.Workspace(fi).Workspace.User_Input(1).Scale_Unit = User_Input.Scale_Bar.Unit.String(User_Input.Scale_Bar.Unit.Value);
+				
+				for i=1:numel(Properties_Handles)
+					GUI_Parameters.Workspace(fi).Workspace.User_Input.Features.(strrep(Properties_Handles(i).Property_Name.String,' ','_')) = ...
+						strrep(Properties_Handles(i).Property_Value.String,' ','_');
+				end
+				
+				GUI_Parameters.Workspace(fi).Workspace.Parameters = Parameters_Func(GUI_Parameters.Workspace(fi).Workspace.User_Input.Scale_Factor);
+				
+				GUI_Parameters.Workspace(fi).Workspace.Image0 = imread(strcat(PathName,FileNames{fi}));
+				
+				% Convert the loaded image to the default format (uint8, [0,255]):
+				GUI_Parameters.Workspace(fi).Workspace.Image0 = ...
+				GUI_Parameters.Workspace(fi).Workspace.Parameters.General_Parameters.Image_Format(GUI_Parameters.Workspace(fi).Workspace.Image0);
+				
+				% Detect and display CB and the outsets of the branches connected to it:
+				CB_BW_Threshold = GUI_Parameters.Workspace(fi).Workspace.Parameters.Cell_Body.BW_Threshold;
+				Scale_Factor = GUI_Parameters.Workspace(fi).Workspace.User_Input.Scale_Factor;
+				[CB_Pixels,CB_Perimeter] = Detect_Cell_Body(GUI_Parameters.Workspace(fi).Workspace.Image0,CB_BW_Threshold,Scale_Factor,0); % Detect cell-body.
+				if(fi == length(GUI_Parameters.Handles.FileNames)) % If it's the last image.
+					cla(GUI_Parameters.Handles.Axes,'reset');
+					imshow(GUI_Parameters.Workspace(fi).Workspace.Image0,'Parent',GUI_Parameters.Handles.Axes);
+					set(gca,'YDir','normal','Position',[0,0,1,1]);
+					[CB_Vertices,Pixels0,Pixels1] = Find_CB_Vertices(GUI_Parameters.Workspace(fi).Workspace.Image0,CB_Perimeter,CB_Pixels,Scale_Factor,CB_BW_Threshold,1);
+				else % Do not display the detected cell body.
+					[CB_Vertices,Pixels0,Pixels1] = Find_CB_Vertices(GUI_Parameters.Workspace(fi).Workspace.Image0,CB_Perimeter,CB_Pixels,Scale_Factor,CB_BW_Threshold,0);
+				end
+				[Im_Rows,Im_Cols] = size(GUI_Parameters.Workspace(fi).Workspace.Image0);
+				GUI_Parameters.Workspace(fi).Workspace.Parameters.General_Parameters.Im_Rows = Im_Rows;
+				GUI_Parameters.Workspace(fi).Workspace.Parameters.General_Parameters.Im_Cols = Im_Cols;
+				
 			end
-			
 			delete(H1);
-			
-			GUI_Parameters.Workspace(1).Workspace.Parameters = Parameters_Func(GUI_Parameters.Workspace(1).Workspace.User_Input.Scale_Factor);
-			
-			GUI_Parameters.Workspace(1).Workspace.Image0 = imread(strcat(PathName,FileName));
-			
-			a = 0;
-			% Convert the loaded image to the default format (uint8, [0,255]):
-			GUI_Parameters.Workspace(1).Workspace.Image0 = ...
-			GUI_Parameters.Workspace(1).Workspace.Parameters.General_Parameters.Image_Format(GUI_Parameters.Workspace(1).Workspace.Image0);
-			
-			cla(GUI_Parameters.Handles.Axes,'reset');
-			imshow(GUI_Parameters.Workspace(1).Workspace.Image0,'Parent',GUI_Parameters.Handles.Axes);
-			set(gca,'YDir','normal','Position',[0,0,1,1]);
-			% set(Display_List,'Enable','off');
-			
-			% Detect and display CB and the outsets of the branches connected to it:
-			CB_BW_Threshold = GUI_Parameters.Workspace.Workspace.Parameters.Cell_Body.BW_Threshold;
-			Scale_Factor = GUI_Parameters.Workspace.Workspace.User_Input.Scale_Factor;
-			[CB_Pixels,CB_Perimeter] = Detect_Cell_Body(GUI_Parameters.Workspace.Workspace.Image0,CB_BW_Threshold,Scale_Factor,0); % Detect cell-body.
-			[CB_Vertices,Pixels0,Pixels1] = Find_CB_Vertices(GUI_Parameters.Workspace.Workspace.Image0,CB_Perimeter,CB_Pixels,Scale_Factor,CB_BW_Threshold,1);
-			
-			[Im_Rows,Im_Cols] = size(GUI_Parameters.Workspace(1).Workspace.Image0);
-			GUI_Parameters.Workspace(1).Workspace.Parameters.General_Parameters.Im_Rows = Im_Rows;
-			GUI_Parameters.Workspace(1).Workspace.Parameters.General_Parameters.Im_Cols = Im_Cols;
-			
-			GUI_Parameters.Workspace(1).Workspace.Path = struct('Rectangle_Index',{});
-			
 			% Enable the tracing list:
 			% set(H0_1_2,'Enable','on');
 			% set(allchild(H0_1_2),'Enable','on');
+			% set(Display_List,'Enable','off');
 		end
 		
 		set(GUI_Parameters.Handles.Machine_Learning.Load_Trained_NN_Button,'Enable','on');
@@ -740,7 +600,7 @@ function Tracer_UI()
 			waitbar(1/3,WB_H);
 			
 			GUI_Parameters.Workspace = File1.Workspace;
-		else %  A single neuron at the end of the tracing OR after generating an All_Workspaces file.
+		else %  A workspace at the end of the tracing OR after generating an All_Workspaces file.
 			WB_H = waitbar(0,'Please wait...');
 			waitbar(0,WB_H);
 		end
@@ -929,57 +789,51 @@ function Tracer_UI()
 		set(Reconstructions_Menu_Handle,'Enable','off');
 		set(Graphs_Menu_Handle,'Enable','off');
 		
-		axes(GUI_Parameters.Handles.Axes);
-		Reset_Axes;
-		set(GUI_Parameters.Handles.Axes,'YDir','normal');
-		
-		% GUI_Parameters.Workspace(1).Workspace = Trace1(GUI_Parameters.Workspace(1).Workspace);
-		
-		% Skeletonize, detect vertices and segments and find vertices angles:
-		GUI_Parameters.Workspace(1).Workspace = Vertices_Analysis_Index(GUI_Parameters.Workspace(1).Workspace);
-		
-		% assignin('base','Workspace',GUI_Parameters.Workspace(1).Workspace);
-		
-		% Trace using skeleton vertices and Im_BW:
-		GUI_Parameters.Workspace(1).Workspace = Connect_Vertices(GUI_Parameters.Workspace(1).Workspace);
-		assignin('base','Workspace',GUI_Parameters.Workspace(1).Workspace);
-		
-		[Final_Curve,Approved] = Find_Center_Line(GUI_Parameters.Workspace(1).Workspace.Image0,GUI_Parameters.Workspace(1).Workspace.Im_BW); % Detect medial axis.
-		if(Approved)
-			GUI_Parameters.Workspace(1).Workspace.Medial_Axis = Final_Curve;
-			disp('Medial Axis Detected Successully.');
-		else
-			disp('Medial Axis Detection Failed.');
+		for fi=1:length(GUI_Parameters.Handles.FileNames)
+			
+			axes(GUI_Parameters.Handles.Axes);
+			Reset_Axes;
+			set(GUI_Parameters.Handles.Axes,'YDir','normal');
+			
+			% Skeletonize, detect vertices and segments and find vertices angles:
+			GUI_Parameters.Workspace(fi).Workspace = Vertices_Analysis_Index(GUI_Parameters.Workspace(fi).Workspace);
+			
+			% assignin('base','Workspace',GUI_Parameters.Workspace(fi).Workspace);
+			
+			% Trace using skeleton vertices and Im_BW:
+			GUI_Parameters.Workspace(fi).Workspace = Connect_Vertices(GUI_Parameters.Workspace(fi).Workspace);
+			assignin('base','Workspace',GUI_Parameters.Workspace(fi).Workspace);
+			
+			[Final_Curve,Approved] = Find_Center_Line(GUI_Parameters.Workspace(fi).Workspace.Image0,GUI_Parameters.Workspace(fi).Workspace.Im_BW); % Detect medial axis.
+			if(Approved)
+				GUI_Parameters.Workspace(fi).Workspace.Medial_Axis = Final_Curve;
+				disp('Medial Axis Detected Successully.');
+			else
+				disp('Medial Axis Detection Failed.');
+			end
+			
+			assignin('base','Workspace',GUI_Parameters.Workspace(fi).Workspace);
+			
+			GUI_Parameters.Workspace(fi).Workspace = rmfield(GUI_Parameters.Workspace(fi).Workspace,'Im_BW'); % The probabilities matrix is saved instead.
+			
+			pause(10);
+			% waitfor(msgbox('The Tracing Completed Successully.'));
+			
+			imshow(GUI_Parameters.Workspace(fi).Workspace.Image0,'Parent',GUI_Parameters.Handles.Axes);
+			Reconstruct_Segmented_Trace(GUI_Parameters.Workspace(fi).Workspace);
+			set(GUI_Parameters.Handles.Axes,'YDir','normal');
 		end
 		
-		assignin('base','Workspace',GUI_Parameters.Workspace(1).Workspace);
+		if(length(GUI_Parameters.Handles.FileNames) >= 1)
+			Load_An_Existing_Project_File();			
+			set(Graphs_Menu_Handle,'Enable','on');
+			
+			if(length(GUI_Parameters.Handles.FileNames) == 1)
+				set(Reconstructions_Menu_Handle,'Enable','on');
+			end
+		end
+		assignin('base','GUI_Parameters',GUI_Parameters);
 		
-		GUI_Parameters.Workspace(1).Workspace = rmfield(GUI_Parameters.Workspace(1).Workspace,'Im_BW'); % The probabilities matrix is saved instead.
-		waitfor(msgbox('The Tracing Completed Successully.'));
-		
-		Load_An_Existing_Project_File();
-		
-		imshow(GUI_Parameters.Workspace(1).Workspace.Image0,'Parent',GUI_Parameters.Handles.Axes);
-		Reconstruct_Segmented_Trace(GUI_Parameters.Workspace(1).Workspace);
-		set(GUI_Parameters.Handles.Axes,'YDir','normal');
-		
-		% set(GUI_Parameters.Handles.Display_Panel,'Enable','on');
-		% set(GUI_Parameters.Handles.Edit_Panel,'Enable','on');
-		set(Reconstructions_Menu_Handle,'Enable','on');
-		set(Graphs_Menu_Handle,'Enable','on');
-		% set(allchild(GUI_Parameters.Handles.Tracing.Tracing_Tab),'Enable','on');
-	end
-	
-	function Trace_Multiple_Neurons(source,callbackdata)
-		
-		User_Input = GUI_Parameters.Workspace(1).Workspace.User_Input;
-		
-		% Scale_Factor = GUI_Parameters.Workspace(1).Workspace.User_Input(1).Scale_Factor;
-		File1 = load(GUI_Parameters(1).Neural_Network(1).Directory);
-		NN_Threshold = GUI_Parameters.Workspace(1).Workspace.Parameters.Neural_Network.Default_Pixel_Classification_Threshold;
-		
-		Trace_Multiple_Images(User_Input,File1.deepnet,NN_Threshold,GUI_Parameters.Handles.Figure);
-		clear File1;
 	end
 	
 	function Analyze_Func(source,callbackdata)
