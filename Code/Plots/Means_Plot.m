@@ -45,7 +45,7 @@ function Multiple_Means_Func(Input_Struct,GUI_Parameters,Visuals,YLabel,Title1)
 				Get_Statistically_Significance_Bars(Groups_Struct,Visuals.Active_Colormap(1,:));
 			end
 			
-			set(gca,'XTick',1:Groups_Num,'XTickLabel',{Input_Struct.Labels},'FontSize',Visuals.Axes_Lables_Font_Size/(Groups_Num/6)); % ,'XTickLabelRotation',Visuals.Axss_Lables_Orientation
+			set(gca,'XTick',1:Groups_Num,'XTickLabel',{Input_Struct.Labels},'FontSize',Visuals.Axes_Lables_Font_Size/(Groups_Num)); % ,'XTickLabelRotation',Visuals.Axss_Lables_Orientation
 			% set(gca,'XTick',1:Groups_Num,'XTickLabel',{Input_Struct.Labels},'FontSize',Visuals.Axes_Lables_Font_Size); % ,'XTickLabelRotation',Visuals.Axss_Lables_Orientation
 			ylabel(YLabel,'FontSize',Visuals.Axes_Titles_Font_Size);
 			set(gca,'YColor',Visuals.Active_Colormap(1,:));

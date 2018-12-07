@@ -203,12 +203,12 @@ function Tracer_UI()
 		NN1 = File1.deepnet; % TODO: choose the only variable from the file without specifying the name.
 		clear File1;
 		
-		NN_Threshold = GUI_Parameters.Workspace(end).Workspace.Parameters.Neural_Network.Default_Pixel_Classification_Threshold;
+		NN_Threshold0 = GUI_Parameters.Workspace(end).Workspace.Parameters.Neural_Network.Default_Pixel_Classification_Threshold;
 		
 		GUI_Parameters(1).Neural_Network(1).Directory = strcat(PathName,FileName);
 		
-		GUI_Parameters.Handles.Machine_Learning.Probability_Slider = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','slider','Min',0,'Max',1,'Value',NN_Threshold,'SliderStep',[0.05,0.05],'Units','Normalized','Position',[0,.6,.8,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@NN_Probability_Slider_Func);
-		GUI_Parameters.Handles.Machine_Learning.Probability_Slider_Text = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','edit','String',num2str(NN_Threshold),'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.8,.6,.2,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6]);
+		GUI_Parameters.Handles.Machine_Learning.Probability_Slider = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','slider','Min',0,'Max',1,'Value',NN_Threshold0,'SliderStep',[0.05,0.05],'Units','Normalized','Position',[0,.6,.8,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@NN_Probability_Slider_Func);
+		GUI_Parameters.Handles.Machine_Learning.Probability_Slider_Text = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','edit','String',num2str(NN_Threshold0),'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.8,.6,.2,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6]);
 		
 		GUI_Parameters.Handles.Machine_Learning.Min_Obejct_Size_Slider = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','slider','Min',0,'Max',500,'Value',0,'SliderStep',[.01,.01],'Units','Normalized','Position',[0,.4,.8,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@NN_Min_Obejct_Size_Slider_Func);
 		GUI_Parameters.Handles.Machine_Learning.Min_Obejct_Size_Text = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','edit','String',1,'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.8,.4,.2,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6]);
@@ -220,7 +220,7 @@ function Tracer_UI()
 		
 		[Im_Rows,Im_Cols] = size(GUI_Parameters.Workspace(end).Workspace.Image0);
 		
-		[NN_Probabilities0,Im_BW0] = Apply_NN(GUI_Parameters.Workspace(end).Workspace.Image0,NN1,NN_Threshold,Im_Rows,Im_Cols,1);
+		[NN_Probabilities0,Im_BW0] = Apply_NN(GUI_Parameters.Workspace(end).Workspace.Image0,NN1,NN_Threshold0,Im_Rows,Im_Cols,1);
 		
 		function [NN_Probabilities,Im_BW] = Apply_NN(Image0,Neural_Net,NN_Threshold,Im_Rows,Im_Cols,Display_Me)
 			NN_Probabilities = Apply_Trained_Network(Neural_Net,Image0);
@@ -239,8 +239,10 @@ function Tracer_UI()
 		
 		function NN_Probability_Slider_Func(source,event)
 			% [Scores,GUI_Parameters.Workspace(1).Workspace.Im_BW] = Apply_Trained_Network(NN1,GUI_Parameters.Workspace(1).Workspace.Image0,source.Value,Input_Type);
-			set(GUI_Parameters.Handles.Machine_Learning.Probability_Slider,'Enable','off');
+			set(allchild(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel),'Enable','off');
 			
+			% Each time the probability slider changes, the change in Im_BW0 is only dependent on NN_Probabilities0.
+				% So using it after using this slider (object size threshold), will necessarily reset Im_BW0.
 			Im_BW0(find(NN_Probabilities0 >= source.Value)) = 1;
 			Im_BW0(find(NN_Probabilities0 <  source.Value)) = 0;
 			
@@ -249,16 +251,14 @@ function Tracer_UI()
 			set(gca,'YDir','normal');
 			set(GUI_Parameters.Handles.Machine_Learning.Probability_Slider_Text,'String',source.Value);
 			
-			set(GUI_Parameters.Handles.Machine_Learning.Probability_Slider,'Enable','on');
-			% disp(source.Value);
+			% Apply the size thresholding to the updated Im_BW0:
+			NN_Min_Obejct_Size_Slider_Func(GUI_Parameters.Handles.Machine_Learning.Min_Obejct_Size_Slider);
+			
+			set(allchild(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel),'Enable','on');
 		end
 		
 		function NN_Min_Obejct_Size_Slider_Func(source,event)
-			% [Scores,GUI_Parameters.Workspace(1).Workspace.Im_BW] = Apply_Trained_Network(NN1,GUI_Parameters.Workspace(1).Workspace.Image0,source.Value,Input_Type);
-			set(GUI_Parameters.Handles.Machine_Learning.Min_Obejct_Size_Slider,'Enable','off');
-			
-			% Im_BW0(find(NN_Probabilities0 >= GUI_Parameters.Handles.Machine_Learning.Probability_Slider.Value)) = 1;
-			% Im_BW0(find(NN_Probabilities0 < GUI_Parameters.Handles.Machine_Learning.Probability_Slider.Value)) = 0;
+			set(allchild(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel),'Enable','off');
 			
 			CC = bwconncomp(Im_BW0);
 			for c=1:CC.NumObjects
@@ -271,7 +271,7 @@ function Tracer_UI()
 			imshow(Im_BW0,'Parent',GUI_Parameters.Handles.Axes);
 			set(gca,'YDir','normal');
 			set(GUI_Parameters.Handles.Machine_Learning.Min_Obejct_Size_Text,'String',source.Value);
-			set(source,'Enable','on');
+			set(allchild(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel),'Enable','on');
 		end
 		
 		function Save_Training_Sample_Func(source,event)
@@ -288,16 +288,15 @@ function Tracer_UI()
 			if(isempty(Im_BW0))
 				display('Im_BW was not found');
 			else % If the project does not have any BW reconstruction.
+				set(allchild(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel),'Enable','off');
 				WB_H_NN = waitbar(0,'Please wait...');
 				waitbar(0,WB_H_NN);
 				for fi=1:length(GUI_Parameters.Handles.FileNames)
 					waitbar(fi/length(GUI_Parameters.Handles.FileNames),WB_H_NN);
 					
 					[Im_Rows,Im_Cols] = size(GUI_Parameters.Workspace(fi).Workspace.Image0);
-					NN_Threshold = GUI_Parameters.Handles.Machine_Learning.Probability_Slider;
-					[NN_Probabilities0,Im_BW0] = Apply_NN(GUI_Parameters.Workspace(fi).Workspace.Image0,NN1,NN_Threshold,Im_Rows,Im_Cols,0);
-					GUI_Parameters.Workspace(fi).Workspace.NN_Probabilities = NN_Probabilities0;
-					GUI_Parameters.Workspace(fi).Workspace.Im_BW = Im_BW0;
+					[GUI_Parameters.Workspace(fi).Workspace.NN_Probabilities,GUI_Parameters.Workspace(fi).Workspace.Im_BW] = ...
+								Apply_NN(GUI_Parameters.Workspace(fi).Workspace.Image0,NN1,GUI_Parameters.Handles.Machine_Learning.Probability_Slider.Value,Im_Rows,Im_Cols,0);
 					
 					CC = bwconncomp(GUI_Parameters.Workspace(fi).Workspace.Im_BW);
 					for c=1:CC.NumObjects
@@ -307,6 +306,7 @@ function Tracer_UI()
 					end
 				end
 				delete(WB_H_NN);
+				set(allchild(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel),'Enable','on');
 				
 				h = msgbox({'Binary Image Successully Updated as Initial Guess.'});
 				ah = get(h,'CurrentAxes');
@@ -317,9 +317,7 @@ function Tracer_UI()
 				P(3) = P(3) + 0.8*P(3);
 				% P(4) = P(4) * 1.2;
 				set(h,'Position',P);
-				% set(GUI_Parameters.Handles.Tracing.Editing_Tab,'Enable','on');
-				% set(H0_1_1,'Enable','on');
-				% set(H0_1_1_1,'Enable','on');
+				
 				% TODO: Add popup explaining the next step in the pipeline...
 			end
 			
@@ -789,7 +787,10 @@ function Tracer_UI()
 		set(Reconstructions_Menu_Handle,'Enable','off');
 		set(Graphs_Menu_Handle,'Enable','off');
 		
+		WB_H_Tracing = waitbar(0,'Please wait...');
+		waitbar(0,WB_H_Tracing);
 		for fi=1:length(GUI_Parameters.Handles.FileNames)
+			waitbar(fi/length(GUI_Parameters.Handles.FileNames),WB_H_Tracing);
 			
 			axes(GUI_Parameters.Handles.Axes);
 			Reset_Axes;
@@ -798,31 +799,28 @@ function Tracer_UI()
 			% Skeletonize, detect vertices and segments and find vertices angles:
 			GUI_Parameters.Workspace(fi).Workspace = Vertices_Analysis_Index(GUI_Parameters.Workspace(fi).Workspace);
 			
-			% assignin('base','Workspace',GUI_Parameters.Workspace(fi).Workspace);
-			
 			% Trace using skeleton vertices and Im_BW:
 			GUI_Parameters.Workspace(fi).Workspace = Connect_Vertices(GUI_Parameters.Workspace(fi).Workspace);
-			assignin('base','Workspace',GUI_Parameters.Workspace(fi).Workspace);
 			
 			[Final_Curve,Approved] = Find_Center_Line(GUI_Parameters.Workspace(fi).Workspace.Image0,GUI_Parameters.Workspace(fi).Workspace.Im_BW); % Detect medial axis.
 			if(Approved)
 				GUI_Parameters.Workspace(fi).Workspace.Medial_Axis = Final_Curve;
 				disp('Medial Axis Detected Successully.');
 			else
+				GUI_Parameters.Workspace(fi).Workspace.Medial_Axis = [];
 				disp('Medial Axis Detection Failed.');
 			end
 			
-			assignin('base','Workspace',GUI_Parameters.Workspace(fi).Workspace);
-			
 			GUI_Parameters.Workspace(fi).Workspace = rmfield(GUI_Parameters.Workspace(fi).Workspace,'Im_BW'); % The probabilities matrix is saved instead.
 			
-			pause(10);
+			pause(5);
 			% waitfor(msgbox('The Tracing Completed Successully.'));
 			
 			imshow(GUI_Parameters.Workspace(fi).Workspace.Image0,'Parent',GUI_Parameters.Handles.Axes);
 			Reconstruct_Segmented_Trace(GUI_Parameters.Workspace(fi).Workspace);
 			set(GUI_Parameters.Handles.Axes,'YDir','normal');
 		end
+		delete(WB_H_Tracing);
 		
 		if(length(GUI_Parameters.Handles.FileNames) >= 1)
 			Load_An_Existing_Project_File();			
