@@ -813,7 +813,6 @@ function Tracer_UI()
 			
 			GUI_Parameters.Workspace(fi).Workspace = rmfield(GUI_Parameters.Workspace(fi).Workspace,'Im_BW'); % The probabilities matrix is saved instead.
 			
-			pause(5);
 			% waitfor(msgbox('The Tracing Completed Successully.'));
 			
 			imshow(GUI_Parameters.Workspace(fi).Workspace.Image0,'Parent',GUI_Parameters.Handles.Axes);
@@ -845,14 +844,15 @@ function Tracer_UI()
 		set(findall(GUI_Parameters.Handles.Tracing.Tracing_Tab,'-property','enable'),'enable','on');
 	end
 	
-	function Save_Tracing_Func(source,callbackdata)		
+	function Save_Tracing_Func(source,callbackdata)
 		% Save project in a .mat file:
 		Version_Num = GUI_Parameters.Workspace(1).Workspace.Parameters.General_Parameters.Version_Num;
 		New_File_Name = strcat('MyTrace-V',Version_Num,'-',datestr(datetime,30),'.mat');
 		cd(GUI_Parameters.General.Current_Dir);
 		% assignin('base','GUI_Parameters',GUI_Parameters);
 		Workspace = GUI_Parameters.Workspace;
-		uisave('Workspace',New_File_Name);
+		[Workspace1(1:numel(GUI_Parameters.Workspace)).Workspace] = GUI_Parameters.Workspace.Workspace;		
+		uisave('Workspace1',New_File_Name);
 	end
 	
 	function Reconstruction_Func(source,callbackdata)
