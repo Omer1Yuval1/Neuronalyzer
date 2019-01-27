@@ -1,6 +1,6 @@
 function Trace_Multiple_Images(User_Input,NN_Object,NN_Threshold,Figure_Handle)
 	
-	% This function has to be run on each group of animals separately.
+	% This function has to be applied to each group of animals separately.
 	
 	assignin('base','User_Input',User_Input);
 	assignin('base','NN_Object',NN_Object);
@@ -27,7 +27,10 @@ function Trace_Multiple_Images(User_Input,NN_Object,NN_Threshold,Figure_Handle)
 		Dir1 = [PathName,'My_Neuronalizer_Projects',filesep,Files_List{f}(1:end-4)];
 		% FileName = [Files_List{f}(1:end-4),'.mat'];
 		mkdir(Dir1);
+		
 		Workspace0(1).Image0 = flipud(imread(strcat(PathName,Files_List{f})));
+		Workspace0.Parameters.General_Parameters.Image_Format(Workspace0.Image0);
+		
 		Workspace0.User_Input = User_Input;
 		[Workspace0.Parameters.General_Parameters.Im_Rows,Workspace0.Parameters.General_Parameters.Im_Cols] = size(Workspace0.Image0);
 		

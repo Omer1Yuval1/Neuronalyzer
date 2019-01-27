@@ -22,7 +22,11 @@ function Rects = Projection_Correction(Iw,v,Im,XY_Eval,Cxy,Rects,Ap,Medial_Tange
 		
 		Rects(r).Angle_Medial = mod(atan2(Vp_M(2),Vp_M(1)),2.*pi);
 		Rects(r).Angle_Corrected_Medial = mod(atan2(Vr_M_XY(2),Vr_M_XY(1)),2.*pi);
+		
 		Rects(r).Angle_Corrected = mod(atan2(Vr_XY(2),Vr_XY(1)),2.*pi);
+		
+		d = max(Medial_Angle,Rects(r).Angle_Corrected) - min(Medial_Angle,Rects(r).Angle_Corrected);
+		Rects(r).Medial_Angle_Corrected_Diff = min(d,(2.*pi)-d);
 		
 		%{
 		Rects(r).Vp = Vp;

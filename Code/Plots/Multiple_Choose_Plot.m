@@ -24,29 +24,74 @@ function Multiple_Choose_Plot(GUI_Parameters)
 		% Instead, I should change it to use the order field as a filter.
 	%
 	
+	set(GUI_Parameters.Handles.Analysis.Dynamic_Slider_Min,'Enable','off');
+	set(GUI_Parameters.Handles.Analysis.Dynamic_Slider_Max,'Enable','off');
+	
 	switch GUI_Parameters.General.Active_Plot
+		case 'Number of Segments'
+			% TODO: this could be replaced by a sums plot (similar to Means_Plot) but currently Generate_Plot_Input does not differentiate betweern workspaces.
+			Set_Dynamic_Sliders_Values(GUI_Parameters.Handles.Analysis,0,50);
+			m = GUI_Parameters.Handles.Analysis.Dynamic_Slider_Min.Value;
+			M = GUI_Parameters.Handles.Analysis.Dynamic_Slider_Max.Value;
+			Var_Operations{1} = @(x) Fan(x,m,M); % Summing up the logical 1s (but only taking positive sums).
+			Filter_Operations = [];
+			Var_Fields = {'Distance_From_Medial_Axis'};
+			Filter_Fields = [];
+			%
+			RowWise = 0;
+			Dynamic_Field = 'Distance_From_Medial_Axis';
+			%
+			Y_Label = 'Count';
+			Title = 'Number of Segments';
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Segments',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
+			Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
+			
+		case 'Number of Terminal Segments'
+			Set_Dynamic_Sliders_Values(GUI_Parameters.Handles.Analysis,0,50);
+			m = GUI_Parameters.Handles.Analysis.Dynamic_Slider_Min.Value;
+			M = GUI_Parameters.Handles.Analysis.Dynamic_Slider_Max.Value;
+			Var_Operations{1} = @(x) sum(x >= m & x<= M); % Summing up the logical 1s.
+			Var_Operations{2} = @(x) sum(x >= m & x<= M); % Summing up the logical 1s.
+			Filter_Operations = [];
+			Var_Fields = {'Distance_From_Medial_Axis','Terminal'};
+			Filter_Fields = [];
+			%
+			RowWise = 0;
+			Dynamic_Field = 'Distance_From_Medial_Axis';
+			%
+			Y_Label = 'Count';
+			Title = 'Number of Segments';
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Segments',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
+			Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
+
+			
 		case 'Mean Segment Length'
 			Var_Operations{1} = @(x) x(x>=0); % The length of a segment has to be positive.
 			Filter_Operations = [];
 			Var_Fields = {'Length'};
 			Filter_Fields = [];
-			% 
+			%
+			RowWise = 1;
+			Dynamic_Field = 'Distance_From_Medial_Axis';
+			Set_Dynamic_Sliders_Values(GUI_Parameters.Handles.Analysis,0,50);
+			%
 			Y_Label = 'Length (\mum)';
 			Title = 'Mean Length of Segments';
-			RowWise = 0;
-			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Segments',Var_Fields,Filter_Fields,Var_Operations,Filter_Operations,RowWise);
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Segments',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
 			Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
-			
 		case 'Total Length'
 			Var_Operations{1} = @(x) sum(x(x>=0)); % Sum up all segments lengths of each individual animal (=workspace). The length of a segment has to be positive.
 			Filter_Operations = [];
 			Var_Fields = {'Length'};
 			Filter_Fields = [];
 			%
+			RowWise = 1;
+			Dynamic_Field = 'Distance_From_Medial_Axis';
+			Set_Dynamic_Sliders_Values(GUI_Parameters.Handles.Analysis,0,50);
+			%
 			Y_Label = 'Length (\mum)';
 			Title = 'Total Length';
-			RowWise = 0;
-			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Segments',Var_Fields,Filter_Fields,Var_Operations,Filter_Operations,RowWise);
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Segments',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
 			Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
 			
 		case 'End2End Length Of Segments'
@@ -55,40 +100,153 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Var_Fields = {'End2End_Length'};
 			Filter_Fields = [];
 			%
+			RowWise = 1;
+			Dynamic_Field = 'Distance_From_Medial_Axis';
+			Set_Dynamic_Sliders_Values(GUI_Parameters.Handles.Analysis,0,50);
+			%
 			Y_Label = 'Length (\mum)';
-			Title = 'End2End Length Of Segments';
-			RowWise = 0;
-			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Segments',Var_Fields,Filter_Fields,Var_Operations,Filter_Operations,RowWise);
+			Title = 'End2End Length of Segments';
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Segments',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
 			Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
 			
 		case 'Mean Curvature Of Segments'
-			Var_Operations{1} = @(x) x(x>=0 & x<=0.1); % The curvature of a segment has to be positive.
+			Var_Operations{1} = @(x) x(x>=0 & x<=0.05); % The curvature of a segment has to be positive.
 			Filter_Operations = {};
 			Var_Fields = {'Curvature'};
 			Filter_Fields = {};
 			%
+			RowWise = 1;
+			Dynamic_Field = 'Distance_From_Medial_Axis';
+			Set_Dynamic_Sliders_Values(GUI_Parameters.Handles.Analysis,0,50);
+			%
 			Y_Label = 'Mean Squared Curvature (1/(\mum)^2)';
-			Title = 'Curvature Of Segments';
-			RowWise = 0;
-			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Segments',Var_Fields,Filter_Fields,Var_Operations,Filter_Operations,RowWise);
+			Title = 'Curvature of Segments';
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Segments',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
 			Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
 			
-		case 'Distribution of Curvature Of Segments'
+		case 'Max Curvature Of Segments'
+			Var_Operations{1} = @(x) x(x>=0 & x<=0.05); % The curvature of a segment has to be positive.
+			Filter_Operations = {};
+			Var_Fields = {'Max_Curvature'};
+			Filter_Fields = {};
+			%
+			RowWise = 1;
+			Dynamic_Field = 'Distance_From_Medial_Axis';
+			Set_Dynamic_Sliders_Values(GUI_Parameters.Handles.Analysis,0,50);
+			%
+			Y_Label = 'Max Squared Curvature (1/(\mum)^2)';
+			Title = 'Curvature of Segments';
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Segments',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
+			Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
+			
+		case 'Mean Curvature Of Terminal Segments'
+			Var_Operations{1} = @(x) x(x>=0 & x<=0.05); % The curvature of a segment has to be positive.
+			Filter_Operations{1} = @(x) (x==1);
+			Var_Fields = {'Curvature'};
+			Filter_Fields = {'Terminal'};
+			%
+			RowWise = 1;
+			Dynamic_Field = 'Distance_From_Medial_Axis';
+			Set_Dynamic_Sliders_Values(GUI_Parameters.Handles.Analysis,0,50);
+			%
+			Y_Label = 'Squared Curvature (1/(\mum)^2)';
+			Title = 'Mean Curvature Of Terminal Segments';
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Segments',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
+			Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
+			
+		case 'Max Curvature Of Terminal Segments'
+			Var_Operations{1} = @(x) x(x>=0 & x<=0.05); % The curvature of a segment has to be positive.
+			Filter_Operations{1} = @(x) (x==1);
+			Var_Fields = {'Max_Curvature'};
+			Filter_Fields = {'Terminal'};
+			%
+			RowWise = 1;
+			Dynamic_Field = 'Distance_From_Medial_Axis';
+			Set_Dynamic_Sliders_Values(GUI_Parameters.Handles.Analysis,0,50);
+			%
+			Y_Label = 'Squared Curvature (1/(\mum)^2)';
+			Title = 'Max Curvature Of Terminal Segments';
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Segments',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
+			Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
+			
+		case 'Distribution of Mean Squared Curvature Of Segments'
 			Var_Operations{1} = @(x) x(x>=0 & x<=0.1); % The curvature of a segment has to be positive.
 			Filter_Operations = {};
 			Var_Fields = {'Curvature'};
-			Filter_Fields = {};
+			Filter_Fields = {'Terminal'};
+			%
+			RowWise = 1;
+			Dynamic_Field = 'Distance_From_Medial_Axis';
+			Set_Dynamic_Sliders_Values(GUI_Parameters.Handles.Analysis,0,50);
 			%
 			X_Label = 'Squared Curvature (1/(\mum)^2)';
 			Y_Label = 'Count';
-			Title = 'Curvature Of Segments';
-			%
-			RowWise = 0;
+			Title = 'Mean of Squared Curvature of Segments';
 			%
 			X_Min_Max = [0,0.1];
 			BinSize = 0.005 .* GUI_Parameters.Handles.Analysis.Slider.Value;
 			%
-			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Segments',Var_Fields,Filter_Fields,Var_Operations,Filter_Operations,RowWise);
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Segments',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
+			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
+			
+		case 'Distribution of Max Squared Curvature Of Segments'
+			Var_Operations{1} = @(x) x(x>=0 & x<=0.1); % The curvature of a segment has to be positive.
+			Filter_Operations = {};
+			Var_Fields = {'Max_Curvature'};
+			Filter_Fields = {};
+			%
+			RowWise = 1;
+			Dynamic_Field = 'Distance_From_Medial_Axis';
+			Set_Dynamic_Sliders_Values(GUI_Parameters.Handles.Analysis,0,50);
+			%
+			X_Label = 'Squared Curvature (1/(\mum)^2)';
+			Y_Label = 'Count';
+			Title = 'Max of Squared Curvature of Segments';
+			%
+			X_Min_Max = [0,0.1];
+			BinSize = 0.005 .* GUI_Parameters.Handles.Analysis.Slider.Value;
+			%
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Segments',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
+			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);		
+			
+		case 'Distribution of Min Medial Angle Diff'
+			Var_Operations{1} = @(x) x(x>=0) .*180 ./ pi;
+			Filter_Operations = {};
+			Var_Fields = {'Min_Medial_Angle_Corrected_Diff'};
+			Filter_Fields = [];
+			%
+			RowWise = 1;
+			Dynamic_Field = 'Distance_From_Medial_Axis';
+			Set_Dynamic_Sliders_Values(GUI_Parameters.Handles.Analysis,0,50);
+			%
+			X_Label = ['Angle (',char(176),')'];
+			Y_Label = 'Count';
+			Title = 'Minimal Difference between Medial Angle and Vertex Angles';
+			%
+			X_Min_Max = [0,180];
+			BinSize = 20 .* GUI_Parameters.Handles.Analysis.Slider.Value;
+			%
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
+			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
+			
+		case 'Distribution of the Difference between Vertex and End2End Angles'
+			Var_Operations{1} = @(x) x(x>0).*180./pi; % Angle difference in degrees (this values is supposed to always be positive: max(a1,a2)-min(a1,a2) ; a1,a2=[0,2.*pi]).
+			Filter_Operations{1} = @(x) (x >= 0); % Both terminals and non-terminals.
+			Var_Fields = {'End2End_Vertex_Angle_Diffs'};
+			Filter_Fields = {'Terminal'};
+			%
+			RowWise = 1;
+			Dynamic_Field = 'Distance_From_Medial_Axis';
+			Set_Dynamic_Sliders_Values(GUI_Parameters.Handles.Analysis,0,50);
+			%
+			X_Label = ['Angle (',char(176),')'];
+			Y_Label = 'Count';
+			Title = 'Difference between Vertex and End2End Angles';
+			%
+			X_Min_Max = [0,180];
+			BinSize = 5 .* GUI_Parameters.Handles.Analysis.Slider.Value;
+			%
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Segments',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
 			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
 			
 		case 'CB Intensity'
@@ -153,7 +311,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			X_Min_Max = [0,50];
 			BinSize = 10 .* GUI_Parameters.Handles.Analysis.Slider.Value;
 			%%%
-			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,Var_Operations,Filter_Operations,RowWise);
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,[],Var_Operations,Filter_Operations,RowWise);
 			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
 			
 		case 'Distances Of 3-Way Junctions From The Medial Axis - Histogram'
@@ -205,7 +363,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Y_Label = 'Distance (\mum)';
 			Title = 'Smallest Angle VS Distance From Medial Axis';
 			%%%
-			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,Var_Operations,Filter_Operations,RowWise);
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,[],Var_Operations,Filter_Operations,RowWise);
 			assignin('base','Input_Struct',Input_Struct);
 			Two_Vars_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Label,Y_Label,Title);
 			
@@ -225,7 +383,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			X_Min_Max = [30,200];
 			BinSize = 20 .* GUI_Parameters.Handles.Analysis.Slider.Value;
 			%%%
-			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,Var_Operations,Filter_Operations,RowWise);
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,[],Var_Operations,Filter_Operations,RowWise);
 			% assignin('base','Input_Struct',Input_Struct);
 			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
 		case 'Histogram of Symmetry Indices'
@@ -257,7 +415,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Y_Label = 'Maximal Angle';
 			Title = 'Minimal and Maximal Angles of 3-Way junctions';
 			%%%
-			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,Var_Operations,Filter_Operations,RowWise);
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,[],Var_Operations,Filter_Operations,RowWise);
 			Two_Vars_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Label,Y_Label,Title);
 		case 'The Two Minimal Angles of each 3-Way junction'
 			Var_Operations{1} = @(x) x(x == min(x));
@@ -452,7 +610,48 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			%%%
 			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,Var_Operations,Filter_Operations,RowWise); % assignin('base','Input_Struct',Input_Struct);
 			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
-
+		case 'Histogram of Smallest, Mid & Largest Angles'
+			Var_Operations{1} = @(x) x(x == min(x));
+			Var_Operations{2} = @(x) x(x == max(x)); % x(x ~= min(x) & x~=max(x) & x>0);
+			Filter_Operations{1} = @(x) (x == 3); % Only 3-way junctions.
+			Var_Fields = {'Angles','Angles'};
+			Filter_Fields = {'Order'};
+			%
+			RowWise = 1;
+			BinSize = 1 + (30 .* GUI_Parameters.Handles.Analysis.Slider.Value);
+			%
+			Dynamic_Field = 'Distance_From_Medial_Axis';
+			Set_Dynamic_Sliders_Values(GUI_Parameters.Handles.Analysis,0,50);
+			%
+			Title = 'Histogram of Smallest, Mid & Largest Angles';
+			%
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
+			Plot_3Angles_Junction_Histogram(Input_Struct,GUI_Parameters,BinSize,GUI_Parameters.Visuals,Title);
 	end
 	assignin('base','Input_Struct',Input_Struct);
+	
+	function Set_Dynamic_Sliders_Values(Handles,Min_Value,Max_Value)
+		set(Handles.Dynamic_Slider_Min,'Enable','on');
+		set(Handles.Dynamic_Slider_Max,'Enable','on');
+		if(Handles.Dynamic_Slider_Min.Min ~= Min_Value || Handles.Dynamic_Slider_Min.Max ~= Max_Value || ...
+			Handles.Dynamic_Slider_Max.Min ~= Min_Value || Handles.Dynamic_Slider_Max.Max ~= Max_Value) % Update the slider only if the max or min have changed. Otherwise, keep the last chosen values.
+			Handles.Dynamic_Slider_Min.Min = Min_Value; % Scale dynamic sliders.
+			Handles.Dynamic_Slider_Min.Max = Max_Value; % ".
+			Handles.Dynamic_Slider_Max.Min = Min_Value;% ".
+			Handles.Dynamic_Slider_Max.Max = Max_Value; % ".
+			Handles.Dynamic_Slider_Min.Value = Min_Value;
+			Handles.Dynamic_Slider_Max.Value = Max_Value;
+			Handles.Dynamic_Slider_Text_Min.String = [num2str(Handles.Dynamic_Slider_Min.Value),char(181),'m']; % Update sliders text.
+			Handles.Dynamic_Slider_Text_Max.String = [num2str(Handles.Dynamic_Slider_Max.Value),char(181),'m']; % ".
+		end
+	end
+	
+	function out = Fan(x,m,M)
+		s = sum(x >= m & x<= M);
+		if(s == 0)
+			out = [];
+		else
+			out = s;
+		end
+	end
 end

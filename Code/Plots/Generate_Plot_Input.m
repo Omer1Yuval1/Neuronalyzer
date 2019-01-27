@@ -1,4 +1,4 @@
-function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Var_Fields,Filter_Fields,Var_Operations,Filter_Operations,RowWise)
+function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise)
 	
 	% assignin('base','GUI_Parameters3',GUI_Parameters);
 	% TODOs:
@@ -68,7 +68,9 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Var_Fields,Fi
 		for j=1:length(F) % For each workspace within group i.
 			if(~RowWise) % Apply operation to the entire column at once.
 				for l=1:length(Var_Operations)
-					Input_Struct(i).(Names{l}) = [Input_Struct(i).(Names{l}),Var_Operations{l}([GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name).(Var_Fields{l})])];
+					% The result of each operation l is assigned to a different dimension (X, Y, Z in Names).
+					V = Var_Operations{l}([GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name).(Var_Fields{l})]);
+					Input_Struct(i).(Names{l}) = [Input_Struct(i).(Names{l}),V];
 				end
 			else % Perform the operation per row.
 				for k=1:numel(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)) % For each row in the chosen DB_Name.
@@ -87,6 +89,14 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Var_Fields,Fi
 						end
 					end
 					
+					% Use the dynamic sliders to filter-out rows:
+					Vi = GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Dynamic_Field);
+					if(Vi >= GUI_Parameters.Handles.Analysis.Dynamic_Slider_Min.Value && Vi <= GUI_Parameters.Handles.Analysis.Dynamic_Slider_Max.Value)
+						Dynamic_Slider_Flag = 1; % Include this row if the field value is within the dynamic sliders boundaries.
+					else
+						Dynamic_Slider_Flag = 0;
+					end
+					
 					% Remove this (allow repeating value):
 					Flag2 = 1;
 					V = cell(1,length(Var_Fields));
@@ -98,7 +108,7 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Var_Fields,Fi
 						end
 					end
 					
-					if(Flag1 && Flag2)
+					if(Flag1 && Flag2 && Dynamic_Slider_Flag)
 						% Note: the # of values in different fields may be different, which means values in corresponding positions don't correspond.
 						% If any of the fields is empty (after applying the operation), the row will not be included.
 							% This is also how the filtering-out of rows is implemented (implicitly).

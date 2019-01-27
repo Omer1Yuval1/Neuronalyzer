@@ -28,7 +28,12 @@ function Tracer_UI()
 		GUI_Parameters.Workspace = struct('Group_Name',{},'Handles',{},'Values',{});
 		
 		GUI_Parameters.Handles.Analysis.Filters_Tab = uitab('Parent',GUI_Parameters.Handles.Analysis_Tabs,'Title','Filters','BackgroundColor',[0.5,0.6,1]);
-			GUI_Parameters.Handles.Analysis.Slider = uicontrol('Parent',GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','slider','Min',0,'Max',1,'Value',GUI_Parameters.General.Slider_Value,'Units','Normalized','Position',[0 0.01 1 GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@Slider_Func);
+			GUI_Parameters.Handles.Analysis.Slider = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','slider','Min',0,'Max',1,'Value',GUI_Parameters.General.Slider_Value,'Units','Normalized','Position',[0 0.01 .8 GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@Slider_Func);
+			GUI_Parameters.Handles.Analysis.Slider_Text = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','edit','String',num2str(GUI_Parameters.General.Slider_Value),'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.8,.01,.2,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6]);
+			GUI_Parameters.Handles.Analysis.Dynamic_Slider_Min = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','slider','Min',0,'Max',1,'Value',0,'Units','Normalized','Position',[.15 0.02+GUI_Parameters.Visuals.Button1_Height .35 GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@Dynamic_Slider_Min_Func,'Enable','off');
+			GUI_Parameters.Handles.Analysis.Dynamic_Slider_Text_Min = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','edit','String',num2str(0),'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0,.02+GUI_Parameters.Visuals.Button1_Height,.15,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6]);
+			GUI_Parameters.Handles.Analysis.Dynamic_Slider_Max = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','slider','Min',0,'Max',1,'Value',1,'Units','Normalized','Position',[.5 0.02+GUI_Parameters.Visuals.Button1_Height .35 GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@Dynamic_Slider_Max_Func,'Enable','off');
+			GUI_Parameters.Handles.Analysis.Dynamic_Slider_Text_Max = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','edit','String',num2str(1),'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.85,.02+GUI_Parameters.Visuals.Button1_Height,.15,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6]);
 		GUI_Parameters.Handles.Analysis.Analysis_Tab = uitab('Parent',GUI_Parameters.Handles.Analysis_Tabs,'Title','Analysis','BackgroundColor',[0.5,0.6,1]);
 			GUI_Parameters.Handles.Error_Bars_CheckBox = uicontrol(GUI_Parameters.Handles.Analysis.Analysis_Tab,'Style','checkbox','Value',0,'String','Display Error Bars','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0.8 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Merge_Dorsal_Ventral_Func);			
 			GUI_Parameters.Handles.Significance_Bars_CheckBox = uicontrol(GUI_Parameters.Handles.Analysis.Analysis_Tab,'Style','checkbox','Value',0,'String','Display Significance Bars','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0.9 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Display_Significance_Bars_Func);
@@ -92,16 +97,8 @@ function Tracer_UI()
 			'Units','Normalized','Position',[0 0.9 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Start_Tracing_Func);
 	% Get_Object_Details_Button = uicontrol(GUI_Parameters.Handles.Analysis.Details_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Get Details','Units','Normalized','Position',[0 0.9 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Get_Object_Details_Func);
 	
-	% Multiple Images Analysis Panel:
-	%{
-	Multiple_Create_Project_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Create a New Project','Units','Normalized','Position',[0 0.9 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@New_Project_Multiple_Func);
-	Load_Multiple_File_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Open Project','Units','Normalized','Position',[0 0.8 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Load_Multiple_File_Func);
-	Get_Groups_Details_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Get Groups Details','Units','Normalized','Position',[0 0.7 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Get_Groups_Details_Func);
-	Analyze_Tracing_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Analyze',...
-		'Units','Normalized','Position',[0 0.2 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Analyze_Func);
-	Save_Plot_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Save Plot','Units','Normalized','Position',[0 0.1 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Multiple_Save_Plot_Func);
-	Save_Project_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Save Project','Units','Normalized','Position',[0 0 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Multiple_Save_Project_Func);
-	%}
+	Image_Menu_Handle = uimenu(GUI_Parameters.Handles.Figure,'Label','Image','UserData',0);
+	set(Image_Menu_Handle,'Enable','off');
 	
 	Reconstructions_Menu_Handle = uimenu(GUI_Parameters.Handles.Figure,'Label','Reconstructions');
 		H0_0_1 = uimenu(Reconstructions_Menu_Handle,'Label','Original Image','UserData',0,'Callback',@Reconstruction_Func);
@@ -119,9 +116,9 @@ function Tracer_UI()
 		H0_1_6 = uimenu(Reconstructions_Menu_Handle,'Label','Vertices Angles');
 			H0_1_6_1 = uimenu(H0_1_6,'Label','Vertices Angles','UserData',2,'Callback',@Reconstruction_Func);
 		% 	H0_1_6_2 = uimenu(H0_1_6,'Label','Vertices Angles - Skeleton','UserData',2,'Callback',@Reconstruction_Func);
-		% H0_1_7 = uimenu(Reconstructions_Menu_Handle,'Label','Dorsal-Ventral','UserData',0,'Callback',@Reconstruction_Func);
+		uimenu(Reconstructions_Menu_Handle,'Label','Medial Axis','UserData',0,'Callback',@Reconstruction_Func);
 		% H0_1_8 = uimenu(Reconstructions_Menu_Handle,'Label','Longitudinal Gradient','UserData',0,'Callback',@Reconstruction_Func);		
-		% H0_1_9 = uimenu(Reconstructions_Menu_Handle,'Label','Curvature','UserData',0,'Callback',@Reconstruction_Func);
+		uimenu(Reconstructions_Menu_Handle,'Label','Curvature','UserData',0,'Callback',@Reconstruction_Func);
 		% H0_1_10 = uimenu(Reconstructions_Menu_Handle,'Label','Persistence Length','UserData',0,'Callback',@Reconstruction_Func);
 		% H0_1_11 = uimenu(Reconstructions_Menu_Handle,'Label','Curviness Length','UserData',0,'Callback',@Reconstruction_Func);
 	set(Reconstructions_Menu_Handle,'Enable','off');
@@ -130,12 +127,24 @@ function Tracer_UI()
 		% H_Menu1_Length = uimenu(Graphs_Menu_Handle,'Label','Length');
 			% H_Menu111_Total_Length = uimenu(H_Menu11_Length,'Label','Total Length','UserData',1,'Callback',@Menu1_Plots_Func);
 		H_Menu1_Segments = uimenu(Graphs_Menu_Handle,'Label','Segments','Callback','');
-			H_Menu11_Segments = uimenu(H_Menu1_Segments,'Label','Total Length','UserData',1,'Callback',@Menu1_Plots_Func);
-			H_Menu12_Segments = uimenu(H_Menu1_Segments,'Label','Mean Segment Length','UserData',1,'Callback',@Menu1_Plots_Func);
-			H_Menu13_Segments = uimenu(H_Menu1_Segments,'Label','End2End Length Of Segments','UserData',1,'Callback',@Menu1_Plots_Func);
-			H_Menu14_Segments = uimenu(H_Menu1_Segments,'Label','Mean Curvature Of Segments','UserData',1,'Callback',@Menu1_Plots_Func);
-			H_Menu14_Segments = uimenu(H_Menu1_Segments,'Label','Distribution of Curvature Of Segments','UserData',1,'Callback',@Menu1_Plots_Func);
-			% H_Menu1151_Segments = uimenu(H_Menu115_Segments,'Label','Segments Length Distribution','UserData',1,'Callback',@Menu1_Plots_Func);
+			
+			H_Menu11_Segments = uimenu(H_Menu1_Segments,'Label','Counts');
+				uimenu(H_Menu11_Segments,'Label','Number of Segments','UserData',1,'Callback',@Menu1_Plots_Func);
+				uimenu(H_Menu11_Segments,'Label','Number of Terminal Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
+			H_Menu12_Segments = uimenu(H_Menu1_Segments,'Label','Length');
+				uimenu(H_Menu12_Segments,'Label','Total Length','UserData',1,'Callback',@Menu1_Plots_Func);
+				uimenu(H_Menu12_Segments,'Label','Mean Segment Length','UserData',1,'Callback',@Menu1_Plots_Func);
+				uimenu(H_Menu12_Segments,'Label','End2End Length Of Segments','UserData',1,'Callback',@Menu1_Plots_Func);
+			
+			H_Menu13_Segments = uimenu(H_Menu1_Segments,'Label','Curvature');
+				uimenu(H_Menu13_Segments,'Label','Mean Curvature Of Segments','UserData',1,'Callback',@Menu1_Plots_Func);
+				uimenu(H_Menu13_Segments,'Label','Max Curvature Of Segments','UserData',1,'Callback',@Menu1_Plots_Func);
+				uimenu(H_Menu13_Segments,'Label','Mean Curvature Of Terminal Segments','UserData',1,'Callback',@Menu1_Plots_Func);
+				uimenu(H_Menu13_Segments,'Label','Max Curvature Of Terminal Segments','UserData',1,'Callback',@Menu1_Plots_Func);
+				uimenu(H_Menu13_Segments,'Label','Distribution of Mean Squared Curvature Of Segments','UserData',1,'Callback',@Menu1_Plots_Func);
+				uimenu(H_Menu13_Segments,'Label','Distribution of Max Squared Curvature Of Segments','UserData',1,'Callback',@Menu1_Plots_Func);
+			H_Menu14_Segments = uimenu(H_Menu1_Segments,'Label','Others');
+				uimenu(H_Menu14_Segments,'Label','Distribution of the Difference between Vertex and End2End Angles','UserData',1,'Callback',@Menu1_Plots_Func);
 		
 		H_Menu2_CB = uimenu(Graphs_Menu_Handle,'Label','Cell Body','Callback','');
 			H_Menu21_CB = uimenu(H_Menu2_CB,'Label','CB Intensity','UserData',1,'Callback',@Menu1_Plots_Func);
@@ -149,6 +158,8 @@ function Tracer_UI()
 					H_Menu3112 = uimenu(H_Menu311,'Label','Histogram of Symmetry Indices','UserData',2,'Callback',@Menu1_Plots_Func);
 					H_Menu3113 = uimenu(H_Menu311,'Label','Distribution of Vertices Angles Relative To The Medial Axis','UserData',2,'Callback',@Menu1_Plots_Func);
 					H_Menu3114 = uimenu(H_Menu311,'Label','Distribution of Vertices Angles Relative To The Medial Axis - Corrected','UserData',2,'Callback',@Menu1_Plots_Func);
+					H_Menu3115 = uimenu(H_Menu311,'Label','Histogram of Smallest, Mid & Largest Angles','UserData',2,'Callback',@Menu1_Plots_Func);
+					H_Menu3116 = uimenu(H_Menu311,'Label','Distribution of Min Medial Angle Diff','UserData',2,'Callback',@Menu1_Plots_Func);
 				H_Menu312 = uimenu(H_Menu31_Angles,'Label','Two Angles Plots','Callback','');
 					H_Menu3121 = uimenu(H_Menu312,'Label','Minimal and Maximal Angles of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);
 					H_Menu3122 = uimenu(H_Menu312,'Label','The Two Minimal Angles of each 3-Way junction','UserData',2,'Callback',@Menu1_Plots_Func);
@@ -167,7 +178,7 @@ function Tracer_UI()
 				H_Menu323 = uimenu(H_Menu32_Angles,'Label','Distances Of 3-Way Junctions From The Medial Axis - Histogram','UserData',2,'Callback',@Menu1_Plots_Func);
 				H_Menu324 = uimenu(H_Menu32_Angles,'Label','Distances Of Tips From The Medial Axis - Histogram','UserData',2,'Callback',@Menu1_Plots_Func);
 				H_Menu325 = uimenu(H_Menu32_Angles,'Label','Smallest Angle VS Distance From Medial Axis','UserData',2,'Callback',@Menu1_Plots_Func);
-				H_Menu326 = uimenu(H_Menu32_Angles,'Label','Distances Of Vertices From The CB','UserData',2,'Callback',@Menu1_Plots_Func);				
+				H_Menu326 = uimenu(H_Menu32_Angles,'Label','Distances Of Vertices From The CB','UserData',2,'Callback',@Menu1_Plots_Func);
 			% H_Menu132_Distances = uimenu(H_Menu13_Vertices,'Label','Distances','Callback','');
 				% H_Menu1321_Primary_Vertices_Mean_Distance = uimenu(H_Menu132_Distances,'Label','Primary_Vertices_Mean_Distance','UserData',1,'Callback',@Menu1_Plots_Func);
 			% H_Menu133_Vertices_Density = uimenu(H_Menu13_Vertices,'Label','Density of Vertices','UserData',1,'Callback',@Menu1_Plots_Func);			
@@ -467,7 +478,7 @@ function Tracer_UI()
 			return;
 		end
 		Current_Dir = cd(PathName);
-		GUI_Parameters.Handles.FileNames = FileNames;
+		GUI_Parameters.Handles.FileNames = {FileNames};
 		
 		H1 = uipanel(GUI_Parameters.Handles.Main_Panel,'BackgroundColor',[0.5,0.5,0.5],'Position',[0.3 0.1 0.4 0.8]);
 			uicontrol(H1,'Style','text','FontSize',20,'BackgroundColor',[0.7,0.7,0.7],'String','Project Properties','Units','Normalized','Position',[0 0.93 1 0.07],'FontSize',28);
@@ -546,7 +557,7 @@ function Tracer_UI()
 				
 				GUI_Parameters.Workspace(fi).Workspace.Parameters = Parameters_Func(GUI_Parameters.Workspace(fi).Workspace.User_Input.Scale_Factor);
 				
-				GUI_Parameters.Workspace(fi).Workspace.Image0 = imread(strcat(PathName,FileNames{fi}));
+				GUI_Parameters.Workspace(fi).Workspace.Image0 = imread(strcat(PathName,GUI_Parameters.Handles.FileNames{fi}));
 				
 				% Convert the loaded image to the default format (uint8, [0,255]):
 				GUI_Parameters.Workspace(fi).Workspace.Image0 = ...
@@ -605,6 +616,7 @@ function Tracer_UI()
 		
 		[GUI_Parameters.Workspace,GUI_Parameters.Features] = Add_Features_To_All_Workspaces(GUI_Parameters.Workspace); % TODO: replace with automatic detection of features.
 		waitbar(2/3,WB_H);
+		GUI_Parameters.General.Active_Plot = 'Segmentation';
 		
 		if(numel(GUI_Parameters.Workspace) == 1 && isfield(GUI_Parameters.Workspace.Workspace,'Image0')) % If only one file that contains the original image (right after tracing).
 			[Im_Rows,Im_Cols] = size(GUI_Parameters.Workspace(1).Workspace.Image0);
@@ -618,7 +630,7 @@ function Tracer_UI()
 				GUI_Parameters.Workspace(1).Values(1).(S1) = GUI_Parameters.Workspace(1).Workspace.User_Input.Features.(S1);
 			end
 			Reset_Axes();
-			GUI_Parameters.General.Active_Plot = 'Original Image';
+			% GUI_Parameters.General.Active_Plot = 'Original Image';
 			GUI_Parameters.General.Groups_OnOff = 1;
 			
 			Reconstruction_Index(GUI_Parameters);
@@ -629,7 +641,7 @@ function Tracer_UI()
 			Scale_Factor = GUI_Parameters.Workspace.Workspace.User_Input.Scale_Factor;
 			[CB_Pixels,CB_Perimeter] = Detect_Cell_Body(GUI_Parameters.Workspace.Workspace.Image0,CB_BW_Threshold,Scale_Factor,0); % Detect cell-body.
 			[CB_Vertices,Pixels0,Pixels1] = Find_CB_Vertices(GUI_Parameters.Workspace.Workspace.Image0,CB_Perimeter,CB_Pixels,Scale_Factor,CB_BW_Threshold,1);
-			set(Reconstructions_Menu_Handle,'Enable','on');
+			% set(Reconstructions_Menu_Handle,'Enable','on');
 		end
 		
 		Features_Buttons_Handles = [];
@@ -643,6 +655,14 @@ function Tracer_UI()
 		% set(Groups_Buttons(1),'Enable','on');
 		% set(H0_1_2,'Enable','on');
 		% set(allchild(H0_1_2),'Enable','on');
+		
+		% Activate Menus:
+		for wi=1:numel(GUI_Parameters.Workspace)
+			uimenu(Image_Menu_Handle,'Label',['Image ',num2str(wi)],'UserData',wi,'Callback',@Image_Menu_Func);
+		end
+		set(Image_Menu_Handle,'UserData',1,'Enable','on');
+		set(Reconstructions_Menu_Handle,'Enable','on');
+		
 		set(Graphs_Menu_Handle,'Enable','on');
 		set(allchild(Graphs_Menu_Handle),'Enable','on');
 		
@@ -650,7 +670,12 @@ function Tracer_UI()
 		% assignin('base','Features_Buttons_Handles',Features_Buttons_Handles);
 		function Generate_Filter_Buttons
 			% Field_Names = fieldnames(GUI_Parameters.Workspace); % Extract feature fields names.
+			
+			
+			
 			F1 = [7,5]; % TODO: temporarily choosing these features only. find([GUI_Parameters.Features.Num_Of_Options] > 1);
+			
+			
 			Field_Names = {GUI_Parameters.Features(F1).Feature_Name}; % Extract feature fields names.
 			Features_Buttons_Handles = zeros(10,length(Field_Names)); % Features buttons. 10 is the maximal number of buttons per feature (1st row is an ON\OFF button).
 			GUI_Parameters.Handles.Analysis.Features_OnOff_Buttons_Handles = zeros(1,length(Field_Names)); % ON\OFF title buttons. 10 is the maximal number of buttons per feature (1st row is an ON\OFF button).
@@ -660,11 +685,11 @@ function Tracer_UI()
 				for b=1:min(N,numel(GUI_Parameters.Features(F1(f)).Values)) % Generate N buttons.
 					Features_Buttons_Handles(b,f) = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','pushbutton',...
 						'String',GUI_Parameters.Features(F1(f)).Values(b).Name, ...
-						'UserData',[F1(f),b],'Callback',@Categories_Filter_Func,'Units','normalized','Position',[.03+(f-1)*(.44),(.9-.1*b),0.42,0.09], ...
+						'UserData',[F1(f),b],'Callback',@Categories_Filter_Func,'Units','normalized','Position',[.03+(f-1)*(.44),(.92-.08*b),0.42,0.07], ...
 						'FontSize',GUI_Parameters.Visuals.Button3_Font_Size,'BackgroundColor',[.9,.9,.9],'Callback',@Features_Buttons_Func);
 				end
 				GUI_Parameters.Handles.Analysis.Features_OnOff_Buttons_Handles(f) = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,...
-				'UserData',[f,F1(f),1],'Units','Normalized','Position',[.03+(f-1)*(.44),0.9,0.42,0.09],... % UserData=[,,ON\OFF].
+				'UserData',[f,F1(f),1],'Units','Normalized','Position',[.03+(f-1)*(.44),0.92,0.42,0.07],... % UserData=[,,ON\OFF].
 				'BackgroundColor',[.2,.8,.4],'String',Field_Names{f},'Callback',@Features_OnOff_Buttons_Func);
 				
 				% Remove_Feature_Buttons_Handles(f) = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'UserData',[f,F1(f)], ...
@@ -708,6 +733,13 @@ function Tracer_UI()
 			delete(GUI_Parameters.Handles.Analysis.Features_OnOff_Buttons_Handles); % Clear the features panel.
 			% delete(Remove_Feature_Buttons_Handles); % Clear the features panel.
 			Generate_Filter_Buttons; % Recreate the features panel.
+		end
+	end
+	
+	function Image_Menu_Func(source,callbackdata)
+		if(GUI_Parameters.General.Active_View == 1) % If the current active plot is an image.
+			Image_Menu_Handle.UserData = source.UserData;
+			Reconstruction_Func();
 		end
 	end
 	
@@ -816,7 +848,6 @@ function Tracer_UI()
 			% waitfor(msgbox('The Tracing Completed Successully.'));
 			
 			imshow(GUI_Parameters.Workspace(fi).Workspace.Image0,'Parent',GUI_Parameters.Handles.Axes);
-			Reconstruct_Segmented_Trace(GUI_Parameters.Workspace(fi).Workspace);
 			set(GUI_Parameters.Handles.Axes,'YDir','normal');
 		end
 		delete(WB_H_Tracing);
@@ -824,6 +855,9 @@ function Tracer_UI()
 		if(length(GUI_Parameters.Handles.FileNames) >= 1)
 			Load_An_Existing_Project_File();			
 			set(Graphs_Menu_Handle,'Enable','on');
+			
+			Reconstruction_Index.General.Active_Plot = 'Segmentation';
+			Reconstruction_Index(GUI_Parameters,1);
 			
 			if(length(GUI_Parameters.Handles.FileNames) == 1)
 				set(Reconstructions_Menu_Handle,'Enable','on');
@@ -851,17 +885,30 @@ function Tracer_UI()
 		cd(GUI_Parameters.General.Current_Dir);
 		% assignin('base','GUI_Parameters',GUI_Parameters);
 		Workspace = GUI_Parameters.Workspace;
-		[Workspace1(1:numel(GUI_Parameters.Workspace)).Workspace] = GUI_Parameters.Workspace.Workspace;		
-		uisave('Workspace1',New_File_Name);
+		% [Workspace1(1:numel(GUI_Parameters.Workspace)).Workspace] = GUI_Parameters.Workspace.Workspace;		
+		uisave('Workspace',New_File_Name);
 	end
 	
 	function Reconstruction_Func(source,callbackdata)
 		
-		GUI_Parameters.General.Active_Plot = source.Label;
-		GUI_Parameters.General.View_Category_Type = source.UserData;
-		GUI_Parameters.General.Active_View = 1;
-		
 		Reset_Axes();		
+		
+		if(nargin == 2)
+			GUI_Parameters.General.Active_Plot = source.Label;
+			GUI_Parameters.General.View_Category_Type = source.UserData;
+			GUI_Parameters.General.Active_View = 1;
+		end
+		if(numel(GUI_Parameters.Workspace) == 1)
+			imshow((GUI_Parameters.Workspace(Image_Menu_Handle.UserData).Workspace.Image0),'Parent',GUI_Parameters.Handles.Axes);
+		else
+			imshow((GUI_Parameters.Workspace(Image_Menu_Handle.UserData).Workspace.NN_Probabilities),'Parent',GUI_Parameters.Handles.Axes);
+		end
+		
+		% [jObj,hjObj,hContainer] = Display_Wait_Animation(1);
+		Reconstruction_Index(GUI_Parameters,Image_Menu_Handle.UserData);
+		set(GUI_Parameters.Handles.Axes,'YDir','normal');
+		% Display_Wait_Animation(0,jObj,hjObj,hContainer);
+		% delete(Loading_Animation_Handle.h1);
 		
 		% if(GUI_Parameters.General.View_Category_Type > 0)
 			% Categories_Filter_Lables(GUI_Parameters);
@@ -869,32 +916,43 @@ function Tracer_UI()
 		% end
 		
 		% Loading_Animation_Handle = gifplayer('Loading_Animation.gif',0.05);
-		imshow(GUI_Parameters.Workspace(1).Workspace.Image0,'Parent',GUI_Parameters.Handles.Axes);
-		% [jObj,hjObj,hContainer] = Display_Wait_Animation(1);
-		Reconstruction_Index(GUI_Parameters);
-		set(GUI_Parameters.Handles.Axes,'YDir','normal');
-		% Display_Wait_Animation(0,jObj,hjObj,hContainer);
-		% delete(Loading_Animation_Handle.h1);
 	end
 	
 	function Slider_Func(source,callbackdata)
-		%{
-		set(GUI_Parameters.Handles.Analysis.Slider,'Enable','off');
-		
-		Reset_Axes();
-		hold on;
-		if(GUI_Parameters.General.Active_View == 1)
-			imshow(GUI_Parameters.Workspace(1).Workspace.Image0,'Parent',GUI_Parameters.Handles.Axes);
-			Reconstruction_Index(GUI_Parameters);
-		else
-			Multiple_Choose_Plot(GUI_Parameters);
-		end
-		
-		set(GUI_Parameters.Handles.Analysis.Slider,'Enable','on');
-		%}
+		set(source,'Enable','off');
+		set(GUI_Parameters.Handles.Analysis.Slider_Text,'String',num2str(source.Value));
 		Reset_Axes();
 		hold on;
 		Multiple_Choose_Plot(GUI_Parameters);
+		set(source,'Enable','on');
+	end
+	
+	function Dynamic_Slider_Min_Func(source,callbackdata)
+		set(source,'Enable','off');
+		set(GUI_Parameters.Handles.Analysis.Dynamic_Slider_Text_Min,'String',num2str(source.Value));
+		Reset_Axes();
+		hold on;
+		switch GUI_Parameters.General.Active_View
+			case 1
+				Reconstruction_Func();
+			case 2
+				Multiple_Choose_Plot(GUI_Parameters);
+		end
+		set(source,'Enable','on');
+	end
+	
+	function Dynamic_Slider_Max_Func(source,callbackdata)
+		set(source,'Enable','off');
+		set(GUI_Parameters.Handles.Analysis.Dynamic_Slider_Text_Max,'String',num2str(source.Value));
+		Reset_Axes();
+		hold on;
+		switch GUI_Parameters.General.Active_View
+			case 1
+				Reconstruction_Func();
+			case 2
+				Multiple_Choose_Plot(GUI_Parameters);
+		end
+		set(source,'Enable','on');
 	end
 	
 	function Tree_Center_CheckBox_Func(source,callbackdata)
