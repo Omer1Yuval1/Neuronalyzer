@@ -36,7 +36,7 @@ function Reconstruction_Index(GP,Active_Workspace_Index)
 				end
 			end
 		case 'Vertices Angles'
-			Reconstruct_Vertices(GP.Workspace(1).Workspace);
+			Reconstruct_Vertices(GP.Workspace(Active_Workspace_Index).Workspace);
 		case 'Curvature'
 			Reconstruct_Curvature(GP.Workspace(Active_Workspace_Index).Workspace,GP.Handles.Analysis.Slider.Value);
 		otherwise
@@ -73,7 +73,7 @@ function Reconstruction_Index(GP,Active_Workspace_Index)
 	hold on;
 	Scale_Factor = GP.Workspace(1).Workspace.User_Input.Scale_Factor;
 	plot([20,20+50*(1/Scale_Factor)],[20,20],'w','LineWidth',3);
-	text(8+25,75,['50 \mum'],'FontSize',20,'Color','w');
+	text(15+25,25,['50 \mum'],'FontSize',20,'Color','w');
 	
 	% hold on;
 	% Compass1 = imread('Compass.tif');

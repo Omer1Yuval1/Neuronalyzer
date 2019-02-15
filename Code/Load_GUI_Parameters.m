@@ -46,7 +46,7 @@ function GUI_Parameters = Load_GUI_Parameters
 	GUI_Parameters.Visuals.ErrorBar_Color1 = [.5,.5,.5]; % [0 0.5 1]; [.392,.392,.392].
 	GUI_Parameters.Visuals.ErrorBar_Color2 = [0.9 0 0];
 	% GUI_Parameters.Visuals.Rectangles_Orientation_BinSize = 5;
-	GUI_Parameters.Visuals.Black_On_White_Colormap = [0,0,0 ; 1 0 0 ; .125,.564,1 ; .188,.533,.039 ; .5 .8 .98 ; 0 .6 0 ; 1 1 0 ; .5 .16 .7 ; .01 .38 .88 ; .07 .51 .83 ; .02 .64 .78 ; .19 .72 .63 ; .54 .74 .46 ; .82 .73 .34 ; .97 .98 .05];
+	GUI_Parameters.Visuals.Black_On_White_Colormap = [0,0,0 ; 1 0 0 ; .125,.564,1 ; .188,.533,.039 ; .5 .8 .98 ; 0 .6 0 ; 1 1 0 ; .5 .16 .7 ; .01 .38 .88 ; .07 .51 .83 ; .02 .64 .78 ; .19 .72 .63 ; .54 .74 .46 ; .82 .73 .34 ; .64,.08,.18];
 	GUI_Parameters.Visuals.White_On_Black_Colormap = [1,1,1 ; 1 0 0 ; .125,.564,1 ; .188,.533,.039 ; 1 .54 0 ; 0 .6 0 ; 1 1 0 ; .5 .16 .3 ; .01 .38 .88 ; .07 .51 .83 ; .02 .64 .78 ; .19 .72 .63 ; .54 .74 .46 ; .82 .73 .34 ; .97 .98 .05];
 	
 	GUI_Parameters.Visuals.Active_Colormap = GUI_Parameters.Visuals.Black_On_White_Colormap; % Default.

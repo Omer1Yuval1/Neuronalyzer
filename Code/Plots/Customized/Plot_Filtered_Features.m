@@ -1,4 +1,4 @@
-function S = Plot_Filtered_Features(W,m,M,IsTerminal)
+function S = Plot_Filtered_Features(W,m,M,Groups,IsTerminal)
     
 	Min_Curvature = 0;
 	Max_Curvature = .1;
@@ -38,8 +38,8 @@ function S = Plot_Filtered_Features(W,m,M,IsTerminal)
 			V2 = [W(w).Workspace.Segments(Fs).Max_Curvature];
 			S(w).Mean_Max_Squared_Curvature = mean(V2(V2 >= Min_Curvature & V2 <= Max_Curvature));
 			
-			S(w).Mean_Squared_Curvature_Count = length(V1);
-			S(w).Max_Squared_Curvature_Count = length(V2);
+			S(w).Mean_Squared_Curvature_Count = length(V1) ./ numel(W(w).Workspace.Segments);
+			S(w).Max_Squared_Curvature_Count = length(V2) ./ numel(W(w).Workspace.Segments);
 		else % TODO: isn't this going to happen automatically??
 			S(w).Filtered_Vertex_Num = [];
 			S(w).Filtered_Segment_Num = [];
@@ -56,9 +56,11 @@ function S = Plot_Filtered_Features(W,m,M,IsTerminal)
 	V2 = cell(1,2);
 	figure(1); clf(1);
 	figure(2); clf(2);
-	for g=[1,2] % N2, crowded (1) and isolated (2).
+	% for g=[1,2] % N2, crowded (1) and isolated (2).
+	for g=1:size(Groups,1)
 		
-		Fg = find([W.Grouping] == g);
+		% Fg = find([W.Grouping] == g);
+		Fg = find([W.Grouping] == Groups(g,1) & [W.Genotype] == Groups(g,2));
 		
 		figure(1);
 			subplot(2,2,1); % Mean Squared Curvature.

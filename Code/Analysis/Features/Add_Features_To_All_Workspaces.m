@@ -69,7 +69,7 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 					W(i).Workspace.Vertices(v).Angles_Medial = [W(i).Workspace.Vertices(v).Rectangles.Angle_Medial];
 					W(i).Workspace.Vertices(v).Angles_Corrected_Medial = [W(i).Workspace.Vertices(v).Rectangles.Angle_Corrected_Medial];
 					
-					W(i).Workspace.Vertices(v).Min_Medial_Angle_Corrected_Diff = min([W(i).Workspace.Vertices(v).Rectangles.Medial_Angle_Corrected_Diff]);
+					W(i).Workspace.Vertices(v).Min_Medial_Angle_Corrected_Diff = ([W(i).Workspace.Vertices(v).Rectangles.Medial_Angle_Corrected_Diff]);
 					
 					% Compute the corrected angles diffs:
 					% W(i).Workspace.Vertices(v).Corrected_Angles = Calc_Junction_Angles([W(i).Workspace.Vertices(v).Rectangles.Angle_Corrected]);

@@ -80,7 +80,7 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Var_Fields,Fi
 					% disp(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Var_Fields{1}));
 					% disp([i,j,k]);
 					
-					% Use filtering fields:							
+					% Use filtering fields:				
 					Flag1 = 1;
 					for l=1:length(Filter_Operations) % For each filter operation.
 						IsValid = Filter_Operations{l}(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Filter_Fields{l}));

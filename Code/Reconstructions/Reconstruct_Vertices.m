@@ -1,17 +1,19 @@
 function Reconstruct_Vertices(W,Display_Image)
 	
 	Scale_Factor = W.User_Input(1).Scale_Factor;
-	SmoothingParameter = 5000000;
+	% SmoothingParameter = 5000000;
 	
 	if(nargin == 2)
 		imshow(W.NN_Probabilities);
 		hold on;
 		
+        %{
 		if(isfield(W,'Medial_Axis') && ~isempty(W.Medial_Axis))
 			Xm = [W.Medial_Axis(:,1)];
 			Ym = [W.Medial_Axis(:,2)];
 			plot(Xm,Ym,'Color',[.3,.5,.8],'LineWidth',5);
 		end
+        %}
 	end
 	
 	for v=1:numel(W.Vertices)
@@ -34,7 +36,7 @@ function Reconstruct_Vertices(W,Display_Image)
 			plot(W.Vertices(v).Coordinate(1),W.Vertices(v).Coordinate(2),'.','Color',[1,.2,0],'MarkerSize',30); % Orange.
 			hold on;
 			% plot(XV,YV,'--','Color',C(r,:),'LineWidth',2); % ,'Color',[.9,0,.4].
-			plot(XV,YV,'Color',C(r,:),'LineWidth',3); % ,'Color',[.9,0,.4].
+			plot(XV,YV,'Color',C(r,:),'LineWidth',2); % ,'Color',[.9,0,.4].
 			
 			if(isfield(W.Vertices(v).Rectangles,'Angle_Corrected') && all([W.Vertices(v).Rectangles(r).Angle_Corrected]))
 				Ac = W.Vertices(v).Rectangles(r).Angle_Corrected .* 180 ./ pi;

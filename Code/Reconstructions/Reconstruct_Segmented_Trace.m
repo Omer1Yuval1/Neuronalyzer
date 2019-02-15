@@ -13,15 +13,15 @@ function Reconstruct_Segmented_Trace(Workspace1,Dynamic_Sliders_Handles)
 	% Reconstuct Segments:
 	Vs = zeros(1,numel(Workspace1.Segments));
 	for s=1:numel(Workspace1.Segments) % Go over each segment.
-		if(~isempty(Workspace1.Segments(s).Distance_From_Medial_Axis))
+		if(~isempty(Workspace1.Medial_Axis))
 			Vi = Workspace1.Segments(s).Distance_From_Medial_Axis;
-			if(~isempty(Workspace1.Segments(s).Rectangles) && (Vi >= Dynamic_Sliders_Handles.Dynamic_Slider_Min.Value && Vi <= Dynamic_Sliders_Handles.Dynamic_Slider_Max.Value))
+			if(0 && ~isempty(Workspace1.Segments(s).Rectangles) && (Vi >= Dynamic_Sliders_Handles.Dynamic_Slider_Min.Value && Vi <= Dynamic_Sliders_Handles.Dynamic_Slider_Max.Value))
 				Color1 = rand(1,3);
 				Vs(s) = plot([Workspace1.Segments(s).Rectangles.X],[Workspace1.Segments(s).Rectangles.Y],'Color',Color1,'LineWidth',3); % ,'LineWidth',Workspace1.Segments(s).Width);
 			end
 		elseif(~isempty(Workspace1.Segments(s).Rectangles))
 			Color1 = rand(1,3);
-			Vs(s) = plot([Workspace1.Segments(s).Rectangles.X],[Workspace1.Segments(s).Rectangles.Y],'Color',Color1,'LineWidth',3);
+			Vs(s) = plot([Workspace1.Segments(s).Rectangles.X],[Workspace1.Segments(s).Rectangles.Y],'Color',Color1,'LineWidth',5);
 		end
 	end
 	

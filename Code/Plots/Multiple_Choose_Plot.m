@@ -85,7 +85,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Var_Fields = {'Length'};
 			Filter_Fields = [];
 			%
-			RowWise = 1;
+			RowWise = 0;
 			Dynamic_Field = 'Distance_From_Medial_Axis';
 			Set_Dynamic_Sliders_Values(GUI_Parameters.Handles.Analysis,0,50);
 			%
@@ -110,7 +110,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
 			
 		case 'Mean Curvature Of Segments'
-			Var_Operations{1} = @(x) x(x>=0 & x<=0.05); % The curvature of a segment has to be positive.
+			Var_Operations{1} = @(x) x(x>=0 & x<=0.1); % The curvature of a segment has to be positive.
 			Filter_Operations = {};
 			Var_Fields = {'Curvature'};
 			Filter_Fields = {};
@@ -125,7 +125,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
 			
 		case 'Max Curvature Of Segments'
-			Var_Operations{1} = @(x) x(x>=0 & x<=0.05); % The curvature of a segment has to be positive.
+			Var_Operations{1} = @(x) x(x>=0 & x<=0.1); % The curvature of a segment has to be positive.
 			Filter_Operations = {};
 			Var_Fields = {'Max_Curvature'};
 			Filter_Fields = {};
@@ -140,7 +140,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
 			
 		case 'Mean Curvature Of Terminal Segments'
-			Var_Operations{1} = @(x) x(x>=0 & x<=0.05); % The curvature of a segment has to be positive.
+			Var_Operations{1} = @(x) x(x>=0 & x<=0.1); % The curvature of a segment has to be positive.
 			Filter_Operations{1} = @(x) (x==1);
 			Var_Fields = {'Curvature'};
 			Filter_Fields = {'Terminal'};
@@ -315,12 +315,15 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
 			
 		case 'Distances Of 3-Way Junctions From The Medial Axis - Histogram'
+			Set_Dynamic_Sliders_Values(GUI_Parameters.Handles.Analysis,0,50);
+			%
 			Var_Operations{1} = @(x) x(x>=0); % Only non-negative distance values.
 			Filter_Operations{1} = @(x) (x == 3); % Choose third order vertices only (= 3-way junctions).
 			Var_Fields = {'Distance_From_Medial_Axis'};
 			Filter_Fields = {'Order'};
 			%
 			RowWise = 1;
+			Dynamic_Field = 'Distance_From_Medial_Axis';
 			%%%
 			X_Label = 'Distance (\mum)';
 			Y_Label = 'Count';
@@ -328,16 +331,19 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			X_Min_Max = [0,50];
 			BinSize = 10 .* GUI_Parameters.Handles.Analysis.Slider.Value;
 			%%%
-			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,Var_Operations,Filter_Operations,RowWise);
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
 			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
 			
 		case 'Distances Of Tips From The Medial Axis - Histogram'
+			Set_Dynamic_Sliders_Values(GUI_Parameters.Handles.Analysis,0,50);
+			%
 			Var_Operations{1} = @(x) x(x>=0); % Only non-negative distance values.
 			Filter_Operations{1} = @(x) (x == 1); % Choose first order vertices only (= tips).
 			Var_Fields = {'Distance_From_Medial_Axis'};
 			Filter_Fields = {'Order'};
 			%
 			RowWise = 1;
+			Dynamic_Field = 'Distance_From_Medial_Axis';
 			%%%
 			X_Label = 'Distance (\mum)';
 			Y_Label = 'Count';
@@ -345,7 +351,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			X_Min_Max = [0,50];
 			BinSize = 10 .* GUI_Parameters.Handles.Analysis.Slider.Value;
 			%%%
-			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,Var_Operations,Filter_Operations,RowWise);
+			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
 			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
 			
 		case 'Smallest Angle VS Distance From Medial Axis'
@@ -627,8 +633,22 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			%
 			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
 			Plot_3Angles_Junction_Histogram(Input_Struct,GUI_Parameters,BinSize,GUI_Parameters.Visuals,Title);
+		
+		case 'Custom_1_Total_Length'
+			Custom_1_Total_Length(GUI_Parameters,GUI_Parameters.Visuals,'Length (\mum^2)','Total Length');
+		case 'Custom_2_Vertices_Num'
+			Custom_2_Vertices_Num(GUI_Parameters,GUI_Parameters.Visuals,'Count','Number of Vertices per Unit Length');
+		case 'Custom_3_Tips_Num'
+			Custom_3_Tips_Num(GUI_Parameters,GUI_Parameters.Visuals,'Count','Number of Tips per Unit Length');
+		case 'Custom_4_Curvature_Hist'
+			Custom_4_Curvature_Hist(GUI_Parameters,GUI_Parameters.Visuals,'Squared Curvature','Max Squared Curvature of Segments');			
+		case 'Custom_5_Mean_Curvature'
+			Custom_5_Mean_Curvature(GUI_Parameters,GUI_Parameters.Visuals,'Squared Curvature','Mean Squared Curvature of Segments');			
+		case 'Custom_6_Rects_Orientation'
+			Custom_6_Rects_Orientation(GUI_Parameters,GUI_Parameters.Visuals,['Angle (',char(176),')'],'Orientation of Vertices Relative to the Medial Axis');			
+	
 	end
-	assignin('base','Input_Struct',Input_Struct);
+	% assignin('base','Input_Struct',Input_Struct);
 	
 	function Set_Dynamic_Sliders_Values(Handles,Min_Value,Max_Value)
 		set(Handles.Dynamic_Slider_Min,'Enable','on');

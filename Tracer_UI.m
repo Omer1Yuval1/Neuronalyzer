@@ -13,7 +13,7 @@ function Tracer_UI()
 		% Screen_Size(4) = Screen_Size(4) - Screen_Size(2)
 		set(GUI_Parameters.Handles.Figure,'WindowStyle','normal'); % ,'Position',Screen_Size);
 		% Figure_Window = get(GUI_Parameters.Handles.Figure,'JavaFrame');
-		% set(Figure_Window,'Maximized',1); 
+		% set(Figure_Window,'Maximized',1);
 		clf(GUI_Parameters.Handles.Figure);
 		GUI_Parameters.Handles.Main_Panel = uipanel('FontSize',12,'BackgroundColor',[0.5,0.5,0.5],'Position',[0.2 0 0.8 1]);
 		GUI_Parameters.Handles.Axes = axes('Parent',GUI_Parameters.Handles.Main_Panel,'Units','normalized','Position',GUI_Parameters.Visuals.Main_Axes_Size);
@@ -182,6 +182,16 @@ function Tracer_UI()
 			% H_Menu132_Distances = uimenu(H_Menu13_Vertices,'Label','Distances','Callback','');
 				% H_Menu1321_Primary_Vertices_Mean_Distance = uimenu(H_Menu132_Distances,'Label','Primary_Vertices_Mean_Distance','UserData',1,'Callback',@Menu1_Plots_Func);
 			% H_Menu133_Vertices_Density = uimenu(H_Menu13_Vertices,'Label','Density of Vertices','UserData',1,'Callback',@Menu1_Plots_Func);			
+		
+		H_Menu4_Customized = uimenu(Graphs_Menu_Handle,'Label','Customized','Callback','');
+			uimenu(H_Menu4_Customized,'Label','Custom_1_Total_Length','UserData',2,'Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu4_Customized,'Label','Custom_2_Vertices_Num','UserData',2,'Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu4_Customized,'Label','Custom_3_Tips_Num','UserData',2,'Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu4_Customized,'Label','Custom_4_Curvature_Hist','UserData',2,'Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu4_Customized,'Label','Custom_5_Mean_Curvature','UserData',2,'Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu4_Customized,'Label','Custom_6_Rects_Orientation','UserData',2,'Callback',@Menu1_Plots_Func);
+			% uimenu(H_Menu4_Customized,'Label','Custom_5_Total_Length','UserData',2,'Callback',@Menu1_Plots_Func);
+			
 		%{
 		H_Menu17_Curvature = uimenu(Graphs_Menu_Handle,'Label','Curvature','Callback','');
 			H_Menu171_Persistence_Length = uimenu(H_Menu17_Curvature,'Label','Persistence Length','UserData',1,'Callback',@Menu1_Plots_Func);
