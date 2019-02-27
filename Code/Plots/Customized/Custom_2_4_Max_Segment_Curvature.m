@@ -1,4 +1,7 @@
-function Custom_3_Tips_Num(GUI_Parameters,Visuals,YLabel,Title1)
+function Custom_2_4_Max_Segment_Curvature(GUI_Parameters,Visuals,YLabel,Title1)
+	
+	Medial_Range = [30,40];
+	Curvature_Range = [0,.1]; % [.02,.1]
 	
 	Crowding_Groups = [1,2];
 	Genotype_Groups = 1:8;
@@ -15,15 +18,22 @@ function Custom_3_Tips_Num(GUI_Parameters,Visuals,YLabel,Title1)
 		
 		Fg = find([GUI_Parameters.Workspace.Grouping] == Groups(1,g) & [GUI_Parameters.Workspace.Genotype] == Groups(2,g));
 		
-		
 		V1 = zeros(1,length(Fg));
 		for w=1:length(Fg) % For each neuron (=animal).
 			
 			W = GUI_Parameters.Workspace(Fg(w)).Workspace;
 			
-			N = sum([W.Segments.Length]); % Total Length.
-			Fv = find([W.Vertices.Order] == 1);
-			V1(w) = numel(W.Vertices(Fv)) ./ N; % Number of vertices per unit length.
+			if(1)
+				F1 = find([W.Segments.Curvature] >= Curvature_Range(1) & [W.Segments.Curvature] <= Curvature_Range(2));
+				F2 = find([W.Segments.Distance_From_Medial_Axis] >= Medial_Range(1) & [W.Segments.Distance_From_Medial_Axis] <= Medial_Range(2));
+				F = intersect(F1,F2);
+				V1(w) = mean([W.Segments(F).Curvature]); % Mean maximum curvature of segments.
+			else
+				F1 = find([W.Segments.Max_Curvature] >= Curvature_Range(1) & [W.Segments.Max_Curvature] <= Curvature_Range(2));
+				F2 = find([W.Segments.Distance_From_Medial_Axis] >= Medial_Range(1) & [W.Segments.Distance_From_Medial_Axis] <= Medial_Range(2));
+				F = intersect(F1,F2);
+				V1(w) = mean([W.Segments(F).Max_Curvature]); % Mean maximum curvature of segments.
+			end
 		end
 				
 		Mean1 = nanmean(V1);

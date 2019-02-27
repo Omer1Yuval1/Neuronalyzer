@@ -48,7 +48,9 @@ function Plot_3Angles_Junction_Histogram(Input_Struct,GUI_Parameters,BinSize,Vis
 	disp([Am1,Am2,Am3]);
 	
 	V1 = [0,120,240 ; 0,90,180 ; 0,60,120 ; 0,110,250 ; 0,130,230];
-	V2 = 18:.05:22; % 0:.1:25; % 0:50; % 15:25;
+	V2 = 18:.1:22; % 0:.1:25; % 0:50; % 15:25;
+    Angles_Labels = [{'0,120,240'} , {'0,90,180'} , {'0,60,120'} , {'0,110,250'} , {'0,130,230'}];
+    % V3 = zeors(size(V1,1) , );
 	I = [];
 	Vp = 0;
 	P_Vals = zeros(size(V1,1),length(V2));
@@ -58,6 +60,7 @@ function Plot_3Angles_Junction_Histogram(Input_Struct,GUI_Parameters,BinSize,Vis
 			
 			[h1,p1,k1] = kstest2(A(:,1),a_monte(:,1));
 			P_Vals(i,j) = p1;
+            % V3(end+1,1:3) = [i , V2(j) , p1];
 			if(p1 > Vp)
 				Vp = p1;
 				I = [i,j];
@@ -66,13 +69,22 @@ function Plot_3Angles_Junction_Histogram(Input_Struct,GUI_Parameters,BinSize,Vis
 	end
 	disp(['Angles: ',num2str(V1(I(1),:)) , ' ; Noise: ',num2str(V2(I(2)))]);
 	
-	if(1)
+	if(0)
 		figure; hold on;
 		for i=1:size(V1,1)
 			plot(V2,P_Vals(i,:),'LineWidth',3);
 		end
 		legend([{'0,120,240'} , {'0,90,180'} , {'0,60,120'} , {'0,110,250'} , {'0,130,230'}],'FontSize',22);
-		figure(1); % Give the focus back to the main figure.
+		figure(1); % Set the focus back to the main figure.
+    elseif(1)
+        figure;
+        bar3(V2,P_Vals');
+        set(gca,'XTickLabels',Angles_Labels);
+        ylabel('Noise');
+        xlabel('Angles (degrees)');
+        zlabel('P-Value');
+        ylim([V2(1),V2(end)]);
+        figure(1); % Set the focus back to the main figure.
 	end
 	
 	

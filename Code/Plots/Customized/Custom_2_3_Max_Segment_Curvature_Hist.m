@@ -1,4 +1,4 @@
-function Custom_4_Curvature_Hist(GUI_Parameters,Visuals,YLabel,Title1)
+function Custom_2_3_Max_Segment_Curvature_Hist(GUI_Parameters,Visuals,YLabel,Title1)
 	
 	Medial_Range = [30,40];
 	Curvature_Range = [0,.1]; % [.02,.1]

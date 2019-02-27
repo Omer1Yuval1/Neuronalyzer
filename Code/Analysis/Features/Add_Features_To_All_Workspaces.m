@@ -3,8 +3,8 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 	% TODO: the step length in the Rectangles struct is currently in ***pixels***
 	% This affects many things (e.g. curvature).
 	
-	Rx = @(a) [1,0,0 ; 0,cos(a),-sin(a) ; 0,sin(a),cos(a)]; % Rotation matrix around the x-axis (angle should be given in radians).
-	Rz = @(a) [cos(a),-sin(a),0 ; sin(a),cos(a),0 ; 0,0,1]; % Rotation matrix around the z-axis (angle should be given in radians).
+	Rx = @(a) [1,0,0 ; 0,cos(a),-sin(a) ; 0,sin(a),cos(a)]; % Rotation matrix around the x-axis (angle is given in radians).
+	Rz = @(a) [cos(a),-sin(a),0 ; sin(a),cos(a),0 ; 0,0,1]; % Rotation matrix around the z-axis (angle is given in radians).
 	
 	% TODO: move out and scale:
 	Medial_Fit_Res = 1000;
@@ -33,6 +33,13 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 			Medial_Der_Fit_Object = fnder(Medial_Fit_Object,1); % 1st derivative.
 			Medial_Eval = linspace(Medial_Fit_Object.breaks(1),Medial_Fit_Object.breaks(end),Medial_Fit_Res);
 			XY_Eval = fnval(Medial_Fit_Object,Medial_Eval);
+			
+			W(i).Workspace.Medial_Fit.X = XY_Eval(1,:);
+			W(i).Workspace.Medial_Fit.Y = XY_Eval(2,:);
+			
+			Medial_Tangents = fnval(Medial_Der_Fit_Object,Medial_Eval); % The medial tangent vector (from the origin).
+			W(i).Workspace.Medial_Fit.Angle = mod(atan2(Medial_Tangents(2,:),Medial_Tangents(1,:)),pi); % Taking the mode to obtain an angle within [0,180].;
+			
 			Use_Medial_Axis = 1;
 		else
 			Use_Medial_Axis = 0;
@@ -161,7 +168,7 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 					Angle1 = W(i).Workspace.Vertices(F1).Rectangles(Fs1).Angle;
 					Angle2 = W(i).Workspace.Vertices(F2).Rectangles(Fs2).Angle;
 					
-					% Vertice origins:
+					% Vertices origins:
 					O1 = W(i).Workspace.Vertices(F1).Coordinate; % W(i).Workspace.Vertices(F1).Rectangles(Fs1).Origin;
 					O2 = W(i).Workspace.Vertices(F2).Coordinate;
 					

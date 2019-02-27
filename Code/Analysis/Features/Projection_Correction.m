@@ -1,6 +1,8 @@
-function Rects = Projection_Correction(Iw,v,Im,XY_Eval,Cxy,Rects,Ap,Medial_Tangent,Rx,Rz,Scale_Factor,Corrected_Plane_Angle_Func)
+function Rects = Projection_Correction(Iw,v,Im,XY_Eval,Cxy,Rects,At,Medial_Tangent,Rx,Rz,Scale_Factor,Corrected_Plane_Angle_Func)
 	
-	% TODO: first 3 arguments are temporary and used only for validation.
+	% TODO: 1st 3 arguments are temporary and used only for validation.
+	
+	% At is the local tilting angle of the plane.
 	
 	Medial_Angle = mod(atan2(Medial_Tangent(2),Medial_Tangent(1)),pi); % Taking the mode to obtain an angle within [0,180].
 	
@@ -10,23 +12,9 @@ function Rects = Projection_Correction(Iw,v,Im,XY_Eval,Cxy,Rects,Ap,Medial_Tange
 	Rects(end).Angle_Corrected_Medial = -1; % The same but this time using the corrected angle of the rectangle.
 	Rects(end).Angle_Corrected = -1; % The the corrected angle relative to the original x-axis.
 	for r=1:numel(Rects) % For each vertex rectangle (~vector).
-		Vp = [cos(Rects(r).Angle),sin(Rects(r).Angle),0]; % The actual vecor translated to the origin (still the projected one). The angle is given in radians and the vector's origin is [0,0].
-		Vp_M = Vp*Rz(Medial_Angle); % Clockwise rotation (around z) of the vector such that the medial tangent is the new x-axis.		
 		
-		Ly = Vp(2); % The y-distance of the original vector from the x-axis, is the same as the y'-distance of the rotated vector from the medial axis.
-		Vr_M = Reconstruct_XY_Projected_Vector(Vp_M,Ap,Ly,Rx); % Returns the corrected\reconstructed vector using the medial axis as the x-axis.
-		
-		% Vr_XY = Vr_M * Rz(-Medial_Angle); % Rotate back (around z) so that the original x-axis is the x-axis (z-value does not change). This is only used to rotate to the XY plane.
-		Vr_M_XY = Vr_M * Rx(Ap); % Now that the cartesian x-axis equals to the medial axis, rotate around x to get the 3D vector in the XY* plane.
-		Vr_XY = Vr_M_XY*Rz(-Medial_Angle); % And finally rotate around Z back such that the medial axis is the new x-axis.		
-		
-		Rects(r).Angle_Medial = mod(atan2(Vp_M(2),Vp_M(1)),2.*pi);
-		Rects(r).Angle_Corrected_Medial = mod(atan2(Vr_M_XY(2),Vr_M_XY(1)),2.*pi);
-		
-		Rects(r).Angle_Corrected = mod(atan2(Vr_XY(2),Vr_XY(1)),2.*pi);
-		
-		d = max(Medial_Angle,Rects(r).Angle_Corrected) - min(Medial_Angle,Rects(r).Angle_Corrected);
-		Rects(r).Medial_Angle_Corrected_Diff = min(d,(2.*pi)-d);
+		[Rects(r).Angle_Corrected,Rects(r).Medial_Angle_Corrected_Diff,Rects(r).Angle_Medial,Rects(r).Angle_Corrected_Medial] = ...
+			Correct_Projected_Angle(Rects(r).Angle,Medial_Angle,At);
 		
 		%{
 		Rects(r).Vp = Vp;

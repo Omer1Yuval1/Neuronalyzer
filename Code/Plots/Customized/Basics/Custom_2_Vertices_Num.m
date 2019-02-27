@@ -50,7 +50,7 @@ function Custom_2_Vertices_Num(GUI_Parameters,Visuals,YLabel,Title1)
 	set(gca,'YColor',Visuals.Active_Colormap(1,:));
 	title(Title1,'FontSize',22,'Color',Visuals.Active_Colormap(1,:));
 	xlim([0.5,Groups_Num+0.5]);
-	YLIMITS = get(gca,'ylim');
-	ylim([0,YLIMITS(2)]);
+	% YLIMITS = get(gca,'ylim');
+	% ylim([0,YLIMITS(2)]);
 	grid on;
 end

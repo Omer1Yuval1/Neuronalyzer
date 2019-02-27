@@ -635,17 +635,39 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Plot_3Angles_Junction_Histogram(Input_Struct,GUI_Parameters,BinSize,GUI_Parameters.Visuals,Title);
 		
 		case 'Custom_1_Total_Length'
-			Custom_1_Total_Length(GUI_Parameters,GUI_Parameters.Visuals,'Length (\mum^2)','Total Length');
+			Custom_1_Total_Length(GUI_Parameters,GUI_Parameters.Visuals,'Length (\mum)','Total Length');
 		case 'Custom_2_Vertices_Num'
 			Custom_2_Vertices_Num(GUI_Parameters,GUI_Parameters.Visuals,'Count','Number of Vertices per Unit Length');
 		case 'Custom_3_Tips_Num'
 			Custom_3_Tips_Num(GUI_Parameters,GUI_Parameters.Visuals,'Count','Number of Tips per Unit Length');
-		case 'Custom_4_Curvature_Hist'
-			Custom_4_Curvature_Hist(GUI_Parameters,GUI_Parameters.Visuals,'Squared Curvature','Max Squared Curvature of Segments');			
-		case 'Custom_5_Mean_Curvature'
-			Custom_5_Mean_Curvature(GUI_Parameters,GUI_Parameters.Visuals,'Squared Curvature','Mean Squared Curvature of Segments');			
+		case 'Custom_4_Mean_Segment_Length'
+			Custom_4_Mean_Segment_Length(GUI_Parameters,GUI_Parameters.Visuals,'Length (\mum)','Mean Segment Length');
+		case 'Custom_5_Segment_Length_Dist'
+			Custom_5_Segment_Length_Dist(GUI_Parameters,GUI_Parameters.Visuals,'Count','Segment Length Distribution');
+		case 'Custom_2_1_Mean_Segment_Curvature_Hist'
+			Custom_2_1_Mean_Segment_Curvature_Hist(GUI_Parameters,GUI_Parameters.Visuals,'Squared Curvature','Histogram of Mean Squared Curvature of Segments');			
+		case 'Custom_2_2_Mean_Segment_Curvature'
+			Custom_2_2_Mean_Segment_Curvature(GUI_Parameters,GUI_Parameters.Visuals,'Squared Curvature','Mean Squared Curvature of Segments');			
+		case 'Custom_2_3_Max_Segment_Curvature_Hist'
+			% Custom_2_3_Max_Segment_Curvature_Hist(GUI_Parameters,GUI_Parameters.Visuals,'Squared Curvature','Mean Squared Curvature of Segments');			
+		case 'Custom_2_4_Max_Segment_Curvature'
+			% Custom_2_4_Max_Segment_Curvature(GUI_Parameters,GUI_Parameters.Visuals,'Squared Curvature','Mean Squared Curvature of Segments');			
+		
+		
+		case 'Custom_3_1_Rects_Medial_Distance_Dist'
+			Custom_3_1_Rects_Medial_Distance_Dist(GUI_Parameters,GUI_Parameters.Visuals,'Distance (\mum)','Distribution of Rectangle Distances from the Medial Axis');
+		
+		case 'Custom_3_2_Vertices_Rects_Medial_Distance_Dist'
+			Custom_3_2_Vertices_Rects_Medial_Distance_Dist(GUI_Parameters,GUI_Parameters.Visuals,'Distance (\mum)','Distribution of Vertices Rectangle Distances from the Medial Axis');
+		
+		case 'Custom_4_1_Rects_Medial_Orientation_Hist'
+			Custom_4_1_Rects_Medial_Orientation_Hist(GUI_Parameters,GUI_Parameters.Visuals,'Probability','Orientation of Rectangles relative to Medial Axis');
+			
+			
+		case 'Custom_4_2_Vertex_End2End_Angles_Correlation_Hist'
+			Custom_4_2_Vertex_End2End_Angles_Correlation_Hist(GUI_Parameters,GUI_Parameters.Visuals,'Probability','End2End-Vertex Angle Diff');
 		case 'Custom_6_Rects_Orientation'
-			Custom_6_Rects_Orientation(GUI_Parameters,GUI_Parameters.Visuals,['Angle (',char(176),')'],'Orientation of Vertices Relative to the Medial Axis');			
+			Custom_6_Rects_Orientation(GUI_Parameters,GUI_Parameters.Visuals,['Angle (',char(176),')'],'Orientation of Vertices Relative to the Medial Axis');
 	
 	end
 	% assignin('base','Input_Struct',Input_Struct);
