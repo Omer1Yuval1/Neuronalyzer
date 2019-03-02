@@ -30,7 +30,7 @@ function Custom_3_Tips_Num(GUI_Parameters,Visuals,YLabel,Title1)
 		STD_SE = nanstd(V1) ./ sqrt(length(V1));
 		C = [0,0,0];
 		hold on;
-		scatter(g*ones(1,length(V1)),V1,30,'MarkerFaceColor',[.5,.5,.5],'MarkerEdgeColor',ColorMap(g,:),'jitter','on','jitterAmount',.2);
+		% scatter(g*ones(1,length(V1)),V1,30,'MarkerFaceColor',[.5,.5,.5],'MarkerEdgeColor',ColorMap(g,:),'jitter','on','jitterAmount',.2);
 		errorbar(g,Mean1,STD_SE,'LineWidth',Visuals.ErrorBar_Width1,'Color',Visuals.ErrorBar_Color1);
 		Legend_Handles_Array(g) = plot(g+[-1,+1]*.2,[Mean1,Mean1],'Color',C,'LineWidth',3);
 		

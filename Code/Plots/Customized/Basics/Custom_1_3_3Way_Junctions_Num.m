@@ -1,4 +1,4 @@
-function Custom_2_Vertices_Num(GUI_Parameters,Visuals,YLabel,Title1)
+function Custom_1_3_3Way_Junctions_Num(GUI_Parameters,Visuals,YLabel,Title1)
 	
 	Crowding_Groups = [1,2];
 	Genotype_Groups = 1:8;
@@ -22,7 +22,8 @@ function Custom_2_Vertices_Num(GUI_Parameters,Visuals,YLabel,Title1)
 			W = GUI_Parameters.Workspace(Fg(w)).Workspace;
 			
 			N = sum([W.Segments.Length]); % Total Length.
-			V1(w) = numel(W.Vertices) ./ N; % Number of vertices per unit length.
+			Fv = find([W.Vertices.Order] == 3);
+			V1(w) = numel(W.Vertices(Fv)) ./ N; % Number of vertices per unit length.
 		end
 				
 		Mean1 = nanmean(V1);

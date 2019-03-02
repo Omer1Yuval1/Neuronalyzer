@@ -187,6 +187,7 @@ function Tracer_UI()
 			% Basics:
 			uimenu(H_Menu4_Customized,'Label','Custom_1_Total_Length','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu4_Customized,'Label','Custom_2_Vertices_Num','UserData',2,'Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu4_Customized,'Label','Custom_1_3_3Way_Junctions_Num','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu4_Customized,'Label','Custom_3_Tips_Num','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu4_Customized,'Label','Custom_4_Mean_Segment_Length','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu4_Customized,'Label','Custom_5_Segment_Length_Dist','UserData',2,'Callback',@Menu1_Plots_Func);
@@ -197,7 +198,6 @@ function Tracer_UI()
 			uimenu(H_Menu4_Customized,'Label','Custom_2_3_Max_Segment_Curvature_Hist','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu4_Customized,'Label','Custom_2_4_Max_Segment_Curvature','UserData',2,'Callback',@Menu1_Plots_Func);
 			
-			
 			% uimenu(H_Menu4_Customized,'Label','Custom_6_Rects_Orientation','UserData',2,'Callback',@Menu1_Plots_Func);
 			
 			% Medial Distance:			
@@ -207,6 +207,7 @@ function Tracer_UI()
 			% Medial Axis Orientation:
 			uimenu(H_Menu4_Customized,'Label','Custom_4_1_Rects_Medial_Orientation_Hist','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu4_Customized,'Label','Custom_4_2_Vertex_End2End_Angles_Correlation_Hist','UserData',2,'Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu4_Customized,'Label','Custom_4_3_Rects_Medial_Orientation_VS_Distance_2D_Hist','UserData',2,'Callback',@Menu1_Plots_Func);
 			
 		%{
 		H_Menu17_Curvature = uimenu(Graphs_Menu_Handle,'Label','Curvature','Callback','');
