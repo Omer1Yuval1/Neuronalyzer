@@ -112,27 +112,27 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 					(W(i).Workspace.Segments(s).Rectangles(1).Y - W(i).Workspace.Segments(s).Rectangles(end).Y)^2)^.5; % end2end length.
 				W(i).Workspace.Segments(s).End2End_Length = D.*Scale_Factor;
 				
-				Squared_Curvature = [];
 				if(length(X) > 2)
 					[~,~,~,Cxy] = Get_Segment_Curvature(X,Y);
-					Squared_Curvature = ((Cxy .* (1./Scale_Factor)).^2); % Also converted to micrometers.
-					W(i).Workspace.Segments(s).Curvature = dot(Step_Lengths,Squared_Curvature)./sum(Step_Lengths); % Integral of squared curvature.
-					% W(i).Workspace.Segments(s).Curvature = dot(Step_Lengths,Squared_Curvature); % Integral of squared curvature, normalized to arc-length.
-					W(i).Workspace.Segments(s).Max_Curvature = max(Squared_Curvature);
+					Cxy = Cxy .* (1./Scale_Factor); % Pixels to micrometers.			
+					
+					W(i).Workspace.Segments(s).Curvature = dot(Step_Lengths,Cxy)./sum(Step_Lengths); % Integral of squared curvature.
+					% W(i).Workspace.Segments(s).Curvature = dot(Step_Lengths,Cxy); % Integral of squared curvature, normalized to arc-length.
+					W(i).Workspace.Segments(s).Max_Curvature = max(Cxy);
 				else
 					W(i).Workspace.Segments(s).Curvature = -1;
 					W(i).Workspace.Segments(s).Max_Curvature = -1;
 				end
 				
-				if(N == 1) % If only one workspace, add the curvature values for individual coordinates.
-					if(~isempty(Squared_Curvature))
+				% if(N == 1) % If only one workspace, add the curvature values for individual coordinates.
+					if(~isempty(Cxy))
 						for j=1:numel(W(i).Workspace.Segments(s).Rectangles) % For each coordinate. TODO: find a way to do this without a for loop.
-							W(i).Workspace.Segments(s).Rectangles(j).Curvature = Squared_Curvature(j);
+							W(i).Workspace.Segments(s).Rectangles(j).Curvature = Cxy(j);
 						end
 					else
 						[W(i).Workspace.Segments(s).Rectangles.Curvature] = deal(-1);
 					end
-				end
+				% end
 				
 				% Find vertices:
 				Vertices_Flag = 1;
@@ -179,6 +179,7 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 					Diff2 = max(Angle2,Angle2_End2End) - min(Angle2,Angle2_End2End);
 					
 					W(i).Workspace.Segments(s).End2End_Vertex_Angle_Diffs = [Diff1,Diff2];
+					W(i).Workspace.Segments(s).Vertices_Medial_Distance = [W(i).Workspace.Vertices(F1).Distance_From_Medial_Axis,W(i).Workspace.Vertices(F2).Distance_From_Medial_Axis];					
 					
 					% Classify segments into terminal and non-terminal (based on vertex order):
 					if(W(i).Workspace.Vertices(F1).Order == 1 || W(i).Workspace.Vertices(F2).Order == 1)
