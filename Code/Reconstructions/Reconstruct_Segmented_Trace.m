@@ -1,14 +1,11 @@
 function Reconstruct_Segmented_Trace(Workspace1,Dynamic_Sliders_Handles)
-		
-	% Scale_Factor = Workspace1.User_Input.Scale_Factor;
+	
 	MarkerConstant = 10;
 	LineWidthConstant = 1;
 	Scale_Factor = Workspace1.User_Input.Scale_Factor;
 	
 	figure(1);
 	hold on;
-	
-	% assignin('base','Workspace1',Workspace1);
 	
 	% Reconstuct Segments:
 	Vs = zeros(1,numel(Workspace1.Segments));
