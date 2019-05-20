@@ -38,7 +38,9 @@ function Reconstruction_Index(GP,Active_Workspace_Index)
 		case 'Vertices Angles'
 			Reconstruct_Vertices(GP.Workspace(Active_Workspace_Index).Workspace);
 		case 'Curvature'
-			Reconstruct_Curvature(GP.Workspace(Active_Workspace_Index).Workspace,GP.Handles.Analysis.Slider.Value);
+			Curvature_Min_Max = [0,0.4];
+			Medial_Dist_Range = [0,60];
+			Reconstruct_Curvature(GP.Workspace(Active_Workspace_Index).Workspace,Curvature_Min_Max(1),Curvature_Min_Max(2),Medial_Dist_Range(1),Medial_Dist_Range(2),1);
 		otherwise
 			Reconstruct_Trace(GP.Workspace(Active_Workspace_Index).Workspace);
 			

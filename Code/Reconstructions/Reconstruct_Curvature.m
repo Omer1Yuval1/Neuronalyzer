@@ -7,7 +7,7 @@ function [Vc,Vc_Dist,Vc_Max,Dist_Vector] = Reconstruct_Curvature(Workspace,m,M,M
 		% MaxD = 45;
 	% end
 	
-	Dot_Size = 5;
+	Dot_Size = 20;
 	
 	Scale_Factor = Workspace.User_Input.Scale_Factor;
 	Distance_Func = @(x0,y0,x,y) ( (x-x0).^2 + (y-y0).^2).^(.5);
