@@ -1,13 +1,61 @@
-function [Mean_Curvature,SxS,SyS,xx,Cxy] = Get_Segment_Curvature(X,Y)
+function [Mean_Curvature,SxS,SyS,xx,Cxy] = Get_Segment_Curvature(X,Y,Im)
 	
 	Method = 1;
 	Distance_Func = @(x1,y1,x2,y2) ( (x1-x2).^2 + (y1-y2).^2).^(.5);
-	Plot = 0;
+	
+	if(nargin == 3) % If an image if provided.
+		Plot = 1;
+	else
+		Plot = 0;
+	end
 	
 	switch Method
 		case 1
 			
-			[X,Y] = Smooth_Points(X,Y,100);
+			%
+			X0 = X;
+			Y0 = Y;
+			N0 = length(X0);
+			L0 = ( sum((X0(2:end) - X0(1:end-1)).^2) + sum((Y0(2:end) - Y0(1:end-1)).^2) );
+			%}
+			
+			%{
+			% X = linspace(X0(1),X0(end),2*L0);
+			% Y = linspace(Y0(1),Y0(end),2*L0);
+			%}
+			
+			%
+			SP1 = 0.1;
+			[X,Y,Success_Flag] = Fit_And_Smooth(X0,Y0,SP1);
+			
+			if(~Success_Flag)
+				SP2 = 100; % 50 ./ (L0);
+				[X,Y] = Smooth_Points(X0,Y0,SP2);
+			end
+			%}
+			
+			%{
+			O = 15;
+			if(N0 < O)
+				O = N0;
+			end
+			
+			p_spl = Bezier_Spline([X0,Y0,0.*X0],O,1000); % p_spl = spline_Edited(X0,Y0,O);
+			%}
+			
+			%{			
+			D = 20; % figure(2); clf(2);
+			hold on;
+			plot(X0,Y0,'k','LineWidth',2);
+			hold on;
+			plot(X,Y,'r','LineWidth',2);
+			plot(p_spl(:,1),p_spl(:,2),'b','LineWidth',2);
+			axis([mean(X)+[-D,D],mean(Y)+[-D,D]]); % axis equal;
+			
+			L = ( sum((X(2:end) - X(1:end-1)).^2) + sum((Y(2:end) - Y(1:end-1)).^2) );
+			title(['Length = [',num2str(L0),',',num2str(L),'] Points_Num = [',num2str(length(X0)),',',num2str(length(X)),']']);
+			waitforbuttonpress;
+			%}
 			
 			Ri = nan(1,length(X));
 			% Cxy = nan(1,length(X));
@@ -121,30 +169,34 @@ function [Mean_Curvature,SxS,SyS,xx,Cxy] = Get_Segment_Curvature(X,Y)
 	end
 	
 	if(Plot)
+		D = 20;
 		Colors = Cxy ./ max(Cxy);
-		figure(1);
-		clf(1);
-		subplot(1,3,1);
-			plot(X,Y,'k','LineWidth',2);
+		figure(1); clf(1);
+		
+		subplot(2,2,1);
+			imshow(Im);
+			axis([mean(X0)+[-D,D],mean(Y0)+[-D,D]]); % axis equal;
+			title('Raw Curve');
+		subplot(2,2,2);
+			imshow(Im);
 			hold on;
-			plot(X,Y,'.r','MarkerSize',10);
-			title('Source Curve');
-			XLIM = get(gca,'xlim');
-			YLIM = get(gca,'ylim');
-		subplot(1,3,2);
-			plot(X,Y,'k','LineWidth',2);
+			plot(X0,Y0,'r','LineWidth',2);
+			axis([mean(X0)+[-D,D],mean(Y0)+[-D,D]]); % axis equal;
+			title('Original Trace');
+		subplot(2,2,3);
+			imshow(Im);
 			hold on;
-			plot(Suxy(:,1),Suxy(:,2),'Color',[.2,.7,0],'LineWidth',2); % Smoothed.
-			title('Smoothed Curve');
-			axis([XLIM,YLIM]);
-		subplot(1,3,3);
-			plot(X,Y,'w','LineWidth',2);
+			plot(X,Y,'r','LineWidth',2);
+			scatter(X,Y,[],[Colors',zeros(length(Colors),1),1-Colors'],'filled');
+			axis([mean(X0)+[-D,D],mean(Y0)+[-D,D]]); % axis equal;
+			title('Smoothing Spline');
+		subplot(2,2,4);
+			imshow(Im);
 			hold on;
-			plot(Suxy(:,1),Suxy(:,2),'Color',[.2,.7,0],'LineWidth',2); % Smoothed.
-			hold on;
-			scatter(SFxy(1,:),SFxy(2,:),[],[Colors',zeros(length(Colors),1),1-Colors'],'filled');
-			title('Curvature Heatmap');
-			axis([XLIM,YLIM]);
-		% axis equal;
+			plot(p_spl(:,1),p_spl(:,2),'r','LineWidth',2);
+			axis([mean(X0)+[-D,D],mean(Y0)+[-D,D]]); % axis equal;
+			title('B-Spline');
+			
+		waitforbuttonpress;
 	end
 end

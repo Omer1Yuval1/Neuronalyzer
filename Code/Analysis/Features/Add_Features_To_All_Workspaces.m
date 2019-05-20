@@ -112,19 +112,15 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 					(W(i).Workspace.Segments(s).Rectangles(1).Y - W(i).Workspace.Segments(s).Rectangles(end).Y)^2)^.5; % end2end length.
 				W(i).Workspace.Segments(s).End2End_Length = D.*Scale_Factor;
 				
-				if(length(X) > 2)
+				if(length(X) > 3)
 					[~,~,~,Cxy] = Get_Segment_Curvature(X,Y);
 					Cxy = Cxy .* (1./Scale_Factor); % Pixels to micrometers.			
 					
 					W(i).Workspace.Segments(s).Curvature = dot(Step_Lengths,Cxy)./sum(Step_Lengths); % Integral of squared curvature.
 					% W(i).Workspace.Segments(s).Curvature = dot(Step_Lengths,Cxy); % Integral of squared curvature, normalized to arc-length.
 					W(i).Workspace.Segments(s).Max_Curvature = max(Cxy);
-				else
-					W(i).Workspace.Segments(s).Curvature = -1;
-					W(i).Workspace.Segments(s).Max_Curvature = -1;
-				end
-				
-				% if(N == 1) % If only one workspace, add the curvature values for individual coordinates.
+					
+					% if(N == 1) % If only one workspace, add the curvature values for individual coordinates.
 					if(~isempty(Cxy))
 						for j=1:numel(W(i).Workspace.Segments(s).Rectangles) % For each coordinate. TODO: find a way to do this without a for loop.
 							W(i).Workspace.Segments(s).Rectangles(j).Curvature = Cxy(j);
@@ -132,7 +128,11 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 					else
 						[W(i).Workspace.Segments(s).Rectangles.Curvature] = deal(-1);
 					end
-				% end
+					% end
+				else
+					W(i).Workspace.Segments(s).Curvature = -1;
+					W(i).Workspace.Segments(s).Max_Curvature = -1;
+				end
 				
 				% Find vertices:
 				Vertices_Flag = 1;

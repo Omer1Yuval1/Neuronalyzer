@@ -109,6 +109,9 @@ function [Final_Curve,Approved] = Find_Center_Line(Im,BW)
 	Mxy1 = [mean(x1),mean(y1)]; % Mean coordinate.
 	Mxy2 = [mean(x2),mean(y2)]; % ".
 	
+	% TODO:
+		% Instead of finding the point (green) closest to the mean coordinate (black),
+		% Find the point that creates an angle closest to 180 with the black point and the tip of the midline curve.
 	D1 = Distance_Func(Mxy1(1),Mxy1(2),x1,y1); % The distance of each object coordinate from the mean coordinate.
 	D2 = Distance_Func(Mxy2(1),Mxy2(2),x2,y2); % ".
 	F1 = find(D1 == min(D1));
@@ -188,44 +191,44 @@ function [Final_Curve,Approved] = Find_Center_Line(Im,BW)
 	if(Plot1) % Plot the result.
 		figure(1);
 		clf(1);
-		subplot(1,3,1);
-		imshow(Im);
-		hold on; plot(Final_Curve_Plot(:,1),Final_Curve_Plot(:,2),'r','LineWidth',3);
-		hold on; plot(C1_X,C1_Y,'.m','MarkerSize',10);
-		hold on; plot(C2_X,C2_Y,'.m','MarkerSize',10);
-		hold on; plot(x1,y1,'.b','MarkerSize',10);
-		hold on; plot(x2,y2,'.b','MarkerSize',10);
-		title(['D = ',num2str(std(D))]);
 		
-		subplot(1,3,2);
-		imshow(BW);
-		hold on; scatter(V(:,1),V(:,2),10,jet(size(V,1)),'filled'); % plot(V12(:,1),V12(:,2),'.g','MarkerSize',20);		
-		title(['Is Approved: ',num2str(Approved)],'FontSize',30);
+		subplot(2,3,1);
+			imshow(Im);
+			hold on; plot(Final_Curve_Plot(:,1),Final_Curve_Plot(:,2),'r','LineWidth',3);
+			hold on; plot(C1_X,C1_Y,'.m','MarkerSize',10);
+			hold on; plot(C2_X,C2_Y,'.m','MarkerSize',10);
+			hold on; plot(x1,y1,'.b','MarkerSize',10);
+			hold on; plot(x2,y2,'.b','MarkerSize',10);
+			title(['D = ',num2str(std(D))]);
 		
-		subplot(1,3,3);
-		imshow(closeBW);
-		hold on; plot(C1_X,C1_Y,'.m','MarkerSize',10);
-		hold on; plot(C2_X,C2_Y,'.m','MarkerSize',10);
-		hold on; plot(x1,y1,'.b','MarkerSize',10);
-		hold on; plot(x2,y2,'.b','MarkerSize',10);
+		subplot(2,3,2);
+			imshow(BW);
+			hold on; scatter(V(:,1),V(:,2),10,jet(size(V,1)),'filled'); % plot(V12(:,1),V12(:,2),'.g','MarkerSize',20);		
+			title(['Is Approved: ',num2str(Approved)],'FontSize',30);
 		
-		hold on; scatter(Final_Curve_Plot(:,1),Final_Curve_Plot(:,2),20,jet(size(Final_Curve_Plot,1)),'filled'); % hold on; plot(Final_Curve_Plot(:,1),Final_Curve_Plot(:,2),'--r','LineWidth',3);
-		
-		hold on; plot([mean(x1),mean(x2)],[mean(y1),mean(y2)],'.k','MarkerSize',30);
-		hold on; plot([Pxy1(1),Pxy2(1)],[Pxy1(2),Pxy2(2)],'.g','MarkerSize',30);
-		
-		title(['D-Diff = ',num2str(std(D_Diff))]);
-		
-		% if(~isempty(V12) && ~isempty(V21))
-			% hold on; scatter(V12(:,1),V12(:,2),10,jet(size(V12,1)),'filled'); % plot(V12(:,1),V12(:,2),'.g','MarkerSize',20);
-			% hold on; scatter(V21(:,1),V21(:,2),10,jet(size(V21,1)),'filled'); % plot(V21(:,1),V21(:,2),'.g','MarkerSize',20);
-		% end
-		
-		% waitforbuttonpress;
-		%}
-		
-		% assignin('base','V12',V12);
-		% assignin('base','V21',V21);
-		
+		subplot(2,3,3);
+			imshow(closeBW);
+			hold on; plot(C1_X,C1_Y,'.m','MarkerSize',10);
+			hold on; plot(C2_X,C2_Y,'.m','MarkerSize',10);
+			hold on; plot(x1,y1,'.b','MarkerSize',10);
+			hold on; plot(x2,y2,'.b','MarkerSize',10);
+			
+			hold on; scatter(Final_Curve_Plot(:,1),Final_Curve_Plot(:,2),20,jet(size(Final_Curve_Plot,1)),'filled'); % hold on; plot(Final_Curve_Plot(:,1),Final_Curve_Plot(:,2),'--r','LineWidth',3);
+			
+			hold on; plot([mean(x1),mean(x2)],[mean(y1),mean(y2)],'.k','MarkerSize',30);
+			hold on; plot([Pxy1(1),Pxy2(1)],[Pxy1(2),Pxy2(2)],'.g','MarkerSize',30);
+			
+			title(['D-Diff = ',num2str(std(D_Diff))]);
+			
+			% if(~isempty(V12) && ~isempty(V21))
+				% hold on; scatter(V12(:,1),V12(:,2),10,jet(size(V12,1)),'filled'); % plot(V12(:,1),V12(:,2),'.g','MarkerSize',20);
+				% hold on; scatter(V21(:,1),V21(:,2),10,jet(size(V21,1)),'filled'); % plot(V21(:,1),V21(:,2),'.g','MarkerSize',20);
+			% end
+			
+			% waitforbuttonpress;
+			%}
+			
+			% assignin('base','V12',V12);
+			% assignin('base','V21',V21);
 	end
 end

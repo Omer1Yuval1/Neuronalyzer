@@ -208,8 +208,10 @@ function Tracer_UI()
 			uimenu(H_Menu4_Customized,'Label','Custom_4_1_Rects_Medial_Orientation_Hist','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu4_Customized,'Label','Custom_4_2_Vertex_End2End_Angles_Correlation_Hist','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu4_Customized,'Label','Custom_4_3_Rects_Medial_Orientation_VS_Distance_2D_Hist','UserData',2,'Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu4_Customized,'Label','Custom_4_3_1_Medial_Orientation_VS_Distance_2D_Hist_Groups','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu4_Customized,'Label','Custom_4_4_Segment_Angles_Correlation_VS_Medial_Distance_Hist','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu4_Customized,'Label','Custom_4_5_Rects_Curvature_VS_Distance_2D_Hist','UserData',2,'Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu4_Customized,'Label','Custom_4_6_Curvature_VS_Distance_2D_Hist_Groups','UserData',2,'Callback',@Menu1_Plots_Func);
 			
 		%{
 		H_Menu17_Curvature = uimenu(Graphs_Menu_Handle,'Label','Curvature','Callback','');
@@ -329,9 +331,9 @@ function Tracer_UI()
 				display('Im_BW was not found');
 			else % If the project does not have any BW reconstruction.
 				set(allchild(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel),'Enable','off');
-				WB_H_NN = waitbar(0,'Please wait...');
+				WB_H_NN = waitbar(0,'Applying Neural Network to all Images. Please wait...');
 				waitbar(0,WB_H_NN);
-				for fi=1:length(GUI_Parameters.Handles.FileNames)
+				for fi=1:length(GUI_Parameters.Handles.FileNames)-1
 					waitbar(fi/length(GUI_Parameters.Handles.FileNames),WB_H_NN);
 					
 					[Im_Rows,Im_Cols] = size(GUI_Parameters.Workspace(fi).Workspace.Image0);
@@ -345,10 +347,13 @@ function Tracer_UI()
 						end
 					end
 				end
+				GUI_Parameters.Workspace(end).Workspace.NN_Probabilities = NN_Probabilities0;
+				GUI_Parameters.Workspace(end).Workspace.Im_BW = Im_BW0;
+				
 				delete(WB_H_NN);
 				set(allchild(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel),'Enable','on');
 				
-				h = msgbox({'Binary Image Successully Updated as Initial Guess.'});
+				h = msgbox({'Classified Images Successully Updated.'});
 				ah = get(h,'CurrentAxes');
 				ch = get(ah,'Children');
 				set(ch,'FontSize',14);
@@ -505,9 +510,12 @@ function Tracer_UI()
 		[FileNames,PathName,~] = uigetfile(fullfile(pwd,'..',filesep,'*.tif;*.jpg'),'Please Choose an Image File.',cd,'MultiSelect','on'); % Lets the user choose a file.
 		if(~length(FileNames))
 			return;
+		elseif(length(FileNames) == 1)
+			GUI_Parameters.Handles.FileNames = {FileNames};
+		else
+			GUI_Parameters.Handles.FileNames = FileNames;
 		end
 		Current_Dir = cd(PathName);
-		GUI_Parameters.Handles.FileNames = {FileNames};
 		
 		H1 = uipanel(GUI_Parameters.Handles.Main_Panel,'BackgroundColor',[0.5,0.5,0.5],'Position',[0.3 0.1 0.4 0.8]);
 			uicontrol(H1,'Style','text','FontSize',20,'BackgroundColor',[0.7,0.7,0.7],'String','Project Properties','Units','Normalized','Position',[0 0.93 1 0.07],'FontSize',28);

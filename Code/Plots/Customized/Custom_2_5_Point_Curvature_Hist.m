@@ -4,7 +4,9 @@ function Custom_2_5_Point_Curvature_Hist(GUI_Parameters,Visuals)
 	% Curvature_Min_Max = [0,0.2];
 	Curvature_Min_Max = [0,0.4];
 	% Max_Curvature_Min_Max = [0,1];
-	Medial_Dist_Range = [25,60];
+	Medial_Dist_Range = [25,45];
+	
+	BinSize1 = 0.02;
 	
 	WT_Crowded = [];
 	WT_Crowded_Max = [];
@@ -29,8 +31,6 @@ function Custom_2_5_Point_Curvature_Hist(GUI_Parameters,Visuals)
 			end
 		end
 	end
-	
-	BinSize1 = 0.02; % BinSize1 = 0.0075;
 	
 	subplot(2,2,1);
 	histogram(WT_Crowded,Curvature_Min_Max(1):BinSize1:Curvature_Min_Max(2),'Normalization','pdf'); % probability
@@ -62,7 +62,7 @@ function Custom_2_5_Point_Curvature_Hist(GUI_Parameters,Visuals)
 	disp(['mu = ',num2str(pd1.mu),' ; sigma = ',num2str(pd1.sigma)]);
 	%}
 	
-	axis([0,0.4,0,14]);
+	axis([0,0.4,0,12]);
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	
 	subplot(2,2,2);
@@ -97,7 +97,7 @@ function Custom_2_5_Point_Curvature_Hist(GUI_Parameters,Visuals)
 	disp(['mu = ',num2str(pd2.mu),' ; sigma = ',num2str(pd2.sigma)]);
 	%}
 	
-	axis([0,0.4,0,14]);
+	axis([0,0.4,0,12]);
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	
 	BinSize1 = 0.025; % 0.01.

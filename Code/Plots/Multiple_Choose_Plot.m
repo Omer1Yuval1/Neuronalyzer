@@ -666,10 +666,18 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Custom_4_2_Vertex_End2End_Angles_Correlation_Hist(GUI_Parameters,GUI_Parameters.Visuals,'Probability','End2End-Vertex Angle Diff');
 		case 'Custom_4_3_Rects_Medial_Orientation_VS_Distance_2D_Hist'
 			Custom_4_3_Rects_Medial_Orientation_VS_Distance_2D_Hist(GUI_Parameters,GUI_Parameters.Visuals,'Probability','Custom_4_3_Rects_Medial_Orientation_VS_Distance_2D_Hist');
+		case 'Custom_4_3_1_Medial_Orientation_VS_Distance_2D_Hist_Groups'
+			Custom_4_3_1_Medial_Orientation_VS_Distance_2D_Hist_Groups(GUI_Parameters,GUI_Parameters.Visuals,'Probability','Custom_4_3_1_Medial_Orientation_VS_Distance_2D_Hist_Groups');
+
+		
 		case 'Custom_4_4_Segment_Angles_Correlation_VS_Medial_Distance_Hist'
 			Custom_4_4_Segment_Angles_Correlation_VS_Medial_Distance_Hist(GUI_Parameters,GUI_Parameters.Visuals);
 		case 'Custom_4_5_Rects_Curvature_VS_Distance_2D_Hist'
 			Custom_4_5_Rects_Curvature_VS_Distance_2D_Hist(GUI_Parameters,GUI_Parameters.Visuals);
+		case 'Custom_4_6_Curvature_VS_Distance_2D_Hist_Groups'
+			Custom_4_6_Curvature_VS_Distance_2D_Hist_Groups(GUI_Parameters,GUI_Parameters.Visuals);
+			
+			
 			
 		case 'Custom_6_Rects_Orientation'
 			Custom_6_Rects_Orientation(GUI_Parameters,GUI_Parameters.Visuals,['Angle (',char(176),')'],'Orientation of Vertices Relative to the Medial Axis');
