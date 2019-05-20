@@ -340,6 +340,9 @@ function Tracer_UI()
 					[GUI_Parameters.Workspace(fi).Workspace.NN_Probabilities,GUI_Parameters.Workspace(fi).Workspace.Im_BW] = ...
 								Apply_NN(GUI_Parameters.Workspace(fi).Workspace.Image0,NN1,GUI_Parameters.Handles.Machine_Learning.Probability_Slider.Value,Im_Rows,Im_Cols,0);
 					
+					% Update NN threshold:
+					GUI_Parameters.Workspace(fi).Workspace.Parameters.Neural_Network.Default_Pixel_Classification_Threshold = GUI_Parameters.Handles.Machine_Learning.Probability_Slider.Value;
+					
 					CC = bwconncomp(GUI_Parameters.Workspace(fi).Workspace.Im_BW);
 					for c=1:CC.NumObjects
 						if(length(CC.PixelIdxList{1,c}) <= GUI_Parameters.Handles.Machine_Learning.Min_Obejct_Size_Slider.Value)
@@ -938,7 +941,8 @@ function Tracer_UI()
 		if(numel(GUI_Parameters.Workspace) == 1)
 			imshow((GUI_Parameters.Workspace(Image_Menu_Handle.UserData).Workspace.Image0),'Parent',GUI_Parameters.Handles.Axes);
 		else
-			imshow((GUI_Parameters.Workspace(Image_Menu_Handle.UserData).Workspace.NN_Probabilities),'Parent',GUI_Parameters.Handles.Axes);
+			imshow((GUI_Parameters.Workspace(Image_Menu_Handle.UserData).Workspace.Image0),'Parent',GUI_Parameters.Handles.Axes);
+			% imshow((GUI_Parameters.Workspace(Image_Menu_Handle.UserData).Workspace.NN_Probabilities),'Parent',GUI_Parameters.Handles.Axes);
 		end
 		
 		% [jObj,hjObj,hContainer] = Display_Wait_Animation(1);

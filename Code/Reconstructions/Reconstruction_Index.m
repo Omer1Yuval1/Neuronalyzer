@@ -14,7 +14,7 @@ function Reconstruction_Index(GP,Active_Workspace_Index)
 	
 	switch GP.General.Active_Plot
 		case 'Original Image'
-			imshow(GP.Workspace(1).Workspace.Image0,'Parent',GP.Handles.Axes);		
+			imshow(GP.Workspace(1).Workspace.Image0,'Parent',GP.Handles.Axes);
 		case 'Segmentation'
 			Reconstruct_Segmented_Trace(GP.Workspace(Active_Workspace_Index).Workspace,GP.Handles.Analysis); % Reconstruct_Segments(GP.Workspace(1).Workspace);
 		case 'Medial Axis'
