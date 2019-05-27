@@ -17,10 +17,10 @@ function H = Get_Stats_Bars_XY(Y,Pairs)
 	d2 = (Axes_Limits(4) - Axes_Limits(3)) / 30; % The vertical length needed for each bar.
 	M = 0;
 	P = zeros(0,8);
-	Test_Name = ['T-Test' ; 'U-Test'];
+	% Test_Name = ['T-Test' ; 'U-Test'];
 	
 	if(nargin < 2)
-		Pairs = transpose(combvec(1:L,1:L)); % Nx2.
+		Pairs = nchoosek(1:L,2); % Nx2.
 	end
 	
 	YMax = 0;
@@ -46,11 +46,11 @@ function H = Get_Stats_Bars_XY(Y,Pairs)
 				SD_j = std(Y{j});
 				P(end+1,:) = [i,j,PV_TTEST,Mean_i,SD_i,Mean_j,SD_j,1];
 				
-				M = max(Mean_i+SD_i,Mean_i+SD_i);
+				M = max(Mean_i+SD_i,Mean_j+SD_j);
 				if(M > YMax)
 					YMax = M;
 				end
-				disp('T-Test');
+				disp(['T-Test ; P-Value = ',num2str(PV_TTEST)]);
 			end
 		else
 			[PV_MWU,H_MWU] = ranksum(Y{i},Y{j}); % Mann-Whitney.
@@ -63,11 +63,11 @@ function H = Get_Stats_Bars_XY(Y,Pairs)
 				SD_j = std(Y{j});
 				P(end+1,:) = [i,j,PV_MWU,Mean_i,SD_i,Mean_j,SD_j,2];
 				
-				M = max(Mean_i+SD_i,Mean_i+SD_i);
+				M = max(Mean_i+SD_i,Mean_j+SD_j);
 				if(M > YMax)
 					YMax = M;
 				end
-				disp('U-Test');
+				disp(['U-Test ; P-Value = ',num2str(PV_MWU)]);
 			end
 		end
 	end
@@ -93,8 +93,8 @@ function H = Get_Stats_Bars_XY(Y,Pairs)
 			LineStyle = '--';
 		end
 		
-		y1 = sum(P(i,[4,5]));
-		y2 = sum(P(i,[6,7]));
+		y1 = sum(P(i,[4,5])); % Mean and S.D of 1st group.
+		y2 = sum(P(i,[6,7])); % Mean and S.D of 2nd group.
 		H1 = YMax + (i*d1) + (d1/5)*i;
 		
 		plot(P(i,[1,1,2,2]),[H1-d1,H1,H1,H1-d1],LineStyle,'Color',Bar_Color,'LineWidth',LineWidth_0);

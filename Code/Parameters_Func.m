@@ -119,7 +119,8 @@ function Parameters1 = Parameters_Func(Scale_Factor)
 	% Analysis.Persistence_Length.BinSize = .4;
 	%
 	
-	Neural_Network.Default_Pixel_Classification_Threshold = .65;
+	Neural_Network.Threshold = 0.65;
+	Neural_Network.Min_CC_Size = 1;
 	
 	Parameters1.General_Parameters = General_Parameters;
 	Parameters1.Cell_Body = Cell_Body;

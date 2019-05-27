@@ -66,14 +66,27 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Var_Fields,Fi
 		F = Groups(i).Workspaces;
 		% F = find([GUI_Parameters.Workspace.Grouping] == Selected_Groups(i,1) & [GUI_Parameters.Workspace.Genotype] == Selected_Groups(i,2)); % Find all the relevant workspaces.
 		for j=1:length(F) % For each workspace within group i.
+			
+			Wi = GUI_Parameters.Workspace(F(j)).Workspace;
+			
 			if(~RowWise) % Apply operation to the entire column at once.
 				for l=1:length(Var_Operations)
 					% The result of each operation l is assigned to a different dimension (X, Y, Z in Names).
-					V = Var_Operations{l}([GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name).(Var_Fields{l})]);
+					V = Var_Operations{l}([Wi.(DB_Name).(Var_Fields{l})]); % Vector of values for image j.
+					
+					switch(GUI_Parameters.Handles.Normalization_List.Value)
+						case 2 % Normalization to the length of the primary branch.
+							if(isfield(Wi,'Medial_Axis') && ~isempty(Wi.Medial_Axis))
+								V = V ./ Wi.Medial_Length;
+							else
+								V = [];
+							end
+					end
+					
 					Input_Struct(i).(Names{l}) = [Input_Struct(i).(Names{l}),V];
 				end
 			else % Perform the operation per row.
-				for k=1:numel(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)) % For each row in the chosen DB_Name.
+				for k=1:numel(Wi.(DB_Name)) % For each row in the chosen DB_Name.
 					% Note: not using (end+1) because the value may be an empty array.
 					% Note: Each function performs a find-like operation and thus returns all values that match the rule.
 						% ...*** thus, taking the 1st result for each, in case there are duplicates.
@@ -83,14 +96,14 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Var_Fields,Fi
 					% Use filtering fields:				
 					Flag1 = 1;
 					for l=1:length(Filter_Operations) % For each filter operation.
-						IsValid = Filter_Operations{l}(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Filter_Fields{l}));
+						IsValid = Filter_Operations{l}(Wi.(DB_Name)(k).(Filter_Fields{l}));
 						if(~IsValid)
 							Flag1 = 0;
 						end
 					end
 					
 					% Use the dynamic sliders to filter-out rows:
-					Vi = GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Dynamic_Field);
+					Vi = Wi.(DB_Name)(k).(Dynamic_Field);
 					if(Vi >= GUI_Parameters.Handles.Analysis.Dynamic_Slider_Min.Value && Vi <= GUI_Parameters.Handles.Analysis.Dynamic_Slider_Max.Value)
 						Dynamic_Slider_Flag = 1; % Include this row if the field value is within the dynamic sliders boundaries.
 					else
@@ -101,7 +114,7 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Var_Fields,Fi
 					Flag2 = 1;
 					V = cell(1,length(Var_Fields));
 					for l=1:length(Var_Operations) % For each variable.
-						V{l} = GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Var_Fields{l});
+						V{l} = Wi.(DB_Name)(k).(Var_Fields{l});
 						if(length(V{l}) ~= length(unique(V{l})))
 							Flag2 = 0;
 							disp('Repeating values detected.');
@@ -114,7 +127,7 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Var_Fields,Fi
 							% This is also how the filtering-out of rows is implemented (implicitly).
 						% disp(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).Order);
 						for l=1:length(Var_Operations)
-							Vi = Var_Operations{l}(GUI_Parameters.Workspace(F(j)).Workspace.(DB_Name)(k).(Var_Fields{l}));
+							Vi = Var_Operations{l}(Wi.(DB_Name)(k).(Var_Fields{l}));
 							N = length(Input_Struct(i).(Names{l})) + 1; % The current total number of values in field l (of group i).
 							Ni = N : N + length(Vi) - 1; % The indices to put the new values.
 							Input_Struct(i).(Names{l})(Ni) = Vi;
@@ -125,7 +138,7 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Var_Fields,Fi
 		end
 		Input_Struct(i).Worms_Number = length(F);
 		Input_Struct(i).Color = GUI_Parameters.Visuals.Active_Colormap(i,:);
-		Input_Struct(i).Labels = strrep(Input_Struct(i).Group_Name,'_','\newline');
+		Input_Struct(i).Labels = strrep(Input_Struct(i).Group_Name,'_','-');
 	end
 	
 end

@@ -23,49 +23,61 @@ function Multiple_Means_Func(Input_Struct,GUI_Parameters,Visuals,YLabel,Title1)
 		% assignin('base','Groups_Names',Groups_Names);
 		if(Ncat == 0)
 			
-			Legend_Handles_Array = [];
+			if(GUI_Parameters.Handles.Plot_Type_List.Value == 2)
+				Box_Plot_Vals = [];
+				Box_Plot_Indices = [];
+			end
+			
 			for i=1:Groups_Num % For each group (a unique combination of selected features).
+								
+				if(GUI_Parameters.Handles.Significance_Bars_List.Value > 1)
+					Vals{i} = Input_Struct(i).XValues; % Used for statistical tests.
+				end
 				
-				Mean1 = nanmean(Input_Struct(i).XValues);
-				STD_SE = nanstd(Input_Struct(i).XValues) ./ sqrt(length(Input_Struct(i).XValues));
-				C = Input_Struct(i).Color;
-				hold on;
-				errorbar(i,Mean1,STD_SE,'LineWidth',Visuals.ErrorBar_Width1,'Color',Visuals.ErrorBar_Color1);
-				Legend_Handles_Array(i) = plot(i+[-1,+1]*Visuals.Jitter1,[Mean1,Mean1],'Color',Input_Struct(1).Color,'LineWidth',Visuals.Mean_Line_Width);
-				scatter(i*ones(1,length(Input_Struct(i).XValues)),Input_Struct(i).XValues,6.*Visuals.Scatter_Dot_Size1,'MarkerFaceColor',Input_Struct(i).Color,'MarkerEdgeColor',Input_Struct(i).Color,'jitter','on','jitterAmount',Visuals.Jitter1);
-				
-				Groups_Struct(end+1).Group_ID = i;
-				Groups_Struct(end).Values = Input_Struct(i).XValues;
-				Groups_Struct(end).Mean = Mean1;
-				Groups_Struct(end).SE = STD_SE;
-				Groups_Struct(end).Category = 0;
+				switch(GUI_Parameters.Handles.Plot_Type_List.Value)
+					case 1
+						Mean1 = nanmean(Input_Struct(i).XValues);
+						if(GUI_Parameters.Handles.Error_Bars_List.Value > 1)
+							switch(GUI_Parameters.Handles.Error_Bars_List.Value)
+								case 2 % Standard Deviation.
+									Err_i = nanstd(Input_Struct(i).XValues);
+								case 3 % Standard Error of the Mean.
+									Err_i = nanstd(Input_Struct(i).XValues) ./ sqrt(length(Input_Struct(i).XValues));
+							end
+							errorbar(i,Mean1,Err_i,'LineWidth',Visuals.ErrorBar_Width1,'Color',Visuals.ErrorBar_Color1);
+						end
+						
+						hold on;
+						plot(i+[-1,+1]*Visuals.Jitter1,[Mean1,Mean1],'Color',Input_Struct(1).Color,'LineWidth',Visuals.Mean_Line_Width);
+						scatter(i*ones(1,length(Input_Struct(i).XValues)),Input_Struct(i).XValues,6.*Visuals.Scatter_Dot_Size1,'MarkerFaceColor',Input_Struct(i).Color,'MarkerEdgeColor',Input_Struct(i).Color,'jitter','on','jitterAmount',Visuals.Jitter1);
+					case 2
+						Box_Plot_Vals = [Box_Plot_Vals, Input_Struct(i).XValues];
+						Box_Plot_Indices = [Box_Plot_Indices , i.*ones(1,length(Input_Struct(i).XValues))];
+				end
 			end
 			
-			if(GUI_Parameters.Handles.Significance_Bars_CheckBox.Value)
-				Get_Statistically_Significance_Bars(Groups_Struct,Visuals.Active_Colormap(1,:));
+			switch(GUI_Parameters.Handles.Plot_Type_List.Value)
+				case 2
+					hold on;
+					boxplot(Box_Plot_Vals,Box_Plot_Indices);
 			end
 			
-			set(gca,'XTick',1:Groups_Num,'XTickLabel',{Input_Struct.Labels}); % ,'FontSize',Visuals.Axes_Lables_Font_Size/(Groups_Num/2)); % ,'XTickLabelRotation',Visuals.Axss_Lables_Orientation
+			set(gca,'XTick',1:Groups_Num,'XTickLabel',{Input_Struct.Labels},'FontSize',18); % ,'FontSize',Visuals.Axes_Lables_Font_Size/(Groups_Num/2)); % ,'XTickLabelRotation',Visuals.Axss_Lables_Orientation
 			% set(gca,'XTick',1:Groups_Num,'XTickLabel',{Input_Struct.Labels},'FontSize',Visuals.Axes_Lables_Font_Size); % ,'XTickLabelRotation',Visuals.Axss_Lables_Orientation
-			ylabel(YLabel,'FontSize',Visuals.Axes_Titles_Font_Size);
+			ylabel(YLabel); % ,'FontSize',Visuals.Axes_Titles_Font_Size);
 			set(gca,'YColor',Visuals.Active_Colormap(1,:));
 			title(Title1,'FontSize',Visuals.Main_Title_Font_Size,'Color',Visuals.Active_Colormap(1,:));
 			xlim([0.5,Groups_Num+0.5]);
 			YLIMITS = get(gca,'ylim');
 			ylim([0,YLIMITS(2)]);
-			
-			% XTickLabel.FontSize = 54;
-			% hhh = get(gca,'XTickLabel');
-			% assignin('base','hhh',hhh);
-			% set(hhh,'FontSize',Visuals.Axes_Lables_Font_Size/(Groups_Num/5));
-			
 			grid on;
 			
-			% No need for a legend if the x-axis labels are the groups' names:
-			% Lg = legend(Legend_Handles_Array,Groups_Names,'Location','best');
-			% Lg.TextColor = Visuals.Active_Colormap(1,:);
-			% Lg.EdgeColor = Visuals.Active_Colormap(1,:);
-			% Lg.FontSize = Visuals.Legend_Font_Size2;
+			switch(GUI_Parameters.Handles.Significance_Bars_List.Value)
+				case 2 % T-Test & U-Test.
+					Get_Stats_Bars_XY(Vals);
+			end
+			
+			
 		else % If at least one category is selected.
 			Legend_Handles_Array = [];
 			for o=1:Ncat % For each category.

@@ -40,6 +40,8 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 			Medial_Tangents = fnval(Medial_Der_Fit_Object,Medial_Eval); % The medial tangent vector (from the origin).
 			W(i).Workspace.Medial_Fit.Angle = mod(atan2(Medial_Tangents(2,:),Medial_Tangents(1,:)),pi); % Taking the mode to obtain an angle within [0,180].;
 			
+			W(i).Workspace.Medial_Length = Scale_Factor .* sum( (diff(XY_Eval(1,:)).^2 + (diff(XY_Eval(2,:)).^2)).^(.5)); % Total length in world units (pixels to um).
+			
 			Use_Medial_Axis = 1;
 		else
 			Use_Medial_Axis = 0;

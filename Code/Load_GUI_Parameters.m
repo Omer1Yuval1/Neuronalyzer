@@ -24,7 +24,8 @@ function GUI_Parameters = Load_GUI_Parameters
 	GUI_Parameters(1).Neural_Network(1).Directory = '';		
 	GUI_Parameters(1).Neural_Network(1).Threshold = -1;		
 	
-	GUI_Parameters(1).Visuals(1).Main_Axes_Size = [0.12 0.15 0.85 0.75];
+	GUI_Parameters(1).Visuals(1).Main_Axes_Size_1 = [0 0 1 1];
+	GUI_Parameters(1).Visuals(1).Main_Axes_Size_2 = [0.12 0.15 0.85 0.75];
 	GUI_Parameters.Visuals.Button1_Font_Size = 14;
 	GUI_Parameters.Visuals.Button2_Font_Size = 20;
 	GUI_Parameters.Visuals.Button3_Font_Size = 12;

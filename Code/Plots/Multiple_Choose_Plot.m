@@ -24,6 +24,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 		% Instead, I should change it to use the order field as a filter.
 	%
 	
+	% set(GUI_Parameters.Handles.Normalization_List,'String',{'Not Normalized'},'Value',1);
 	set(GUI_Parameters.Handles.Analysis.Dynamic_Slider_Min,'Enable','off');
 	set(GUI_Parameters.Handles.Analysis.Dynamic_Slider_Max,'Enable','off');
 	
@@ -84,6 +85,9 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Filter_Operations = [];
 			Var_Fields = {'Length'};
 			Filter_Fields = [];
+			%
+			set(GUI_Parameters.Handles.Normalization_List,'String',{'Not Normalized','Normalized to Primary Branch'});
+			set(GUI_Parameters.Handles.Plot_Type_List,'String',{'Default','Box Plot'});
 			%
 			RowWise = 0;
 			Dynamic_Field = 'Distance_From_Medial_Axis';
