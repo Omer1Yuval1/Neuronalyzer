@@ -562,8 +562,7 @@ function Tracer_UI()
 			% GUI_Parameters.General.Active_Plot = 'Original Image';
 			GUI_Parameters.General.Groups_OnOff = 1;
 			
-			Reconstruction_Index(GUI_Parameters);
-			set(GUI_Parameters.Handles.Axes,'YDir','normal');
+			Reconstruction_Index();
 			
 			% Detect and display CB and the outsets of the branches connected to it:
 			CB_BW_Threshold = GUI_Parameters.Workspace.Workspace.Parameters.Cell_Body.BW_Threshold;
