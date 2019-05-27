@@ -378,7 +378,7 @@ function Tracer_UI()
 	
 	function Mouse_Edit_BW_Func(source,event)
 		MarkerSize_1 = GUI_Parameters.Handles.Edit_BW_MarkerSize_Radio_Group.SelectedObject.UserData;
-		if(MarkerSize_1 > 0)
+		if(MarkerSize_1 > 0 && strcmp(GUI_Parameters.General.Active_Plot,'Binary Image'))
 			D = round((MarkerSize_1-1)/2);
 			C = event.IntersectionPoint;
 			C = [round(C(1)),round(C(2))];
@@ -403,10 +403,10 @@ function Tracer_UI()
 		[FileNames,PathName,~] = uigetfile(fullfile(pwd,'..',filesep,'*.tif;*.jpg'),'Please Choose an Image File.',cd,'MultiSelect','on'); % Lets the user choose a file.
 		if(~length(FileNames))
 			return;
-		elseif(length(FileNames) == 1)
-			GUI_Parameters.Handles.FileNames = {FileNames};
-		else
+		elseif(iscell(FileNames))
 			GUI_Parameters.Handles.FileNames = FileNames;
+		else
+			GUI_Parameters.Handles.FileNames = {FileNames};
 		end
 		Current_Dir = cd(PathName);
 		
@@ -471,7 +471,7 @@ function Tracer_UI()
 			
 			GUI_Parameters.Workspace = struct('Workspace',{}); % Reset the Workspace.
 			
-			Lf = length(FileNames);
+			Lf = length(GUI_Parameters.Handles.FileNames);
 			for fi=1:Lf % For each loaded image.
 				GUI_Parameters.Workspace(fi).Workspace.Im_BW = [];
 				
@@ -487,7 +487,7 @@ function Tracer_UI()
 				GUI_Parameters.Workspace(fi).Workspace.Parameters = Parameters_Func(GUI_Parameters.Workspace(fi).Workspace.User_Input.Scale_Factor);
 				
 				GUI_Parameters.Workspace(fi).Workspace.Image0 = imread(strcat(PathName,GUI_Parameters.Handles.FileNames{fi}));
-				GUI_Parameters.Workspace(fi).Workspace.User_Input.File_Name = FileNames{fi};
+				GUI_Parameters.Workspace(fi).Workspace.User_Input.File_Name = GUI_Parameters.Handles.FileNames{fi};
 				
 				% Convert the loaded image to the default format (uint8, [0,255]):
 				GUI_Parameters.Workspace(fi).Workspace.Image0 = GUI_Parameters.Workspace(fi).Workspace.Parameters.General_Parameters.Image_Format(GUI_Parameters.Workspace(fi).Workspace.Image0);
@@ -679,7 +679,7 @@ function Tracer_UI()
 			Reconstruction_Func();
 		end
 		
-		if(~isempty(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.NN_Probabilities)) % If the probability image menu is ON (an indication that a NN has been loaded and applied to all images) - update the sliders values.
+		if(isfield(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace,'NN_Probabilities')) % If the probability image menu is ON (an indication that a NN has been loaded and applied to all images) - update the sliders values.
 			set(GUI_Parameters.Handles.Machine_Learning.Probability_Slider,'Value',GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.Neural_Network.Threshold); % Update the NN threshold slider.
 			set(GUI_Parameters.Handles.Machine_Learning.Probability_Slider_Text,'String',GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.Neural_Network.Threshold); % Update the NN threshold text box.
 			
@@ -844,10 +844,9 @@ function Tracer_UI()
 			GUI_Parameters.General.Active_View = 1;
 		end
 		
-		
 		Reconstruction_Index(GUI_Parameters,Im_Menu_H.UserData);
 		
-		if(~isempty(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW) && strcmp(GUI_Parameters.General.Active_Plot,'Binary Image'))
+		if(isfield(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace,'Im_BW') && strcmp(GUI_Parameters.General.Active_Plot,'Binary Image'))
 			set(allchild(GUI_Parameters.Handles.Axes),'HitTest','off');
 			set(GUI_Parameters.Handles.Axes,'PickableParts','all','ButtonDownFcn',@Mouse_Edit_BW_Func,'Position',[0,0,1,1]);
 		end
