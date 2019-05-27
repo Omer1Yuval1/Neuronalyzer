@@ -545,6 +545,20 @@ function Tracer_UI()
 		
 		[GUI_Parameters.Workspace,GUI_Parameters.Features] = Add_Features_To_All_Workspaces(GUI_Parameters.Workspace); % TODO: replace with automatic detection of features.
 		waitbar(2/3,WB_H);
+		
+		% Activate Menus:
+		for wi=1:numel(GUI_Parameters.Workspace)
+			if(isfield(GUI_Parameters.Workspace(wi).Workspace.User_Input,'File_Name'))
+				uimenu(Im_Menu_H,'Label',GUI_Parameters.Workspace(wi).Workspace.User_Input.File_Name,'UserData',wi,'Callback',@Image_Menu_Func);
+			else
+				uimenu(Im_Menu_H,'Label',['Image ',num2str(wi)],'UserData',wi,'Callback',@Image_Menu_Func);
+			end
+		end
+		
+		set(Im_Menu_H,'UserData',1); % Set the Image menu to display the last image (appears first in the menu).
+		set(allchild(Im_Menu_H),'Checked','off');
+		set(Im_Menu_H.Children(end),'Checked','on'); % The objects are stored in Im_Menu_H in reverse order.
+		GUI_Parameters.General.Active_View = 1;
 		GUI_Parameters.General.Active_Plot = 'Segmentation';
 		
 		if(numel(GUI_Parameters.Workspace) == 1 && isfield(GUI_Parameters.Workspace.Workspace,'Image0')) % If only one file that contains the original image (right after tracing).
@@ -558,11 +572,11 @@ function Tracer_UI()
 				S1 = char(Fields_Names(i));
 				GUI_Parameters.Workspace(1).Values(1).(S1) = GUI_Parameters.Workspace(1).Workspace.User_Input.Features.(S1);
 			end
-			Reset_Axes();
+			
 			% GUI_Parameters.General.Active_Plot = 'Original Image';
 			GUI_Parameters.General.Groups_OnOff = 1;
 			
-			Reconstruction_Index();
+			Reconstruction_Func();
 			
 			% Detect and display CB and the outsets of the branches connected to it:
 			CB_BW_Threshold = GUI_Parameters.Workspace.Workspace.Parameters.Cell_Body.BW_Threshold;
@@ -584,16 +598,9 @@ function Tracer_UI()
 		% set(H0_1_2,'Enable','on');
 		% set(allchild(H0_1_2),'Enable','on');
 		
-		% Activate Menus:
-		for wi=1:numel(GUI_Parameters.Workspace)
-			if(isfield(GUI_Parameters.Workspace(wi).Workspace.User_Input,'File_Name'))
-				uimenu(Im_Menu_H,'Label',GUI_Parameters.Workspace(wi).Workspace.User_Input.File_Name,'UserData',wi,'Callback',@Image_Menu_Func);
-			else
-				uimenu(Im_Menu_H,'Label',['Image ',num2str(wi)],'UserData',wi,'Callback',@Image_Menu_Func);
-			end
-		end
-		set(Im_Menu_H,'UserData',1,'Enable','on');
+		set(Im_Menu_H,'Enable','on');
 		set(Reconstructions_Menu_Handle,'Enable','on');
+		set(allchild(Reconstructions_Menu_Handle),'Enable','on');
 		
 		set(Graphs_Menu_Handle,'Enable','on');
 		set(allchild(Graphs_Menu_Handle),'Enable','on');
@@ -768,9 +775,7 @@ function Tracer_UI()
 		for fi=1:length(GUI_Parameters.Handles.FileNames)
 			waitbar(fi/length(GUI_Parameters.Handles.FileNames),WB_H_Tracing);
 			
-			axes(GUI_Parameters.Handles.Axes);
 			Reset_Axes;
-			set(GUI_Parameters.Handles.Axes,'YDir','normal');
 			
 			% Skeletonize, detect vertices and segments and find vertices angles:
 			GUI_Parameters.Workspace(fi).Workspace = Vertices_Analysis_Index(GUI_Parameters.Workspace(fi).Workspace);
@@ -787,7 +792,7 @@ function Tracer_UI()
 				disp('Medial Axis Detection Failed.');
 			end
 			
-			GUI_Parameters.Workspace(fi).Workspace = rmfield(GUI_Parameters.Workspace(fi).Workspace,'Im_BW'); % The probabilities matrix is saved instead.
+			% GUI_Parameters.Workspace(fi).Workspace = rmfield(GUI_Parameters.Workspace(fi).Workspace,'Im_BW'); % The probabilities matrix is saved instead.
 			
 			% waitfor(msgbox('The Tracing Completed Successully.'));
 			
@@ -800,8 +805,8 @@ function Tracer_UI()
 			Load_An_Existing_Project_File(); % TODO: what's the purpose of this?
 			set(Graphs_Menu_Handle,'Enable','on');
 			
-			Reconstruction_Index.General.Active_Plot = 'Segmentation';
-			Reconstruction_Index(GUI_Parameters,1);
+			GUI_Parameters.General.Active_Plot.General.Active_Plot = 'Segmentation';
+			Reconstruction_Func();
 			
 			if(length(GUI_Parameters.Handles.FileNames) == 1)
 				set(Reconstructions_Menu_Handle,'Enable','on');
