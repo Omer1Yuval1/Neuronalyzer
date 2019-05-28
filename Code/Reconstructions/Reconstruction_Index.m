@@ -10,9 +10,6 @@ function Reconstruction_Index(GP,ii)
 	figure(1);
 	hold on;
 	
-	XL = xlim;
-	YL = ylim;
-	
 	Set_Dynamic_Sliders_Values(GP.Handles.Analysis,0,50);
 	
 	switch GP.General.Active_Plot
@@ -36,13 +33,9 @@ function Reconstruction_Index(GP,ii)
 			colormap hot;
 		case 'Binary Image'
 			imshow(GP.Workspace(ii).Workspace.Im_BW,'Parent',GP.Handles.Axes);
-			% xlim(XL);
-			% ylim(YL);
 		case 'Skeleton'
 			[Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints] = Pixel_Trace_Post_Proccessing(GP.Workspace(ii).Workspace.Im_BW);
 			imshow(Im1_NoiseReduction);
-			xlim(XL);
-			ylim(YL);
 			% Color connected components:
 			CC = bwconncomp(Im1_NoiseReduction);
 			for c=1:length(CC.PixelIdxList)

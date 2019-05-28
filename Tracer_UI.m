@@ -506,7 +506,8 @@ function Tracer_UI()
 			set(Im_Menu_H.Children(end),'Checked','on'); % The objects are stored in Im_Menu_H in reverse order.
 			GUI_Parameters.General.Active_Plot = 'Cell Body';
 			GUI_Parameters.General.Active_View = 1; % Reconstruction mode.
-			Reconstruction_Func();
+			% imshow(GUI_Parameters.Workspace(1).Workspace.Image0,'Parent',GUI_Parameters.Handles.Axes); % Display the image just to initialize the axes.
+			Reconstruction_Func(1);
 			set(H_Recon_Original_Image,'Enable','on');
 			set(H_Recon_CB,'Enable','on');
 			
@@ -682,7 +683,7 @@ function Tracer_UI()
 		set(Im_Menu_H,'UserData',source.UserData); % This must come before the following "if" because this value is used there.
 		
 		if(GUI_Parameters.General.Active_View == 1) % If the current active plot is a reconstruction.
-			Reconstruction_Func();
+			Reconstruction_Func(1);
 		end
 		
 		if(isfield(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace,'NN_Probabilities')) % If the probability image menu is ON (an indication that a NN has been loaded and applied to all images) - update the sliders values.
@@ -840,19 +841,28 @@ function Tracer_UI()
 	
 	function Reconstruction_Func(source,callbackdata)
 		
+		XL = xlim; % Save the current axis limits.
+		YL = ylim;
 		Reset_Axes();
 		
-		if(nargin == 2)
+		if(nargin == 1 && source) % Image changed - reseting the axis limits.
+			[Rows_1,Cols_1] = size(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Image0);
+			XL = [1,Cols_1];
+            YL = [1,Rows_1];
+		elseif(nargin == 2)
 			GUI_Parameters.General.Active_Plot = source.Label;
 			GUI_Parameters.General.View_Category_Type = source.UserData;
 			GUI_Parameters.General.Active_View = 1;
 		end
 		
 		Reconstruction_Index(GUI_Parameters,Im_Menu_H.UserData);
+		xlim(XL);
+		ylim(YL);
+		
 		
 		if(isfield(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace,'Im_BW') && strcmp(GUI_Parameters.General.Active_Plot,'Binary Image'))
 			set(allchild(GUI_Parameters.Handles.Axes),'HitTest','off');
-			set(GUI_Parameters.Handles.Axes,'PickableParts','all','ButtonDownFcn',@Mouse_Edit_BW_Func,'Position',[0,0,1,1]);
+			set(GUI_Parameters.Handles.Axes,'PickableParts','all','ButtonDownFcn',@Mouse_Edit_BW_Func);
 		end
 		
 		% [jObj,hjObj,hContainer] = Display_Wait_Animation(1);
