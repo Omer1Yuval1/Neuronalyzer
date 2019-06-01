@@ -1,7 +1,4 @@
-function S = Find_Worm_Longitudinal_Axis(Workspace,Plot1)
-	
-	% TODO: use scale-bar:
-	Initial_Radius = 120; % 60 ./ Scale_Factor;
+function Find_Worm_Longitudinal_Axis(Workspace,Plot1)
 	
 	% This functions uses a higher level perspective (the entire neuron) to detect the longitudinal axis of the worm.
 	% It first performs closing to transform the neuron into a large blob.
@@ -13,7 +10,7 @@ function S = Find_Worm_Longitudinal_Axis(Workspace,Plot1)
 	Eval_Points_Num = 100;
 	Eval_Points_Pixel_Ratio = 0.5;
 	
-	S = struct('Midline_Pixels',{},'Midline_Points',{},'Normal_Angles',{},'Boundary_Pixels',{},'Boundary_Points_Dorsal',{},'Boundary_Points_Ventral',{});
+	S = struct('Midline_Pixels',{},'Midline_Points',{},'Boundary_Pixels',{},'Boundary_Points',{});
 	
 	Im_BW = imbinarize(Workspace.Image0,BW_Threshold);
 	[R,C] = size(Im_BW);
@@ -42,50 +39,31 @@ function S = Find_Worm_Longitudinal_Axis(Workspace,Plot1)
 	S.Midline_Points = transpose(XY);
 	
 	pp_Der1 = fnder(pp,1);
-	XY_Der = transpose(fnval(pp_Der1,Vb)); % [Nx2].
-	% XY_Der = XY_Der ./ (sqrt(sum(XY_Der.^2,2));
-	S.Normal_Angles = atan2(XY_Der(:,2),XY_Der(:,1)) + (pi/2);
+	XY_Der = fnval(pp_Der1,Vb);
 	
     Im_Perim = bwperim(ImD2);
 	[Y,X] = find(Im_Perim);
-    f = find(X == min(X));
-    XY = Order_Connected_Pixels(Im_Perim,[X(f(1)),Y(f(1))]); % [Nx2].
-	S.Boundary_Pixels = XY;
-	
-	S.Boundary_Points_Dorsal = S.Midline_Points + (Initial_Radius .* [cos(S.Normal_Angles) , sin(S.Normal_Angles)]);
-	S.Boundary_Points_Ventral = S.Midline_Points - (Initial_Radius .* [cos(S.Normal_Angles) , sin(S.Normal_Angles)]);
-	
-	% TODO:
-	% For each midline point (and a normal vector), match two boundary points (dorsal and ventral):
-	% Boundary_Points
+	S.Boundary_Pixels = [X , Y];
 	
 	if(Plot1)
 		figure;
-			subplot(2,1,1);
+			subplot(3,1,1);
 				imshow(Workspace.Image0); % imshow(ImD2);
-				set(gca,'YDir','normal');
 				hold on;
-				
-                for p=1:length(Vb)
-                    plot(S.Midline_Points(p,1) +  40.*[0,cos(S.Normal_Angles(p))] , S.Midline_Points(p,2) +  40.*[0,sin(S.Normal_Angles(p))]);
-                   % plot(S.Midline_Points(p,1) +  [0,XY_Der(p,1)] , S.Midline_Points(p,2) +  [0,XY_Der(p,2)]);
-                end
-				
 				plot(X_Skel_Pruned,Y_Skel_Pruned,'.g','LineWidth',2);
 				scatter(S.Midline_Points(:,1),S.Midline_Points(:,2),20,jet(size(S.Midline_Points,1)),'filled'); % plot(S.Midline_Points(:,1),S.Midline_Points(:,2),'.r','LineWidth',2);
 				
-				scatter(S.Boundary_Points_Dorsal(:,1),S.Boundary_Points_Dorsal(:,2),10,jet(size(S.Boundary_Points_Dorsal,1)),'filled');
-				scatter(S.Boundary_Points_Ventral(:,1),S.Boundary_Points_Ventral(:,2),10,jet(size(S.Boundary_Points_Ventral,1)),'filled');
-				% scatter(S.Boundary_Pixels(:,1),S.Boundary_Pixels(:,2),20,jet(size(S.Boundary_Pixels,1)),'filled');
-                % XY = cell2mat(smoothn(num2cell(S.Boundary_Pixels,1),0.1)); % Smoothing.
+                XY = Order_Connected_Pixels(Im_Skel_Pruned,[X(f(1)),Y(f(1))]); % [Nx2].
+                % XY = cell2mat(smoothn(num2cell(S.Boundary_Pixels,1),100)); % Smoothing.
                 % plot(XY(:,1),XY(:,2),'.y','LineWidth',2);
 				
-			subplot(2,1,2);
+			subplot(3,1,2);
 				imshow(ImD2);
-				set(gca,'YDir','normal');
 				hold on;
 				plot(X_Skel,Y_Skel,'.g','LineWidth',2);
 				plot(S.Boundary_Pixels(:,1),S.Boundary_Pixels(:,2),'.y','LineWidth',2);
+			subplot(3,1,3);
+				imshow(Im_Skel);
 	end
 	
 	% Vertices = Workspace.Vertices;

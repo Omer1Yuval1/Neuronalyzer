@@ -160,7 +160,7 @@ function [Mean_Curvature,SxS,SyS,xx,Cxy] = Get_Segment_Curvature(X,Y,Im)
 	end
 	
 	function [X,Y] = Smooth_Points(X,Y,Smoothing_Parameter) % X=[1,n]. Y=[1,n].
-		Eval_Points_Num = length(X); % TODO: normalize to the original number of points.
+		% Eval_Points_Num = length(X); % TODO: normalize to the original number of points.
 		
 		u = smoothn(num2cell([X',Y'],1),Smoothing_Parameter);
 		Suxy = horzcat(u{:});

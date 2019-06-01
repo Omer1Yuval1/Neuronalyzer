@@ -30,4 +30,5 @@ function Pixels_List = Order_Connected_Pixels(Im_BW,P0,P1)
 	end
 	
 	Pixels_List = sortrows(Pixels_List,3);
+	Pixels_List = Pixels_List(:,1:2);
 end

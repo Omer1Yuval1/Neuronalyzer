@@ -9,7 +9,7 @@ function [Final_Curve,Approved] = Find_Center_Line(Im,BW)
 		% Finally, for the 2 short ones, take the mid pixels and use them to divide the whole perimenter into two sub-parts.
 		% Then do the distance thing.
 	
-	Plot1 = 0;
+	Plot1 = 1;
 	Approved = 0;
 	Final_Curve = [];
 	Distances_STD_Threshold = 12;
@@ -192,7 +192,7 @@ function [Final_Curve,Approved] = Find_Center_Line(Im,BW)
 		figure(1);
 		clf(1);
 		
-		subplot(2,3,1);
+		subplot(3,1,1);
 			imshow(Im);
 			hold on; plot(Final_Curve_Plot(:,1),Final_Curve_Plot(:,2),'r','LineWidth',3);
 			hold on; plot(C1_X,C1_Y,'.m','MarkerSize',10);
@@ -201,12 +201,12 @@ function [Final_Curve,Approved] = Find_Center_Line(Im,BW)
 			hold on; plot(x2,y2,'.b','MarkerSize',10);
 			title(['D = ',num2str(std(D))]);
 		
-		subplot(2,3,2);
+		subplot(3,1,2);
 			imshow(BW);
 			hold on; scatter(V(:,1),V(:,2),10,jet(size(V,1)),'filled'); % plot(V12(:,1),V12(:,2),'.g','MarkerSize',20);		
 			title(['Is Approved: ',num2str(Approved)],'FontSize',30);
 		
-		subplot(2,3,3);
+		subplot(3,1,3);
 			imshow(closeBW);
 			hold on; plot(C1_X,C1_Y,'.m','MarkerSize',10);
 			hold on; plot(C2_X,C2_Y,'.m','MarkerSize',10);
