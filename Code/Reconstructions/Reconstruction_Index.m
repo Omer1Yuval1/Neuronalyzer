@@ -45,7 +45,21 @@ function Reconstruction_Index(GP,ii)
 			end
 		case 'Segmentation'
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
-			Reconstruct_Segmented_Trace(GP.Workspace(ii).Workspace,GP.Handles.Analysis); % Reconstruct_Segments(GP.Workspace(1).Workspace);
+			if(isfield(GP.Workspace(ii).Workspace,'Segments'))
+				Reconstruct_Segmented_Trace(GP.Workspace(ii).Workspace,GP.Handles.Analysis); % Reconstruct_Segments(GP.Workspace(1).Workspace);
+			end
+		case 'Axes'
+			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
+			
+			Np = str2num(GP.Handles.Tracing.Midline_Points_Num.String);
+			
+			pp = cscvn(transpose(GP.Workspace(ii).Workspace.Neuron_Axes.Midline_Points)); % Fit a cubic spline.
+			Vb = linspace(pp.breaks(1),pp.breaks(end),Np);
+			XY = fnval(pp,Vb);
+			
+			hold on;
+			plot(XY(1,:),XY(2,:),'LineWidth',3);
+			plot(XY(1,:),XY(2,:),'.','MarkerSize',20);
 		case 'Medial Axis'
 			
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);

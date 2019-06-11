@@ -1,7 +1,9 @@
 function S = Find_Worm_Longitudinal_Axis(Workspace,Plot1)
 	
 	% TODO: use scale-bar:
+	Scale_Factor = Workspace.User_Input.Scale_Factor;
 	Initial_Radius = 120; % 60 ./ Scale_Factor;
+	Min_Branch_Length = 300;
 	
 	% This functions uses a higher level perspective (the entire neuron) to detect the longitudinal axis of the worm.
 	% It first performs closing to transform the neuron into a large blob.
@@ -23,7 +25,7 @@ function S = Find_Worm_Longitudinal_Axis(Workspace,Plot1)
 	ImD2 = imdilate(ImD1,se); % The Blob.
 	
 	Im_Skel = bwmorph(imclose(ImD2,strel('disk',100)),'skel',inf); % The skeleton of the blob. % Im_Axis = bwmorph(imclose(ImD2,strel('disk',100)),'thin',inf);
-	Im_Skel_Pruned = bwskel(Im_Skel,'MinBranchLength',200);
+	Im_Skel_Pruned = bwskel(Im_Skel,'MinBranchLength',Min_Branch_Length);
 	
 	[Y_Skel,X_Skel] = find(Im_Skel);
 	[Y_Skel_Pruned,X_Skel_Pruned] = find(Im_Skel_Pruned);
@@ -40,6 +42,8 @@ function S = Find_Worm_Longitudinal_Axis(Workspace,Plot1)
 	Vb = linspace(pp.breaks(1),pp.breaks(end),Eval_Points_Pixel_Ratio*size(S.Midline_Pixels,1));
 	XY = fnval(pp,Vb);
 	S.Midline_Points = transpose(XY);
+    dxy = sum((S.Midline_Points(2:end,:) - S.Midline_Points(1:end-1,:)).^2,2).^(0.5);
+	S.Midline_Arc_Length = cumsum([0 , transpose(dxy)]) .* Scale_Factor; % pixels to real length units (um).
 	
 	pp_Der1 = fnder(pp,1);
 	XY_Der = transpose(fnval(pp_Der1,Vb)); % [Nx2].

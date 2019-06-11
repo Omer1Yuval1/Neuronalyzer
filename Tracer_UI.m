@@ -63,8 +63,16 @@ function Tracer_UI()
 		GUI_Parameters.Handles.Tracing.Machine_Learning_Panel = uitab('Parent',GUI_Parameters.Handles.Tracing_Tabs_Group,'Title','Pre-Processing');
 		GUI_Parameters.Handles.Tracing.Tracing_Tab = uitab('Parent',GUI_Parameters.Handles.Tracing_Tabs_Group,'Title','Tracing','BackgroundColor',[0.8,0.4,0.4]);
 		GUI_Parameters.Handles.Tracing.Analysis_Tab = uitab('Parent',GUI_Parameters.Handles.Tracing_Tabs_Group,'Title','Analysis');
-		
-		
+			
+			uicontrol(GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','text','String','Number of Midline Points:','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.05,.8,.6,GUI_Parameters.Visuals.Button1_Height]); % ,'backgroundcolor',[0.6 0.6 0.6]);
+			% GUI_Parameters.Handles.Tracing.Analysis_Tab.Midline_Points_Num = 
+			GUI_Parameters.Handles.Tracing.Midline_Points_Num = uicontrol(GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','edit','String','50','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.7,.8,.25,GUI_Parameters.Visuals.Button1_Height],'Callback',@Midline_Points_Num_Func); % ,'backgroundcolor',[0.6 0.6 0.6]);
+			%{
+			jModel = javax.swing.SpinnerNumberModel(24,20,35,1);
+			jSpinner = javax.swing.JSpinner(jModel);
+			jhSpinner = javacomponent(jSpinner,[10,10,60,20],gcf);
+			jSpinner.getValue;
+			%}
 	% assignin('base','GUI_Parameters',GUI_Parameters);
 	
 	% Machine Learning Panel:
@@ -121,6 +129,7 @@ function Tracer_UI()
 		H0_1_6 = uimenu(Reconstructions_Menu_Handle,'Label','Vertices Angles');
 			H0_1_6_1 = uimenu(H0_1_6,'Label','Vertices Angles','UserData',2,'Callback',@Reconstruction_Func);
 		% 	H0_1_6_2 = uimenu(H0_1_6,'Label','Vertices Angles - Skeleton','UserData',2,'Callback',@Reconstruction_Func);
+		uimenu(Reconstructions_Menu_Handle,'Label','Axes','UserData',0,'Callback',@Reconstruction_Func);
 		uimenu(Reconstructions_Menu_Handle,'Label','Medial Axis','UserData',0,'Callback',@Reconstruction_Func);
 		% H0_1_8 = uimenu(Reconstructions_Menu_Handle,'Label','Longitudinal Gradient','UserData',0,'Callback',@Reconstruction_Func);		
 		uimenu(Reconstructions_Menu_Handle,'Label','Curvature','UserData',0,'Callback',@Reconstruction_Func);
@@ -186,6 +195,9 @@ function Tracer_UI()
 			% H_Menu132_Distances = uimenu(H_Menu13_Vertices,'Label','Distances','Callback','');
 				% H_Menu1321_Primary_Vertices_Mean_Distance = uimenu(H_Menu132_Distances,'Label','Primary_Vertices_Mean_Distance','UserData',1,'Callback',@Menu1_Plots_Func);
 			% H_Menu133_Vertices_Density = uimenu(H_Menu13_Vertices,'Label','Density of Vertices','UserData',1,'Callback',@Menu1_Plots_Func);			
+		
+		H_Menu5 = uimenu(Graphs_Menu_Handle,'Label','Orientation','Callback','');
+			uimenu(H_Menu5,'Label','Orientation VS Distance from Primary Branch','UserData',2,'Callback',@Menu1_Plots_Func);
 		
 		H_Menu4_Customized = uimenu(Graphs_Menu_Handle,'Label','Customized','Callback','');
 			% Basics:
@@ -585,6 +597,8 @@ function Tracer_UI()
 			[CB_Pixels,CB_Perimeter] = Detect_Cell_Body(GUI_Parameters.Workspace.Workspace.Image0,CB_BW_Threshold,Scale_Factor,0); % Detect cell-body.
 			[CB_Vertices,Pixels0,Pixels1] = Find_CB_Vertices(GUI_Parameters.Workspace.Workspace.Image0,CB_Perimeter,CB_Pixels,Scale_Factor,CB_BW_Threshold,1);
 			% set(Reconstructions_Menu_Handle,'Enable','on');
+		else
+			Reconstruction_Func();
 		end
 		
 		Features_Buttons_Handles = [];
@@ -771,13 +785,17 @@ function Tracer_UI()
 		set(Reconstructions_Menu_Handle,'Enable','off');
 		set(Graphs_Menu_Handle,'Enable','off');
 		
+		Nw = numel(GUI_Parameters.Workspace);
+		
 		WB_H_Tracing = waitbar(0,'Please wait...');
 		waitbar(0,WB_H_Tracing);
-		for fi=1:length(GUI_Parameters.Handles.FileNames)
-			waitbar(fi/length(GUI_Parameters.Handles.FileNames),WB_H_Tracing);
+		for fi=1:Nw
+			waitbar(fi/Nw,WB_H_Tracing);
 			
 			Reset_Axes;
-			
+			imshow(GUI_Parameters.Workspace(fi).Workspace.Image0,'Parent',GUI_Parameters.Handles.Axes);
+			set(GUI_Parameters.Handles.Axes,'YDir','normal');
+            
 			% Skeletonize, detect vertices and segments and find vertices angles:
 			GUI_Parameters.Workspace(fi).Workspace = Vertices_Analysis_Index(GUI_Parameters.Workspace(fi).Workspace);
 			
@@ -796,20 +814,17 @@ function Tracer_UI()
 			% GUI_Parameters.Workspace(fi).Workspace = rmfield(GUI_Parameters.Workspace(fi).Workspace,'Im_BW'); % The probabilities matrix is saved instead.
 			
 			% waitfor(msgbox('The Tracing Completed Successully.'));
-			
-			imshow(GUI_Parameters.Workspace(fi).Workspace.Image0,'Parent',GUI_Parameters.Handles.Axes);
-			set(GUI_Parameters.Handles.Axes,'YDir','normal');
 		end
 		delete(WB_H_Tracing);
 		
-		if(length(GUI_Parameters.Handles.FileNames) >= 1)
+		if(Nw >= 1)
 			Load_An_Existing_Project_File(); % TODO: what's the purpose of this?
 			set(Graphs_Menu_Handle,'Enable','on');
 			
 			GUI_Parameters.General.Active_Plot.General.Active_Plot = 'Segmentation';
 			Reconstruction_Func();
 			
-			if(length(GUI_Parameters.Handles.FileNames) == 1)
+			if(Nw == 1)
 				set(Reconstructions_Menu_Handle,'Enable','on');
 			end
 		end
@@ -856,9 +871,10 @@ function Tracer_UI()
 		end
 		
 		Reconstruction_Index(GUI_Parameters,Im_Menu_H.UserData);
-		xlim(XL);
-		ylim(YL);
-		
+		if(XL(2) > 1 && YL(2) > 1)
+			xlim(XL);
+			ylim(YL);
+		end
 		
 		if(isfield(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace,'Im_BW') && strcmp(GUI_Parameters.General.Active_Plot,'Binary Image'))
 			set(allchild(GUI_Parameters.Handles.Axes),'HitTest','off');
@@ -1245,6 +1261,12 @@ function Tracer_UI()
 		% set(GUI_Parameters.Handles.Merge_Dorsal_Ventral_CheckBox,'Value',1);
 		hold on;
 		Multiple_Choose_Plot(GUI_Parameters);
+	end
+	
+	function Midline_Points_Num_Func(source,callbackdata)
+		if(GUI_Parameters.General.Active_View == 1 && strcmp(GUI_Parameters.General.Active_Plot,'Axes'))
+			Reconstruction_Func();
+		end
 	end
 	
 	function Reset_Axes()

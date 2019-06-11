@@ -1,5 +1,8 @@
 function Custom_4_3_Rects_Medial_Orientation_VS_Distance_2D_Hist(GUI_Parameters,Visuals,YLabel,Title1)
 	
+	% TODO:
+		% Something is wrong - after changing to the new method for finding the primary branch.
+	
 	Worm_Radius_um = 45;
 	Medial_Range = [0,40];
 	
@@ -17,8 +20,8 @@ function Custom_4_3_Rects_Medial_Orientation_VS_Distance_2D_Hist(GUI_Parameters,
 	
 	Legend_Handles_Array = zeros(1,Groups_Num);
 	
-	V1 = [];
-	V2 = [];
+	V1 = []; % Orientation.
+	V2 = []; % Medial Distance.
 	for g=1:size(Groups,2)
 		
 		Fg = find([GUI_Parameters.Workspace.Grouping] == Groups(1,g) & [GUI_Parameters.Workspace.Genotype] == Groups(2,g));
@@ -47,12 +50,14 @@ function Custom_4_3_Rects_Medial_Orientation_VS_Distance_2D_Hist(GUI_Parameters,
 				Angle_Diffs = -ones(1,length(Rect_Angles));
 				Rects_Distances = -ones(1,length(Rect_Angles));
 				
-				for r=1:numel(R) - 1
-					D = Dist_Func(R(r).X,R(r).Y , W.Medial_Fit.X,W.Medial_Fit.Y);
+				for r=1:numel(R) - 1 % For each rectangle in segment s.
+					D = Dist_Func(R(r).X,R(r).Y , W.Neuron_Axes.Midline_Points(:,1) , W.Neuron_Axes.Midline_Points(:,2));
+					% D = Dist_Func(R(r).X,R(r).Y , W.Medial_Fit.X,W.Medial_Fit.Y);
+					
 					f1 = find(D == min(D));
 					f1 = f1(1);
 					
-					A0 = W.Medial_Fit.Angle(f1); % Medial angle.
+					A0 = W.Neuron_Axes.Normal_Angles(f1) + (pi./2); % Medial angle. A0 = W.Medial_Fit.Angle(f1);
 					% disp([A0 , D(f1)]);
 					if(1) % Corrected Angles.
 						At = Get_Plane_Tilting_Angle_Func(D(f1) .* Scale_Factor); % Using the worm radius and the distance of the vertex from the medial axis to find the tilting angle of the vertex plane.
@@ -82,7 +87,7 @@ function Custom_4_3_Rects_Medial_Orientation_VS_Distance_2D_Hist(GUI_Parameters,
 	end
 	
 	% histogram(V1,0:.002:.1,'Normalization','probability');
-	histogram2(V1,V2,'Normalization','probability','FaceColor','flat');
+	histogram2(V1,V2,0:5:180,0:2:45,'Normalization','probability','FaceColor','flat');
 	
     % set(gca,'XTick',0:pi/6:pi./2,'XTickLabel',0:30:90,'FontSize',16); % 0:pi/3:2*pi
 	xlabel('Angle [degrees]','FontSize',20);

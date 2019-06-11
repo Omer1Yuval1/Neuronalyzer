@@ -668,7 +668,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Custom_4_1_Rects_Medial_Orientation_Hist(GUI_Parameters,GUI_Parameters.Visuals,'Probability','Orientation of Rectangles relative to Medial Axis');			
 		case 'Custom_4_2_Vertex_End2End_Angles_Correlation_Hist'
 			Custom_4_2_Vertex_End2End_Angles_Correlation_Hist(GUI_Parameters,GUI_Parameters.Visuals,'Probability','End2End-Vertex Angle Diff');
-		case 'Custom_4_3_Rects_Medial_Orientation_VS_Distance_2D_Hist'
+		case {'Custom_4_3_Rects_Medial_Orientation_VS_Distance_2D_Hist','Orientation VS Distance from Primary Branch'}
 			Custom_4_3_Rects_Medial_Orientation_VS_Distance_2D_Hist(GUI_Parameters,GUI_Parameters.Visuals,'Probability','Custom_4_3_Rects_Medial_Orientation_VS_Distance_2D_Hist');
 		case 'Custom_4_3_1_Medial_Orientation_VS_Distance_2D_Hist_Groups'
 			Custom_4_3_1_Medial_Orientation_VS_Distance_2D_Hist_Groups(GUI_Parameters,GUI_Parameters.Visuals,'Probability','Custom_4_3_1_Medial_Orientation_VS_Distance_2D_Hist_Groups');

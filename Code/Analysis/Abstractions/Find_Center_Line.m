@@ -9,7 +9,7 @@ function [Final_Curve,Approved] = Find_Center_Line(Im,BW)
 		% Finally, for the 2 short ones, take the mid pixels and use them to divide the whole perimenter into two sub-parts.
 		% Then do the distance thing.
 	
-	Plot1 = 1;
+	Plot1 = 0;
 	Approved = 0;
 	Final_Curve = [];
 	Distances_STD_Threshold = 12;
