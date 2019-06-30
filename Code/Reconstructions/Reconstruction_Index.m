@@ -51,44 +51,50 @@ function Reconstruction_Index(GP,ii)
 		case 'Axes'
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			
+			%{
 			Np = str2num(GP.Handles.Tracing.Midline_Points_Num.String);
 			
-			pp = cscvn(transpose(GP.Workspace(ii).Workspace.Neuron_Axes.Midline_Points)); % Fit a cubic spline.
+			XY = [GP.Workspace(ii).Workspace.Neuron_Axes.Axis_0.X ; GP.Workspace(ii).Workspace.Neuron_Axes.Axis_0.Y];
+			
+			pp = cscvn(XY); % Fit a cubic spline.
 			Vb = linspace(pp.breaks(1),pp.breaks(end),Np);
 			XY = fnval(pp,Vb);
 			
 			hold on;
 			plot(XY(1,:),XY(2,:),'LineWidth',3);
 			plot(XY(1,:),XY(2,:),'.','MarkerSize',20);
-		case 'Medial Axis'
+			
+			for p=1:numel(GP.Workspace(ii).Workspace.Neuron_Axes.Axis_0)
+				x = GP.Workspace(ii).Workspace.Neuron_Axes.Axis_0(p).X;
+				y = GP.Workspace(ii).Workspace.Neuron_Axes.Axis_0(p).Y;
+				a = GP.Workspace(ii).Workspace.Neuron_Axes.Axis_0(p).Tangent_Angle + (pi/2);
+				
+				plot(x + 40.*[0,cos(a)] , y + 40.*[0,sin(a)]);
+			end
+			%}
+		case 'Midline Orientation'
+			
+			O = rescale([GP.Workspace(ii).Workspace.All_Points.Midline_Orientation])';
+			CM = [O,0.*O,1-O];
 			
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
+			hold on;
+			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],5,CM,'filled');
 			
-			X = GP.Workspace(ii).Workspace.Medial_Axis(:,1);
-			Y = GP.Workspace(ii).Workspace.Medial_Axis(:,2);
-			plot(X,Y,'LineWidth',3);
-			
-			Wi = GP.Workspace(ii).Workspace;
-			for s=1:numel(Wi.Segments) % Go over each segment.
-				if(~isempty(Wi.Segments(s).Rectangles))
-					C = zeros(numel(Wi.Segments(s).Rectangles),1);
-					for r=1:numel(Wi.Segments(s).Rectangles)
-						Dr = ( (Wi.Segments(s).Rectangles(r).X - [Wi.Medial_Axis(:,1)]).^2 + (Wi.Segments(s).Rectangles(r).Y - [Wi.Medial_Axis(:,2)]).^2).^.5;
-						Dr = Dr .* GP.Workspace(ii).Workspace.User_Input.Scale_Factor;
-						C(r) = min(1,max(0,(min(Dr) ./ Worm_Radius_um)));
-					end
-					scatter([Wi.Segments(s).Rectangles.X]',[Wi.Segments(s).Rectangles.Y]',10,[C,0.*C,1-C],'filled');
-					drawnow;
-				end
-			end
 		case 'Vertices Angles'
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			Reconstruct_Vertices(GP.Workspace(ii).Workspace);
 		case 'Curvature'
-			Curvature_Min_Max = [0,0.4];
-			Medial_Dist_Range = [0,60];
+			Curvature_Min_Max = [0,0.2];
+			% Medial_Dist_Range = [0,60];
+			
+			O = rescale([GP.Workspace(ii).Workspace.All_Points.Curvature],'InputMin',Curvature_Min_Max(1),'InputMax',Curvature_Min_Max(2))';
+			CM = [O,0.*O,1-O];
+			
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
-			Reconstruct_Curvature(GP.Workspace(ii).Workspace,Curvature_Min_Max(1),Curvature_Min_Max(2),Medial_Dist_Range(1),Medial_Dist_Range(2),1);
+			hold on;
+			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],5,CM,'filled');
+			% Reconstruct_Curvature(GP.Workspace(ii).Workspace,Curvature_Min_Max(1),Curvature_Min_Max(2),Medial_Dist_Range(1),Medial_Dist_Range(2),1);
 		otherwise
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			Reconstruct_Trace(GP.Workspace(ii).Workspace);

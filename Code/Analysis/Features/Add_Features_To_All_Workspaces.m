@@ -8,9 +8,6 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 	
 	% TODO: move out and scale:
 	Medial_Fit_Res = 1000;
-	Worm_Radius_um = 45;
-	SmoothingParameter = 3;
-	Corrected_Plane_Angle_Func = @(d) asin(d./Worm_Radius_um); % Input: distance (in um) from the medial axis.
 	
 	Features = struct('Feature_Name',{},'Values',{},'Num_Of_Options',{});
 	N = numel(W);
@@ -19,8 +16,10 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 	for i=1:N % For each workspace.
 		
 		Scale_Factor = W(i).Workspace.User_Input.Scale_Factor;
-		Parameters = Parameters_Func(Scale_Factor);
-		Worm_Radius_px = Worm_Radius_um ./ Scale_Factor; % Conversion to pixels.	
+		W(i).Workspace.Parameters = Parameters_Func(Scale_Factor,W(i).Workspace.Parameters);
+		
+		Worm_Radius_px = W(i).Workspace.Parameters.Angle_Correction.Worm_Radius_um ./ Scale_Factor; % um to pixels.
+		Corrected_Plane_Angle_Func = W(i).Workspace.Parameters.Angle_Correction.Corrected_Plane_Angle_Func; % Input: distance (in um) from the medial axis.
 		
 		if(isfield(W(i).Workspace,'Medial_Axis') && ~isempty(W(i).Workspace.Medial_Axis))
 			Xm = [W(i).Workspace.Medial_Axis(:,1)]';
@@ -45,7 +44,12 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 		end
 		
 		% Map the neuron's axes:
-		W(i).Workspace.Neuron_Axes = Find_Worm_Longitudinal_Axis(W(i).Workspace,0);
+        if(~isfield(W(i).Workspace.Neuron_Axes,'Axis_0')) % Compute the neuron axes only if they do not exist yet, to avoid overwriting user corrections.
+			W(i).Workspace.Neuron_Axes = Find_Worm_Longitudinal_Axis(W(i).Workspace,0);
+			[W(i).Workspace.All_Points,W(i).Workspace.Neuron_Axes] = Map_Worm_Axes(W(i).Workspace,W(i).Workspace.Neuron_Axes);
+		else
+			[W(i).Workspace.All_Points,] = Map_Worm_Axes(W(i).Workspace,W(i).Workspace.Neuron_Axes);
+        end
 		
 		if(isfield(W(i).Workspace,'Vertices'))
 			[W(i).Workspace.Vertices.Angles_Medial] = deal(-1);
@@ -108,7 +112,7 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 					
 					X = [W(i).Workspace.Segments(s).Rectangles.X];
 					Y = [W(i).Workspace.Segments(s).Rectangles.Y];
-					Step_Lengths = Scale_Factor.*Parameters.Tracing.Rect_Length_Width_Func([W(i).Workspace.Segments(s).Rectangles.Width]);
+					Step_Lengths = Scale_Factor.*W(i).Workspace.Parameters.Tracing.Rect_Length_Width_Func([W(i).Workspace.Segments(s).Rectangles.Width]);
 					
 					Li = (sum( [(X(2:end) - X(1:end-1)).^2 ; (Y(2:end) - Y(1:end-1)).^2] )).^0.5; % Arc length between successive points.
 					L = sum(Li); % Arc length.

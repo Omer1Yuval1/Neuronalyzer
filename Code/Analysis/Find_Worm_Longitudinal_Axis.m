@@ -1,4 +1,4 @@
-function S = Find_Worm_Longitudinal_Axis(Workspace,Plot1)
+function Worm_Axes = Find_Worm_Longitudinal_Axis(Workspace,Plot1)
 	
 	% TODO: use scale-bar:
 	Scale_Factor = Workspace.User_Input.Scale_Factor;
@@ -15,7 +15,11 @@ function S = Find_Worm_Longitudinal_Axis(Workspace,Plot1)
 	Eval_Points_Num = 100;
 	Eval_Points_Pixel_Ratio = 0.5;
 	
-	S = struct('Midline_Pixels',{},'Midline_Points',{},'Normal_Angles',{},'Boundary_Pixels',{},'Boundary_Points_Dorsal',{},'Boundary_Points_Ventral',{});
+	S = struct('Midline_Pixels',{},'Midline_Points',{},'Tangent_Angles',{},'Boundary_Pixels',{},'Boundary_Points_Dorsal',{},'Boundary_Points_Ventral',{});
+	Worm_Axes = struct('Axis_0',{},'Axis_1_Dorsal',{},'Axis_1_Ventral',{},'Axis_2_Dorsal',{},'Axis_2_Ventral',{});
+	Worm_Axes(1).Axis_0 = struct('X',{},'Y',{},'Arc_Length',{},'Tangent_Angle',{});
+	Worm_Axes(1).Axis_2_Dorsal = struct('X',{},'Y',{});
+	Worm_Axes(1).Axis_2_Ventral = struct('X',{},'Y',{});
 	
 	Im_BW = imbinarize(Workspace.Image0,BW_Threshold);
 	[R,C] = size(Im_BW);
@@ -48,7 +52,7 @@ function S = Find_Worm_Longitudinal_Axis(Workspace,Plot1)
 	pp_Der1 = fnder(pp,1);
 	XY_Der = transpose(fnval(pp_Der1,Vb)); % [Nx2].
 	% XY_Der = XY_Der ./ (sqrt(sum(XY_Der.^2,2));
-	S.Normal_Angles = atan2(XY_Der(:,2),XY_Der(:,1)) + (pi/2);
+	S.Tangent_Angles = atan2(XY_Der(:,2),XY_Der(:,1));
 	
     Im_Perim = bwperim(ImD2);
 	[Y,X] = find(Im_Perim);
@@ -56,8 +60,24 @@ function S = Find_Worm_Longitudinal_Axis(Workspace,Plot1)
     XY = Order_Connected_Pixels(Im_Perim,[X(f(1)),Y(f(1))]); % [Nx2].
 	S.Boundary_Pixels = XY;
 	
-	S.Boundary_Points_Dorsal = S.Midline_Points + (Initial_Radius .* [cos(S.Normal_Angles) , sin(S.Normal_Angles)]);
-	S.Boundary_Points_Ventral = S.Midline_Points - (Initial_Radius .* [cos(S.Normal_Angles) , sin(S.Normal_Angles)]);
+	S.Boundary_Points_Dorsal = S.Midline_Points + (Initial_Radius .* [cos(S.Tangent_Angles + (pi/2)) , sin(S.Tangent_Angles + (pi/2))]);
+	S.Boundary_Points_Ventral = S.Midline_Points + (Initial_Radius .* [cos(S.Tangent_Angles - (pi/2)) , sin(S.Tangent_Angles - (pi/2))]);
+	
+	Np = size(S.Midline_Points,1);
+	Worm_Axes.Axis_0(Np).X = nan; % Memory preallocation.
+	for i=1:Np % For each midline point.
+		Worm_Axes.Axis_0(i).X = S.Midline_Points(i,1);
+		Worm_Axes.Axis_0(i).Y = S.Midline_Points(i,2);
+		Worm_Axes.Axis_0(i).Arc_Length = S.Midline_Arc_Length(i);
+		Worm_Axes.Axis_0(i).Arc_Length = S.Midline_Arc_Length(i);
+		Worm_Axes.Axis_0(i).Tangent_Angle = S.Tangent_Angles(i); % Tangent vectors are oriented from head to tail. +(pi/2) points to the dorsal side.
+		
+		Worm_Axes.Axis_2_Dorsal(i).X = S.Boundary_Points_Dorsal(i,1);
+		Worm_Axes.Axis_2_Dorsal(i).Y = S.Boundary_Points_Dorsal(i,2);
+		
+		Worm_Axes.Axis_2_Ventral(i).X = S.Boundary_Points_Ventral(i,1);
+		Worm_Axes.Axis_2_Ventral(i).Y = S.Boundary_Points_Ventral(i,2);
+	end
 	
 	% TODO:
 	% For each midline point (and a normal vector), match two boundary points (dorsal and ventral):
@@ -71,7 +91,7 @@ function S = Find_Worm_Longitudinal_Axis(Workspace,Plot1)
 				hold on;
 				
                 for p=1:length(Vb)
-                    plot(S.Midline_Points(p,1) +  40.*[0,cos(S.Normal_Angles(p))] , S.Midline_Points(p,2) +  40.*[0,sin(S.Normal_Angles(p))]);
+                    plot(S.Midline_Points(p,1) +  40.*[0,cos(S.Tangent_Angles(p))] , S.Midline_Points(p,2) +  40.*[0,sin(S.Tangent_Angles(p))]);
                    % plot(S.Midline_Points(p,1) +  [0,XY_Der(p,1)] , S.Midline_Points(p,2) +  [0,XY_Der(p,2)]);
                 end
 				

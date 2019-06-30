@@ -1,4 +1,4 @@
-function Parameters1 = Parameters_Func(Scale_Factor)
+function P = Parameters_Func(Scale_Factor,P)
 	
 	% To Keep in Mind (temp): I changes the maximal width ratio from 2 to 3. And the scan range from 130 to 90.
 	
@@ -119,15 +119,46 @@ function Parameters1 = Parameters_Func(Scale_Factor)
 	% Analysis.Persistence_Length.BinSize = .4;
 	%
 	
+	% Angle Correction:
+	Angle_Correction.Worm_Radius_um = 40;
+	Angle_Correction.Corrected_Plane_Angle_Func = @(d) asin(d./Angle_Correction.Worm_Radius_um); % Input (d): distance (in um) from the medial axis.
+	
 	Neural_Network.Threshold = 0.65;
 	Neural_Network.Min_CC_Size = 1;
 	
-	Parameters1.General_Parameters = General_Parameters;
-	Parameters1.Cell_Body = Cell_Body;
-	Parameters1.Tracing = Tracing;
-	Parameters1.Auto_Tracing_Parameters = Auto_Tracing_Parameters;
-	Parameters1.Manual_Tracing_Parameters = Manual_Tracing_Parameters;
-	Parameters1.Analysis = Analysis;
-	Parameters1.Neural_Network = Neural_Network;
-	
+	if(nargin == 1)
+		P.General_Parameters = General_Parameters;
+		P.Cell_Body = Cell_Body;
+		P.Tracing = Tracing;
+		P.Auto_Tracing_Parameters = Auto_Tracing_Parameters;
+		P.Manual_Tracing_Parameters = Manual_Tracing_Parameters;
+		P.Analysis = Analysis;
+		P.Neural_Network = Neural_Network;
+		P.Angle_Correction = Angle_Correction;
+	elseif(nargin == 2)
+		if(~isfield(P,'General_Parameters'))
+			P.General_Parameters = General_Parameters;
+		end
+		if(~isfield(P,'Cell_Body'))
+			P.Cell_Body = Cell_Body;
+		end
+		if(~isfield(P,'Tracing'))
+			P.Tracing = Tracing;
+		end
+		if(~isfield(P,'Auto_Tracing_Parameters'))
+			P.Auto_Tracing_Parameters = Auto_Tracing_Parameters;
+		end
+		if(~isfield(P,'Manual_Tracing_Parameters'))
+			P.Manual_Tracing_Parameters = Manual_Tracing_Parameters;
+		end
+		if(~isfield(P,'Analysis'))
+			P.Analysis = Analysis;
+		end
+		if(~isfield(P,'Neural_Network'))
+			P.Neural_Network = Neural_Network;
+		end
+		if(~isfield(P,'Angle_Correction'))
+			P.Angle_Correction = Angle_Correction;
+		end
+	end
 end

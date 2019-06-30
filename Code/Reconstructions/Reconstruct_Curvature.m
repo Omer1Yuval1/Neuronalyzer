@@ -26,7 +26,8 @@ function [Vc,Vc_Dist,Vc_Max,Dist_Vector] = Reconstruct_Curvature(Workspace,m,M,M
 			else
 				[~,SxS,SyS,xx,Cxy] = Get_Segment_Curvature(X,Y);
 			end
-			Cxy = Cxy ./ Scale_Factor; % Pixels to Micrometers.
+			
+			Cxy = Cxy ./ Scale_Factor; % 1/Pixels to 1/Micrometers.
 			
 			Dr = zeros(length(xx),1); % zeros(numel(Workspace.Segments(s).Rectangles),1);
 			if(~isempty(Workspace.Medial_Axis))

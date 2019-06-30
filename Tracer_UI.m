@@ -63,16 +63,6 @@ function Tracer_UI()
 		GUI_Parameters.Handles.Tracing.Machine_Learning_Panel = uitab('Parent',GUI_Parameters.Handles.Tracing_Tabs_Group,'Title','Pre-Processing');
 		GUI_Parameters.Handles.Tracing.Tracing_Tab = uitab('Parent',GUI_Parameters.Handles.Tracing_Tabs_Group,'Title','Tracing','BackgroundColor',[0.8,0.4,0.4]);
 		GUI_Parameters.Handles.Tracing.Analysis_Tab = uitab('Parent',GUI_Parameters.Handles.Tracing_Tabs_Group,'Title','Analysis');
-			
-			uicontrol(GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','text','String','Number of Midline Points:','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.05,.8,.6,GUI_Parameters.Visuals.Button1_Height]); % ,'backgroundcolor',[0.6 0.6 0.6]);
-			% GUI_Parameters.Handles.Tracing.Analysis_Tab.Midline_Points_Num = 
-			GUI_Parameters.Handles.Tracing.Midline_Points_Num = uicontrol(GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','edit','String','50','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.7,.8,.25,GUI_Parameters.Visuals.Button1_Height],'Callback',@Midline_Points_Num_Func); % ,'backgroundcolor',[0.6 0.6 0.6]);
-			%{
-			jModel = javax.swing.SpinnerNumberModel(24,20,35,1);
-			jSpinner = javax.swing.JSpinner(jModel);
-			jhSpinner = javacomponent(jSpinner,[10,10,60,20],gcf);
-			jSpinner.getValue;
-			%}
 	% assignin('base','GUI_Parameters',GUI_Parameters);
 	
 	% Machine Learning Panel:
@@ -96,8 +86,10 @@ function Tracer_UI()
 	
 	Edit_Properties_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Project_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Change Project Properties',...
 		'Units','Normalized','Position',[0 0.21 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@User_Input_Single_Func,'TooltipString','Click Here to Display and Change The Current Parameters Values of Your Project');
-	Save_Project_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Project_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Save Project',...
-		'Units','Normalized','Position',[0 0.01 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Save_Tracing_Func,'TooltipString','Save a .mat File of Your Project So You Can Load and Revise It Later');
+	Save_Project_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Project_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Save Current Project',...
+		'Units','Normalized','Position',[0 0.11 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Save_Tracing_Func,'UserData',1,'TooltipString','Save a .mat file of your project so you can load and revise it later');
+	Save_Project_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Project_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Save All Projects',...
+		'Units','Normalized','Position',[0 0.01 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Save_Tracing_Func,'UserData',2,'TooltipString','Save a .mat file of your project so you can load and revise it later');
 	
 	% Tracing Tab:
 	GUI_Parameters.Single.Handles.Tracing.Start_Tracing_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Tracing_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Start Tracing',...
@@ -129,8 +121,9 @@ function Tracer_UI()
 		H0_1_6 = uimenu(Reconstructions_Menu_Handle,'Label','Vertices Angles');
 			H0_1_6_1 = uimenu(H0_1_6,'Label','Vertices Angles','UserData',2,'Callback',@Reconstruction_Func);
 		% 	H0_1_6_2 = uimenu(H0_1_6,'Label','Vertices Angles - Skeleton','UserData',2,'Callback',@Reconstruction_Func);
-		uimenu(Reconstructions_Menu_Handle,'Label','Axes','UserData',0,'Callback',@Reconstruction_Func);
-		uimenu(Reconstructions_Menu_Handle,'Label','Medial Axis','UserData',0,'Callback',@Reconstruction_Func);
+		uimenu(Reconstructions_Menu_Handle,'Label','Axes','UserData',0,'Callback',@Display_Neuron_Axes);
+		uimenu(Reconstructions_Menu_Handle,'Label','Midline Orientation','UserData',0,'Callback',@Reconstruction_Func);
+		% uimenu(Reconstructions_Menu_Handle,'Label','Medial Axis','UserData',0,'Callback',@Reconstruction_Func);
 		% H0_1_8 = uimenu(Reconstructions_Menu_Handle,'Label','Longitudinal Gradient','UserData',0,'Callback',@Reconstruction_Func);		
 		uimenu(Reconstructions_Menu_Handle,'Label','Curvature','UserData',0,'Callback',@Reconstruction_Func);
 		% H0_1_10 = uimenu(Reconstructions_Menu_Handle,'Label','Persistence Length','UserData',0,'Callback',@Reconstruction_Func);
@@ -196,9 +189,10 @@ function Tracer_UI()
 				% H_Menu1321_Primary_Vertices_Mean_Distance = uimenu(H_Menu132_Distances,'Label','Primary_Vertices_Mean_Distance','UserData',1,'Callback',@Menu1_Plots_Func);
 			% H_Menu133_Vertices_Density = uimenu(H_Menu13_Vertices,'Label','Density of Vertices','UserData',1,'Callback',@Menu1_Plots_Func);			
 		
-		H_Menu5 = uimenu(Graphs_Menu_Handle,'Label','Orientation','Callback','');
-			uimenu(H_Menu5,'Label','Orientation VS Distance from Primary Branch','UserData',2,'Callback',@Menu1_Plots_Func);
-		
+		H_Menu5_2D_Plots = uimenu(Graphs_Menu_Handle,'Label','2D Plots','Callback','');
+			uimenu(H_Menu5_2D_Plots,'Label','Midline Distance VS Midline Orientation','UserData',2,'Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu5_2D_Plots,'Label','Midline Distance VS Curvature','UserData',2,'Callback',@Menu1_Plots_Func);
+            
 		H_Menu4_Customized = uimenu(Graphs_Menu_Handle,'Label','Customized','Callback','');
 			% Basics:
 			uimenu(H_Menu4_Customized,'Label','Custom_1_Total_Length','UserData',2,'Callback',@Menu1_Plots_Func);
@@ -700,7 +694,7 @@ function Tracer_UI()
 			Reconstruction_Func(1);
 		end
 		
-		if(isfield(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace,'NN_Probabilities')) % If the probability image menu is ON (an indication that a NN has been loaded and applied to all images) - update the sliders values.
+		if(isfield(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace,'NN_Probabilities') && isfield(GUI_Parameters.Handles.Machine_Learning,'Probability_Slider')) % If the probability image menu is ON (an indication that a NN has been loaded and applied to all images) - update the sliders values.
 			set(GUI_Parameters.Handles.Machine_Learning.Probability_Slider,'Value',GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.Neural_Network.Threshold); % Update the NN threshold slider.
 			set(GUI_Parameters.Handles.Machine_Learning.Probability_Slider_Text,'String',GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.Neural_Network.Threshold); % Update the NN threshold text box.
 			
@@ -722,60 +716,121 @@ function Tracer_UI()
 		Trace_Any_Multiple_Images(0,NN_Threshold); % Currently running without applying the CNN again.
 	end
 	
-	function Delete_Segments_Func(source,callbackdata)
-		GUI_Parameters.Workspace(1).Workspace = Delete_Segment(GUI_Parameters.Workspace(1).Workspace,0,1);
-		Reset_Axes();
-		imshow(GUI_Parameters.Workspace(1).Workspace.Image0,'Parent',GUI_Parameters.Handles.Axes);
-		set(GUI_Parameters.Handles.Axes,'YDir','normal');
-		Reconstruct_Trace_Dots(GUI_Parameters.Workspace(1).Workspace);
-	end
-	
-	function Edit_Orders_Func(source,callbackdata)
-		if(strcmp(GUI_Parameters.General.Active_Plot,'Menorah Orders'))
-			if(~isfield(GUI_Parameters.Workspace(1).Workspace.User_Input,'Manual_Menorah_Orders') || ... % If the array does not exist or does not have the same # of segments, create\reset it.
-												length(GUI_Parameters.Workspace(1).Workspace.User_Input.Manual_Menorah_Orders) ~= numel(GUI_Parameters.Workspace(1).Workspace.Segments))
-				GUI_Parameters.Workspace(1).Workspace.User_Input(1).Manual_Menorah_Orders = zeros(1,numel(GUI_Parameters.Workspace(1).Workspace.Segments));
+	function Display_Neuron_Axes(~,~) % This function is run either if the user chooses to display the midline from the uimenu, or if the number of midline points changes.
+		
+		uicontrol(GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','text','String','Number of Midline Points:','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.05,.8,.6,GUI_Parameters.Visuals.Button1_Height]); % ,'backgroundcolor',[0.6 0.6 0.6]			% GUI_Parameters.Handles.Tracing.Analysis_Tab.Midline_Points_Num = 
+		GUI_Parameters.Handles.Tracing.Midline_Points_Num = uicontrol(GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','edit','String','50','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.7,.8,.25,GUI_Parameters.Visuals.Button1_Height],'Callback',@Plot_Draggable_Points); % ,'backgroundcolor',[0.6 0.6 0.6]);
+		
+		Reconstruction_Func();
+		Plot_Draggable_Points();
+		
+		function Plot_Draggable_Points(source,~)
+			
+			%{
+			if(isempty(source)) % If this function is initiated from the text box (for the number of points).
+				delete(findobj(GUI_Parameters.Handles.Axes,'Type','images.roi.point')); % Delete only the draggable points.
+			else
+				delete(findobj(GUI_Parameters.Handles.Axes,'-not','Type','image','-or','-not','Type','axes')); % Delete all graphical objects (except for the axes and the image).
+			end
+			%}
+			delete(findobj(GUI_Parameters.Handles.Axes,'-not','Type','image','-and','-not','Type','axes')); % Delete all graphical objects (except for the axes and the image).
+			
+			Np0 = numel(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_0);
+			Np = str2num(GUI_Parameters.Handles.Tracing.Midline_Points_Num.String);
+			
+			%
+			XY_All = zeros(2,Np0,5);
+			XY_All_Fit = zeros(2,Np,5);
+			XY_All(:,:,1) = [GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_0.X ; GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_0.Y];
+			XY_All(:,:,2) = [GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_1_Dorsal.X ; GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_1_Dorsal.Y];
+			XY_All(:,:,3) = [GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_1_Ventral.X ; GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_1_Ventral.Y];
+			XY_All(:,:,4) = [GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_2_Dorsal.X ; GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_2_Dorsal.Y];
+			XY_All(:,:,5) = [GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_2_Ventral.X ; GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_2_Ventral.Y];
+			%}
+			
+			% XY = [GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_0.X ; GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_0.Y];
+			Curve_Handles = gobjects(1,5);
+			DPoint_Handles = gobjects(5,Np);
+			
+			set(GUI_Parameters.Handles.Figure,'CurrentAxes',GUI_Parameters.Handles.Axes);
+			hold on;
+			
+			for ii=1:5
+				pp = cscvn(XY_All(:,:,ii)); % Fit a cubic spline.
+				Vb = linspace(pp.breaks(1),pp.breaks(end),Np);
+				XY_All_Fit(:,:,ii) = fnval(pp,Vb); % XY = fnval(pp,Vb);
+				Curve_Handles(ii) = plot(GUI_Parameters.Handles.Axes,XY_All_Fit(1,:,ii),XY_All_Fit(2,:,ii),'b','LineWidth',3);
 			end
 			
-			S = Find_Closest_Segment(GUI_Parameters.Workspace(1).Workspace);
-			plot([GUI_Parameters.Workspace(1).Workspace.Segments(S).Rectangles(:).X],[GUI_Parameters.Workspace(1).Workspace.Segments(S).Rectangles(:).Y],...
-			'color',order_colormap(str2num(source.String)),'LineWidth',2*GUI_Parameters.Workspace(1).Workspace.Segments(S).Width);
-			GUI_Parameters.Workspace(1).Workspace.User_Input(1).Manual_Menorah_Orders(S) = str2num(source.String); % Update the order in the manual user array.
+			CM = jet(Np);
+			User_Data_Struct = struct('Axis_Field_Name',{},'Point_Index',{});
+			for ii=1:Np
+				User_Data_Struct(1).Axis_Field_Name = 'Axis_0'; User_Data_Struct(1).Curve_Index = 1; User_Data_Struct(1).Point_Index = ii;
+				DPoint_Handles(1,ii) = drawpoint(GUI_Parameters.Handles.Axes,'Position',[XY_All_Fit(1,ii,1),XY_All_Fit(2,ii,1)],'Color',CM(ii,:),'UserData',User_Data_Struct,'StripeColor','w','LineWidth',10); % ,'SelectedColor','r'
+				addlistener(DPoint_Handles(1,ii),'ROIMoved',@Draggable_Point_Func);
+				
+				%
+				User_Data_Struct(1).Axis_Field_Name = 'Axis_1_Dorsal'; User_Data_Struct(1).Curve_Index = 2; User_Data_Struct(1).Point_Index = ii;
+				DPoint_Handles(2,ii) = drawpoint(GUI_Parameters.Handles.Axes,'Position',[XY_All_Fit(1,ii,2),XY_All_Fit(2,ii,2)],'Color',CM(ii,:),'UserData',User_Data_Struct,'StripeColor','w','LineWidth',10); % ,'SelectedColor','r'
+				addlistener(DPoint_Handles(2,ii),'ROIMoved',@Draggable_Point_Func);
+				
+				User_Data_Struct(1).Axis_Field_Name = 'Axis_1_Ventral'; User_Data_Struct(1).Curve_Index = 3; User_Data_Struct(1).Point_Index = ii;
+				DPoint_Handles(3,ii) = drawpoint(GUI_Parameters.Handles.Axes,'Position',[XY_All_Fit(1,ii,3),XY_All_Fit(2,ii,3)],'Color',CM(ii,:),'UserData',User_Data_Struct,'StripeColor','w','LineWidth',10); % ,'SelectedColor','r'
+				addlistener(DPoint_Handles(3,ii),'ROIMoved',@Draggable_Point_Func);
+				
+				User_Data_Struct(1).Axis_Field_Name = 'Axis_2_Dorsal'; User_Data_Struct(1).Curve_Index = 4; User_Data_Struct(1).Point_Index = ii;
+				DPoint_Handles(4,ii) = drawpoint(GUI_Parameters.Handles.Axes,'Position',[XY_All_Fit(1,ii,4),XY_All_Fit(2,ii,4)],'Color',CM(ii,:),'UserData',User_Data_Struct,'StripeColor','w','LineWidth',10); % ,'SelectedColor','r'
+				addlistener(DPoint_Handles(4,ii),'ROIMoved',@Draggable_Point_Func);
+				
+				User_Data_Struct(1).Axis_Field_Name = 'Axis_2_Ventral'; User_Data_Struct(1).Curve_Index = 5; User_Data_Struct(1).Point_Index = ii;
+				DPoint_Handles(5,ii) = drawpoint(GUI_Parameters.Handles.Axes,'Position',[XY_All_Fit(1,ii,5),XY_All_Fit(2,ii,5)],'Color',CM(ii,:),'UserData',User_Data_Struct,'StripeColor','w','LineWidth',10); % ,'SelectedColor','r'
+				addlistener(DPoint_Handles(5,ii),'ROIMoved',@Draggable_Point_Func);
+				%}
+				
+				drawnow;
+			end
 			
-			% assignin('base','GUI_Parameters',GUI_Parameters);
+			function Draggable_Point_Func(source,~) % Update the position of annotated points.
+				
+				Np0 = numel(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.(source.UserData.Axis_Field_Name)); % Original number of points.
+				
+				% XY(1,source.UserData.Point_Index) = source.Position(1);
+				% XY(2,source.UserData.Point_Index) = source.Position(2);
+				XY_All_Fit(1,source.UserData.Point_Index,source.UserData.Curve_Index) = source.Position(1);
+				XY_All_Fit(2,source.UserData.Point_Index,source.UserData.Curve_Index) = source.Position(2);
+				
+				
+				pp = cscvn(XY_All_Fit(:,:,source.UserData.Curve_Index)); % Fit a cubic spline.
+				% pp = cscvn(XY); % Fit a cubic spline.
+				Vb = linspace(pp.breaks(1),pp.breaks(end),Np0);
+				XY_All(:,:,source.UserData.Curve_Index) = fnval(pp,Vb);
+				
+				if(strcmp(source.UserData.Axis_Field_Name,'Axis_0'))
+					% Find arc-lengths and tengents:
+					dxy = sum((XY_All(:,2:end,1) - XY_All(:,1:end-1,1)).^2,1).^(0.5); % sum([2 x Np],1). Summing up Xi+Yi and then taking the sqrt.
+					Arc_Length = cumsum([0 , dxy]) .* GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.User_Input.Scale_Factor; % pixels to real length units (um).
+					
+					pp_Der1 = fnder(pp,1); % 1st derivative.
+					XY_Der = fnval(pp_Der1,Vb); % [2 x Np].
+					Tangent_Angles = atan2(XY_Der(2,:),XY_Der(1,:));
+				end
+				
+				% Update points:
+				for iii=1:Np0
+					GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.(source.UserData.Axis_Field_Name)(iii).X = XY_All(1,iii,source.UserData.Curve_Index);
+					GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.(source.UserData.Axis_Field_Name)(iii).Y = XY_All(2,iii,source.UserData.Curve_Index);
+					if(strcmp(source.UserData.Axis_Field_Name,'Axis_0'))
+						GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.(source.UserData.Axis_Field_Name)(iii).Arc_Length = Arc_Length(iii);
+						GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.(source.UserData.Axis_Field_Name)(iii).Tangent_Angle = Tangent_Angles(iii);
+					end
+				end
+				
+				Curve_Handles(source.UserData.Curve_Index).XData(source.UserData.Point_Index) = source.Position(1);
+				Curve_Handles(source.UserData.Curve_Index).YData(source.UserData.Point_Index) = source.Position(2);
+				
+				assignin('base','Workspace',GUI_Parameters.Workspace);
+			end
 		end
-	end
-	
-	function Detect_Start_Points_Func(source,callbackdata)
-		[GUI_Parameters.Workspace(1).Workspace,I6,CB_Perimeter,Ellipse_Ind] = Find_Cell_Body(GUI_Parameters.Workspace(1).Workspace);
-		
-		D = 7/GUI_Parameters.Workspace(1).Workspace.User_Input.Scale_Factor;
-		hold on;
-		axis([ min([Ellipse_Ind(:,1)]) - D , max([Ellipse_Ind(:,1)]) + D , min([Ellipse_Ind(:,2)]) - D , max([Ellipse_Ind(:,2)]) + D ]);
-		% assignin('base','GUI_Parameters',GUI_Parameters);
-	end
-	
-	function Delete_All_Start_Points_Func(source,callbackdata)
-		GUI_Parameters.Workspace(1).Workspace.Path = struct('Rectangle_Index',{});
-		Reset_Axes;
-		imshow(GUI_Parameters.Workspace(1).Workspace.Image0,'Parent',GUI_Parameters.Handles.Axes);
-		set(gca,'YDir','normal');
-		% assignin('base','GUI_Parameters',GUI_Parameters);
-	end
-	
-	function Add_CB_Branch_Func(source,callbackdata)
-		set(gcf,'Pointer','arrow');
-		% assignin('base','GUI_Parameters',GUI_Parameters);
-		GUI_Parameters.Workspace(1).Workspace = Add_CB_Branch(GUI_Parameters.Workspace(1).Workspace,GUI_Parameters.Handles.Figure,GUI_Parameters.Handles.Axes);
-		% assignin('base','GUI_Parameters',GUI_Parameters);
-	end
-	
-	function Add_Rectangle_To_Step_Func(source,callbackdata)
-		GUI_Parameters.Workspace(1).Workspace = Add_Rectangle_To_Step(GUI_Parameters.Workspace(1).Workspace);
-	end
-	
-	function Add_Step_Func(source,callbackdata)
-		GUI_Parameters.Workspace(1).Workspace = Add_Step_GUI(GUI_Parameters.Workspace(1).Workspace);
 	end
 	
 	function Start_Tracing_Func(source,callbackdata)
@@ -832,25 +887,19 @@ function Tracer_UI()
 		
 	end
 	
-	function Analyze_Func(source,callbackdata)
+	function Save_Tracing_Func(source,callbackdata) % Save project into a .mat file.
 		
-		set(findall(GUI_Parameters.Handles.Tracing.Tracing_Tab,'-property','enable'),'enable','off');
+		switch source.UserData
+			case 1 % Save only the current chosen workspace to a .mat file.
+				Workspace = GUI_Parameters.Workspace(Im_Menu_H.UserData);
+				Version_Num = GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.General_Parameters.Version_Num;
+			case 2 % Save all loaded workspaces into a single .mat file.
+				Workspace = GUI_Parameters.Workspace;
+				Version_Num = GUI_Parameters.Workspace(1).Workspace.Parameters.General_Parameters.Version_Num;
+		end
 		
-		display('Started Analyzing...');
-		GUI_Parameters.Workspace(1).Workspace = Analyze1(GUI_Parameters.Workspace(1).Workspace);
-		display('Finished Analyzing !');
-		
-		set(findall(GUI_Parameters.Handles.Tracing.Tracing_Tab,'-property','enable'),'enable','on');
-	end
-	
-	function Save_Tracing_Func(source,callbackdata)
-		% Save project in a .mat file:
-		Version_Num = GUI_Parameters.Workspace(1).Workspace.Parameters.General_Parameters.Version_Num;
 		New_File_Name = strcat('MyTrace-V',Version_Num,'-',datestr(datetime,30),'.mat');
 		cd(GUI_Parameters.General.Current_Dir);
-		% assignin('base','GUI_Parameters',GUI_Parameters);
-		Workspace = GUI_Parameters.Workspace;
-		% [Workspace1(1:numel(GUI_Parameters.Workspace)).Workspace] = GUI_Parameters.Workspace.Workspace;		
 		uisave('Workspace',New_File_Name);
 	end
 	
@@ -1261,12 +1310,6 @@ function Tracer_UI()
 		% set(GUI_Parameters.Handles.Merge_Dorsal_Ventral_CheckBox,'Value',1);
 		hold on;
 		Multiple_Choose_Plot(GUI_Parameters);
-	end
-	
-	function Midline_Points_Num_Func(source,callbackdata)
-		if(GUI_Parameters.General.Active_View == 1 && strcmp(GUI_Parameters.General.Active_Plot,'Axes'))
-			Reconstruction_Func();
-		end
 	end
 	
 	function Reset_Axes()
