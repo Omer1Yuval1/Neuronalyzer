@@ -755,11 +755,13 @@ function Tracer_UI()
 			set(GUI_Parameters.Handles.Figure,'CurrentAxes',GUI_Parameters.Handles.Axes);
 			hold on;
 			
+			CM = lines(7);
+			CM = CM([1,7,7,3,3],:);
 			for ii=1:5
 				pp = cscvn(XY_All(:,:,ii)); % Fit a cubic spline.
 				Vb = linspace(pp.breaks(1),pp.breaks(end),Np);
 				XY_All_Fit(:,:,ii) = fnval(pp,Vb); % XY = fnval(pp,Vb);
-				Curve_Handles(ii) = plot(GUI_Parameters.Handles.Axes,XY_All_Fit(1,:,ii),XY_All_Fit(2,:,ii),'b','LineWidth',3);
+				Curve_Handles(ii) = plot(GUI_Parameters.Handles.Axes,XY_All_Fit(1,:,ii),XY_All_Fit(2,:,ii),'Color',CM(ii,:),'LineWidth',3);
 			end
 			
 			CM = jet(Np);
@@ -920,14 +922,15 @@ function Tracer_UI()
 		end
 		
 		Reconstruction_Index(GUI_Parameters,Im_Menu_H.UserData);
-		if(XL(2) > 1 && YL(2) > 1)
-			xlim(XL);
-			ylim(YL);
-		end
 		
 		if(isfield(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace,'Im_BW') && strcmp(GUI_Parameters.General.Active_Plot,'Binary Image'))
 			set(allchild(GUI_Parameters.Handles.Axes),'HitTest','off');
 			set(GUI_Parameters.Handles.Axes,'PickableParts','all','ButtonDownFcn',@Mouse_Edit_BW_Func);
+		end
+		
+		if(XL(2) > 1 && YL(2) > 1)
+			xlim(XL);
+			ylim(YL);
 		end
 		
 		% [jObj,hjObj,hContainer] = Display_Wait_Animation(1);
@@ -1051,226 +1054,6 @@ function Tracer_UI()
 			assignin('base','Workspace',GUI_Parameters.Workspace(1).Workspace);
 			
 			delete(H1);
-		end
-		
-	end
-	
-	function New_Project_Multiple_Func(source1,callbackdata1)
-		
-		Features_Struct = struct();
-		Num_Of_Radio_Buttons = 10;
-		Radio_Font_Size = 16;
-		set(allchild(GUI_Parameters.Handles.Groups_Filter_Panel),'Enable','off');
-		
-		Dir1 = uigetdir; % Let the user choose a directory.
-		
-		% TODO: list files also from subfolders in any level.
-		Dir_Files_List = dir(Dir1); % List of files names.
-		Dir_Files_List(find([Dir_Files_List.isdir])) = []; % ".
-		Delete_Array = [];
-		
-		h1 = waitbar(0,'Please wait...');
-		for i=1:length(Dir_Files_List) % For each file.
-			waitbar(i / length(Dir_Files_List));
-			
-			File1 = load(strcat(Dir1,filesep,Dir_Files_List(i).name)); % Load the file.
-			if(isfield(File1.Workspace1.User_Input,'Features')) % If the features struct exists.
-				Fields_Names = fieldnames(File1.Workspace1.User_Input.Features); % Find all field names.
-				for j=1:length(Fields_Names) % For each field name.
-					if(isfield(Features_Struct,Fields_Names{j})) % If the field already exists in 'Features_Struct',
-						if(length(find(ismember(Features_Struct(1).(Fields_Names{j}), ...
-							File1.Workspace1.User_Input.Features.(Fields_Names{j})))) == 0) % If the value doesn't exist.
-							
-							A = Features_Struct.(Fields_Names{j});
-							A(end+1) = {File1.Workspace1.User_Input.Features.(Fields_Names{j})};
-							Features_Struct.(Fields_Names{j}) = A; % Add it.
-						end
-					else % If the field does not exist,
-						Features_Struct.(Fields_Names{j}) = {}; % Add this field (with an empty cell).
-						
-						A = Features_Struct.(Fields_Names{j});
-						A(end+1) = {File1.Workspace1.User_Input.Features.(Fields_Names{j})};
-						Features_Struct.(Fields_Names{j}) = A; % Add it.
-					end
-				end
-			else % If the features struct does NOT exist.
-				Delete_Array(end+1) = i;
-			end
-		end
-		Dir_Files_List(Delete_Array) = []; % Delete this file entry from the list of files.
-		close(h1);
-		
-		Fields_Names = vertcat('Choose a Property',fieldnames(Features_Struct));
-		
-		H1 = uipanel(GUI_Parameters.Handles.Main_Panel,'FontSize',12,'BackgroundColor',[0.5,0.5,0.5],'Position',[0.3 0.1 0.4 0.8]);
-		Tabs_Group = uitabgroup(H1,'Position',[0 0.2 1 0.8]);
-		Tabs_Handles = [];
-		
-		New_Group_Button = uicontrol(H1,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button2_Font_Size,'String','Add Another Group','Units','Normalized','Position',[0 0.1 1 0.1],'Callback',@New_Group_Func);
-		Finish_Button = uicontrol(H1,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button2_Font_Size,'String','Compare Groups','Units','Normalized','Position',[0 0 1 0.1],'Callback',@Finish_Func);
-		
-		New_Group_Func(source1,callbackdata1); % Run this function manually once in order to create the 1st group.
-		
-		function New_Group_Func(source,callbackdata)
-			% Group_Num = Group_Num + 1;
-			Group_Num = numel(GUI_Parameters.Workspace) + 1;
-			
-			Tabs_Handles(Group_Num) = uitab(Tabs_Group,'Title',['Group',' ',num2str(Group_Num)],'UserData',Group_Num,'BackgroundColor',[0.5,0.5,.5]);
-			Tabs_Group.SelectedTab = Tabs_Handles(Group_Num);
-			
-			GUI_Parameters.Workspace(Group_Num).Handles(1).Group_Name_Panel = uipanel(Tabs_Handles(Group_Num),'FontSize',12,'BackgroundColor',[0.5,0.5,0.5],'Position',[0,0.9,1,0.1]);
-			GUI_Parameters.Workspace(Group_Num).Handles(1).Group_Name_Textbox = uicontrol(GUI_Parameters.Workspace(Group_Num).Handles(1).Group_Name_Panel,'style','edit','units','Normalized','position',[0,0,1,1], ...
-				'String',['Group',' ',num2str(Group_Num)],'UserData',Group_Num,'foregroundcolor','k','BackgroundColor','w','FontSize',24,'Callback',@Update_Group_Name_Func);
-			
-			GUI_Parameters.Workspace(Group_Num).Handles(1).Fields_Names = uicontrol(Tabs_Handles(Group_Num),'Style','popup','Units','Normalized', ...
-				'Position',[0,0.78,1,0.1],'FontSize',GUI_Parameters.Visuals.Button1_Font_Size, ...
-				'UserData',Group_Num,'String',Fields_Names,'Callback',@Update_Radio_Labels_Func);
-			
-			GUI_Parameters.Workspace(Group_Num).Handles(1).Radio_Group_Handle = uibuttongroup(Tabs_Handles(Group_Num),'Position',[0 0.2 1 0.61],'BackgroundColor',[0.5,0.5,0.5],'BorderType','none');
-			GUI_Parameters.Workspace(Group_Num).Handles(1).Radio_Buttons_Handles = zeros(1,Num_Of_Radio_Buttons);
-			
-			GUI_Parameters.Workspace(Group_Num).Handles(1).Radio_Button_Any_Handle = uicontrol(GUI_Parameters.Workspace(Group_Num).Handles(1).Radio_Group_Handle, ... 
-				'Style','radiobutton','UserData',[Group_Num,0],'Units','normalized','String','Any', ...
-				'Position',[0.02,0.98-0.11,0.96,0.1],'FontSize',Radio_Font_Size,'Callback',@Update_Chosen_Radio);
-			set(GUI_Parameters.Workspace(Group_Num).Handles(1).Radio_Button_Any_Handle,'Enable','off');
-			set(GUI_Parameters.Workspace(Group_Num).Handles(1).Radio_Button_Any_Handle,'Visible','off');
-			
-			for i=1:Num_Of_Radio_Buttons
-				GUI_Parameters.Workspace(Group_Num).Handles(1).Radio_Buttons_Handles(i) = uicontrol(GUI_Parameters.Workspace(Group_Num).Handles(1).Radio_Group_Handle,'Style','radiobutton', ...
-					'UserData',[Group_Num,i],'Units','normalized','Position',[0.02,0.98-0.11*(i+1),0.96,0.1],'FontSize',Radio_Font_Size,'Callback',@Update_Chosen_Radio);
-				set(GUI_Parameters.Workspace(Group_Num).Handles(1).Radio_Buttons_Handles(i),'Visible','off');
-			end
-			
-			for i=2:numel(Fields_Names)
-				S1 = char(Fields_Names(i));
-				GUI_Parameters.Workspace(Group_Num).Values(1).(S1) = 'Any';
-				GUI_Parameters.Workspace(Group_Num).Values(2).(S1) = 0;
-			end
-			
-			% assignin('base','GUI_Parameters.Workspace',GUI_Parameters.Workspace);
-		end
-		
-		function Update_Radio_Labels_Func(source,callbackdata)
-			% assignin('base','Features_Struct',Features_Struct);
-			
-			if(source.Value > 1)
-				S1 = source.String;
-				S = Features_Struct.(char(S1(source.Value))); % Cell array of strings of the current feature.
-				N = numel(S);
-				
-				n = GUI_Parameters.Workspace(source.UserData).Values(2).(char(S1(source.Value)));
-				if(n > 0)
-					set(GUI_Parameters.Workspace(source.UserData).Handles(1).Radio_Group_Handle,'SelectedObject', ...
-						GUI_Parameters.Workspace(source.UserData).Handles(1).Radio_Buttons_Handles(n));
-						% GUI_Parameters.Workspace(source.UserData).Values(2).(char(S1(source.Value)))+1);
-				else
-					set(GUI_Parameters.Workspace(source.UserData).Handles(1).Radio_Group_Handle,'SelectedObject', ...
-						GUI_Parameters.Workspace(source.UserData).Handles(1).Radio_Button_Any_Handle);
-				end
-				
-				for i=1:Num_Of_Radio_Buttons
-					if(i > N)
-						set(GUI_Parameters.Workspace(source.UserData).Handles(1).Radio_Buttons_Handles(i),'Enable','off');
-						set(GUI_Parameters.Workspace(source.UserData).Handles(1).Radio_Buttons_Handles(i),'Visible','off');				
-					else
-						set(GUI_Parameters.Workspace(source.UserData).Handles(1).Radio_Button_Any_Handle,'Enable','on');
-						set(GUI_Parameters.Workspace(source.UserData).Handles(1).Radio_Button_Any_Handle,'Visible','on');
-						set(GUI_Parameters.Workspace(source.UserData).Handles(1).Radio_Buttons_Handles(i),'Visible','on');
-						set(GUI_Parameters.Workspace(source.UserData).Handles(1).Radio_Buttons_Handles(i),'Enable','on');
-						set(GUI_Parameters.Workspace(source.UserData).Handles(1).Radio_Buttons_Handles(i),'String',S(i));
-					end
-				end
-
-			else
-				set(GUI_Parameters.Workspace(source.UserData).Handles(1).Radio_Button_Any_Handle,'Enable','off');
-				set(GUI_Parameters.Workspace(source.UserData).Handles(1).Radio_Button_Any_Handle,'Visible','off');
-				set(allchild(GUI_Parameters.Workspace(source.UserData).Handles(1).Radio_Group_Handle),'Enable','off');
-				set(allchild(GUI_Parameters.Workspace(source.UserData).Handles(1).Radio_Group_Handle),'Visible','off');
-			end
-			
-		end
-		
-		function Update_Chosen_Radio(source,callbackdata)
-			
-			n = GUI_Parameters.Workspace(source.UserData(1)).Handles(1).Fields_Names.Value;
-			S1 = char(Fields_Names(n));
-			S2 = Features_Struct.(S1);
-			if(source.UserData(2) > 0)
-				GUI_Parameters.Workspace(source.UserData(1)).Values(1).(S1) = S2(source.UserData(2));
-				GUI_Parameters.Workspace(source.UserData(1)).Values(2).(S1) = source.UserData(2);
-			else
-				GUI_Parameters.Workspace(source.UserData(1)).Values(1).(S1) = 'Any';
-				GUI_Parameters.Workspace(source.UserData(1)).Values(2).(S1) = 0;
-			end
-			
-			% assignin('base','GUI_Parameters.Workspace',GUI_Parameters.Workspace);
-		end
-		
-		function Update_Group_Name_Func(source,callbackdata)
-			set(Tabs_Handles(Tabs_Group.SelectedTab.UserData),'Title',source.String);
-		end
-		
-		function Finish_Func(source,callbackdata)
-			
-			h1 = waitbar(0,'Please wait...');
-			for i=1:numel(GUI_Parameters.Workspace) % For each group.
-				GUI_Parameters.Workspace(i).Group_Name = strrep(GUI_Parameters.Workspace(i).Handles.Group_Name_Textbox.String,' ','_');
-				GUI_Parameters.Workspace(i).Files = {};
-				Delete_Array = [];
-				
-				for j=1:length(Dir_Files_List) % For each file.
-					
-					waitbar( ( ((i-1)*length(Dir_Files_List) + j) / length(Dir_Files_List)) / numel(GUI_Parameters.Workspace));
-					
-					% Check if the file belongs to this group:
-					File1 = load(strcat(Dir1,filesep,Dir_Files_List(j).name)); % Load the file.
-					Fields_Names = fieldnames(File1.Workspace1.User_Input.Features);
-					t = 1; % A flag that says if the file belongs to the group or not.
-					
-					for f=1:length(Fields_Names) % For each field in the loaded file.
-						if(GUI_Parameters.Workspace(i).Values(2).(Fields_Names{f}) > 0 && ... % If the value is not 0 (='Any').
-							~strcmp(char(GUI_Parameters.Workspace(i).Values(1).(Fields_Names{f})), ... % and the field value is not the same as for the group.
-								File1.Workspace1.User_Input.Features.(Fields_Names{f})))
-							t = 0; % If at least one field has a different value, turn the flag off.
-						end
-					end
-					
-					if(t) % If this file belongs to this group.
-						
-						% delete unwanted fields\info:						
-						% if(isfield(File1.Workspace1,'Image0'))
-							% File1.Workspace1 = rmfield(File1.Workspace1,'Image0');
-						% end
-						if(isfield(File1.Workspace1,'Workspace0'))
-							File1.Workspace1 = rmfield(File1.Workspace1,'Workspace0');
-						end
-						if(isfield(File1.Workspace1,'Path'))
-							File1.Workspace1 = rmfield(File1.Workspace1,'Path');
-						end
-						if(isfield(File1.Workspace1,'Steps'))
-							File1.Workspace1 = rmfield(File1.Workspace1,'Steps');
-						end
-						if(isfield(File1.Workspace1,'Statistics'))
-							File1.Workspace1 = rmfield(File1.Workspace1,'Statistics');
-						end
-						
-						GUI_Parameters.Workspace(i).Files{end+1} = File1.Workspace1; % add the j-file to group i.
-						Delete_Array(end+1) = j; % Save its row number and delete it later.
-					end
-				end
-				Dir_Files_List(Delete_Array) = []; % Delete entries that were already used.
-			end
-			close(h1);
-			delete(H1); % Delete all graphics handles. delete(allchild(H1));
-			GUI_Parameters.Workspace = rmfield(GUI_Parameters.Workspace,'Handles');
-			
-			% assignin('base','GUI_Parameters',GUI_Parameters);
-			
-			GUI_Parameters = Plot_Multiple(GUI_Parameters);
-			GUI_Parameters.General.Single_Multiple = 2; % Multiple Images Analysis.
-			set(Graphs_Menu_Handle,'Enable','on');
-			GUI_Parameters.General.Current_Groups_Num = numel(GUI_Parameters.Workspace);
-			set(Groups_Buttons(1:GUI_Parameters.General.Current_Groups_Num),'Enable','on');
 		end
 		
 	end
