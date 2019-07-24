@@ -185,13 +185,18 @@ function Tracer_UI()
 				H_Menu324 = uimenu(H_Menu32_Angles,'Label','Distances Of Tips From The Medial Axis - Histogram','UserData',2,'Callback',@Menu1_Plots_Func);
 				H_Menu325 = uimenu(H_Menu32_Angles,'Label','Smallest Angle VS Distance From Medial Axis','UserData',2,'Callback',@Menu1_Plots_Func);
 				H_Menu326 = uimenu(H_Menu32_Angles,'Label','Distances Of Vertices From The CB','UserData',2,'Callback',@Menu1_Plots_Func);
-			% H_Menu132_Distances = uimenu(H_Menu13_Vertices,'Label','Distances','Callback','');
+		H_Menu4_Orientation = uimenu(Graphs_Menu_Handle,'Label','Orientation','Callback','');
+			H_Menu41_Orientation_Distribution = uimenu(H_Menu4_Orientation,'Label','Distibution of Midline Orientation','Callback',@Menu1_Plots_Func);
+			H_Menu42_Orientation_VS_Arclength_2D_Hist = uimenu(H_Menu4_Orientation,'Label','Distibution of Midline Orientation Along the Midline','Callback',@Menu1_Plots_Func);
+			H_Menu43_Orientation_VS_Arclength_2D_Hist = uimenu(H_Menu4_Orientation,'Label','Distibution of Midline Orientation Along the Midline - Vertices Only','Callback',@Menu1_Plots_Func);
 				% H_Menu1321_Primary_Vertices_Mean_Distance = uimenu(H_Menu132_Distances,'Label','Primary_Vertices_Mean_Distance','UserData',1,'Callback',@Menu1_Plots_Func);
 			% H_Menu133_Vertices_Density = uimenu(H_Menu13_Vertices,'Label','Density of Vertices','UserData',1,'Callback',@Menu1_Plots_Func);			
 		
 		H_Menu5_2D_Plots = uimenu(Graphs_Menu_Handle,'Label','2D Plots','Callback','');
 			uimenu(H_Menu5_2D_Plots,'Label','Midline Distance VS Midline Orientation','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu5_2D_Plots,'Label','Midline Distance VS Curvature','UserData',2,'Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu5_2D_Plots,'Label','Midline Orientation VS Curvature','UserData',2,'Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu5_2D_Plots,'Label','Midline Orientation VS Curvature VS Midlines Distance','UserData',2,'Callback',@Menu1_Plots_Func);
             
 		H_Menu4_Customized = uimenu(Graphs_Menu_Handle,'Label','Customized','Callback','');
 			% Basics:
@@ -878,7 +883,7 @@ function Tracer_UI()
 			Load_An_Existing_Project_File(); % TODO: what's the purpose of this?
 			set(Graphs_Menu_Handle,'Enable','on');
 			
-			GUI_Parameters.General.Active_Plot.General.Active_Plot = 'Segmentation';
+			GUI_Parameters.General.Active_Plot = 'Segmentation';
 			Reconstruction_Func();
 			
 			if(Nw == 1)

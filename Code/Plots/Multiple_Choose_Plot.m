@@ -301,22 +301,150 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,Var_Operations,Filter_Operations,RowWise);
 			Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
 			
+		case 'Midline Orientation VS Curvature VS Midlines Distance'
+			X = []; % Curvature.
+			Y = []; % Midline Orientation.
+			Z = []; % Midline Distance.
+			for w=1:numel(GUI_Parameters.Workspace)
+				X = [X,[GUI_Parameters.Workspace(w).Workspace.All_Points.Curvature]];
+				Y = [Y,[GUI_Parameters.Workspace(w).Workspace.All_Points.Midline_Orientation]];
+				Z = [Z,[GUI_Parameters.Workspace(w).Workspace.All_Points.Midline_Distance]];
+			end
+			
+			if(1)
+				C = rescale(Z');
+				H = scatter3(X,Y,Z,20,[1-C,0.*C,C],'filled');
+				H.MarkerFaceAlpha = 0.5;
+                xlabel('Curvature [1/\mum]');
+                ylabel(['Midline Orientation [',char(176),']']);
+                zlabel('Midline Distance [\mum]');
+                yl = 0:pi/6:pi/2;
+                set(gca,'FontSize',18,'xlim',[0,0.4],'ylim',[0,pi/2],'YTick',yl,'YTickLabels',strsplit(num2str(yl.*180/pi)));
+				view([38.9,10.8]);
+            elseif(0) % Curvature VS Orientation + Distance Colormap.
+				C = rescale(Z');
+				scatter(X,Y,10,[1-C,0.*C,C],'filled');
+                xlabel('Curvature [1/\mum]');
+                ylabel(['Midline Orientation [',char(176),']']);
+                yl = 0:pi/6:pi/2;
+                set(gca,'FontSize',18,'xlim',[0,0.4],'ylim',[0,pi/2],'YTick',yl,'YTickLabels',strsplit(num2str(yl.*180/pi)));
+			else % Curvature VS Distance + Orientation Colormap.
+				C = rescale(Y');
+				scatter(X,Z,10,[1-C,0.*C,C],'filled');
+                ylim([-45,45]);
+                xlabel('Curvature [1/\mum]');
+                ylabel(['Midline Distance [',char(176),']']);
+                set(gca,'FontSize',18,'xlim',[0,0.4],'ylim',[-45,45]);
+			end
+
+			
+
+			
+		case 'Midline Orientation VS Curvature'
+			
+			X_Edges = 0:0.025:0.4;
+			Y_Edges = 0:5*pi/180:pi/2;
+			
+			X = []; % Curvature.
+			Y = []; % Midline Orientation.
+			for w=1:numel(GUI_Parameters.Workspace)
+				X = [X,[GUI_Parameters.Workspace(w).Workspace.All_Points.Curvature]];
+				Y = [Y,[GUI_Parameters.Workspace(w).Workspace.All_Points.Midline_Orientation]];
+			end
+			
+			histogram2(X,Y,X_Edges,Y_Edges,'Normalization','Probability','FaceColor','flat');
+			xlabel('Curvature [1/\mum]');
+			ylabel(['Midline Orientation [',char(176),']']);
+			yl = 0:pi/6:pi/2;
+			set(gca,'FontSize',18,'xlim',[0,0.4],'ylim',[0,pi/2],'YTick',yl,'YTickLabels',strsplit(num2str(yl.*180/pi)));
+			
+		case 'Distibution of Midline Orientation Along the Midline'
+			
+			X_Edges = 0:25:800;
+			Y_Edges = 0:5*pi/180:pi/2;
+			
+			X = []; % Midline Arclength.
+			Y = []; % Midline Orientation.
+			for w=1:numel(GUI_Parameters.Workspace)
+				X = [X,[GUI_Parameters.Workspace(w).Workspace.All_Points.Axis_0_Position]];
+				Y = [Y,[GUI_Parameters.Workspace(w).Workspace.All_Points.Midline_Orientation]];
+			end
+			
+			histogram2(X,Y,X_Edges,Y_Edges,'Normalization','Probability','FaceColor','flat');
+			xlabel('Midline Arclength');
+			ylabel(['Midline Orientation [',char(176),']']);
+			yl = 0:pi/6:pi/2;
+			set(gca,'FontSize',18,'ylim',[0,pi/2],'YTick',yl,'YTickLabels',strsplit(num2str(yl.*180/pi)));
+			
+		case 'Distibution of Midline Orientation Along the Midline - Vertices Only'
+			
+			X_Edges = 0:25:800;
+			Y_Edges = 0:5*pi/180:pi/2;
+			
+			X = []; % Midline Arclength.
+			Y = []; % Midline Orientation.
+			for w=1:numel(GUI_Parameters.Workspace)
+				
+				f = find([GUI_Parameters.Workspace(w).Workspace.All_Points.Vertex_Order] ~= 2);
+				X = [X,[GUI_Parameters.Workspace(w).Workspace.All_Points(f).Axis_0_Position]];
+				Y = [Y,[GUI_Parameters.Workspace(w).Workspace.All_Points(f).Midline_Orientation]];
+			end
+			
+			histogram2(X,Y,X_Edges,Y_Edges,'Normalization','Probability','FaceColor','flat');
+			xlabel('Midline Arclength');
+			ylabel(['Midline Orientation [',char(176),']']);
+			yl = 0:pi/6:pi/2;
+			set(gca,'FontSize',18,'ylim',[0,pi/2],'YTick',yl,'YTickLabels',strsplit(num2str(yl.*180/pi)));
+			
+		case 'Distibution of Midline Orientation'
+			
+			Edges = 0:pi/90:pi/2;
+			
+			X_D = [];
+			X_V = [];
+			for w=1:numel(GUI_Parameters.Workspace)
+				
+				% f_0 = find([GUI_Parameters.Workspace(w).Workspace.All_Points.Midline_Distance] == 0);
+				f_D = find([GUI_Parameters.Workspace(w).Workspace.All_Points.Midline_Distance] > 0);
+				f_V = find([GUI_Parameters.Workspace(w).Workspace.All_Points.Midline_Distance] < 0);
+				
+				X_D = [X_D,[GUI_Parameters.Workspace(w).Workspace.All_Points(f_D).Midline_Orientation]];
+				X_V = [X_V,[GUI_Parameters.Workspace(w).Workspace.All_Points(f_V).Midline_Orientation]];
+			end
+			
+			N_D = histcounts(X_D,Edges);
+			N_V = histcounts(X_V,Edges);
+			xx = (Edges(2:end) + Edges(1:end-1)) ./ 2;
+			
+			bar(xx,N_D,1); % histogram(X_D,Edges);
+			hold on;
+			bar(xx,-N_V,1); % histogram(X_V,Edges);
+			xlabel(['Midline Orientation [',char(176),']']);
+			ylabel('Count');
+			xl = 0:pi/6:pi/2;
+			set(gca,'FontSize',18,'xlim',[Edges([1,end])],'XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)));
+			legend({'Dorsal','Ventral'});
 		case 'Distances Of Vertices From The Medial Axis - Histogram'
-			Var_Operations{1} = @(x) x(x>=0); % Only non-negative distance values.
-			Filter_Operations{1} = [];
-			Var_Fields = {'Distance_From_Medial_Axis'};
-			Filter_Fields = [];
-			%
-			RowWise = 0;
-			%%%
-			X_Label = 'Distance (\mum)';
-			Y_Label = 'Count';
-			Title = 'Distribution of Distances of Vertices From the Medial Axis';
-			X_Min_Max = [0,50];
-			BinSize = 10 .* GUI_Parameters.Handles.Analysis.Slider.Value;
-			%%%
-			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,[],Var_Operations,Filter_Operations,RowWise);
-			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
+			
+			Edges = -45:2:45;
+			
+			X1 = [];
+			X3 = [];
+			for w=1:numel(GUI_Parameters.Workspace)
+				f1 = find([GUI_Parameters.Workspace(w).Workspace.All_Vertices.Order] == 1);
+				f3 = find([GUI_Parameters.Workspace(w).Workspace.All_Vertices.Order] == 3);
+				
+				X1 = [X1,[GUI_Parameters.Workspace(w).Workspace.All_Vertices(f1).Midline_Distance]];
+				X3 = [X3,[GUI_Parameters.Workspace(w).Workspace.All_Vertices(f3).Midline_Distance]];
+			end
+			
+			histogram(X1,Edges);
+			hold on;
+			histogram(X3,Edges);
+			xlabel('Distance [\mum]');
+			ylabel('Count');
+			set(gca,'FontSize',18);
+			legend({'Tips','3-Way Junctions'});
 			
 		case 'Distances Of 3-Way Junctions From The Medial Axis - Histogram'
 			Set_Dynamic_Sliders_Values(GUI_Parameters.Handles.Analysis,0,50);

@@ -1,4 +1,4 @@
-function [All_Points,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes)
+function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes)
 	
 	% This function uses an estimated midline to run a sliding window and find the worm axes.
 	% It first corrects the estimated midline and then uses it to find the other axes by detecting peaks within each window.
@@ -29,7 +29,7 @@ function [All_Points,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes)
 	
 	Sliding_Win = struct('Index',{},'Dorsal_Length',{},'Ventral_Length',{},'Dorsal_Radius',{},'Ventral_Radius',{});
 	
-	All_Points = Collect_All_Neuron_Points(W); % [X, Y, Length, Angle, Curvature].
+	[All_Points,All_Vertices] = Collect_All_Neuron_Points(W); % [X, Y, Length, Angle, Curvature].
 	All_Points = Find_Distance_From_Midline(W,All_Points,Worm_Axes,Scale_Factor);
 	
 	Sliding_Window_Vector = Win_Size+1:Np_Midline - Win_Size;
@@ -189,6 +189,7 @@ function [All_Points,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes)
 	
 	% Now update the signed midline distance for all points after correcting the midline:
 	All_Points = Find_Distance_From_Midline(W,All_Points,Worm_Axes,Scale_Factor);
+	All_Vertices = Find_Distance_From_Midline(W,All_Vertices,Worm_Axes,Scale_Factor);
 	
 	if(Plot)
 		figure;

@@ -33,9 +33,9 @@ function Histogram_Plot(Input_Struct,GUI_Parameters,Visuals,X_Min_Max,BinSize,XL
 				hold on;
 			end
 			
-			if(GUI_Parameters.Handles.Significance_Bars_CheckBox.Value)
+			% if(GUI_Parameters.Handles.Significance_Bars_CheckBox.Value)
 				% Get_Statistically_Significance_Bars(Groups_Struct,Visuals.Active_Colormap(1,:));
-			end
+			% end
 			% disp(Title1);
 			set(gca,'FontSize',Visuals.Axes_Lables_Font_Size); % ,'XTickLabelRotation',Visuals.Axss_Lables_Orientation
 			xlabel(XLabel,'FontSize',Visuals.Axes_Titles_Font_Size);

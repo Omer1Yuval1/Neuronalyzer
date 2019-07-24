@@ -31,16 +31,15 @@ function All_Points = Find_Distance_From_Midline(W,All_Points,Worm_Axes,Scale_Fa
 		
 		All_Points(p).Axis_0_Position = Worm_Axes.Axis_0(f).Arc_Length;
 		
-		% if(round(All_Points(p).X) == 1257 && round(All_Points(p).Y) == 184)
-		% 	disp(1);
-		% end
-		Medial_Angle = mod(Worm_Axes.Axis_0(f).Tangent_Angle,2*pi); % [0,2*pi].
-		
-		d1 = max(Medial_Angle,All_Points(p).Angle) - min(Medial_Angle,All_Points(p).Angle); %  [0,2*pi]. Take the diff and make sure it is positive.
-		d2 = min(d1,2*pi-d1); % [0,pi]. Take the smallest diff between the angles to obtain an angle within [0,pi].
-		d3 = min(d2,pi-d2); % [0,pi/2]. Now do the same (smallest diff) but within [0,pi] to obtain an angle within [0,pi/2].
-		
-		All_Points(p).Midline_Orientation = d3; % [0,pi/2].
+		if(isfield(All_Points,'Angle')) % Do for the all-points structure but not for the vertices structure.
+			Medial_Angle = mod(Worm_Axes.Axis_0(f).Tangent_Angle,2*pi); % [0,2*pi].
+			
+			d1 = max(Medial_Angle,All_Points(p).Angle) - min(Medial_Angle,All_Points(p).Angle); %  [0,2*pi]. Take the diff and make sure it is positive.
+			d2 = min(d1,2*pi-d1); % [0,pi]. Take the smallest diff between the angles to obtain an angle within [0,pi].
+			d3 = min(d2,pi-d2); % [0,pi/2]. Now do the same (smallest diff) but within [0,pi] to obtain an angle within [0,pi/2].
+			
+			All_Points(p).Midline_Orientation = d3; % [0,pi/2].
+		end
 		
 		%{
 		if(~isnan(All_Points(p).Midline_Distance))
