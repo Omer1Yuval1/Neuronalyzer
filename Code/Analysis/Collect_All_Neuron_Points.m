@@ -35,6 +35,7 @@ function [All_Points,All_Vertices] = Collect_All_Neuron_Points(W)
 				All_Points(ii).Length = ds(p) .* W.User_Input.Scale_Factor; % Pixels to Micrometers.
 				All_Points(ii).Curvature = Cxy(p) ./ W.User_Input.Scale_Factor; % 1/Pixels to 1/Micrometers.
 				All_Points(ii).Vertex_Order = Vertices_Orders(p);
+				All_Points(ii).Segment_Index = W.Segments(s).Segment_Index;
 			end
 		end
 	end

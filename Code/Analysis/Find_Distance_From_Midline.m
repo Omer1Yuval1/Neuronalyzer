@@ -1,4 +1,4 @@
-function All_Points = Find_Distance_From_Midline(W,All_Points,Worm_Axes,Scale_Factor)
+function All_Points = Find_Distance_From_Midline(W,All_Points,Worm_Axes,Scale_Factor,Step)
 	
 	% This function computes the signed distance of each point from the midline.
 	% Dorsal is defined as positive distance and ventral as negative.
@@ -13,22 +13,47 @@ function All_Points = Find_Distance_From_Midline(W,All_Points,Worm_Axes,Scale_Fa
 	
 	for p=1:numel(All_Points) % For each tracing point (= rectangle).
 		
+		% Find the corresponding midline point:
 		Dp = ( ( All_Points(p).X -  [Worm_Axes.Axis_0.X] ).^2 + ( All_Points(p).Y -  [Worm_Axes.Axis_0.Y] ).^2).^(.5); % Distances from all midlines points.
 		f = find(Dp == min(Dp));
 		f = f(1);
 		
 		if(In_Dorsal(p) && ~In_Ventral(p)) % If a dorsal pixel.
 			All_Points(p).Midline_Distance = Dp(f) * Scale_Factor; % Pixels to um.
+			
+			if(Step)
+				R3 = ( (Worm_Axes.Axis_1_Dorsal(f).X - Worm_Axes.Axis_0(f).X).^2 + (Worm_Axes.Axis_1_Dorsal(f).Y - Worm_Axes.Axis_0(f).Y).^2 ).^(.5);
+				R4 = ( (Worm_Axes.Axis_2_Dorsal(f).X - Worm_Axes.Axis_0(f).X).^2 + (Worm_Axes.Axis_2_Dorsal(f).Y - Worm_Axes.Axis_0(f).Y).^2 ).^(.5);
+			end
 		elseif(In_Ventral(p) && ~In_Dorsal(p))
 			All_Points(p).Midline_Distance = -Dp(f) * Scale_Factor; % Pixels to um.
+			
+			if(Step)
+				R3 = ( (Worm_Axes.Axis_1_Ventral(f).X - Worm_Axes.Axis_0(f).X).^2 + (Worm_Axes.Axis_1_Ventral(f).Y - Worm_Axes.Axis_0(f).Y).^2 ).^(.5);
+				R4 = ( (Worm_Axes.Axis_2_Ventral(f).X - Worm_Axes.Axis_0(f).X).^2 + (Worm_Axes.Axis_2_Ventral(f).Y - Worm_Axes.Axis_0(f).Y).^2 ).^(.5);
+			end
 		elseif(~In_Ventral(p) && ~In_Dorsal(p))
 			All_Points(p).Midline_Distance = nan;
+			
+			if(Step)
+				R3 = nan;
+				R4 = nan;
+			end
 			disp(['Point not found on either the dorsal or ventral side. Distance = ',num2str(Dp(f)),'.']);
 		else % Both.
 			All_Points(p).Midline_Distance = 0;
+			
+			if(Step)
+				R3 = 0;
+				R4 = 0;
+			end
 			disp(['Point found in both dorsal and ventral. Distance = ',num2str(Dp(f)),'.']);
 		end
 		
+		if(Step)
+			All_Points(p).Half_Radius = R3 * Scale_Factor; % Pixels to um.
+			All_Points(p).Radius = R4 * Scale_Factor; % Pixels to um.
+		end
 		All_Points(p).Axis_0_Position = Worm_Axes.Axis_0(f).Arc_Length;
 		
 		if(isfield(All_Points,'Angle')) % Do for the all-points structure but not for the vertices structure.

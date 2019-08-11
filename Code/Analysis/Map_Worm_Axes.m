@@ -30,7 +30,7 @@ function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes)
 	Sliding_Win = struct('Index',{},'Dorsal_Length',{},'Ventral_Length',{},'Dorsal_Radius',{},'Ventral_Radius',{});
 	
 	[All_Points,All_Vertices] = Collect_All_Neuron_Points(W); % [X, Y, Length, Angle, Curvature].
-	All_Points = Find_Distance_From_Midline(W,All_Points,Worm_Axes,Scale_Factor);
+	All_Points = Find_Distance_From_Midline(W,All_Points,Worm_Axes,Scale_Factor,0);
 	
 	Sliding_Window_Vector = Win_Size+1:Np_Midline - Win_Size;
 	Np_Win = length(Sliding_Window_Vector);
@@ -188,8 +188,8 @@ function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes)
     end
 	
 	% Now update the signed midline distance for all points after correcting the midline:
-	All_Points = Find_Distance_From_Midline(W,All_Points,Worm_Axes,Scale_Factor);
-	All_Vertices = Find_Distance_From_Midline(W,All_Vertices,Worm_Axes,Scale_Factor);
+	All_Points = Find_Distance_From_Midline(W,All_Points,Worm_Axes,Scale_Factor,1);
+	All_Vertices = Find_Distance_From_Midline(W,All_Vertices,Worm_Axes,Scale_Factor,1);
 	
 	if(Plot)
 		figure;

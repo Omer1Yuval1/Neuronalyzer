@@ -95,10 +95,41 @@ function Reconstruction_Index(GP,ii)
 			hold on;
 			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],5,CM,'filled');
 			% Reconstruct_Curvature(GP.Workspace(ii).Workspace,Curvature_Min_Max(1),Curvature_Min_Max(2),Medial_Dist_Range(1),Medial_Dist_Range(2),1);
+		case 'PVD Orders - Points'
+			
+			Class_Num = max([GP.Workspace(ii).Workspace.All_Points.Class]);
+			C = lines(Class_Num+1);
+			% figure;
+			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
+			hold on;
+			Midline_Distance = [GP.Workspace(ii).Workspace.All_Points.X];
+			Midline_Orientation = [GP.Workspace(ii).Workspace.All_Points.Y];
+			Classes = [GP.Workspace(ii).Workspace.All_Points.Class];
+			Classes(isnan(Classes)) = Class_Num + 1;
+			
+			scatter(Midline_Distance,Midline_Orientation,10,C(Classes,:),'filled');
+		
+		case 'PVD Orders - Segments'
+			Class_Num = max([GP.Workspace(ii).Workspace.All_Points.Class]);
+			C = lines(Class_Num+1);
+			
+			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
+			hold on;
+			for s=1:numel(GP.Workspace(ii).Workspace.Segments)
+				if(numel(GP.Workspace(ii).Workspace.Segments(s).Rectangles))
+					x = [GP.Workspace(ii).Workspace.Segments(s).Rectangles.X];
+					y = [GP.Workspace(ii).Workspace.Segments(s).Rectangles.Y];
+					c = [GP.Workspace(ii).Workspace.Segments(s).Class];
+					if(isnan(c))
+						plot(x,y,'Color',C(end,:),'LineWidth',3);
+					else
+						plot(x,y,'Color',C(c,:),'LineWidth',3);
+					end
+				end
+			end
 		otherwise
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			Reconstruct_Trace(GP.Workspace(ii).Workspace);
-			
 		%{
 		case 'Volume - Initial Guess'
 			Reconstruct_Initial_Guess_Volume(GP.Workspace(1).Workspace);

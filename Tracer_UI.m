@@ -126,6 +126,8 @@ function Tracer_UI()
 		% uimenu(Reconstructions_Menu_Handle,'Label','Medial Axis','UserData',0,'Callback',@Reconstruction_Func);
 		% H0_1_8 = uimenu(Reconstructions_Menu_Handle,'Label','Longitudinal Gradient','UserData',0,'Callback',@Reconstruction_Func);		
 		uimenu(Reconstructions_Menu_Handle,'Label','Curvature','UserData',0,'Callback',@Reconstruction_Func);
+		uimenu(Reconstructions_Menu_Handle,'Label','PVD Orders - Points','UserData',0,'Callback',@Reconstruction_Func);
+		uimenu(Reconstructions_Menu_Handle,'Label','PVD Orders - Segments','UserData',0,'Callback',@Reconstruction_Func);
 		% H0_1_10 = uimenu(Reconstructions_Menu_Handle,'Label','Persistence Length','UserData',0,'Callback',@Reconstruction_Func);
 		% H0_1_11 = uimenu(Reconstructions_Menu_Handle,'Label','Curviness Length','UserData',0,'Callback',@Reconstruction_Func);
 	set(allchild(Reconstructions_Menu_Handle),'Enable','off');
