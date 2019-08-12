@@ -714,7 +714,7 @@ function Tracer_UI()
 		Workspace = Collect_All_Workspaces();
 		GUI_Parameters.Workspace = Workspace;
 		uisave('Workspace',['All_Workspaces_',datestr(datetime,30),'.mat']);
-		Load_An_Existing_Project_File();
+		% Load_An_Existing_Project_File();
 	end
 	
 	function Update_Multiple_Workspaces(source,callbackdata)

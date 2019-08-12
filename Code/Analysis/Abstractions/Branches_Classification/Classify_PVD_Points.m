@@ -3,8 +3,8 @@ function W = Classify_PVD_Points(W,Clusters_Struct)
 	Scale_Factor = W.User_Input.Scale_Factor;
 	% All_Points = W.All_Points;
 	% Class_Num = max([Clusters_Struct.Class]);
-	X = W.All_Points.Midline_Distance ./ (2 .* W.All_Points(p).Half_Radius);
-	Y = rescale(W.All_Points.Midline_Orientation .* 180/pi,'InputMin',0,'InputMax',90);
+	X = [W.All_Points.Midline_Distance] ./ (2 .* [W.All_Points.Half_Radius]);
+	Y = rescale([W.All_Points.Midline_Orientation] .* 180/pi,'InputMin',0,'InputMax',90);
 	
 	for p=1:numel(W.All_Points) % Find the distance of each PVD point from all cluster centers.
 		Dp = ( (X(p) - [Clusters_Struct.Mean_X]).^2 + (Y(p) - [Clusters_Struct.Mean_Y]).^2 ).^(0.5); % Find the distance of the p-point from all clusters centers.
