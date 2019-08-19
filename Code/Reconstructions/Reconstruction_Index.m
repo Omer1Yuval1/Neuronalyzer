@@ -77,9 +77,13 @@ function Reconstruction_Index(GP,ii)
 			O = rescale([GP.Workspace(ii).Workspace.All_Points.Midline_Orientation])';
 			CM = [O,0.*O,1-O];
 			
+			% O = round(rescale([GP.Workspace(ii).Workspace.All_Points.Midline_Orientation],1,100)');
+			% CM = jet(100);
+			
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			hold on;
 			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],5,CM,'filled');
+			% scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],5,CM(O,:),'filled');
 			
 		case 'Vertices Angles'
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);

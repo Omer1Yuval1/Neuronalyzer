@@ -29,7 +29,7 @@ function Tracer_UI()
 		GUI_Parameters.Workspace = struct('Group_Name',{},'Handles',{},'Values',{});
 		
 		GUI_Parameters.Handles.Analysis.Filters_Tab = uitab('Parent',GUI_Parameters.Handles.Analysis_Tabs,'Title','Filters','BackgroundColor',[0.5,0.6,1]);
-			GUI_Parameters.Handles.Analysis.Slider = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','slider','Min',0,'Max',1,'Value',GUI_Parameters.General.Slider_Value,'Units','Normalized','Position',[0 0.01 .8 GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@Slider_Func);
+			GUI_Parameters.Handles.Analysis.Slider = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','slider','Min',0,'Max',1,'Value',GUI_Parameters.General.Slider_Value,'Units','Normalized','UserData',0,'Position',[0 0.01 .8 GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@Slider_Func);
 			GUI_Parameters.Handles.Analysis.Slider_Text = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','edit','String',num2str(GUI_Parameters.General.Slider_Value),'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.8,.01,.2,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6]);
 			GUI_Parameters.Handles.Analysis.Dynamic_Slider_Min = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','slider','Min',0,'Max',1,'Value',0,'Units','Normalized','Position',[.15 0.02+GUI_Parameters.Visuals.Button1_Height .35 GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@Dynamic_Slider_Min_Func,'Enable','off');
 			GUI_Parameters.Handles.Analysis.Dynamic_Slider_Text_Min = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','edit','String',num2str(0),'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0,.02+GUI_Parameters.Visuals.Button1_Height,.15,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6]);
@@ -193,6 +193,9 @@ function Tracer_UI()
 			H_Menu43_Orientation_VS_Arclength_2D_Hist = uimenu(H_Menu4_Orientation,'Label','Distibution of Midline Orientation Along the Midline - Vertices Only','Callback',@Menu1_Plots_Func);
 				% H_Menu1321_Primary_Vertices_Mean_Distance = uimenu(H_Menu132_Distances,'Label','Primary_Vertices_Mean_Distance','UserData',1,'Callback',@Menu1_Plots_Func);
 			% H_Menu133_Vertices_Density = uimenu(H_Menu13_Vertices,'Label','Density of Vertices','UserData',1,'Callback',@Menu1_Plots_Func);			
+		
+		H_Menu6_Distance = uimenu(Graphs_Menu_Handle,'Label','Distance','Callback','');
+			uimenu(H_Menu6_Distance,'Label','Distibution of Midline Distances (all points)','Callback',@Menu1_Plots_Func);
 		
 		H_Menu5_2D_Plots = uimenu(Graphs_Menu_Handle,'Label','2D Plots','Callback','');
 			uimenu(H_Menu5_2D_Plots,'Label','Midline Distance VS Midline Orientation','UserData',2,'Callback',@Menu1_Plots_Func);
@@ -727,6 +730,7 @@ function Tracer_UI()
 		
 		uicontrol(GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','text','String','Number of Midline Points:','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.05,.8,.6,GUI_Parameters.Visuals.Button1_Height]); % ,'backgroundcolor',[0.6 0.6 0.6]			% GUI_Parameters.Handles.Tracing.Analysis_Tab.Midline_Points_Num = 
 		GUI_Parameters.Handles.Tracing.Midline_Points_Num = uicontrol(GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','edit','String','50','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.7,.8,.25,GUI_Parameters.Visuals.Button1_Height],'Callback',@Plot_Draggable_Points); % ,'backgroundcolor',[0.6 0.6 0.6]);
+		GUI_Parameters.Handles.Tracing.Apply_Axes_Button = uicontrol(GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','pushbutton','String','Apply Changes','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0,.01,1,GUI_Parameters.Visuals.Button1_Height],'Callback',@Apply_Axes_Changes_Func); % ,'backgroundcolor',[0.6 0.6 0.6]);
 		
 		Reconstruction_Func();
 		Plot_Draggable_Points();
@@ -839,6 +843,13 @@ function Tracer_UI()
 				
 				assignin('base','Workspace',GUI_Parameters.Workspace);
 			end
+		end
+		
+		function Apply_Axes_Changes_Func(~,~)
+			
+			[GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.All_Points,GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.All_Vertices] = Collect_All_Neuron_Points(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace); % [X, Y, Length, Angle, Curvature].
+			GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.All_Points = Find_Distance_From_Midline(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace,GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.All_Points,GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes,GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.User_Input.Scale_Factor,1);
+			GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.All_Vertices = Find_Distance_From_Midline(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace,GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.All_Vertices,GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes,GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.User_Input.Scale_Factor,1);
 		end
 	end
 	
@@ -954,7 +965,7 @@ function Tracer_UI()
 	end
 	
 	function Slider_Func(source,callbackdata)
-		set(source,'Enable','off');
+		set(source,'Enable','off','UserData',1);
 		set(GUI_Parameters.Handles.Analysis.Slider_Text,'String',num2str(source.Value));
 		Reset_Axes();
 		hold on;

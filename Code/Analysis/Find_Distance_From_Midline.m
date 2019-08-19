@@ -3,6 +3,7 @@ function All_Points = Find_Distance_From_Midline(W,All_Points,Worm_Axes,Scale_Fa
 	% This function computes the signed distance of each point from the midline.
 	% Dorsal is defined as positive distance and ventral as negative.
 	% The midline poitns are gived from head to tail.
+	% Step=1 indicates that the other axes (besides the midline) can now be computed too.
 	
 	% Ap is the local tilting angle of the plane.
 	

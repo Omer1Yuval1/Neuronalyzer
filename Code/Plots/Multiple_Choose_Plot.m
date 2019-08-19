@@ -173,6 +173,79 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Segments',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
 			Means_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,Y_Label,Title);
 			
+		
+		case 'Distibution of Midline Distances (all points)'
+			
+			set(GUI_Parameters.Handles.Normalization_List,'String',{'Not Normalized','Normalized to Local Half Radius','Normalized to Local Radius'});
+			set(GUI_Parameters.Handles.Plot_Type_List,'String',{'Default','Dorsal-Ventral Merged','Color Gradient'});
+			
+			X = [];
+			Y = [];
+			for w=1:numel(GUI_Parameters.Workspace)
+				X = [X,[GUI_Parameters.Workspace(w).Workspace.All_Points.Midline_Distance]];
+				switch GUI_Parameters.Handles.Normalization_List.Value
+					case 2
+						Y = [Y,[GUI_Parameters.Workspace(w).Workspace.All_Points.Half_Radius]];
+					case 3
+						Y = [Y,[GUI_Parameters.Workspace(w).Workspace.All_Points.Radius]];
+				end
+			end
+			
+			switch(GUI_Parameters.Handles.Normalization_List.Value)
+				case 1
+					if(~GUI_Parameters.Handles.Analysis.Slider.UserData)
+						set(GUI_Parameters.Handles.Analysis.Slider,'Min',1,'Max',5,'Value',3,'SliderStep',[0.5,1]);
+					end
+					Edges = -45:GUI_Parameters.Handles.Analysis.Slider.Value:45;
+				case 2
+					X = X ./ (2.*Y);
+					
+					if(~GUI_Parameters.Handles.Analysis.Slider.UserData)
+						set(GUI_Parameters.Handles.Analysis.Slider,'Min',0.01,'Max',.11,'Value',0.05,'SliderStep',[0.01,0.02]);
+					end
+					Edges = -1:GUI_Parameters.Handles.Analysis.Slider.Value:1;
+				case 3
+					X = X ./ Y;
+					if(~GUI_Parameters.Handles.Analysis.Slider.UserData)
+						set(GUI_Parameters.Handles.Analysis.Slider,'Min',0.01,'Max',.11,'Value',0.05,'SliderStep',[0.01,0.02]);
+					end
+					Edges = -1:GUI_Parameters.Handles.Analysis.Slider.Value:1;
+			end
+			set(GUI_Parameters.Handles.Analysis.Slider_Text,'String',num2str(GUI_Parameters.Handles.Analysis.Slider.Value));
+			
+			switch(GUI_Parameters.Handles.Plot_Type_List.Value)
+				case 2
+					X = abs(X);
+					Edges = 0:GUI_Parameters.Handles.Analysis.Slider.Value:Edges(end);
+			end
+			
+			N = histcounts(X,Edges,'Normalization','Probability');
+			xx = (Edges(2:end) + Edges(1:end-1)) ./ 2;
+			
+			H = bar(xx,N,1,'FaceColor','flat'); % histogram(X_D,Edges);
+			% H = histogram(X,Edges,'Normalization','Probability'); % Edges.
+			
+			if(GUI_Parameters.Handles.Plot_Type_List.Value == 3)
+				L_D = find(xx >= 0); % # of bars.
+				L_V = find(xx < 0); % # of bars.
+				CM = jet(max(length(L_D),length(L_V)));
+				H.CData(L_D,:) = CM(1:length(L_D),:);
+				H.CData(L_V,:) = flipud(CM(1:length(L_V),:));
+			end
+			
+			switch(GUI_Parameters.Handles.Normalization_List.Value)
+				case 1
+					xlabel(['Midline Distance [',char(181),'m]']);
+				case {2,3}
+					xlabel(['Midline Distance [normalized]']);
+			end
+			xlim([Edges(1),Edges(end)]);
+			
+			ylabel('Count');
+			% xl = 0:pi/6:pi/2;
+			% set(gca,'FontSize',18,'xlim',[Edges([1,end])],'XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)));
+			set(gca,'FontSize',30);
+			% legend({'Dorsal','Ventral'});
 		case 'Distribution of Mean Squared Curvature Of Segments'
 			Var_Operations{1} = @(x) x(x>=0 & x<=0.1); % The curvature of a segment has to be positive.
 			Filter_Operations = {};
@@ -315,30 +388,27 @@ function Multiple_Choose_Plot(GUI_Parameters)
 				C = rescale(Z');
 				H = scatter3(X,Y,Z,20,[1-C,0.*C,C],'filled');
 				H.MarkerFaceAlpha = 0.5;
-                xlabel('Curvature [1/\mum]');
-                ylabel(['Midline Orientation [',char(176),']']);
-                zlabel('Midline Distance [\mum]');
-                yl = 0:pi/6:pi/2;
-                set(gca,'FontSize',18,'xlim',[0,0.4],'ylim',[0,pi/2],'YTick',yl,'YTickLabels',strsplit(num2str(yl.*180/pi)));
+				xlabel('Curvature [1/\mum]');
+				ylabel(['Midline Orientation [',char(176),']']);
+				zlabel('Midline Distance [\mum]');
+				yl = 0:pi/6:pi/2;
+				set(gca,'FontSize',18,'xlim',[0,0.4],'ylim',[0,pi/2],'YTick',yl,'YTickLabels',strsplit(num2str(yl.*180/pi)));
 				view([38.9,10.8]);
-            elseif(0) % Curvature VS Orientation + Distance Colormap.
+			elseif(0) % Curvature VS Orientation + Distance Colormap.
 				C = rescale(Z');
 				scatter(X,Y,10,[1-C,0.*C,C],'filled');
-                xlabel('Curvature [1/\mum]');
-                ylabel(['Midline Orientation [',char(176),']']);
-                yl = 0:pi/6:pi/2;
-                set(gca,'FontSize',18,'xlim',[0,0.4],'ylim',[0,pi/2],'YTick',yl,'YTickLabels',strsplit(num2str(yl.*180/pi)));
+				xlabel('Curvature [1/\mum]');
+				ylabel(['Midline Orientation [',char(176),']']);
+				yl = 0:pi/6:pi/2;
+				set(gca,'FontSize',18,'xlim',[0,0.4],'ylim',[0,pi/2],'YTick',yl,'YTickLabels',strsplit(num2str(yl.*180/pi)));
 			else % Curvature VS Distance + Orientation Colormap.
 				C = rescale(Y');
 				scatter(X,Z,10,[1-C,0.*C,C],'filled');
-                ylim([-45,45]);
-                xlabel('Curvature [1/\mum]');
-                ylabel(['Midline Distance [',char(176),']']);
-                set(gca,'FontSize',18,'xlim',[0,0.4],'ylim',[-45,45]);
+				ylim([-45,45]);
+				xlabel('Curvature [1/\mum]');
+				ylabel(['Midline Distance [',char(176),']']);
+				set(gca,'FontSize',18,'xlim',[0,0.4],'ylim',[-45,45]);
 			end
-
-			
-
 			
 		case 'Midline Orientation VS Curvature'
 			
@@ -398,7 +468,14 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			
 		case 'Distibution of Midline Orientation'
 			
-			Edges = 0:pi/90:pi/2;
+			set(GUI_Parameters.Handles.Normalization_List,'String',{'Not Normalized'});
+			set(GUI_Parameters.Handles.Plot_Type_List,'String',{'Default','Color Gradient'});
+			
+			if(~GUI_Parameters.Handles.Analysis.Slider.UserData)
+				set(GUI_Parameters.Handles.Analysis.Slider,'Min',2,'Max',12,'Value',2,'SliderStep',[0.1,0.2]);
+			end
+			Edges = 0:GUI_Parameters.Handles.Analysis.Slider.Value*pi/180:pi/2;
+			set(GUI_Parameters.Handles.Analysis.Slider_Text,'String',num2str(GUI_Parameters.Handles.Analysis.Slider.Value));
 			
 			X_D = [];
 			X_V = [];
@@ -412,18 +489,32 @@ function Multiple_Choose_Plot(GUI_Parameters)
 				X_V = [X_V,[GUI_Parameters.Workspace(w).Workspace.All_Points(f_V).Midline_Orientation]];
 			end
 			
-			N_D = histcounts(X_D,Edges);
-			N_V = histcounts(X_V,Edges);
+			N_D = histcounts(X_D,Edges,'Normalization','Probability');
+			N_V = histcounts(X_V,Edges,'Normalization','Probability');
 			xx = (Edges(2:end) + Edges(1:end-1)) ./ 2;
 			
-			bar(xx,N_D,1); % histogram(X_D,Edges);
+			H_D = bar(xx,N_D,1,'FaceColor','flat'); % histogram(X_D,Edges);
 			hold on;
-			bar(xx,-N_V,1); % histogram(X_V,Edges);
+			H_V = bar(xx,-N_V,1,'FaceColor','flat'); % histogram(X_V,Edges);
+			
+			if(GUI_Parameters.Handles.Plot_Type_List.Value == 2)
+				L = size(H_D.CData,1); % # of bars.
+				% H_D.CData = jet(L);
+				% H_V.CData = jet(L);
+				
+				CM = transpose(rescale(1:L));
+				CM = [1-CM, 0.*CM , CM];
+				H_D.CData = CM;
+				H_V.CData = CM;
+			else
+				legend({'Dorsal','Ventral'});
+			end
+			
 			xlabel(['Midline Orientation [',char(176),']']);
 			ylabel('Count');
 			xl = 0:pi/6:pi/2;
-			set(gca,'FontSize',18,'xlim',[Edges([1,end])],'XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)));
-			legend({'Dorsal','Ventral'});
+			set(gca,'FontSize',30,'xlim',[Edges([1,end])],'XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)));
+			ylim([-max(N_V),max(N_D)]);
 		case 'Distances Of Vertices From The Medial Axis - Histogram'
 			
 			Edges = -45:2:45;
@@ -815,6 +906,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Plot_Distance_VS_Curvature(GUI_Parameters.Workspace);
 	end
 	% assignin('base','Input_Struct',Input_Struct);
+	set(GUI_Parameters.Handles.Analysis.Slider,'UserData',0); % Used as a flag to tell if this script was run as a result of the use of this slider.
 	
 	function Set_Dynamic_Sliders_Values(Handles,Min_Value,Max_Value)
 		set(Handles.Dynamic_Slider_Min,'Enable','on');
