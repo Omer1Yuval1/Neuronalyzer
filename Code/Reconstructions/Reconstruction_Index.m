@@ -82,7 +82,7 @@ function Reconstruction_Index(GP,ii)
 			
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			hold on;
-			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],5,CM,'filled');
+			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],20,CM,'filled');
 			% scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],5,CM(O,:),'filled');
 			
 		case 'Vertices Angles'
@@ -97,7 +97,7 @@ function Reconstruction_Index(GP,ii)
 			
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			hold on;
-			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],5,CM,'filled');
+			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],20,CM,'filled');
 			% Reconstruct_Curvature(GP.Workspace(ii).Workspace,Curvature_Min_Max(1),Curvature_Min_Max(2),Medial_Dist_Range(1),Medial_Dist_Range(2),1);
 		case 'PVD Orders - Points'
 			
@@ -127,7 +127,7 @@ function Reconstruction_Index(GP,ii)
 					if(isnan(c))
 						plot(x,y,'Color',C(end,:),'LineWidth',3);
 					else
-						plot(x,y,'Color',C(c,:),'LineWidth',3);
+						plot(x,y,'Color',C(c,:),'LineWidth',5);
 					end
 				end
 			end

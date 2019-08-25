@@ -103,11 +103,15 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Var_Fields,Fi
 					end
 					
 					% Use the dynamic sliders to filter-out rows:
-					Vi = Wi.(DB_Name)(k).(Dynamic_Field);
-					if(Vi >= GUI_Parameters.Handles.Analysis.Dynamic_Slider_Min.Value && Vi <= GUI_Parameters.Handles.Analysis.Dynamic_Slider_Max.Value)
-						Dynamic_Slider_Flag = 1; % Include this row if the field value is within the dynamic sliders boundaries.
+					if(~isempty(Dynamic_Field))
+						Vi = Wi.(DB_Name)(k).(Dynamic_Field);
+						if(Vi >= GUI_Parameters.Handles.Analysis.Dynamic_Slider_Min.Value && Vi <= GUI_Parameters.Handles.Analysis.Dynamic_Slider_Max.Value)
+							Dynamic_Slider_Flag = 1; % Include this row if the field value is within the dynamic sliders boundaries.
+						else
+							Dynamic_Slider_Flag = 0;
+						end
 					else
-						Dynamic_Slider_Flag = 0;
+						Dynamic_Slider_Flag = 1;
 					end
 					
 					% Remove this (allow repeating value):

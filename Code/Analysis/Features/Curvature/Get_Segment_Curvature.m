@@ -168,6 +168,7 @@ function [Mean_Curvature,SxS,SyS,xx,Cxy] = Get_Segment_Curvature(X,Y,Im)
 		Y = Suxy(:,2)'; % Smoothed y-coordinates.
 	end
 	
+	%{
 	if(Plot)
 		D = 20;
 		Colors = Cxy ./ max(Cxy);
@@ -199,4 +200,5 @@ function [Mean_Curvature,SxS,SyS,xx,Cxy] = Get_Segment_Curvature(X,Y,Im)
 			
 		waitforbuttonpress;
 	end
+	%}
 end

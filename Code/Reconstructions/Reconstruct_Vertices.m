@@ -33,10 +33,10 @@ function Reconstruct_Vertices(W,Display_Image)
 			
 			[XV,YV] = Get_Rect_Vector(O,A,Rect_Width,Rect_Length,14);
 			
-			plot(W.Vertices(v).Coordinate(1),W.Vertices(v).Coordinate(2),'.','Color',[1,.2,0],'MarkerSize',10); % Orange.
+			plot(W.Vertices(v).Coordinate(1),W.Vertices(v).Coordinate(2),'.','Color',[1,.2,0],'MarkerSize',30); % Orange.
 			hold on;
 			% plot(XV,YV,'--','Color',C(r,:),'LineWidth',2); % ,'Color',[.9,0,.4].
-			plot(XV,YV,'Color',C(r,:),'LineWidth',2); % ,'Color',[.9,0,.4].
+			plot(XV,YV,'Color',C(r,:),'LineWidth',4); % ,'Color',[.9,0,.4].
 			
 			if(isfield(W.Vertices(v).Rectangles,'Angle_Corrected') && all([W.Vertices(v).Rectangles(r).Angle_Corrected]))
 				Ac = W.Vertices(v).Rectangles(r).Angle_Corrected .* 180 ./ pi;
@@ -45,7 +45,6 @@ function Reconstruct_Vertices(W,Display_Image)
 			end
 		end
 	end
-	
 	% hold on;
 	% for s=1:numel(W.Segments)
 		% plot(W.Segments(s).Skel_X,W.Segments(s).Skel_Y,'k');

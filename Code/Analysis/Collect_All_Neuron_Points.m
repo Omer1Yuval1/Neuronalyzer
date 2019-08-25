@@ -3,7 +3,7 @@ function [All_Points,All_Vertices] = Collect_All_Neuron_Points(W)
 	All_Points = struct('X',{},'Y',{},'Length',{},'Angle',{},'Curvature',{},'Is_Vertex',{},'Dorsal_Ventral',{});
 	All_Points(3*(10^4)).X = nan;
 	
-	All_Vertices = struct('X',{},'Y',{},'Angles_Rad',{},'Order',{},'Midline_Distance',{},'Midline_Orientation',{},'Dorsal_Ventral',{});
+	All_Vertices = struct('X',{},'Y',{},'Order',{},'Angles',{},'Midline_Distance',{},'Midline_Orientation',{},'Dorsal_Ventral',{});
 	All_Vertices(3*(10^3)).X = nan;
 	
 	ii = 0;
@@ -48,6 +48,7 @@ function [All_Points,All_Vertices] = Collect_All_Neuron_Points(W)
 		All_Vertices(ii).X = W.Vertices(v).Coordinate(1);
 		All_Vertices(ii).Y = W.Vertices(v).Coordinate(2);
 		All_Vertices(ii).Order = W.Vertices(v).Order;
+		All_Vertices(ii).Angles = W.Vertices(v).Angles;
 	end
 	All_Vertices = All_Vertices(1:ii);
 end

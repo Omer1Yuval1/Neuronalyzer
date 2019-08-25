@@ -1,5 +1,7 @@
 function W = Collect_All_Workspaces()
 	
+	W = struct('Workspace',{}); % 'Genotype',{},'Strain',{},'Crowding',{},'Age',{}
+	
 	CurrentDir = pwd;
 	[File1,Path1,Selection_Index] = uigetfile('*.mat','MultiSelect','on');
 		
@@ -10,8 +12,6 @@ function W = Collect_All_Workspaces()
 	end
 		
 	cd(CurrentDir); % Return to the main directory.
-	
-	W = struct('Workspace',{}); % 'Genotype',{},'Strain',{},'Crowding',{},'Age',{}
 	
 	for i=1:length(File1) % For each file.
 		

@@ -599,9 +599,9 @@ function Multiple_Choose_Plot(GUI_Parameters)
 		case 'Histogram of all Angles'
 			Var_Operations{1} = @(x) x.*180./pi; % Exclude tips (appear as angle = -1) and convert to degrees.
 			Filter_Operations{1} = @(x) (x == 3); % Only 3-way junctions (and specifically not tips)..
-			Filter_Operations{2} = @(x) (x>=25 & x<=35); % x(x>=25 & x<=35). Filter-out distances from medial axis (TODO: validate!).
+			% Filter_Operations{2} = @(x) (x>=25 & x<=35); % x(x>=25 & x<=35). Filter-out distances from medial axis (TODO: validate!).
 			Var_Fields = {'Angles'};
-			Filter_Fields = {'Order','Distance_From_Medial_Axis'};
+			Filter_Fields = {'Order'}; % ,'Distance_From_Medial_Axis'};
 			%
 			RowWise = 1;
 			%%%
@@ -610,11 +610,15 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Title = 'Histogram of all Angles of 3-way Junctions';
 			%%%
 			X_Min_Max = [30,200];
-			BinSize = 20 .* GUI_Parameters.Handles.Analysis.Slider.Value;
+			if(~GUI_Parameters.Handles.Analysis.Slider.UserData)
+				set(GUI_Parameters.Handles.Analysis.Slider,'Min',1,'Max',11,'Value',5,'SliderStep',[0.05,0.1]);
+			end
+			BinSize = GUI_Parameters.Handles.Analysis.Slider.Value;
 			%%%
 			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,[],Var_Operations,Filter_Operations,RowWise);
 			% assignin('base','Input_Struct',Input_Struct);
 			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
+			xlim([30,200]);
 		case 'Histogram of Symmetry Indices'
 			Var_Operations{1} = @(x) x;
 			Filter_Operations{1} = @(x) (x >= 0); % x(x>=25 & x<=35). Filter-out distances from medial axis (TODO: validate!).
@@ -632,6 +636,42 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,Var_Operations,Filter_Operations,RowWise);
 			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
 		case 'Minimal and Maximal Angles of 3-Way junctions'
+			set(GUI_Parameters.Handles.Normalization_List,'String',{'Not Normalized'});
+			set(GUI_Parameters.Handles.Plot_Type_List,'String',{'Default'});
+			
+			A1 = zeros(1,10^5);
+			A2 = zeros(1,10^5);
+			D = zeros(1,10^5);
+			vv = 0;
+			for w=1:numel(GUI_Parameters.Workspace)
+				for v=1:numel(GUI_Parameters.Workspace(w).Workspace.All_Vertices)
+					if(GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Order == 3)
+						a1 = min(GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Angles);
+						a2 = max(GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Angles);
+						d = GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Midline_Distance;
+						r = GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Half_Radius;
+						
+						if(a1 > 0 && a2 > 0 && a1 ~= a2 && abs(d) < r)
+							vv = vv + 1;
+							A1(vv) = a1;
+							A2(vv) = a2;
+							% D(vv) = d
+							D(vv) = d ./ (2.*r);
+						end
+					end
+				end
+			end
+			A1 = A1(1:vv)*180./pi; % Smallest angle. rad to deg.
+			A2 = A2(1:vv)*180./pi; % Largest angle. rad to deg.
+			D = transpose(rescale(abs(D(1:vv))));
+			
+			scatter(A2,A1,20,[1-D,0.*D,D],'filled');
+			
+			ylabel(['Smallest Angle [',char(176),']']);
+			xlabel(['Largest Angle [',char(176),']']);
+			set(gca,'FontSize',30);
+			axis([120,320,0,120]);
+			%{
 			Var_Operations{1} = @(x) x(x == min(x));
 			Var_Operations{2} = @(x) x(x == max(x)); % x(x ~= min(x) & x~=max(x) & x>0);
 			Filter_Operations{1} = @(x) (x == 3); % Only 3-way junctions.
@@ -646,6 +686,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			%%%
 			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,[],Var_Operations,Filter_Operations,RowWise);
 			Two_Vars_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Label,Y_Label,Title);
+			%}
 		case 'The Two Minimal Angles of each 3-Way junction'
 			Var_Operations{1} = @(x) x(x == min(x));
 			Var_Operations{2} = @(x) x(x ~= min(x) & x~=max(x));

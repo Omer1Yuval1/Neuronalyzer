@@ -18,7 +18,7 @@ function Reconstruct_Segmented_Trace(Workspace1,Dynamic_Sliders_Handles)
 			end
 		elseif(~isempty(Workspace1.Segments(s).Rectangles))
 			Color1 = rand(1,3);
-			Vs(s) = plot([Workspace1.Segments(s).Rectangles.X],[Workspace1.Segments(s).Rectangles.Y],'Color',Color1,'LineWidth',3);
+			Vs(s) = plot([Workspace1.Segments(s).Rectangles.X],[Workspace1.Segments(s).Rectangles.Y],'Color',Color1,'LineWidth',5);
 		end
 	end
 	
