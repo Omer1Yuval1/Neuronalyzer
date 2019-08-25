@@ -82,9 +82,23 @@ function Reconstruction_Index(GP,ii)
 			
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			hold on;
-			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],20,CM,'filled');
+			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],5,CM,'filled');
 			% scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],5,CM(O,:),'filled');
 			
+		case 'Longitudinal Gradient'
+			
+			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
+			hold on;
+			
+			O = round(rescale([GP.Workspace(ii).Workspace.All_Points.Axis_0_Position],1,100)');
+			CM = jet(100);
+			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],5,CM(O,:),'filled');
+			
+			%{
+			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],5,CM,'filled');
+			O = rescale([GP.Workspace(ii).Workspace.All_Points.Axis_0_Position])';
+			CM = [O,0.*O,1-O];
+			%}
 		case 'Vertices Angles'
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			Reconstruct_Vertices(GP.Workspace(ii).Workspace);
@@ -97,7 +111,7 @@ function Reconstruction_Index(GP,ii)
 			
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			hold on;
-			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],20,CM,'filled');
+			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],5,CM,'filled');
 			% Reconstruct_Curvature(GP.Workspace(ii).Workspace,Curvature_Min_Max(1),Curvature_Min_Max(2),Medial_Dist_Range(1),Medial_Dist_Range(2),1);
 		case 'PVD Orders - Points'
 			
@@ -127,39 +141,13 @@ function Reconstruction_Index(GP,ii)
 					if(isnan(c))
 						plot(x,y,'Color',C(end,:),'LineWidth',3);
 					else
-						plot(x,y,'Color',C(c,:),'LineWidth',5);
+						plot(x,y,'Color',C(c,:),'LineWidth',3);
 					end
 				end
 			end
 		otherwise
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			Reconstruct_Trace(GP.Workspace(ii).Workspace);
-		%{
-		case 'Volume - Initial Guess'
-			Reconstruct_Initial_Guess_Volume(GP.Workspace(1).Workspace);
-		case 'Trace'
-			
-		case 'Full Trace'
-			Reconstruct_Trace_Full(GP.Workspace(1).Workspace);
-		case 'Skeleton'
-			Reconstruct_Trace_Pixels(GP.Workspace(1).Workspace);
-		case 'Vertices Angles - Skeleton'
-			Reconstruct_Skeleton_Vertices(GP);
-		case 'Dorsal-Ventral'
-			Reconstruct_Dorsal_Ventral(GP.Workspace(1).Workspace);
-		case 'Longitudinal Gradient'
-			Reconstruct_Gradient(GP.Workspace(1).Workspace);
-		case 'Menorah Orders'
-			Reconstruct_Menorah_Orders(GP.Workspace(1).Workspace);
-		case 'Individual Menorahs'
-			Reconstruct_Menorahs(GP.Workspace(1).Workspace);
-		case 'Persistence Length'
-			Reconstruct_Persistence_Length(GP.Workspace(1).Workspace,GP.Reconstruction_Value,GP.Slider_Value);
-		case 'Curviness Length'
-			% Reconstruct_Least_Mean_Squared(GP.Workspace(1).Workspace,GP.Reconstruction_Value,GP.Slider_Value);
-		% case {13,14}
-			% Reconstruct_Length(GP.Workspace(1).Workspace,GP.Slider_Value,GP.Reconstruction_Value);
-		%}
 	end
 	
 	%{

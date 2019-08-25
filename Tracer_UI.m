@@ -107,95 +107,80 @@ function Tracer_UI()
 		H_Recon_Binary_Image = uimenu(Reconstructions_Menu_Handle,'Label','Binary Image','UserData',0,'Callback',@Reconstruction_Func);
 		H_Recon_Skeleton_Image = uimenu(Reconstructions_Menu_Handle,'Label','Skeleton','UserData',0,'Callback',@Reconstruction_Func);
 		H_Recon_CB = uimenu(Reconstructions_Menu_Handle,'Label','Cell Body','UserData',0,'Callback',@Reconstruction_Func);
-		% H0_1_1 = uimenu(Reconstructions_Menu_Handle,'Label','Initial Guess');
-		% 	H0_1_1_1 = uimenu(H0_1_1,'Label','Volume - Initial Guess','UserData',0,'Callback',@Reconstruction_Func);
-		% 	H0_1_1_2 = uimenu(H0_1_1,'Label','Skeleton - Initial Guess','UserData',0,'Callback',@Reconstruction_Func);
-		% 	H0_1_1_3 = uimenu(H0_1_1,'Label','Segmentation - Initial Guess','UserData',0,'Callback',@Reconstruction_Func);
-		% H0_1_2 = uimenu(Reconstructions_Menu_Handle,'Label','Trace');
-		% 	H0_1_2_1 = uimenu(H0_1_2,'Label','Trace','UserData',0,'Callback',@Reconstruction_Func);
-		% 	H0_1_2_2 = uimenu(H0_1_2,'Label','Full Trace','UserData',0,'Callback',@Reconstruction_Func);
-		% 	H0_1_2_3 = uimenu(H0_1_2,'Label','Skeleton','UserData',0,'Callback',@Reconstruction_Func);
 		uimenu(Reconstructions_Menu_Handle,'Label','Segmentation','UserData',0,'Callback',@Reconstruction_Func);
-		% H0_1_4 = uimenu(Reconstructions_Menu_Handle,'Label','Menorah Orders','UserData',1,'Callback',@Reconstruction_Func);
-		% H0_1_5 = uimenu(Reconstructions_Menu_Handle,'Label','Individual Menorahs','UserData',0,'Callback',@Reconstruction_Func);
+		uimenu(Reconstructions_Menu_Handle,'Label','Individual Menorahs','UserData',0,'Callback',@Reconstruction_Func,'Enable','off');
 		H0_1_6 = uimenu(Reconstructions_Menu_Handle,'Label','Vertices Angles');
-			H0_1_6_1 = uimenu(H0_1_6,'Label','Vertices Angles','UserData',2,'Callback',@Reconstruction_Func);
-		% 	H0_1_6_2 = uimenu(H0_1_6,'Label','Vertices Angles - Skeleton','UserData',2,'Callback',@Reconstruction_Func);
+			uimenu(H0_1_6,'Label','Vertices Angles','UserData',2,'Callback',@Reconstruction_Func);
 		uimenu(Reconstructions_Menu_Handle,'Label','Axes','UserData',0,'Callback',@Display_Neuron_Axes);
 		uimenu(Reconstructions_Menu_Handle,'Label','Midline Orientation','UserData',0,'Callback',@Reconstruction_Func);
-		% uimenu(Reconstructions_Menu_Handle,'Label','Medial Axis','UserData',0,'Callback',@Reconstruction_Func);
-		% H0_1_8 = uimenu(Reconstructions_Menu_Handle,'Label','Longitudinal Gradient','UserData',0,'Callback',@Reconstruction_Func);		
+		uimenu(Reconstructions_Menu_Handle,'Label','Longitudinal Gradient','UserData',0,'Callback',@Reconstruction_Func,'Enable','off');
 		uimenu(Reconstructions_Menu_Handle,'Label','Curvature','UserData',0,'Callback',@Reconstruction_Func);
-		uimenu(Reconstructions_Menu_Handle,'Label','PVD Orders - Points','UserData',0,'Callback',@Reconstruction_Func);
-		uimenu(Reconstructions_Menu_Handle,'Label','PVD Orders - Segments','UserData',0,'Callback',@Reconstruction_Func);
-		% H0_1_10 = uimenu(Reconstructions_Menu_Handle,'Label','Persistence Length','UserData',0,'Callback',@Reconstruction_Func);
-		% H0_1_11 = uimenu(Reconstructions_Menu_Handle,'Label','Curviness Length','UserData',0,'Callback',@Reconstruction_Func);
+		H0_1_7 = uimenu(Reconstructions_Menu_Handle,'Label','PVD Orders');
+			uimenu(H0_1_7,'Label','PVD Orders - Points','UserData',0,'Callback',@Reconstruction_Func);
+			uimenu(H0_1_7,'Label','PVD Orders - Segments','UserData',0,'Callback',@Reconstruction_Func);
 	set(allchild(Reconstructions_Menu_Handle),'Enable','off');
 	% set(H0_1_2_4,'Enable','off');
 	Graphs_Menu_Handle = uimenu(GUI_Parameters.Handles.Figure,'Label','Analysis Plots');
-			
+		
 		H_Menu1_Length = uimenu(Graphs_Menu_Handle,'Label','Length');
 				uimenu(H_Menu1_Length,'Label','Total Length','UserData',1,'Callback',@Menu1_Plots_Func);
-				uimenu(H_Menu1_Length,'Label','Mean Segment Length','UserData',1,'Callback',@Menu1_Plots_Func);
-				uimenu(H_Menu1_Length,'Label','End2End Length Of Segments','UserData',1,'Callback',@Menu1_Plots_Func);
+				uimenu(H_Menu1_Length,'Label','Mean Segment Length','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
+				uimenu(H_Menu1_Length,'Label','End2End Length Of Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
 		
 		H_Menu2_Counts = uimenu(Graphs_Menu_Handle,'Label','Counts');
-			uimenu(H_Menu2_Counts,'Label','Number of Segments','UserData',1,'Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu2_Counts,'Label','Number of Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
 			uimenu(H_Menu2_Counts,'Label','Number of Terminal Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
 			
 		H_Menu3_Curvature = uimenu(Graphs_Menu_Handle,'Label','Curvature');
-			uimenu(H_Menu3_Curvature,'Label','Mean Curvature Of Segments','UserData',1,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu3_Curvature,'Label','Max Curvature Of Segments','UserData',1,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu3_Curvature,'Label','Mean Curvature Of Terminal Segments','UserData',1,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu3_Curvature,'Label','Max Curvature Of Terminal Segments','UserData',1,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu3_Curvature,'Label','Distribution of Mean Squared Curvature Of Segments','UserData',1,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu3_Curvature,'Label','Distribution of Max Squared Curvature Of Segments','UserData',1,'Callback',@Menu1_Plots_Func);
-		
-		H_Menu4_Others = uimenu(Graphs_Menu_Handle,'Label','Others');
-			uimenu(H_Menu4_Others,'Label','Distribution of the Difference between Vertex and End2End Angles','UserData',1,'Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu3_Curvature,'Label','Mean Curvature Of Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
+			uimenu(H_Menu3_Curvature,'Label','Max Curvature Of Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
+			uimenu(H_Menu3_Curvature,'Label','Mean Curvature Of Terminal Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
+			uimenu(H_Menu3_Curvature,'Label','Max Curvature Of Terminal Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
+			uimenu(H_Menu3_Curvature,'Label','Distribution of Mean Squared Curvature Of Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
+			uimenu(H_Menu3_Curvature,'Label','Distribution of Max Squared Curvature Of Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
 		
 		H_Menu2_CB = uimenu(Graphs_Menu_Handle,'Label','Cell Body','Callback','');
-			H_Menu21_CB = uimenu(H_Menu2_CB,'Label','CB Intensity','UserData',1,'Callback',@Menu1_Plots_Func);
-			H_Menu22_CB = uimenu(H_Menu2_CB,'Label','CB Area','UserData',1,'Callback',@Menu1_Plots_Func);
+			H_Menu21_CB = uimenu(H_Menu2_CB,'Label','CB Intensity','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
+			H_Menu22_CB = uimenu(H_Menu2_CB,'Label','CB Area','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
 		
 		H_Menu3_Vertices = uimenu(Graphs_Menu_Handle,'Label','Vertices','Callback','');
 			H_Menu31_Angles = uimenu(H_Menu3_Vertices,'Label','Angles','Callback','');
-				% H_Mene311 = uimenu(H_Menu31_Angles,'Label','Symmetry of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);
 				H_Menu311 = uimenu(H_Menu31_Angles,'Label','Histograms','Callback','');
-					H_Menu3111 = uimenu(H_Menu311,'Label','Histogram of all Angles','UserData',2,'Callback',@Menu1_Plots_Func);
-					H_Menu3112 = uimenu(H_Menu311,'Label','Histogram of Symmetry Indices','UserData',2,'Callback',@Menu1_Plots_Func);
-					H_Menu3113 = uimenu(H_Menu311,'Label','Distribution of Vertices Angles Relative To The Medial Axis','UserData',2,'Callback',@Menu1_Plots_Func);
-					H_Menu3114 = uimenu(H_Menu311,'Label','Distribution of Vertices Angles Relative To The Medial Axis - Corrected','UserData',2,'Callback',@Menu1_Plots_Func);
-					H_Menu3115 = uimenu(H_Menu311,'Label','Histogram of Smallest, Mid & Largest Angles','UserData',2,'Callback',@Menu1_Plots_Func);
-					H_Menu3116 = uimenu(H_Menu311,'Label','Distribution of Min Medial Angle Diff','UserData',2,'Callback',@Menu1_Plots_Func);
+					uimenu(H_Menu311,'Label','Histogram of all Angles','UserData',2,'Callback',@Menu1_Plots_Func);
+					uimenu(H_Menu311,'Label','Histogram of Symmetry Indices','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
+					uimenu(H_Menu311,'Label','Distribution of Vertices Angles Relative To The Medial Axis','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
+					uimenu(H_Menu311,'Label','Distribution of Vertices Angles Relative To The Medial Axis - Corrected','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
+					uimenu(H_Menu311,'Label','Histogram of Smallest, Mid & Largest Angles','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
+					uimenu(H_Menu311,'Label','Distribution of Min Medial Angle Diff','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
+					uimenu(H_Menu31_Angles,'Label','Distribution of the Difference between Vertex and End2End Angles','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
 				H_Menu312 = uimenu(H_Menu31_Angles,'Label','Two Angles Plots','Callback','');
 					H_Menu3121 = uimenu(H_Menu312,'Label','Minimal and Maximal Angles of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);
-					H_Menu3122 = uimenu(H_Menu312,'Label','The Two Minimal Angles of each 3-Way junction','UserData',2,'Callback',@Menu1_Plots_Func);
-					H_Menu3123 = uimenu(H_Menu312,'Label','Linearity-Symmetry of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);
-					H_Menu3124 = uimenu(H_Menu312,'Label','Sum of 2 Smallest VS Product of 2 Smallest','UserData',2,'Callback',@Menu1_Plots_Func);
-					H_Menu3126 = uimenu(H_Menu312,'Label','Smallest Angle VS Diff between 2 Smallest','UserData',2,'Callback',@Menu1_Plots_Func);
+					H_Menu3122 = uimenu(H_Menu312,'Label','The Two Minimal Angles of each 3-Way junction','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
+					H_Menu3123 = uimenu(H_Menu312,'Label','Linearity-Symmetry of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
+					H_Menu3124 = uimenu(H_Menu312,'Label','Sum of 2 Smallest VS Product of 2 Smallest','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
+					H_Menu3126 = uimenu(H_Menu312,'Label','Smallest Angle VS Diff between 2 Smallest','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
 				H_Menu313 = uimenu(H_Menu31_Angles,'Label','Three Angles Plots','Callback','');
-					H_Menu3131 = uimenu(H_Menu313,'Label','2D Histogram Angles of 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func);
-					H_Menu3132 = uimenu(H_Menu313,'Label','2D Histogram of Corrected Angles of 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func);
-					H_Menu3133 = uimenu(H_Menu313,'Label','2D Histogram of Invariant Angles of 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func);
-					H_Menu3134 = uimenu(H_Menu313,'Label','2D Histogram of Invariant Corrected Angles of 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func);
-					% H_Menu3131 = uimenu(H_Menu313,'Label','Smallest-Mid-largest','UserData',2,'Callback',@Menu1_Plots_Func);
+					H_Menu3131 = uimenu(H_Menu313,'Label','2D Histogram Angles of 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
+					H_Menu3132 = uimenu(H_Menu313,'Label','2D Histogram of Corrected Angles of 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
+					H_Menu3133 = uimenu(H_Menu313,'Label','2D Histogram of Invariant Angles of 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
+					H_Menu3134 = uimenu(H_Menu313,'Label','2D Histogram of Invariant Corrected Angles of 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
+				
 			H_Menu32_Angles = uimenu(H_Menu3_Vertices,'Label','Distances','Callback','');
-				H_Menu321 = uimenu(H_Menu32_Angles,'Label','Distances Of Vertices From The Medial Axis - Means','UserData',2,'Callback',@Menu1_Plots_Func);
+				H_Menu321 = uimenu(H_Menu32_Angles,'Label','Distances Of Vertices From The Medial Axis - Means','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
 				H_Menu322 = uimenu(H_Menu32_Angles,'Label','Distances Of Vertices From The Medial Axis - Histogram','UserData',2,'Callback',@Menu1_Plots_Func);
-				H_Menu323 = uimenu(H_Menu32_Angles,'Label','Distances Of 3-Way Junctions From The Medial Axis - Histogram','UserData',2,'Callback',@Menu1_Plots_Func);
-				H_Menu324 = uimenu(H_Menu32_Angles,'Label','Distances Of Tips From The Medial Axis - Histogram','UserData',2,'Callback',@Menu1_Plots_Func);
-				H_Menu325 = uimenu(H_Menu32_Angles,'Label','Smallest Angle VS Distance From Medial Axis','UserData',2,'Callback',@Menu1_Plots_Func);
-				H_Menu326 = uimenu(H_Menu32_Angles,'Label','Distances Of Vertices From The CB','UserData',2,'Callback',@Menu1_Plots_Func);
-		H_Menu4_Orientation = uimenu(Graphs_Menu_Handle,'Label','Orientation','Callback','');
-			H_Menu41_Orientation_Distribution = uimenu(H_Menu4_Orientation,'Label','Distibution of Midline Orientation','Callback',@Menu1_Plots_Func);
-			H_Menu42_Orientation_VS_Arclength_2D_Hist = uimenu(H_Menu4_Orientation,'Label','Distibution of Midline Orientation Along the Midline','Callback',@Menu1_Plots_Func);
-			H_Menu43_Orientation_VS_Arclength_2D_Hist = uimenu(H_Menu4_Orientation,'Label','Distibution of Midline Orientation Along the Midline - Vertices Only','Callback',@Menu1_Plots_Func);
+				H_Menu323 = uimenu(H_Menu32_Angles,'Label','Distances Of 3-Way Junctions From The Medial Axis - Histogram','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
+				H_Menu324 = uimenu(H_Menu32_Angles,'Label','Distances Of Tips From The Medial Axis - Histogram','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
+				H_Menu325 = uimenu(H_Menu32_Angles,'Label','Smallest Angle VS Distance From Medial Axis','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
+				H_Menu326 = uimenu(H_Menu32_Angles,'Label','Distances Of Vertices From The CB','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
+		H_Menu4_Orientation = uimenu(Graphs_Menu_Handle,'Label','Midline Orientation','Callback','');
+			H_Menu41_Orientation_Distribution = uimenu(H_Menu4_Orientation,'Label','Distribution of Midline Orientation','Callback',@Menu1_Plots_Func);
+			H_Menu42_Orientation_VS_Arclength_2D_Hist = uimenu(H_Menu4_Orientation,'Label','Distribution of Midline Orientation Along the Midline','Callback',@Menu1_Plots_Func);
+			H_Menu43_Orientation_VS_Arclength_2D_Hist = uimenu(H_Menu4_Orientation,'Label','Distribution of Midline Orientation Along the Midline - Vertices Only','Callback',@Menu1_Plots_Func);
 				% H_Menu1321_Primary_Vertices_Mean_Distance = uimenu(H_Menu132_Distances,'Label','Primary_Vertices_Mean_Distance','UserData',1,'Callback',@Menu1_Plots_Func);
 			% H_Menu133_Vertices_Density = uimenu(H_Menu13_Vertices,'Label','Density of Vertices','UserData',1,'Callback',@Menu1_Plots_Func);			
 		
 		H_Menu6_Distance = uimenu(Graphs_Menu_Handle,'Label','Distance','Callback','');
-			uimenu(H_Menu6_Distance,'Label','Distibution of Midline Distances (all points)','Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu6_Distance,'Label','Distribution of Midline Distances (all points)','Callback',@Menu1_Plots_Func);
 		
 		H_Menu5_2D_Plots = uimenu(Graphs_Menu_Handle,'Label','2D Plots','Callback','');
 			uimenu(H_Menu5_2D_Plots,'Label','Midline Distance VS Midline Orientation','UserData',2,'Callback',@Menu1_Plots_Func);
@@ -203,6 +188,7 @@ function Tracer_UI()
 			uimenu(H_Menu5_2D_Plots,'Label','Midline Orientation VS Curvature','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu5_2D_Plots,'Label','Midline Orientation VS Curvature VS Midlines Distance','UserData',2,'Callback',@Menu1_Plots_Func);
             
+		%{
 		H_Menu4_Customized = uimenu(Graphs_Menu_Handle,'Label','Customized','Callback','');
 			% Basics:
 			uimenu(H_Menu4_Customized,'Label','Custom_1_Total_Length','UserData',2,'Callback',@Menu1_Plots_Func);
@@ -233,13 +219,6 @@ function Tracer_UI()
 			uimenu(H_Menu4_Customized,'Label','Custom_4_5_Rects_Curvature_VS_Distance_2D_Hist','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu4_Customized,'Label','Custom_4_6_Curvature_VS_Distance_2D_Hist_Groups','UserData',2,'Callback',@Menu1_Plots_Func);
 			
-		%{
-		H_Menu17_Curvature = uimenu(Graphs_Menu_Handle,'Label','Curvature','Callback','');
-			H_Menu171_Persistence_Length = uimenu(H_Menu17_Curvature,'Label','Persistence Length','UserData',1,'Callback',@Menu1_Plots_Func);
-			H_Menu172_Curvature = uimenu(H_Menu17_Curvature,'Label','Curvature','Callback','');
-				H_Menu1721 = uimenu(H_Menu172_Curvature,'Label','Integral of Squared Curvature of Branches','UserData',1,'Callback',@Menu1_Plots_Func);
-			H_Menu173_Straight_Arc_Ratio = uimenu(H_Menu17_Curvature,'Label','Straight-Arc Length Ratio','UserData',1,'Callback',@Menu1_Plots_Func);
-		H_Menu19_Orientation = uimenu(Graphs_Menu_Handle,'Label','Orientation');
 		H_Menu20_Clustering = uimenu(Graphs_Menu_Handle,'Label','Clustering');
 		H_Menu21_Space_Filling = uimenu(Graphs_Menu_Handle,'Label','Space Filling');
 			H_Menu211_Bounding_Rectangles = uimenu(H_Menu21_Space_Filling,'Label','Bounding Rectangles');
@@ -728,14 +707,20 @@ function Tracer_UI()
 	
 	function Display_Neuron_Axes(~,~) % This function is run either if the user chooses to display the midline from the uimenu, or if the number of midline points changes.
 		
-		uicontrol(GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','text','String','Number of Midline Points:','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.05,.8,.6,GUI_Parameters.Visuals.Button1_Height]); % ,'backgroundcolor',[0.6 0.6 0.6]			% GUI_Parameters.Handles.Tracing.Analysis_Tab.Midline_Points_Num = 
-		GUI_Parameters.Handles.Tracing.Midline_Points_Num = uicontrol(GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','edit','String','50','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.7,.8,.25,GUI_Parameters.Visuals.Button1_Height],'Callback',@Plot_Draggable_Points); % ,'backgroundcolor',[0.6 0.6 0.6]);
+		All_Enabled_Objects = findobj(GUI_Parameters(1).Handles(1).Figure,'Enable','on');
+		set(All_Enabled_Objects,'Enable','off');
+		
+		% uicontrol(GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','text','String','Number of Midline Points:','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.05,.8,.7,GUI_Parameters.Visuals.Button1_Height]); % ,'backgroundcolor',[0.6 0.6 0.6]			% GUI_Parameters.Handles.Tracing.Analysis_Tab.Midline_Points_Num = 
+		GUI_Parameters.Handles.Tracing.Midline_Points_OnOff = uicontrol(GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','radio','String','# of Midline Points:','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Callback',@Draggable_Points_OnOff_Func,'Position',[.05,.8,.7,GUI_Parameters.Visuals.Button1_Height]); % ,'backgroundcolor',[0.6 0.6 0.6]			% GUI_Parameters.Handles.Tracing.Analysis_Tab.Midline_Points_Num = 
+		GUI_Parameters.Handles.Tracing.Midline_Points_Num = uicontrol(GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','edit','String','50','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.75,.8,.20,GUI_Parameters.Visuals.Button1_Height],'Callback',@Plot_Draggable_Points); % ,'backgroundcolor',[0.6 0.6 0.6]);
 		GUI_Parameters.Handles.Tracing.Apply_Axes_Button = uicontrol(GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','pushbutton','String','Apply Changes','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0,.01,1,GUI_Parameters.Visuals.Button1_Height],'Callback',@Apply_Axes_Changes_Func); % ,'backgroundcolor',[0.6 0.6 0.6]);
 		
 		Reconstruction_Func();
 		Plot_Draggable_Points();
 		
-		function Plot_Draggable_Points(source,~)
+		set(All_Enabled_Objects,'Enable','on');
+		
+		function Plot_Draggable_Points(~,~)
 			
 			%{
 			if(isempty(source)) % If this function is initiated from the text box (for the number of points).
@@ -744,6 +729,7 @@ function Tracer_UI()
 				delete(findobj(GUI_Parameters.Handles.Axes,'-not','Type','image','-or','-not','Type','axes')); % Delete all graphical objects (except for the axes and the image).
 			end
 			%}
+			
 			delete(findobj(GUI_Parameters.Handles.Axes,'-not','Type','image','-and','-not','Type','axes')); % Delete all graphical objects (except for the axes and the image).
 			
 			Np0 = numel(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_0);
@@ -775,32 +761,34 @@ function Tracer_UI()
 				Curve_Handles(ii) = plot(GUI_Parameters.Handles.Axes,XY_All_Fit(1,:,ii),XY_All_Fit(2,:,ii),'Color',CM(ii,:),'LineWidth',3);
 			end
 			
-			CM = jet(Np);
-			User_Data_Struct = struct('Axis_Field_Name',{},'Point_Index',{});
-			for ii=1:Np
-				User_Data_Struct(1).Axis_Field_Name = 'Axis_0'; User_Data_Struct(1).Curve_Index = 1; User_Data_Struct(1).Point_Index = ii;
-				DPoint_Handles(1,ii) = drawpoint(GUI_Parameters.Handles.Axes,'Position',[XY_All_Fit(1,ii,1),XY_All_Fit(2,ii,1)],'Color',CM(ii,:),'UserData',User_Data_Struct,'StripeColor','w','LineWidth',10); % ,'SelectedColor','r'
-				addlistener(DPoint_Handles(1,ii),'ROIMoved',@Draggable_Point_Func);
-				
-				%
-				User_Data_Struct(1).Axis_Field_Name = 'Axis_1_Dorsal'; User_Data_Struct(1).Curve_Index = 2; User_Data_Struct(1).Point_Index = ii;
-				DPoint_Handles(2,ii) = drawpoint(GUI_Parameters.Handles.Axes,'Position',[XY_All_Fit(1,ii,2),XY_All_Fit(2,ii,2)],'Color',CM(ii,:),'UserData',User_Data_Struct,'StripeColor','w','LineWidth',10); % ,'SelectedColor','r'
-				addlistener(DPoint_Handles(2,ii),'ROIMoved',@Draggable_Point_Func);
-				
-				User_Data_Struct(1).Axis_Field_Name = 'Axis_1_Ventral'; User_Data_Struct(1).Curve_Index = 3; User_Data_Struct(1).Point_Index = ii;
-				DPoint_Handles(3,ii) = drawpoint(GUI_Parameters.Handles.Axes,'Position',[XY_All_Fit(1,ii,3),XY_All_Fit(2,ii,3)],'Color',CM(ii,:),'UserData',User_Data_Struct,'StripeColor','w','LineWidth',10); % ,'SelectedColor','r'
-				addlistener(DPoint_Handles(3,ii),'ROIMoved',@Draggable_Point_Func);
-				
-				User_Data_Struct(1).Axis_Field_Name = 'Axis_2_Dorsal'; User_Data_Struct(1).Curve_Index = 4; User_Data_Struct(1).Point_Index = ii;
-				DPoint_Handles(4,ii) = drawpoint(GUI_Parameters.Handles.Axes,'Position',[XY_All_Fit(1,ii,4),XY_All_Fit(2,ii,4)],'Color',CM(ii,:),'UserData',User_Data_Struct,'StripeColor','w','LineWidth',10); % ,'SelectedColor','r'
-				addlistener(DPoint_Handles(4,ii),'ROIMoved',@Draggable_Point_Func);
-				
-				User_Data_Struct(1).Axis_Field_Name = 'Axis_2_Ventral'; User_Data_Struct(1).Curve_Index = 5; User_Data_Struct(1).Point_Index = ii;
-				DPoint_Handles(5,ii) = drawpoint(GUI_Parameters.Handles.Axes,'Position',[XY_All_Fit(1,ii,5),XY_All_Fit(2,ii,5)],'Color',CM(ii,:),'UserData',User_Data_Struct,'StripeColor','w','LineWidth',10); % ,'SelectedColor','r'
-				addlistener(DPoint_Handles(5,ii),'ROIMoved',@Draggable_Point_Func);
-				%}
-				
-				drawnow;
+			if(GUI_Parameters.Handles.Tracing.Midline_Points_OnOff.Value)
+				CM = jet(Np);
+				User_Data_Struct = struct('Axis_Field_Name',{},'Point_Index',{});
+				for ii=1:Np
+					User_Data_Struct(1).Axis_Field_Name = 'Axis_0'; User_Data_Struct(1).Curve_Index = 1; User_Data_Struct(1).Point_Index = ii;
+					DPoint_Handles(1,ii) = drawpoint(GUI_Parameters.Handles.Axes,'Position',[XY_All_Fit(1,ii,1),XY_All_Fit(2,ii,1)],'Color',CM(ii,:),'UserData',User_Data_Struct,'StripeColor','w','LineWidth',10); % ,'SelectedColor','r'
+					addlistener(DPoint_Handles(1,ii),'ROIMoved',@Draggable_Point_Func);
+					
+					%
+					User_Data_Struct(1).Axis_Field_Name = 'Axis_1_Dorsal'; User_Data_Struct(1).Curve_Index = 2; User_Data_Struct(1).Point_Index = ii;
+					DPoint_Handles(2,ii) = drawpoint(GUI_Parameters.Handles.Axes,'Position',[XY_All_Fit(1,ii,2),XY_All_Fit(2,ii,2)],'Color',CM(ii,:),'UserData',User_Data_Struct,'StripeColor','w','LineWidth',10); % ,'SelectedColor','r'
+					addlistener(DPoint_Handles(2,ii),'ROIMoved',@Draggable_Point_Func);
+					
+					User_Data_Struct(1).Axis_Field_Name = 'Axis_1_Ventral'; User_Data_Struct(1).Curve_Index = 3; User_Data_Struct(1).Point_Index = ii;
+					DPoint_Handles(3,ii) = drawpoint(GUI_Parameters.Handles.Axes,'Position',[XY_All_Fit(1,ii,3),XY_All_Fit(2,ii,3)],'Color',CM(ii,:),'UserData',User_Data_Struct,'StripeColor','w','LineWidth',10); % ,'SelectedColor','r'
+					addlistener(DPoint_Handles(3,ii),'ROIMoved',@Draggable_Point_Func);
+					
+					User_Data_Struct(1).Axis_Field_Name = 'Axis_2_Dorsal'; User_Data_Struct(1).Curve_Index = 4; User_Data_Struct(1).Point_Index = ii;
+					DPoint_Handles(4,ii) = drawpoint(GUI_Parameters.Handles.Axes,'Position',[XY_All_Fit(1,ii,4),XY_All_Fit(2,ii,4)],'Color',CM(ii,:),'UserData',User_Data_Struct,'StripeColor','w','LineWidth',10); % ,'SelectedColor','r'
+					addlistener(DPoint_Handles(4,ii),'ROIMoved',@Draggable_Point_Func);
+					
+					User_Data_Struct(1).Axis_Field_Name = 'Axis_2_Ventral'; User_Data_Struct(1).Curve_Index = 5; User_Data_Struct(1).Point_Index = ii;
+					DPoint_Handles(5,ii) = drawpoint(GUI_Parameters.Handles.Axes,'Position',[XY_All_Fit(1,ii,5),XY_All_Fit(2,ii,5)],'Color',CM(ii,:),'UserData',User_Data_Struct,'StripeColor','w','LineWidth',10); % ,'SelectedColor','r'
+					addlistener(DPoint_Handles(5,ii),'ROIMoved',@Draggable_Point_Func);
+					%}
+					
+					drawnow;
+				end
 			end
 			
 			function Draggable_Point_Func(source,~) % Update the position of annotated points.
@@ -850,6 +838,13 @@ function Tracer_UI()
 			[GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.All_Points,GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.All_Vertices] = Collect_All_Neuron_Points(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace); % [X, Y, Length, Angle, Curvature].
 			GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.All_Points = Find_Distance_From_Midline(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace,GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.All_Points,GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes,GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.User_Input.Scale_Factor,1);
 			GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.All_Vertices = Find_Distance_From_Midline(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace,GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.All_Vertices,GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes,GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.User_Input.Scale_Factor,1);
+		end
+		
+		function Draggable_Points_OnOff_Func(~,~)
+			All_Enabled_Objects = findobj(GUI_Parameters(1).Handles(1).Figure,'Enable','on');
+			set(All_Enabled_Objects,'Enable','off');
+			Plot_Draggable_Points();
+			set(All_Enabled_Objects,'Enable','on');
 		end
 	end
 	
@@ -999,15 +994,6 @@ function Tracer_UI()
 				Multiple_Choose_Plot(GUI_Parameters);
 		end
 		set(source,'Enable','on');
-	end
-	
-	function Tree_Center_CheckBox_Func(source,callbackdata)
-		% Tree_Center_CheckBox_Value = source.Value;
-		[Cxy_Num,Cxy_Length] = Find_Tree_Center(GUI_Parameters.Workspace(1).Workspace);
-		axes(GUI_Parameters.Handles.Axes);
-		hold on;
-		plot(GUI_Parameters.Handles.Axes,Cxy_Length(1),Cxy_Length(2),'.g','MarkerSize',40);
-		plot(GUI_Parameters.Handles.Axes,Cxy_Num(1),Cxy_Num(2),'.r','MarkerSize',20);
 	end
 	
 	function User_Input_Single_Func(source,callbackdata)
