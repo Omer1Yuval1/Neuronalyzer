@@ -182,6 +182,9 @@ function Tracer_UI()
 		H_Menu6_Distance = uimenu(Graphs_Menu_Handle,'Label','Distance','Callback','');
 			uimenu(H_Menu6_Distance,'Label','Distribution of Midline Distances (all points)','Callback',@Menu1_Plots_Func);
 		
+		H_Menu7_PVD_Orders = uimenu(Graphs_Menu_Handle,'Label','PVD Orders','Callback','');
+			uimenu(H_Menu7_PVD_Orders,'Label','PVD Orders - Length','UserData',2,'Callback',@Menu1_Plots_Func);
+			% uimenu(H_Menu7_PVD_Orders,'Label','PVD Orders - Segments','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
 		H_Menu5_2D_Plots = uimenu(Graphs_Menu_Handle,'Label','2D Plots','Callback','');
 			uimenu(H_Menu5_2D_Plots,'Label','Midline Distance VS Midline Orientation','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu5_2D_Plots,'Label','Midline Distance VS Curvature','UserData',2,'Callback',@Menu1_Plots_Func);

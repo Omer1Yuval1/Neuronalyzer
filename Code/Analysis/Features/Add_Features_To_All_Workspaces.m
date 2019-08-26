@@ -48,7 +48,7 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 			% If the main and tertiary axes already exist, do not compute them and only get the neuron points.
 			if(isfield(W(i).Workspace,'Neuron_Axes') && isfield(W(i).Workspace.Neuron_Axes,'Axis_0') && ~isempty(W(i).Workspace.Neuron_Axes.Axis_1_Ventral))
 				
-				[W(i).Workspace.All_Points,W(i).Workspace.All_Vertices] = Collect_All_Neuron_Points(W); % [X, Y, Length, Angle, Curvature].
+				[W(i).Workspace.All_Points,W(i).Workspace.All_Vertices] = Collect_All_Neuron_Points(W.Workspace); % [X, Y, Length, Angle, Curvature].
 				W(i).Workspace.All_Points = Find_Distance_From_Midline(W(i).Workspace,W(i).Workspace.All_Points,W(i).Workspace.Neuron_Axes,Scale_Factor,1);
 				W(i).Workspace.All_Vertices = Find_Distance_From_Midline(W(i).Workspace,W(i).Workspace.All_Vertices,W(i).Workspace.Neuron_Axes,Scale_Factor,1);
 				

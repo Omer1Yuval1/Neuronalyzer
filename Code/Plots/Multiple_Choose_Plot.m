@@ -326,6 +326,98 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Segments',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
 			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
 			
+		case 'PVD Orders - Length'
+			set(GUI_Parameters.Handles.Normalization_List,'String',{'Not Normalized','Normalized to Midline Length'});
+			set(GUI_Parameters.Handles.Plot_Type_List,'String',{'Default','Dorsal-Ventral Merged','Orders Merged','All Merged'});
+			
+			switch GUI_Parameters.Handles.Normalization_List.Value
+				case 1
+					if(~GUI_Parameters.Handles.Analysis.Slider.UserData)
+						set(GUI_Parameters.Handles.Analysis.Slider,'Min',20,'Max',120,'Value',50,'SliderStep',[0.01,0.1]);
+					end
+					Edges = 0:GUI_Parameters.Handles.Analysis.Slider.Value:700;
+				case 2 % Normalized to Midline Length.
+					if(~GUI_Parameters.Handles.Analysis.Slider.UserData)
+						set(GUI_Parameters.Handles.Analysis.Slider,'Min',0.02,'Max',.12,'Value',0.05,'SliderStep',[0.01,0.1]);
+					end
+					Edges = 0:GUI_Parameters.Handles.Analysis.Slider.Value:1;
+			end
+			
+			set(GUI_Parameters.Handles.Analysis.Slider_Text,'String',num2str(GUI_Parameters.Handles.Analysis.Slider.Value));
+			
+			S_D = cell(1,5); % (5,10^5);
+			L_D = cell(1,5); % zeros(5,10^5);
+			S_V = cell(1,5); % zeros(5,10^5);
+			L_V = cell(1,5); % zeros(5,10^5);
+			for w=1:numel(GUI_Parameters.Workspace)
+				
+				switch GUI_Parameters.Handles.Normalization_List.Value
+					case 1
+						Midline_Length = 1;
+					case 2 % Normalized to Midline Length.
+						Midline_Length = GUI_Parameters.Workspace(w).Workspace.Neuron_Axes.Axis_0(end).Arc_Length;
+				end
+				
+				for o=1:4
+					f_D = find([GUI_Parameters.Workspace(w).Workspace.All_Points.Midline_Distance] > 0 & [GUI_Parameters.Workspace(w).Workspace.All_Points.Class] == o);
+					f_V = find([GUI_Parameters.Workspace(w).Workspace.All_Points.Midline_Distance] < 0 & [GUI_Parameters.Workspace(w).Workspace.All_Points.Class] == o);
+				
+					Nd = length(S_D{o});
+					Nv = length(S_V{o});
+					
+					dd = Nd+1:Nd+length(f_D);
+					vv = Nv+1:Nv+length(f_V);
+				
+					S_D{o}(dd) = [GUI_Parameters.Workspace(w).Workspace.All_Points(f_D).Length] ./ Midline_Length; % A vector of rectangle lengths (dorsal side only) of class o.
+					L_D{o}(dd) = [GUI_Parameters.Workspace(w).Workspace.All_Points(f_D).Axis_0_Position] ./ Midline_Length; % A vector of midline position (arc-length) from the head (dorsal).
+					S_V{o}(vv) = [GUI_Parameters.Workspace(w).Workspace.All_Points(f_V).Length] ./ Midline_Length; % A vector of rectangle lengths (ventral side only) of class o
+					L_V{o}(vv) = [GUI_Parameters.Workspace(w).Workspace.All_Points(f_V).Axis_0_Position] ./ Midline_Length; % A vector of midline position (arc-length) from the head (ventral).
+				end
+            end
+			
+			for o=1:4
+				[N_D(o,:),~,I_D] = histcounts(L_D{o},Edges,'Normalization','Probability');
+				[N_V(o,:),~,I_V] = histcounts(L_V{o},Edges,'Normalization','Probability');
+				
+				% Multiply the counts by the total lengths within each [bin + class o]:
+				N_D(o,:) = N_D(o,:) .* sum(S_D{o}(I_D));
+				N_V(o,:) = N_V(o,:) .* sum(S_V{o}(I_V));
+            end
+            xx = (Edges(2:end) + Edges(1:end-1)) ./ 2;
+			
+			H_D = bar(xx,N_D',1,'stacked','FaceColor','flat'); % histogram(X_D,Edges);
+			hold on;
+			set(gca,'ColorOrderIndex',1);
+			H_V = bar(xx,-N_V',1,'stacked','FaceColor','flat'); % histogram(X_V,Edges);
+			
+			%{
+			if(GUI_Parameters.Handles.Plot_Type_List.Value == 2)
+				L = size(H_D.CData,1); % # of bars.
+				% H_D.CData = jet(L);
+				% H_V.CData = jet(L);
+				
+				CM = transpose(rescale(1:L));
+				CM = [1-CM, 0.*CM , CM];
+				H_D.CData = CM;
+				H_V.CData = CM;
+			else
+				legend({'Dorsal','Ventral'});
+			end
+			%}
+			
+			% xl = 0:pi/6:pi/2;
+			set(gca,'FontSize',26,'xlim',[Edges([1,end])]); % ,'XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)));
+			% ylim([-max(sum(N_V,1))-10,max(sum(N_D,1))+10]);
+			
+			switch GUI_Parameters.Handles.Normalization_List.Value
+				case 1
+					xlabel(['Midline Position [',char(181),'m]']);
+					ylabel('Count');
+				case 2 % Normalized to Midline Length.
+					xlabel(['Midline Position [',char(181),'m] (normalized)']);
+					ylabel('Count (normalized)');
+			end
+		case 'PVD Orders - Segments'
 		case 'CB Intensity'
 			Var_Operations = @(x) x; % Sum up all segments lengths of each individual animal (=workspace). The length of a segment has to be positive.
 			Filter_Operations = [];
