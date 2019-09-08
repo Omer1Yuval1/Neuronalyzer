@@ -43,6 +43,8 @@ function Reconstruction_Index(GP,ii)
 				hold on;
 				plot(x,y,'.','MarkerSize',7);
 			end
+		case 'Blob'
+			Find_Worm_Longitudinal_Axis(GP.Workspace(ii).Workspace,1,GP.Handles.Axes);
 		case 'Segmentation'
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			if(isfield(GP.Workspace(ii).Workspace,'Segments'))
@@ -72,6 +74,32 @@ function Reconstruction_Index(GP,ii)
 				plot(x + 40.*[0,cos(a)] , y + 40.*[0,sin(a)]);
 			end
 			%}
+		case 'Axes Mapping Process'
+			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
+			hold on;
+			Map_Worm_Axes(GP.Workspace(ii).Workspace,GP.Workspace(ii).Workspace.Neuron_Axes,1,0,GP.Handles.Axes);
+		case 'Midline Distance'
+			
+			N = 2 .* [GP.Workspace(ii).Workspace.All_Points.Half_Radius];
+			
+			X = [GP.Workspace(ii).Workspace.All_Points.X];
+			Y = [GP.Workspace(ii).Workspace.All_Points.Y];
+			O = rescale(abs([GP.Workspace(ii).Workspace.All_Points.Midline_Distance]) ./ N)';
+			
+			[~,~,Ic] = histcounts(O,1000);
+			F = find(Ic ~=0);
+			Ic = Ic(F);
+			X = X(F);
+			Y = Y(F);
+			
+			CM = hsv(1000);
+			
+			% CM = [O,.5.*O,1-O];
+			
+			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
+			hold on;
+			scatter(X,Y,5,CM(Ic,:),'filled');
+			% scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],5,CM,'filled');
 		case 'Midline Orientation'
 			
 			O = rescale([GP.Workspace(ii).Workspace.All_Points.Midline_Orientation])';

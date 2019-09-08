@@ -1,4 +1,4 @@
-function Worm_Axes = Find_Worm_Longitudinal_Axis(Workspace,Plot1)
+function Worm_Axes = Find_Worm_Longitudinal_Axis(Workspace,Plot1,Ax)
 	
 	% TODO: use scale-bar:
 	Scale_Factor = Workspace.User_Input.Scale_Factor;
@@ -7,10 +7,9 @@ function Worm_Axes = Find_Worm_Longitudinal_Axis(Workspace,Plot1)
 	
 	% This functions uses a higher level perspective (the entire neuron) to detect the longitudinal axis of the worm.
 	% It first performs closing to transform the neuron into a large blob.
-	% Then it skeltonizes this blob to get its midline.
+	% Then it skeletonizes this blob to get its midline.
 	
 	% Better_Skeletonization_Threshold = 1000;
-	BW_Threshold = 0.5;
 	Smoothing_Parameter = 100000;
 	Eval_Points_Num = 100;
 	Eval_Points_Pixel_Ratio = 0.5;
@@ -21,18 +20,10 @@ function Worm_Axes = Find_Worm_Longitudinal_Axis(Workspace,Plot1)
 	Worm_Axes(1).Axis_2_Dorsal = struct('X',{},'Y',{});
 	Worm_Axes(1).Axis_2_Ventral = struct('X',{},'Y',{});
 	
-	Im_BW = imbinarize(Workspace.Image0,BW_Threshold);
-	[R,C] = size(Im_BW);
+	ImB = Neuron_To_Blob(Workspace.Image0);
 	
-	se = strel('disk',20);
-	ImD1 = imdilate(Im_BW,se);
-	ImD2 = imdilate(ImD1,se); % The Blob.
-	
-	Im_Skel = bwmorph(imclose(ImD2,strel('disk',100)),'skel',inf); % The skeleton of the blob. % Im_Axis = bwmorph(imclose(ImD2,strel('disk',100)),'thin',inf);
+	Im_Skel = bwmorph(imclose(ImB,strel('disk',100)),'skel',inf); % The skeleton of the blob. % Im_Axis = bwmorph(imclose(ImB,strel('disk',100)),'thin',inf);
 	Im_Skel_Pruned = bwskel(Im_Skel,'MinBranchLength',Min_Branch_Length);
-	
-	[Y_Skel,X_Skel] = find(Im_Skel);
-	[Y_Skel_Pruned,X_Skel_Pruned] = find(Im_Skel_Pruned);
 	
 	% Save midline pixels ordered from head (left) to tail:
 	[Y,X] = find(bwmorph(Im_Skel_Pruned,'endpoints')); % End points of the midline.
@@ -54,7 +45,7 @@ function Worm_Axes = Find_Worm_Longitudinal_Axis(Workspace,Plot1)
 	% XY_Der = XY_Der ./ (sqrt(sum(XY_Der.^2,2));
 	S.Tangent_Angles = atan2(XY_Der(:,2),XY_Der(:,1));
 	
-    Im_Perim = bwperim(ImD2);
+    Im_Perim = bwperim(ImB);
 	[Y,X] = find(Im_Perim);
     f = find(X == min(X));
     XY = Order_Connected_Pixels(Im_Perim,[X(f(1)),Y(f(1))]); % [Nx2].
@@ -83,33 +74,43 @@ function Worm_Axes = Find_Worm_Longitudinal_Axis(Workspace,Plot1)
 	% For each midline point (and a normal vector), match two boundary points (dorsal and ventral):
 	% Boundary_Points
 	
-	if(Plot1)
-		figure;
-			subplot(2,1,1);
-				imshow(Workspace.Image0); % imshow(ImD2);
-				set(gca,'YDir','normal');
-				hold on;
-				
-                for p=1:length(Vb)
-                    plot(S.Midline_Points(p,1) +  40.*[0,cos(S.Tangent_Angles(p))] , S.Midline_Points(p,2) +  40.*[0,sin(S.Tangent_Angles(p))]);
-                   % plot(S.Midline_Points(p,1) +  [0,XY_Der(p,1)] , S.Midline_Points(p,2) +  [0,XY_Der(p,2)]);
-                end
-				
-				plot(X_Skel_Pruned,Y_Skel_Pruned,'.g','LineWidth',2);
-				scatter(S.Midline_Points(:,1),S.Midline_Points(:,2),20,jet(size(S.Midline_Points,1)),'filled'); % plot(S.Midline_Points(:,1),S.Midline_Points(:,2),'.r','LineWidth',2);
-				
-				scatter(S.Boundary_Points_Dorsal(:,1),S.Boundary_Points_Dorsal(:,2),10,jet(size(S.Boundary_Points_Dorsal,1)),'filled');
-				scatter(S.Boundary_Points_Ventral(:,1),S.Boundary_Points_Ventral(:,2),10,jet(size(S.Boundary_Points_Ventral,1)),'filled');
-				% scatter(S.Boundary_Pixels(:,1),S.Boundary_Pixels(:,2),20,jet(size(S.Boundary_Pixels,1)),'filled');
-                % XY = cell2mat(smoothn(num2cell(S.Boundary_Pixels,1),0.1)); % Smoothing.
-                % plot(XY(:,1),XY(:,2),'.y','LineWidth',2);
-				
-			subplot(2,1,2);
-				imshow(ImD2);
-				set(gca,'YDir','normal');
-				hold on;
-				plot(X_Skel,Y_Skel,'.g','LineWidth',2);
-				plot(S.Boundary_Pixels(:,1),S.Boundary_Pixels(:,2),'.y','LineWidth',2);
+	switch(Plot1)
+		case 1
+			[Y,X] = find(Im_Skel_Pruned); % [Y,X] = find(Im_Skel);
+			imshow(ImB,'Parent',Ax);
+			% set(gca,'YDir','normal');
+			drawnow;
+			hold on;
+			
+			
+			% Plot dorsal arrows:
+			for p=1:15:length(Vb)
+				% plot(S.Midline_Points(p,1) +  40.*[0,cos(S.Tangent_Angles(p))] , S.Midline_Points(p,2) +  40.*[0,sin(S.Tangent_Angles(p))]);
+			   quiver(S.Midline_Points(p,1),S.Midline_Points(p,2) , cos(S.Tangent_Angles(p)-pi/2),sin(S.Tangent_Angles(p)-pi/2),'LineWidth',1,'AutoScaleFactor',40,'MaxHeadSize',3,'Color','k');
+			end
+			
+			scatter(S.Midline_Points(:,1),S.Midline_Points(:,2),20,jet(size(S.Midline_Points,1)),'filled'); % plot(X,Y,'.b','LineWidth',2);
+			plot(S.Boundary_Pixels(:,1),S.Boundary_Pixels(:,2),'.','Color',[0.8,0,0],'MarkerSize',15);
+			
+		case 2
+			[Y,X] = find(Im_Skel_Pruned);
+			imshow(Workspace.Image0,'Parent',Ax); % imshow(ImB);
+			set(gca,'YDir','normal');
+			hold on;
+			
+			for p=1:length(Vb)
+				plot(S.Midline_Points(p,1) +  40.*[0,cos(S.Tangent_Angles(p))] , S.Midline_Points(p,2) +  40.*[0,sin(S.Tangent_Angles(p))]);
+			   % plot(S.Midline_Points(p,1) +  [0,XY_Der(p,1)] , S.Midline_Points(p,2) +  [0,XY_Der(p,2)]);
+			end
+			
+			plot(X,X,'.g','LineWidth',2);
+			scatter(S.Midline_Points(:,1),S.Midline_Points(:,2),20,jet(size(S.Midline_Points,1)),'filled'); % plot(S.Midline_Points(:,1),S.Midline_Points(:,2),'.r','LineWidth',2);
+			
+			scatter(S.Boundary_Points_Dorsal(:,1),S.Boundary_Points_Dorsal(:,2),10,jet(size(S.Boundary_Points_Dorsal,1)),'filled');
+			scatter(S.Boundary_Points_Ventral(:,1),S.Boundary_Points_Ventral(:,2),10,jet(size(S.Boundary_Points_Ventral,1)),'filled');
+			% scatter(S.Boundary_Pixels(:,1),S.Boundary_Pixels(:,2),20,jet(size(S.Boundary_Pixels,1)),'filled');
+			% XY = cell2mat(smoothn(num2cell(S.Boundary_Pixels,1),0.1)); % Smoothing.
+			% plot(XY(:,1),XY(:,2),'.y','LineWidth',2);
 	end
 	
 	% Vertices = Workspace.Vertices;

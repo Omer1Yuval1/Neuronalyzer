@@ -192,19 +192,19 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			end
 			
 			switch(GUI_Parameters.Handles.Normalization_List.Value)
-				case 1
+				case 1 % Not Normalized.
 					if(~GUI_Parameters.Handles.Analysis.Slider.UserData)
 						set(GUI_Parameters.Handles.Analysis.Slider,'Min',1,'Max',5,'Value',3,'SliderStep',[0.5,1]);
 					end
 					Edges = -45:GUI_Parameters.Handles.Analysis.Slider.Value:45;
-				case 2
+				case 2 % Normalized to twice half-radius.
 					X = X ./ (2.*Y);
 					
 					if(~GUI_Parameters.Handles.Analysis.Slider.UserData)
 						set(GUI_Parameters.Handles.Analysis.Slider,'Min',0.01,'Max',.11,'Value',0.05,'SliderStep',[0.01,0.02]);
 					end
 					Edges = -1:GUI_Parameters.Handles.Analysis.Slider.Value:1;
-				case 3
+				case 3 % Normalized to radius.
 					X = X ./ Y;
 					if(~GUI_Parameters.Handles.Analysis.Slider.UserData)
 						set(GUI_Parameters.Handles.Analysis.Slider,'Min',0.01,'Max',.11,'Value',0.05,'SliderStep',[0.01,0.02]);
@@ -327,6 +327,10 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
 			
 		case 'PVD Orders - Length'
+			
+			Max_Midline_Length = 800;
+			Max_PVD_Orders = 4;
+			
 			set(GUI_Parameters.Handles.Normalization_List,'String',{'Not Normalized','Normalized to Midline Length'});
 			set(GUI_Parameters.Handles.Plot_Type_List,'String',{'Default','Dorsal-Ventral Merged','Orders Merged','All Merged'});
 			
@@ -335,7 +339,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 					if(~GUI_Parameters.Handles.Analysis.Slider.UserData)
 						set(GUI_Parameters.Handles.Analysis.Slider,'Min',20,'Max',120,'Value',50,'SliderStep',[0.01,0.1]);
 					end
-					Edges = 0:GUI_Parameters.Handles.Analysis.Slider.Value:700;
+					Edges = 0:GUI_Parameters.Handles.Analysis.Slider.Value:Max_Midline_Length;
 				case 2 % Normalized to Midline Length.
 					if(~GUI_Parameters.Handles.Analysis.Slider.UserData)
 						set(GUI_Parameters.Handles.Analysis.Slider,'Min',0.02,'Max',.12,'Value',0.05,'SliderStep',[0.01,0.1]);
@@ -345,10 +349,10 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			
 			set(GUI_Parameters.Handles.Analysis.Slider_Text,'String',num2str(GUI_Parameters.Handles.Analysis.Slider.Value));
 			
-			S_D = cell(1,5); % (5,10^5);
-			L_D = cell(1,5); % zeros(5,10^5);
-			S_V = cell(1,5); % zeros(5,10^5);
-			L_V = cell(1,5); % zeros(5,10^5);
+			S_D = cell(1,Max_PVD_Orders+1);
+			L_D = cell(1,Max_PVD_Orders+1);
+			S_V = cell(1,Max_PVD_Orders+1);
+			L_V = cell(1,Max_PVD_Orders+1);
 			for w=1:numel(GUI_Parameters.Workspace)
 				
 				switch GUI_Parameters.Handles.Normalization_List.Value
@@ -358,7 +362,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 						Midline_Length = GUI_Parameters.Workspace(w).Workspace.Neuron_Axes.Axis_0(end).Arc_Length;
 				end
 				
-				for o=1:4
+				for o=1:Max_PVD_Orders
 					f_D = find([GUI_Parameters.Workspace(w).Workspace.All_Points.Midline_Distance] > 0 & [GUI_Parameters.Workspace(w).Workspace.All_Points.Class] == o);
 					f_V = find([GUI_Parameters.Workspace(w).Workspace.All_Points.Midline_Distance] < 0 & [GUI_Parameters.Workspace(w).Workspace.All_Points.Class] == o);
 				
@@ -373,17 +377,27 @@ function Multiple_Choose_Plot(GUI_Parameters)
 					S_V{o}(vv) = [GUI_Parameters.Workspace(w).Workspace.All_Points(f_V).Length] ./ Midline_Length; % A vector of rectangle lengths (ventral side only) of class o
 					L_V{o}(vv) = [GUI_Parameters.Workspace(w).Workspace.All_Points(f_V).Axis_0_Position] ./ Midline_Length; % A vector of midline position (arc-length) from the head (ventral).
 				end
-            end
+			end
 			
-			for o=1:4
-				[N_D(o,:),~,I_D] = histcounts(L_D{o},Edges,'Normalization','Probability');
+			for o=1:Max_PVD_Orders
+				[N_D(o,:),~,I_D] = histcounts(L_D{o},Edges,'Normalization','Probability'); % I_D are bin indices.
 				[N_V(o,:),~,I_V] = histcounts(L_V{o},Edges,'Normalization','Probability');
+				
+				f_D = find(I_D == 0);
+				f_V = find(I_V == 0);
+				
+				if(~isempty(f_D) || ~isempty(f_V))
+					disp([num2str(length(f_D) + length(f_V)),' values (order ',num2str(o),') do not fall within any bin.']);
+				end
+				
+				I_D(f_D) = length(Edges) - 1; % Associate uncategorized points with the last bin.
+				I_V(f_V) = length(Edges) - 1; % ".
 				
 				% Multiply the counts by the total lengths within each [bin + class o]:
 				N_D(o,:) = N_D(o,:) .* sum(S_D{o}(I_D));
 				N_V(o,:) = N_V(o,:) .* sum(S_V{o}(I_V));
-            end
-            xx = (Edges(2:end) + Edges(1:end-1)) ./ 2;
+			end
+			xx = (Edges(2:end) + Edges(1:end-1)) ./ 2;
 			
 			H_D = bar(xx,N_D',1,'stacked','FaceColor','flat'); % histogram(X_D,Edges);
 			hold on;
@@ -407,7 +421,10 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			
 			% xl = 0:pi/6:pi/2;
 			set(gca,'FontSize',26,'xlim',[Edges([1,end])]); % ,'XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)));
-			% ylim([-max(sum(N_V,1))-10,max(sum(N_D,1))+10]);
+			
+			YL_D = max(sum(reshape([H_D(:).YData],[],Max_PVD_Orders),2));
+			YL_V = min(sum(reshape([H_V(:).YData],[],Max_PVD_Orders),2));
+			ylim([(1.1.*YL_V),1.1.*YL_D]);
 			
 			switch GUI_Parameters.Handles.Normalization_List.Value
 				case 1
@@ -417,6 +434,8 @@ function Multiple_Choose_Plot(GUI_Parameters)
 					xlabel(['Midline Position [',char(181),'m] (normalized)']);
 					ylabel('Count (normalized)');
 			end
+			
+			
 		case 'PVD Orders - Segments'
 		case 'CB Intensity'
 			Var_Operations = @(x) x; % Sum up all segments lengths of each individual animal (=workspace). The length of a segment has to be positive.
@@ -726,6 +745,52 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			%%%
 			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,Var_Operations,Filter_Operations,RowWise);
 			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
+		case 'Angles VS Midline Distance'
+			
+			Amin = zeros(1,10^4);
+			Amid = zeros(1,10^4);
+			Amax = zeros(1,10^4);
+			D = zeros(1,10^4);
+			L = zeros(1,10^4);
+			r = 0;
+			for w=1:numel(GUI_Parameters.Workspace)
+				F3 = find([GUI_Parameters.Workspace(w).Workspace.All_Vertices.Order] == 3);
+				Lmax = GUI_Parameters.Workspace(w).Workspace.Neuron_Axes.Axis_0(end).Arc_Length;
+				
+				for v=1:numel(GUI_Parameters.Workspace(w).Workspace.All_Vertices)
+					if(GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Order == 3 && length(GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Angles) == 3)
+						r = r + 1;
+						a = sort(GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Angles);
+						Amin(r) = a(1);
+						Amid(r) = a(2);
+						Amax(r) = a(3);
+						D(r) = GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Midline_Distance ./ (2.*(GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Half_Radius));
+						L(r) = GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Axis_0_Position ./ Lmax;
+					end
+				end
+			end
+			Amin = Amin(1:r);
+			Amid = Amid(1:r);
+			Amax = Amax(1:r);
+			D = D(1:r);
+			L = L(1:r)';
+			CM = [L,0.*L,1-L];
+			
+			figure;
+			
+			subplot(121);
+				polarscatter(Amin,abs(D),10,'filled');
+				hold on;
+				polarscatter(Amid,abs(D),10,'filled');
+				polarscatter(Amax,abs(D),10,'filled');
+				set(gca,'FontSize',22);
+				rticklabels([]);
+			
+			subplot(122);
+				polarscatter(Amin,abs(D),20,CM,'filled');
+				% hold on;
+				% polarscatter(Amax.*(180/pi),abs(D),'filled');
+				set(gca,'FontSize',22);
 		case 'Minimal and Maximal Angles of 3-Way junctions'
 			Var_Operations{1} = @(x) x(x == min(x) & min(x) > 0 & max(x) > 0).*180./pi;
 			Var_Operations{2} = @(x) x(x == max(x) & min(x) > 0 & max(x) > 0).*180./pi; % x(x ~= min(x) & x~=max(x) & x>0);

@@ -48,13 +48,13 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 			% If the main and tertiary axes already exist, do not compute them and only get the neuron points.
 			if(isfield(W(i).Workspace,'Neuron_Axes') && isfield(W(i).Workspace.Neuron_Axes,'Axis_0') && ~isempty(W(i).Workspace.Neuron_Axes.Axis_1_Ventral))
 				
-				[W(i).Workspace.All_Points,W(i).Workspace.All_Vertices] = Collect_All_Neuron_Points(W.Workspace); % [X, Y, Length, Angle, Curvature].
+				[W(i).Workspace.All_Points,W(i).Workspace.All_Vertices] = Collect_All_Neuron_Points(W(i).Workspace); % [X, Y, Length, Angle, Curvature].
 				W(i).Workspace.All_Points = Find_Distance_From_Midline(W(i).Workspace,W(i).Workspace.All_Points,W(i).Workspace.Neuron_Axes,Scale_Factor,1);
 				W(i).Workspace.All_Vertices = Find_Distance_From_Midline(W(i).Workspace,W(i).Workspace.All_Vertices,W(i).Workspace.Neuron_Axes,Scale_Factor,1);
 				
 			else % Compute the neuron axes only if they do not exist yet, to avoid overwriting user corrections.
 				W(i).Workspace.Neuron_Axes = Find_Worm_Longitudinal_Axis(W(i).Workspace,0);
-				[W(i).Workspace.All_Points,W(i).Workspace.All_Vertices,W(i).Workspace.Neuron_Axes] = Map_Worm_Axes(W(i).Workspace,W(i).Workspace.Neuron_Axes);
+				[W(i).Workspace.All_Points,W(i).Workspace.All_Vertices,W(i).Workspace.Neuron_Axes] = Map_Worm_Axes(W(i).Workspace,W(i).Workspace.Neuron_Axes,0,0);
 			end
 			Clusters_Struct = load('PVD_Orders.mat');
 			Clusters_Struct = Clusters_Struct.Clusters_Struct;

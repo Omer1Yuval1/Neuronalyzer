@@ -107,11 +107,15 @@ function Tracer_UI()
 		H_Recon_Binary_Image = uimenu(Reconstructions_Menu_Handle,'Label','Binary Image','UserData',0,'Callback',@Reconstruction_Func);
 		H_Recon_Skeleton_Image = uimenu(Reconstructions_Menu_Handle,'Label','Skeleton','UserData',0,'Callback',@Reconstruction_Func);
 		H_Recon_CB = uimenu(Reconstructions_Menu_Handle,'Label','Cell Body','UserData',0,'Callback',@Reconstruction_Func);
+		H_Recon_CB = uimenu(Reconstructions_Menu_Handle,'Label','Blob','UserData',0,'Callback',@Reconstruction_Func);
 		uimenu(Reconstructions_Menu_Handle,'Label','Segmentation','UserData',0,'Callback',@Reconstruction_Func);
 		uimenu(Reconstructions_Menu_Handle,'Label','Individual Menorahs','UserData',0,'Callback',@Reconstruction_Func,'Enable','off');
 		H0_1_6 = uimenu(Reconstructions_Menu_Handle,'Label','Vertices Angles');
 			uimenu(H0_1_6,'Label','Vertices Angles','UserData',2,'Callback',@Reconstruction_Func);
-		uimenu(Reconstructions_Menu_Handle,'Label','Axes','UserData',0,'Callback',@Display_Neuron_Axes);
+		H0_1_8 = uimenu(Reconstructions_Menu_Handle,'Label','Axes');
+			uimenu(H0_1_8,'Label','Axes','UserData',0,'Callback',@Display_Neuron_Axes);
+			uimenu(H0_1_8,'Label','Axes Mapping Process','UserData',0,'Callback',@Reconstruction_Func);
+		uimenu(Reconstructions_Menu_Handle,'Label','Midline Distance','UserData',0,'Callback',@Reconstruction_Func);
 		uimenu(Reconstructions_Menu_Handle,'Label','Midline Orientation','UserData',0,'Callback',@Reconstruction_Func);
 		uimenu(Reconstructions_Menu_Handle,'Label','Longitudinal Gradient','UserData',0,'Callback',@Reconstruction_Func,'Enable','off');
 		uimenu(Reconstructions_Menu_Handle,'Label','Curvature','UserData',0,'Callback',@Reconstruction_Func);
@@ -172,6 +176,7 @@ function Tracer_UI()
 				H_Menu324 = uimenu(H_Menu32_Angles,'Label','Distances Of Tips From The Medial Axis - Histogram','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
 				H_Menu325 = uimenu(H_Menu32_Angles,'Label','Smallest Angle VS Distance From Medial Axis','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
 				H_Menu326 = uimenu(H_Menu32_Angles,'Label','Distances Of Vertices From The CB','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
+			uimenu(H_Menu3_Vertices,'Label','Angles VS Midline Distance','UserData',2,'Callback',@Menu1_Plots_Func);
 		H_Menu4_Orientation = uimenu(Graphs_Menu_Handle,'Label','Midline Orientation','Callback','');
 			H_Menu41_Orientation_Distribution = uimenu(H_Menu4_Orientation,'Label','Distribution of Midline Orientation','Callback',@Menu1_Plots_Func);
 			H_Menu42_Orientation_VS_Arclength_2D_Hist = uimenu(H_Menu4_Orientation,'Label','Distribution of Midline Orientation Along the Midline','Callback',@Menu1_Plots_Func);

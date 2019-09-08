@@ -1,4 +1,4 @@
-function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes)
+function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes,Plot,Record,Ax)
 	
 	% This function uses an estimated midline to run a sliding window and find the worm axes.
 	% It first corrects the estimated midline and then uses it to find the other axes by detecting peaks within each window.
@@ -7,11 +7,9 @@ function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes)
 		% Add the orientation of rectangles relative to the primary branch.
 		% Preallocate memory for the other axes in Worm_Axes.
 	
-	Record = 0;
-	Plot = 0;
 	Smoothing_Parameter = 100000;
 	
-	if(Record)
+	if(Plot && Record)
 		Vid1 = VideoWriter('Sliding Window','MPEG-4');
 		open(Vid1);
 		figure('WindowState','maximized');
@@ -115,8 +113,12 @@ function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes)
 		Worm_Axes.Axis_2_Dorsal(w).X = Worm_Axes.Axis_0(w).X + (Dynamic_Position_Axis_2_Dorsal./Scale_Factor).*cos(Worm_Axes.Axis_0(w).Tangent_Angle + (pi/2));
 		Worm_Axes.Axis_2_Dorsal(w).Y = Worm_Axes.Axis_0(w).Y + (Dynamic_Position_Axis_2_Dorsal./Scale_Factor).*sin(Worm_Axes.Axis_0(w).Tangent_Angle + (pi/2));
 		
-		if(Record)
+		if(Plot)
+			
+			delete(findobj(Ax,'-not','Type','image','-and','-not','Type','axes'));
+			
 			% Histograms of distances from the midline.
+			%{
 			clf;
 			% Bins_2 = 0:5:60;
 			subplot(2,1,1);
@@ -130,33 +132,51 @@ function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes)
 				axis([Bins_1(1),Bins_1(end),0,0.3]); % 300.
 				
 			subplot(2,1,2); % subplot(2,3,[4,5,6]);
-				imshow(W.Image0);
-				set(gca,'YDir','normal');
-				hold on;
+			%}
+				% imshow(W.Image0);
+				% set(gca,'YDir','normal');
+				% hold on;
 				
-				plot([All_Points(In_D).X],[All_Points(In_D).Y],'.b'); % ,'Color',[0,0.4470,0.7410]);
-				plot([All_Points(In_V).X],[All_Points(In_V).Y],'.r'); % ,'Color',[0.8500,0.3250,0.0980]);
+				plot([Worm_Axes.Axis_0(1:f1).X1],[Worm_Axes.Axis_0(1:f1).Y1],'Color',[0,0,0.6],'LineWidth',3);
+				plot([Worm_Axes.Axis_1_Dorsal(1:f1).X],[Worm_Axes.Axis_1_Dorsal(1:f1).Y],'Color',[0.6,0,0],'LineWidth',3);
+				plot([Worm_Axes.Axis_1_Ventral(1:f1).X],[Worm_Axes.Axis_1_Ventral(1:f1).Y],'Color',[0.6,0,0],'LineWidth',3);
 				
-				plot([XY_D(:,1) ; flipud(XY_0(:,1)) ; XY_D(1,1)] , [XY_D(:,2) ; flipud(XY_0(:,2)) ; XY_D(1,2)],'LineWidth',3);
-				plot([XY_V(:,1) ; flipud(XY_0(:,1)) ; XY_V(1,1)] , [XY_V(:,2) ; flipud(XY_0(:,2)) ; XY_V(1,2)],'LineWidth',3);
+				% TODO: use the color to show the density of points at each distance. Or just the distance.
+				O_D = rescale(abs([All_Points(In_D).Midline_Distance]))';
+				O_V = rescale(abs([All_Points(In_V).Midline_Distance]))';
 				
+				scatter([All_Points(In_D).X],[All_Points(In_D).Y],10,[O_D,0.*O_D,1-O_D],'filled'); % plot([All_Points(In_D).X],[All_Points(In_D).Y],'.b');
+				scatter([All_Points(In_V).X],[All_Points(In_V).Y],10,[O_V,0.*O_V,1-O_V],'filled'); % plot([All_Points(In_V).X],[All_Points(In_V).Y],'.r');
+				% ,'Color',[0,0.4470,0.7410]); % ,'Color',[0.8500,0.3250,0.0980]);
+				
+				% Display the running window:
+				plot([XY_D(:,1) ; flipud(XY_0(:,1)) ; XY_D(1,1)] , [XY_D(:,2) ; flipud(XY_0(:,2)) ; XY_D(1,2)],'k','LineWidth',3);
+				plot([XY_V(:,1) ; flipud(XY_0(:,1)) ; XY_V(1,1)] , [XY_V(:,2) ; flipud(XY_0(:,2)) ; XY_V(1,2)],'k','LineWidth',3);
+				
+				%{
 				% Plot the center points of the window:
 				plot([Worm_Axes.Axis_0(w).X1],[Worm_Axes.Axis_0(w).Y1],'.g','MarkerSize',20);
 				plot([Worm_Axes.Axis_1_Dorsal(w).X],[Worm_Axes.Axis_1_Dorsal(w).Y],'.m','MarkerSize',20);
 				plot([Worm_Axes.Axis_1_Ventral(w).X],[Worm_Axes.Axis_1_Ventral(w).Y],'.m','MarkerSize',20);
 				plot([Worm_Axes.Axis_2_Dorsal(w).X],[Worm_Axes.Axis_2_Dorsal(w).Y],'.y','MarkerSize',20);
 				plot([Worm_Axes.Axis_2_Ventral(w).X],[Worm_Axes.Axis_2_Ventral(w).Y],'.y','MarkerSize',20);
+				%}
 				
-			F = getframe(gcf);
-			writeVideo(Vid1,F);
+			drawnow;
+			
+			% waitforbuttonpress;
+			if(Record)
+				F = getframe(gcf);
+				writeVideo(Vid1,F);
+			end
 		end
 	end
 	
-	if(Record)
+	if(Plot && Record)
 		close(Vid1);
 	end
 	
-	if(Plot)
+	if(Plot == 2)
 		X0 = [Worm_Axes.Axis_0.X];
 		Y0 = [Worm_Axes.Axis_0.Y];
 	end
@@ -191,7 +211,7 @@ function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes)
 	All_Points = Find_Distance_From_Midline(W,All_Points,Worm_Axes,Scale_Factor,1);
 	All_Vertices = Find_Distance_From_Midline(W,All_Vertices,Worm_Axes,Scale_Factor,1);
 	
-	if(Plot)
+	if(Plot == 2)
 		figure;
 		imshow(W.Image0);
 		hold on;
