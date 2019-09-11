@@ -21,46 +21,7 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 		Worm_Radius_px = W(i).Workspace.Parameters.Angle_Correction.Worm_Radius_um ./ Scale_Factor; % um to pixels.
 		Corrected_Plane_Angle_Func = W(i).Workspace.Parameters.Angle_Correction.Corrected_Plane_Angle_Func; % Input: distance (in um) from the medial axis.
 		
-		if(isfield(W(i).Workspace,'Medial_Axis') && ~isempty(W(i).Workspace.Medial_Axis))
-			Xm = [W(i).Workspace.Medial_Axis(:,1)]';
-			Ym = [W(i).Workspace.Medial_Axis(:,2)]';
-			
-			Medial_Fit_Object = cscvn([Xm ; Ym]); % Medial_Fit_Object = csaps(Xm,Ym,0.5);
-			Medial_Der_Fit_Object = fnder(Medial_Fit_Object,1); % 1st derivative.
-			Medial_Eval = linspace(Medial_Fit_Object.breaks(1),Medial_Fit_Object.breaks(end),Medial_Fit_Res);
-			XY_Eval = fnval(Medial_Fit_Object,Medial_Eval);
-			
-			W(i).Workspace.Medial_Fit.X = XY_Eval(1,:);
-			W(i).Workspace.Medial_Fit.Y = XY_Eval(2,:);
-			
-			Medial_Tangents = fnval(Medial_Der_Fit_Object,Medial_Eval); % The medial tangent vector (from the origin).
-			W(i).Workspace.Medial_Fit.Angle = mod(atan2(Medial_Tangents(2,:),Medial_Tangents(1,:)),pi); % Taking the mode to obtain an angle within [0,180].;
-			
-			W(i).Workspace.Medial_Length = Scale_Factor .* sum( (diff(XY_Eval(1,:)).^2 + (diff(XY_Eval(2,:)).^2)).^(.5)); % Total length in world units (pixels to um).
-			
-			Use_Medial_Axis = 1;
-		else
-			Use_Medial_Axis = 0;
-		end
-		
-		% Map the neuron's axes:
-        if(isfield(W(i).Workspace,'Segments'))
-			% If the main and tertiary axes already exist, do not compute them and only get the neuron points.
-			if(isfield(W(i).Workspace,'Neuron_Axes') && isfield(W(i).Workspace.Neuron_Axes,'Axis_0') && ~isempty(W(i).Workspace.Neuron_Axes.Axis_1_Ventral))
-				
-				[W(i).Workspace.All_Points,W(i).Workspace.All_Vertices] = Collect_All_Neuron_Points(W(i).Workspace); % [X, Y, Length, Angle, Curvature].
-				W(i).Workspace.All_Points = Find_Distance_From_Midline(W(i).Workspace,W(i).Workspace.All_Points,W(i).Workspace.Neuron_Axes,Scale_Factor,1);
-				W(i).Workspace.All_Vertices = Find_Distance_From_Midline(W(i).Workspace,W(i).Workspace.All_Vertices,W(i).Workspace.Neuron_Axes,Scale_Factor,1);
-				
-			else % Compute the neuron axes only if they do not exist yet, to avoid overwriting user corrections.
-				W(i).Workspace.Neuron_Axes = Find_Worm_Longitudinal_Axis(W(i).Workspace,0);
-				[W(i).Workspace.All_Points,W(i).Workspace.All_Vertices,W(i).Workspace.Neuron_Axes] = Map_Worm_Axes(W(i).Workspace,W(i).Workspace.Neuron_Axes,0,0);
-			end
-			Clusters_Struct = load('PVD_Orders.mat');
-			Clusters_Struct = Clusters_Struct.Clusters_Struct;
-			W(i).Workspace = Classify_PVD_Points(W(i).Workspace,Clusters_Struct);
-		end
-		% W(i).Workspace.Vertices = Find_Distance_From_Midline(W(i).Workspace,W(i).Workspace.Vertices,W(i).Workspace.Neuron_Axes,Scale_Factor); % Add midline distance and orientation to the vertices struct.
+		Use_Medial_Axis = 0;
 		
 		if(isfield(W(i).Workspace,'Vertices'))
 			[W(i).Workspace.Vertices.Angles_Medial] = deal(-1);
@@ -231,6 +192,25 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 				end
 			end
 		end
+		
+		% Map the neuron's axes:
+        if(isfield(W(i).Workspace,'Segments'))
+			% If the main and tertiary axes already exist, do not compute them and only get the neuron points.
+			if(isfield(W(i).Workspace,'Neuron_Axes') && isfield(W(i).Workspace.Neuron_Axes,'Axis_0') && ~isempty(W(i).Workspace.Neuron_Axes.Axis_1_Ventral))
+				
+				[W(i).Workspace.All_Points,W(i).Workspace.All_Vertices] = Collect_All_Neuron_Points(W(i).Workspace); % [X, Y, Length, Angle, Curvature].
+				W(i).Workspace.All_Points = Find_Distance_From_Midline(W(i).Workspace,W(i).Workspace.All_Points,W(i).Workspace.Neuron_Axes,Scale_Factor,1);
+				W(i).Workspace.All_Vertices = Find_Distance_From_Midline(W(i).Workspace,W(i).Workspace.All_Vertices,W(i).Workspace.Neuron_Axes,Scale_Factor,1);
+				
+			else % Compute the neuron axes only if they do not exist yet, to avoid overwriting user corrections.
+				W(i).Workspace.Neuron_Axes = Find_Worm_Longitudinal_Axis(W(i).Workspace,0);
+				[W(i).Workspace.All_Points,W(i).Workspace.All_Vertices,W(i).Workspace.Neuron_Axes] = Map_Worm_Axes(W(i).Workspace,W(i).Workspace.Neuron_Axes,0,0);
+			end
+			Clusters_Struct = load('PVD_Orders.mat');
+			Clusters_Struct = Clusters_Struct.Clusters_Struct;
+			W(i).Workspace = Classify_PVD_Points(W(i).Workspace,Clusters_Struct);
+		end
+		% W(i).Workspace.Vertices = Find_Distance_From_Midline(W(i).Workspace,W(i).Workspace.Vertices,W(i).Workspace.Neuron_Axes,Scale_Factor); % Add midline distance and orientation to the vertices struct.
 		
 		% Generate the Features struct.
 		FN = fieldnames(W(i).Workspace.User_Input.Features);

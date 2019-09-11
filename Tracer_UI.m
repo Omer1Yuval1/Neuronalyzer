@@ -592,6 +592,8 @@ function Tracer_UI()
 			Reconstruction_Func();
 		end
 		
+		set(GUI_Parameters.Handles.Machine_Learning.Load_Trained_NN_Button,'Enable','on');
+		
 		Features_Buttons_Handles = [];
 		GUI_Parameters.Handles.Analysis.Features_OnOff_Buttons_Handles = [];
 		% Remove_Feature_Buttons_Handles = [];
