@@ -433,6 +433,8 @@ function Multiple_Choose_Plot(GUI_Parameters)
 					xlabel(['Midline Position [',char(181),'m] (normalized)']);
 					ylabel('Count (normalized)');
 			end
+			
+			legend({'1','2','3','4'});
 		case 'PVD Orders - Vertices'
 			
 			Max_Midline_Length = 800;
