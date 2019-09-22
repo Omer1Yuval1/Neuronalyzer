@@ -222,13 +222,12 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			N = histcounts(X,Edges,'Normalization','Probability');
 			xx = (Edges(2:end) + Edges(1:end-1)) ./ 2;
 			
-			H = bar(xx,N,1,'FaceColor','flat'); % histogram(X_D,Edges);
-			% H = histogram(X,Edges,'Normalization','Probability'); % Edges.
+			H = bar(xx,N,1,'FaceColor','flat'); % histogram(X_D,Edges); % H = histogram(X,Edges,'Normalization','Probability'); % Edges.
 			
 			if(GUI_Parameters.Handles.Plot_Type_List.Value == 3)
 				L_D = find(xx >= 0); % # of bars.
 				L_V = find(xx < 0); % # of bars.
-				CM = jet(max(length(L_D),length(L_V)));
+				CM = hsv(max(length(L_D),length(L_V)));
 				H.CData(L_D,:) = CM(1:length(L_D),:);
 				H.CData(L_V,:) = flipud(CM(1:length(L_V),:));
 			end
@@ -434,9 +433,96 @@ function Multiple_Choose_Plot(GUI_Parameters)
 					xlabel(['Midline Position [',char(181),'m] (normalized)']);
 					ylabel('Count (normalized)');
 			end
+		case 'PVD Orders - Vertices'
 			
+			Max_Midline_Length = 800;
+			Max_PVD_Orders = 5;
+			Junction_Classes = [112,233,234,334,344];
 			
-		case 'PVD Orders - Segments'
+			set(GUI_Parameters.Handles.Normalization_List,'String',{'Not Normalized','Normalized to Midline Length'});
+			set(GUI_Parameters.Handles.Plot_Type_List,'String',{'Default','Dorsal-Ventral Merged','Orders Merged','All Merged'});
+			
+			switch GUI_Parameters.Handles.Normalization_List.Value
+				case 1
+					if(~GUI_Parameters.Handles.Analysis.Slider.UserData)
+						set(GUI_Parameters.Handles.Analysis.Slider,'Min',10,'Max',110,'Value',50,'SliderStep',[0.01,0.1]);
+					end
+					Edges = 0:GUI_Parameters.Handles.Analysis.Slider.Value:Max_Midline_Length;
+				case 2 % Normalized to Midline Length.
+					if(~GUI_Parameters.Handles.Analysis.Slider.UserData)
+						set(GUI_Parameters.Handles.Analysis.Slider,'Min',0.02,'Max',.12,'Value',0.05,'SliderStep',[0.01,0.1]);
+					end
+					Edges = 0:GUI_Parameters.Handles.Analysis.Slider.Value:1;
+			end
+			
+			set(GUI_Parameters.Handles.Analysis.Slider_Text,'String',num2str(GUI_Parameters.Handles.Analysis.Slider.Value));
+			
+			L_D = cell(1,Max_PVD_Orders);
+			L_V = cell(1,Max_PVD_Orders);
+			for w=1:numel(GUI_Parameters.Workspace)
+				
+				switch GUI_Parameters.Handles.Normalization_List.Value
+					case 1
+						Midline_Length = 1;
+					case 2 % Normalized to Midline Length.
+						Midline_Length = GUI_Parameters.Workspace(w).Workspace.Neuron_Axes.Axis_0(end).Arc_Length;
+				end
+				
+				for o=1:Max_PVD_Orders
+					
+					% Find all the vertices assigned with class Junction_Classes(o): 
+					f_D = find([GUI_Parameters.Workspace(w).Workspace.All_Vertices.Midline_Distance] > 0 & [GUI_Parameters.Workspace(w).Workspace.All_Vertices.Class] == Junction_Classes(o));
+					f_V = find([GUI_Parameters.Workspace(w).Workspace.All_Vertices.Midline_Distance] < 0 & [GUI_Parameters.Workspace(w).Workspace.All_Vertices.Class] == Junction_Classes(o));
+				
+					Nd = length(L_D{o});
+					Nv = length(L_V{o});
+					
+					dd = Nd+1:Nd+length(f_D);
+					vv = Nv+1:Nv+length(f_V);
+					
+					% Add the midline positions corresponding to the current vertex subset:
+					L_D{o}(dd) = [GUI_Parameters.Workspace(w).Workspace.All_Vertices(f_D).Axis_0_Position] ./ Midline_Length; % A vector of midline position (arc-length) from the head (dorsal).
+					L_V{o}(vv) = [GUI_Parameters.Workspace(w).Workspace.All_Vertices(f_V).Axis_0_Position] ./ Midline_Length; % A vector of midline position (arc-length) from the head (ventral).
+				end
+			end
+			
+			for o=1:Max_PVD_Orders
+				[N_D(o,:),~,I_D] = histcounts(L_D{o},Edges,'Normalization','Probability'); % I_D are bin indices.
+				[N_V(o,:),~,I_V] = histcounts(L_V{o},Edges,'Normalization','Probability');
+				
+				f_D = find(I_D == 0);
+				f_V = find(I_V == 0);
+				
+				if(~isempty(f_D) || ~isempty(f_V))
+					disp([num2str(length(f_D) + length(f_V)),' values (order ',num2str(o),') do not fall within any bin.']);
+				end
+				
+				% I_D(f_D) = length(Edges) - 1; % Associate uncategorized points with the last bin.
+				% I_V(f_V) = length(Edges) - 1; % ".
+			end
+			xx = (Edges(2:end) + Edges(1:end-1)) ./ 2;
+			
+			H_D = bar(xx,N_D',1,'stacked','FaceColor','flat'); % histogram(X_D,Edges);
+			hold on;
+			set(gca,'ColorOrderIndex',1);
+			H_V = bar(xx,-N_V',1,'stacked','FaceColor','flat'); % histogram(X_V,Edges);
+			
+			legend(string(Junction_Classes),'FontSize',14);
+			
+			set(gca,'FontSize',26,'xlim',[Edges([1,end])]); % ,'XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)));
+			
+			YL_D = max(sum(reshape([H_D(:).YData],[],Max_PVD_Orders),2));
+			YL_V = min(sum(reshape([H_V(:).YData],[],Max_PVD_Orders),2));
+			ylim([(1.1.*YL_V),1.1.*YL_D]);
+			
+			switch GUI_Parameters.Handles.Normalization_List.Value
+				case 1
+					xlabel(['Midline Position [',char(181),'m]']);
+					ylabel('Count');
+				case 2 % Normalized to Midline Length.
+					xlabel(['Midline Position (normalized)']);
+					ylabel('Probability');
+			end
 		case 'CB Intensity'
 			Var_Operations = @(x) x; % Sum up all segments lengths of each individual animal (=workspace). The length of a segment has to be positive.
 			Filter_Operations = [];
@@ -614,7 +700,7 @@ function Multiple_Choose_Plot(GUI_Parameters)
 				% H_V.CData = jet(L);
 				
 				CM = transpose(rescale(1:L));
-				CM = [1-CM, 0.*CM , CM];
+				CM = [CM, 0.*CM , 1-CM];
 				H_D.CData = CM;
 				H_V.CData = CM;
 			else
@@ -708,43 +794,77 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Two_Vars_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Label,Y_Label,Title);
 			
 		case 'Histogram of all Angles'
-			Var_Operations{1} = @(x) x.*180./pi; % Exclude tips (appear as angle = -1) and convert to degrees.
-			Filter_Operations{1} = @(x) (x == 3); % Only 3-way junctions (and specifically not tips)..
-			% Filter_Operations{2} = @(x) (x>=25 & x<=35); % x(x>=25 & x<=35). Filter-out distances from medial axis (TODO: validate!).
-			Var_Fields = {'Angles'};
-			Filter_Fields = {'Order'}; % ,'Distance_From_Medial_Axis'};
-			%
-			RowWise = 1;
-			%%%
-			X_Label = ['Angle (',char(176),')'];
-			Y_Label = 'Count';
-			Title = 'Histogram of all Angles of 3-way Junctions';
-			%%%
-			X_Min_Max = [30,200];
-			if(~GUI_Parameters.Handles.Analysis.Slider.UserData)
-				set(GUI_Parameters.Handles.Analysis.Slider,'Min',1,'Max',11,'Value',5,'SliderStep',[0.05,0.1]);
+			V = zeros(1,10^4);
+			ii = 0;
+			for w=1:numel(GUI_Parameters.Workspace)
+				for v=1:numel(GUI_Parameters.Workspace(w).Workspace.All_Vertices)
+					if(GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Order == 3 && length([GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Angles]) == 3)
+						ii = ii + 3;
+						V(ii-2:ii) = [GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Angles];
+					end
+				end
 			end
-			BinSize = GUI_Parameters.Handles.Analysis.Slider.Value;
-			%%%
-			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,[],Var_Operations,Filter_Operations,RowWise);
-			% assignin('base','Input_Struct',Input_Struct);
-			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
+			V = V(1:ii-1)*180/pi;
+			
+			histogram(V,'Normalization','Probability');
+			xlabel(['Angle (',char(176),')']);
+			ylabel('Probability');
+			set(gca,'FontSize',22);
+		case 'Histogram of the Largest Angle'
+			V = zeros(1,10^4);
+			% D = zeros(1,10^4);
+			ii = 0;
+			for w=1:numel(GUI_Parameters.Workspace)
+				for v=1:numel(GUI_Parameters.Workspace(w).Workspace.All_Vertices)
+					if(GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Order == 3 && length([GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Angles]) == 3)
+						ii = ii + 1;
+						V(ii) = max([GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Angles]);
+						% D(ii) = abs(GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Midline_Distance ./ (2.*(GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Half_Radius)));
+					end
+				end
+			end
+			V = V(1:ii)*180/pi;
+			% D = D(1:ii);
+			
+			% scatter(V,D);
+			histogram(V,120:3:320,'Normalization','Probability');
+			xlabel(['Angle (',char(176),')']);
+			ylabel('Probability');
+			set(gca,'FontSize',22);
+			% xlim([0,2]);
 		case 'Histogram of Symmetry Indices'
-			Var_Operations{1} = @(x) x;
-			Filter_Operations{1} = @(x) (x >= 0); % x(x>=25 & x<=35). Filter-out distances from medial axis (TODO: validate!).
-			Var_Fields = {'Symmetry'};
-			Filter_Fields = {'Symmetry'};
-			%
-			RowWise = 0;
-			%%%
-			X_Label = '';
-			Y_Label = 'Probability';
-			Title = 'Symmetry Indices';
-			X_Min_Max = [0,1];
-			BinSize = 0.1 .* GUI_Parameters.Handles.Analysis.Slider.Value;
-			%%%
-			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,Var_Operations,Filter_Operations,RowWise);
-			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
+			S = zeros(1,10^4); % Symmetry Index.
+			A = zeros(1,10^4); % Largest Angle.
+			ii = 0;
+			for w=1:numel(GUI_Parameters.Workspace)
+				for v=1:numel(GUI_Parameters.Workspace(w).Workspace.All_Vertices)
+					if(GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Order == 3 && length([GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Angles]) == 3)
+						V = GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Angles;
+						[Sym,Lin,~] = Vertices_Symmetry_Linearity(V);
+						ii = ii + 1;
+						if(1)
+							S(ii) = Sym;
+							% A(ii) = max([GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Angles]);
+							%% A(ii) = Lin; % max([GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Angles]);
+						else
+							if(GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Midline_Distance >= 0)
+								S(ii) = 1-Sym+1;
+							else
+								S(ii) = -(1-Sym)+1;
+							end
+						end
+					end
+				end
+			end
+			S = S(1:ii);
+			
+			% A = A(1:ii)*180/pi;
+			% scatter(A,S,'filled'); xlabel(['Linearity (',char(176),')']); ylabel('Symmetry'); xlim([120,200]);
+			
+			histogram(S,0:0.03:1,'Normalization','Probability'); xlim([0,1]); xlabel('Symmetry Index'); ylabel('Probability');
+			% histogram(S,0:0.05:2,'Normalization','Probability'); xlim([0,2]); xlabel('Symmetry Index'); ylabel('Probability');
+			set(gca,'FontSize',22);
+			
 		case 'Angles VS Midline Distance'
 			
 			Amin = zeros(1,10^4);
@@ -822,19 +942,100 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			%%%
 			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,Var_Operations,Filter_Operations,RowWise);
 			Two_Vars_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Label,Y_Label,Title);
+		case 'Menorah Orders of 3-Way Junctions'
+				
+				Junction_Classes = [112,233,234,334,344];
+				Edges = 0:0.05:1;
+				
+				A1 = nan(1,10^4); % Smallest Angle.
+				A2 = nan(1,10^4); % Largest Angle.
+				D = nan(1,10^4); % Midline Distance.
+				L = nan(1,10^4); % Midline Arc-length.
+				S = nan(1,10^4); % Symmetry Index.
+				C = nan(1,10^4); % Vertex class (Menorah orders).
+				ii = 0;
+				l = 3;
+				for w=1:numel(GUI_Parameters.Workspace)
+					Midline_Length = GUI_Parameters.Workspace(w).Workspace.Neuron_Axes.Axis_0(end).Arc_Length;
+					for v=1:numel(GUI_Parameters.Workspace(w).Workspace.All_Vertices)
+						% if(ismember(GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Class,Junction_Classes))
+						if(GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Order == 3 && length([GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Angles]) == 3)
+							
+							ii = ii + 1;
+							
+							Vi = [GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Angles];
+							
+							A1(ii) = min(Vi);
+							A2(ii) = max(Vi);
+							% D(ii) = GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Midline_Distance;
+							D(ii) = GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Midline_Distance ./ (2.*(GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Half_Radius));
+							L(ii) = GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Axis_0_Position ./ Midline_Length; %  ./ (2.*(GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Half_Radius));
+							S(ii) = Vertices_Symmetry_Linearity(Vi);
+							
+							C(ii) = GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Class;
+						end
+					end
+				end
+				A1 = A1(1:ii)*180/pi;
+				A2 = A2(1:ii)*180/pi;
+				D = D(1:ii);
+				S = S(1:ii);
+				L = L(1:ii);
+				C = C(1:ii);
+				
+				F1 = find(~isnan(C)); disp(length(F1));
+				D = D(F1);
+				S = S(F1);
+				L = L(F1);
+				C = C(F1);
+				
+				% Vc = unique(C);
+				Nc = length(Junction_Classes);
+				CM = lines(Nc); % Number of classes.
+				Mc = zeros(Nc,length(Edges)-1);
+				for c=1:Nc % For each class.
+					Fc = find(C == Junction_Classes(c));
+					C(Fc) = c; % Replace the classes in C with integers in the range [1,max(class_num)].
+					if(0)
+						scatter(C(Fc),D(Fc),20,CM(C(Fc),:),'filled');
+						ylabel('Menorah Order');
+					else
+						scatter(S(Fc),D(Fc),20,CM(C(Fc),:),'filled');
+						% scatter(L(Fc),D(Fc),20,CM(C(Fc),:),'filled');
+						% scatter3(A1(Fc),A2(Fc),D(Fc),20,CM(C(Fc),:),'filled'); % 3D plot.
+						xlabel('Symmetry Index');
+					end
+				end
+				
+				ylabel(['Midline Distance [normalized]']); % [',char(181),'m]
+				set(gca,'FontSize',22);
+				
+				legend(string(Junction_Classes),'FontSize',14);
 		case 'Linearity-Symmetry of 3-Way junctions'
-			%{
-			Var_Operations = @(x) x;
 			
-			RowWise = 0;
-			%%%
-			X_Label = 'Symmetry';
-			Y_Label = 'Linearity';
-			Title = 'Linearity-Symmetry of 3-Way junctions';
-			%%%
-			% Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',{'Symmetry','Linearity'},Var_Operations,RowWise);
-			% Two_Vars_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Label,Y_Label,Title);
-			%}
+			S = zeros(1,10^4);
+			L = zeros(1,10^4);
+			D = zeros(1,10^4);
+			ii = 0;
+			for w=1:numel(GUI_Parameters.Workspace)
+				for v=1:numel(GUI_Parameters.Workspace(w).Workspace.All_Vertices)
+					if(GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Order == 3 && length([GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Angles]) == 3)
+						V = GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Angles;
+						[Sym,Lin,~] = Vertices_Symmetry_Linearity(V);
+						ii = ii + 1;
+						S(ii) = Sym;
+						L(ii) = Lin;
+						D(ii) = abs(GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Midline_Distance ./ (2.*(GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Half_Radius)));
+					end
+				end
+			end
+			S = S(1:ii);
+			L = L(1:ii);
+			D = rescale(D(1:ii))';
+			disp(ii);
+			
+			scatter(S,L,10,[1-D,0.*D,D],'filled');
+			
 		case 'Sum of 2 Smallest VS Product of 2 Smallest'
 			%{
 			Var_Operations{1} = @(x) (x(x == min(x) & x>0)) + x(x ~= min(x) & x~=max(x) & x>0);
@@ -1001,22 +1202,25 @@ function Multiple_Choose_Plot(GUI_Parameters)
 			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,Var_Operations,Filter_Operations,RowWise); % assignin('base','Input_Struct',Input_Struct);
 			Histogram_Plot(Input_Struct,GUI_Parameters,GUI_Parameters.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
 		case 'Histogram of Smallest, Mid & Largest Angles'
-			Var_Operations{1} = @(x) x(x == min(x));
-			Var_Operations{2} = @(x) x(x == max(x)); % x(x ~= min(x) & x~=max(x) & x>0);
-			Filter_Operations{1} = @(x) (x == 3); % Only 3-way junctions.
-			Var_Fields = {'Angles','Angles'};
-			Filter_Fields = {'Order'};
-			%
-			RowWise = 1;
-			BinSize = 1 + (30 .* GUI_Parameters.Handles.Analysis.Slider.Value);
-			%
-			Dynamic_Field = 'Distance_From_Medial_Axis';
-			Set_Dynamic_Sliders_Values(GUI_Parameters.Handles.Analysis,0,50);
-			%
+			
+			V = nan(3,10^4);
+			ii = 0;
+			for w=1:numel(GUI_Parameters.Workspace)
+				for v=1:numel(GUI_Parameters.Workspace(w).Workspace.All_Vertices)
+					if(GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Order == 3 && length([GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Angles]) == 3)
+						% if(GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Class == 112)
+							ii = ii + 1;
+							V(:,ii) = GUI_Parameters.Workspace(w).Workspace.All_Vertices(v).Angles;
+						% end
+					end
+				end
+			end
+			V = V(:,1:ii);
+			
+			BinSize = 6; % 1 + (30 .* GUI_Parameters.Handles.Analysis.Slider.Value);
 			Title = 'Histogram of Smallest, Mid & Largest Angles';
-			%
-			Input_Struct = Generate_Plot_Input(GUI_Parameters,'Vertices',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
-			Plot_3Angles_Junction_Histogram(Input_Struct,GUI_Parameters,BinSize,GUI_Parameters.Visuals,Title);
+			
+			Plot_3Angles_Junction_Histogram(V,BinSize,Title);
 		
 		case 'Custom_1_Total_Length'
 			Custom_1_Total_Length(GUI_Parameters,GUI_Parameters.Visuals,'Length [\mum]','Total Length');

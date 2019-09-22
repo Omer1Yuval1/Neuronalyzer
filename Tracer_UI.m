@@ -151,16 +151,18 @@ function Tracer_UI()
 			H_Menu31_Angles = uimenu(H_Menu3_Vertices,'Label','Angles','Callback','');
 				H_Menu311 = uimenu(H_Menu31_Angles,'Label','Histograms','Callback','');
 					uimenu(H_Menu311,'Label','Histogram of all Angles','UserData',2,'Callback',@Menu1_Plots_Func);
-					uimenu(H_Menu311,'Label','Histogram of Symmetry Indices','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
+					uimenu(H_Menu311,'Label','Histogram of Symmetry Indices','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','on');
+					uimenu(H_Menu311,'Label','Histogram of the Largest Angle','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','on');
 					uimenu(H_Menu311,'Label','Distribution of Vertices Angles Relative To The Medial Axis','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
 					uimenu(H_Menu311,'Label','Distribution of Vertices Angles Relative To The Medial Axis - Corrected','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
-					uimenu(H_Menu311,'Label','Histogram of Smallest, Mid & Largest Angles','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
+					uimenu(H_Menu311,'Label','Histogram of Smallest, Mid & Largest Angles','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','on');
 					uimenu(H_Menu311,'Label','Distribution of Min Medial Angle Diff','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
 					uimenu(H_Menu31_Angles,'Label','Distribution of the Difference between Vertex and End2End Angles','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
 				H_Menu312 = uimenu(H_Menu31_Angles,'Label','Two Angles Plots','Callback','');
+					H_Menu3121 = uimenu(H_Menu312,'Label','Menorah Orders of 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func);
 					H_Menu3121 = uimenu(H_Menu312,'Label','Minimal and Maximal Angles of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);
 					H_Menu3122 = uimenu(H_Menu312,'Label','The Two Minimal Angles of each 3-Way junction','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
-					H_Menu3123 = uimenu(H_Menu312,'Label','Linearity-Symmetry of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
+					H_Menu3123 = uimenu(H_Menu312,'Label','Linearity-Symmetry of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','on');
 					H_Menu3124 = uimenu(H_Menu312,'Label','Sum of 2 Smallest VS Product of 2 Smallest','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
 					H_Menu3126 = uimenu(H_Menu312,'Label','Smallest Angle VS Diff between 2 Smallest','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
 				H_Menu313 = uimenu(H_Menu31_Angles,'Label','Three Angles Plots','Callback','');
@@ -189,7 +191,7 @@ function Tracer_UI()
 		
 		H_Menu7_PVD_Orders = uimenu(Graphs_Menu_Handle,'Label','PVD Orders','Callback','');
 			uimenu(H_Menu7_PVD_Orders,'Label','PVD Orders - Length','UserData',2,'Callback',@Menu1_Plots_Func);
-			% uimenu(H_Menu7_PVD_Orders,'Label','PVD Orders - Segments','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
+			uimenu(H_Menu7_PVD_Orders,'Label','PVD Orders - Vertices','UserData',2,'Callback',@Menu1_Plots_Func);
 		H_Menu5_2D_Plots = uimenu(Graphs_Menu_Handle,'Label','2D Plots','Callback','');
 			uimenu(H_Menu5_2D_Plots,'Label','Midline Distance VS Midline Orientation','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu5_2D_Plots,'Label','Midline Distance VS Curvature','UserData',2,'Callback',@Menu1_Plots_Func);
@@ -226,12 +228,7 @@ function Tracer_UI()
 			uimenu(H_Menu4_Customized,'Label','Custom_4_4_Segment_Angles_Correlation_VS_Medial_Distance_Hist','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu4_Customized,'Label','Custom_4_5_Rects_Curvature_VS_Distance_2D_Hist','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu4_Customized,'Label','Custom_4_6_Curvature_VS_Distance_2D_Hist_Groups','UserData',2,'Callback',@Menu1_Plots_Func);
-			
-		H_Menu20_Clustering = uimenu(Graphs_Menu_Handle,'Label','Clustering');
-		H_Menu21_Space_Filling = uimenu(Graphs_Menu_Handle,'Label','Space Filling');
-			H_Menu211_Bounding_Rectangles = uimenu(H_Menu21_Space_Filling,'Label','Bounding Rectangles');
-				H_Menu2111 = uimenu(H_Menu211_Bounding_Rectangles,'Label','Total Dendritic Field','UserData',1,'Callback',@Menu1_Plots_Func);
-		%}
+			%}
 	set(allchild(Graphs_Menu_Handle),'Enable','off');
 	
 	GUI_Parameters.Handles.Figure.Visible = 'on'; % Make figure visible after adding all components.

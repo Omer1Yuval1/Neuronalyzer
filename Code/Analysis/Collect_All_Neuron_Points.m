@@ -45,10 +45,15 @@ function [All_Points,All_Vertices] = Collect_All_Neuron_Points(W)
 	for v=1:numel(W.Vertices)
 		
 		ii = ii + 1;
+		All_Vertices(ii).Vertex_Index = W.Vertices(v).Vertex_Index;
 		All_Vertices(ii).X = W.Vertices(v).Coordinate(1);
 		All_Vertices(ii).Y = W.Vertices(v).Coordinate(2);
 		All_Vertices(ii).Order = W.Vertices(v).Order;
 		All_Vertices(ii).Angles = W.Vertices(v).Angles;
+		
+		% TODO:
+			% find the segments for each vertex, extract their Menorah order.
+			% Assign an order to the junction - a 3-digit number.
 	end
 	All_Vertices = All_Vertices(1:ii);
 end

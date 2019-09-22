@@ -1,41 +1,34 @@
-function Plot_3Angles_Junction_Histogram(Input_Struct,GUI_Parameters,BinSize,Visuals,Title1)
+function Plot_3Angles_Junction_Histogram(V,BinSize,Title1)
 	
-	% TODO: generalize to show all chosen groups:
-	% F_Dist = find([Input_Struct(1).ZValues] >= Dynamic_Slider_Values(1) & [Input_Struct(1).ZValues] <= Dynamic_Slider_Values(2));
-	X = Input_Struct(1).XValues; % Assumming only one group.
-	Y = Input_Struct(1).YValues; % ".
+	XL = [0,250];
 	
-	A = [X' , Y' , 2*pi-(X'+Y')] .* 180/pi;
+	V = sort(V).*180./pi;
+	F = find([V(1,:)] < 0 | [V(2,:)] < 0 | [V(3,:)] < 0);
+	V(:,F) = [];
+	V = V';
 	
-	disp(numel(A));
+	disp(length(F));
 	
-	A = sort(A,2);
-	A(find([A(:,1)] < 0 | [A(:,2)] < 0 | [A(:,3)] < 0),:) = [];
-	
-	assignin('base','A',A);
-	assignin('base','X',X);
-	assignin('base','Y',Y);
-	
-	disp(numel(A));
-	
-	% C1 = (A(:,1)-120).*(A(:,2)-120).*(A(:,3)-120);
+	% C1 = (V(:,1)-120).*(V(:,2)-120).*(V(:,3)-120);
 	
 	edges = 0:BinSize:360; % linspace(0,360,360-BinSize);
 	
 	% fh1 = figure;
-	histogram(A(:,1),edges,'Normalization','pdf');
+	histogram(V(:,1),edges,'Normalization','pdf','FaceColor',[0.8,0,0],'FaceAlpha',.5);
 	hold on;
-	histogram(A(:,2),edges,'Normalization','pdf');
-	histogram(A(:,3),edges,'Normalization','pdf');
+	histogram(V(:,2),edges,'Normalization','pdf','FaceColor',[0,0.8,0],'FaceAlpha',.5);
+	histogram(V(:,3),edges,'Normalization','pdf','FaceColor',[0,0,0.8],'FaceAlpha',.5);
+	
+	xlim(XL);
 	
 	xlabel(['Angle (',char(176),')']);
 	ylabel('Count');
 	title(Title1);
 	set(gca,'FontSize',18);
 	
-	[f1,xi1] = ksdensity(A(:,1));
-	[f2,xi2] = ksdensity(A(:,2));
-	[f3,xi3] = ksdensity(A(:,3));
+	[f1,xi1] = ksdensity(V(:,1));
+	[f2,xi2] = ksdensity(V(:,2));
+	[f3,xi3] = ksdensity(V(:,3));
 	
 	[~,locs1] = max(f1);
 	[~,locs2] = max(f2);
@@ -56,9 +49,9 @@ function Plot_3Angles_Junction_Histogram(Input_Struct,GUI_Parameters,BinSize,Vis
 	P_Vals = zeros(size(V1,1),length(V2));
 	for i=1:size(V1,1)
 		for j=1:length(V2)
-			[f_monte,xi_monte,a_monte] = randomJunction(V1(i,:),V2(j),numel(X)); % numel(X)*1. 100000.
+			[f_monte,xi_monte,a_monte] = randomJunction(V1(i,:),V2(j),size(V,1)); % numel(X)*1. 100000.
 			
-			[h1,p1,k1] = kstest2(A(:,1),a_monte(:,1));
+			[h1,p1,k1] = kstest2(V(:,1),a_monte(:,1));
 			P_Vals(i,j) = p1;
             % V3(end+1,1:3) = [i , V2(j) , p1];
 			if(p1 > Vp)
@@ -87,24 +80,21 @@ function Plot_3Angles_Junction_Histogram(Input_Struct,GUI_Parameters,BinSize,Vis
         figure(1); % Set the focus back to the main figure.
 	end
 	
-	
-	[f_monte, xi_monte, a_monte] = randomJunction([0,120,240],20,numel(X)); % numel(X)*1. 100000.
+	[f_monte, xi_monte, a_monte] = randomJunction([0,120,240],20,size(V,1)); % numel(X)*1. 100000.
 	% [f_monte, xi_monte, a_monte] = randomJunction([0 90 180],20,100000); % numel(X)*1
-
 	% [f_monte, xi_monte, a_monte] = randomJunction([0 90 180],2,numel(X));
-	
 	% [f_monte, xi_monte, a_monte] = randomJunction([0 90 180],10);
 	
 	hold on;
-	plot(xi_monte(:,1),f_monte(:,1),'LineWidth',4);
-	plot(xi_monte(:,2),f_monte(:,2),'LineWidth',4);
-	plot(xi_monte(:,3),f_monte(:,3),'LineWidth',4);
+	plot(xi_monte(:,1),f_monte(:,1),'LineWidth',4,'Color',[0.8,0,0,.9]);
+	plot(xi_monte(:,2),f_monte(:,2),'LineWidth',4,'Color',[0,0.8,0,0.9]);
+	plot(xi_monte(:,3),f_monte(:,3),'LineWidth',4,'Color',[0,0,0.8,0.9]);
 
-	% [h1,p1,k1] = kstest2(A(:,1),A(:,1));
+	% [h1,p1,k1] = kstest2(V(:,1),V(:,1));
 	
-	[h1,p1,k1] = kstest2(A(:,1),a_monte(:,1));
-	[h2,p2,k2] = kstest2(A(:,2),a_monte(:,2));
-	[h3,p3,k3] = kstest2(A(:,3),a_monte(:,3));
+	[h1,p1,k1] = kstest2(V(:,1),a_monte(:,1));
+	[h2,p2,k2] = kstest2(V(:,2),a_monte(:,2));
+	[h3,p3,k3] = kstest2(V(:,3),a_monte(:,3));
 
 	disp([h1 h2 h3]);
 	disp([p1 p2 p3]);

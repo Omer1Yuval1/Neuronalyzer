@@ -1,7 +1,5 @@
 function W = Classify_PVD_Points(W,Clusters_Struct)
 	
-	assignin('base','W',W);
-	
 	Scale_Factor = W.User_Input.Scale_Factor;
 	% All_Points = W.All_Points;
 	% Class_Num = max([Clusters_Struct.Class]);
@@ -29,6 +27,20 @@ function W = Classify_PVD_Points(W,Clusters_Struct)
 	for s=1:numel(W.Segments)
 		f = find([W.All_Points.Segment_Index] == W.Segments(s).Segment_Index);
 		W.Segments(s).Class = mode([W.All_Points(f).Class]);
+	end
+	
+	% V = reshape([W.Segments.Vertices],2,[]); % [2 x Ns].
+	W.All_Vertices(end).Class = [];
+    for v=1:numel(W.All_Vertices)
+		Vs = [W.Vertices(v).Rectangles.Segment_Index]; % A vector of ordered segment indices corresponding to the vertex rectangles.
+		Ns = length(Vs);
+		l = nan(1,Ns);
+		for r=1:Ns % For each vertex rectangle (and its corresponding segment index).
+			f1 = find([W.Segments.Segment_Index] == Vs(r));
+			W.Vertices(v).Rectangles(r).Segment_Class = W.Segments(f1).Class;
+			l(r) = W.Segments(f1).Class;
+		end
+		W.All_Vertices(v).Class = sum(sort(l) .* (10.^(Ns-1:-1:0)));
 	end
 	
 	if(0)

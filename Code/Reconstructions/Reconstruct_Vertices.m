@@ -5,7 +5,7 @@ function Reconstruct_Vertices(W,Display_Image)
 	Scale_Factor = W.User_Input(1).Scale_Factor;
 	% SmoothingParameter = 5000000;
 	D = 10;
-	[R,C] = size(W.Image0);
+	[Rows,Cols] = size(W.Image0);
 	
 	if(nargin == 2)
 		imshow(W.NN_Probabilities);
@@ -20,38 +20,80 @@ function Reconstruct_Vertices(W,Display_Image)
         %}
 	end
 	
+	if(~isnumeric(Path1))
+		H = figure(3);
+		clf(3);
+		imshow(W.Image0);
+		set(H,'WindowState','maximized');
+		Ax = gca;
+	end
+	
+	CM = lines(10);
 	for v=1:numel(W.Vertices)
 		
 		if(W.Vertices(v).Order == 3 && length(W.Vertices(v).Angles) == 3)
 			
 			O = W.Vertices(v).Coordinate;
-			V = sort([W.Vertices(v).Rectangles.Angle]);
+			[V,I] = sort([W.Vertices(v).Rectangles.Angle]); % Angles of the neuronal segments forming the junctions. Sorted from smallest to largest.
+			
+			C = [W.Vertices(v).Rectangles.Segment_Class]; % The Menorah order of each segment forming the junctions.
+			C = C(I); % Re-order according to V.
 			
 			t1 = linspace(V(1),V(2),100);
 			t2 = linspace(V(2),V(3),100);
 			t3 = [linspace(V(3),2*pi,100) , linspace(0,V(1),100)];
 			
 			d = 6;
+			d1 = 6.4;
 			x1 = d.*[0,cos(t1),0]; y1 = d.*[0,sin(t1),0];
 			x2 = d.*[0,cos(t2),0]; y2 = d.*[0,sin(t2),0];
 			x3 = d.*[0,cos(t3),0]; y3 = d.*[0,sin(t3),0];
 			
 			if(isnumeric(Path1))
 				hold on;
-				patch(x1+O(1),y1+O(2),[0.8,0,0],'FaceAlpha',.3,'LineWidth',3);
-				patch(x2+O(1),y2+O(2),[0,0.8,0],'FaceAlpha',.3,'LineWidth',3);
-				patch(x3+O(1),y3+O(2),[0,0,0.8],'FaceAlpha',.3,'LineWidth',3);
+				patch(x1+O(1),y1+O(2),[0.8,0,0],'FaceAlpha',.3,'LineWidth',5);
+				patch(x2+O(1),y2+O(2),[0,0.8,0],'FaceAlpha',.3,'LineWidth',5);
+				patch(x3+O(1),y3+O(2),[0,0,0.8],'FaceAlpha',.3,'LineWidth',5);
+				
+				for c=1:length(C)
+					if(~isnan(C(c)))
+						quiver(O(1),O(2),d1.*cos(V(c)),d1.*sin(V(c)),'Color',CM(C(c),:),'LineWidth',5,'MaxHeadSize',1);
+					end
+				end
 			else
-				if(O(1) > D && O(1) < C-D && O(2) > D && O(2) < R-D)
-					ImC = W.Image0(round(O(2))+[-D:D],round(O(1))+[-D:D]);
-					H = figure(3); clf(3);
-					imshow(ImC);
-                    set(H,'WindowState','maximized');
-					hold on;
-					patch(x1+D+1,y1+D+1,[0.8,0,0],'FaceAlpha',.3,'LineWidth',3);
-					patch(x2+D+1,y2+D+1,[0,0.8,0],'FaceAlpha',.3,'LineWidth',3);
-					patch(x3+D+1,y3+D+1,[0,0,0.8],'FaceAlpha',.3,'LineWidth',3);
+				if(O(1) > D && O(1) < Cols-D && O(2) > D && O(2) < Rows-D)
+					if(1)
+						delete(findobj(Ax,'-not','Type','image','-and','-not','Type','axes')); % Delete all graphical objects (except for the axes and the image).
+						axis(Ax,[round(O(1))+[-D,D],round(O(2))+[-D,D]]);
+						
+						hold on;
+						patch(Ax,x1+O(1),y1+O(2),[0.8,0,0],'FaceAlpha',.3,'LineWidth',5);
+						patch(Ax,x2+O(1),y2+O(2),[0,0.8,0],'FaceAlpha',.3,'LineWidth',5);
+						patch(Ax,x3+O(1),y3+O(2),[0,0,0.8],'FaceAlpha',.3,'LineWidth',5);
+						
+						for c=1:length(C)
+							if(~isnan(C(c)))
+								quiver(Ax,O(1),O(2),d1.*cos(V(c)),d1.*sin(V(c)),'Color',CM(C(c),:),'LineWidth',5,'MaxHeadSize',1);
+							end
+						end
+					else
+						ImC = W.Image0(round(O(2))+[-D:D],round(O(1))+[-D:D]);
+						H = figure(3); clf(3);
+						imshow(ImC);
+						set(H,'WindowState','maximized');
+						hold on;
+						patch(x1+D+1,y1+D+1,[0.8,0,0],'FaceAlpha',.3,'LineWidth',5);
+						patch(x2+D+1,y2+D+1,[0,0.8,0],'FaceAlpha',.3,'LineWidth',5);
+						patch(x3+D+1,y3+D+1,[0,0,0.8],'FaceAlpha',.3,'LineWidth',5);
+						
+						for c=1:length(C)
+							if(~isnan(C(c)))
+								quiver(D+1,D+1,d1.*cos(V(c)),d1.*sin(V(c)),'Color',CM(C(c),:),'LineWidth',5,'MaxHeadSize',10);
+							end
+						end
+					end
 					export_fig([Path1,filesep,num2str(v),'.tif'],'-tif',gca);
+					% export_fig([Path1,filesep,num2str(v),'.svg'],'-svg',gca);
 				end
 			end
 		end

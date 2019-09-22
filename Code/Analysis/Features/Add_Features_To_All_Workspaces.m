@@ -29,11 +29,7 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 			for v=1:numel(W(i).Workspace.Vertices) % For each vertex.
 				% disp(i); disp(v);
 				W(i).Workspace.Vertices(v).Angles = Calc_Junction_Angles([W(i).Workspace.Vertices(v).Rectangles.Angle]);
-				Symmetry_A3_Linearity = Vertices_Symmetry_Linearity(W(i).Workspace.Vertices(v).Angles);
-				if(length(Symmetry_A3_Linearity) == 3)
-					W(i).Workspace.Vertices(v).Symmetry = Symmetry_A3_Linearity(1);
-					W(i).Workspace.Vertices(v).Linearity = Symmetry_A3_Linearity(3);
-				end
+				
 				W(i).Workspace.Vertices(v).Num_of_Branches = numel(W(i).Workspace.Vertices(v).Rectangles);
 				
 				% Find the distance from the CB:
