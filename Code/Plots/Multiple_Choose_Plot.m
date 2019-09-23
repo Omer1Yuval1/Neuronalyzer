@@ -430,9 +430,12 @@ function Multiple_Choose_Plot(GUI_Parameters)
 					xlabel(['Midline Position [',char(181),'m]']);
 					ylabel('Count');
 				case 2 % Normalized to Midline Length.
-					xlabel(['Midline Position [',char(181),'m] (normalized)']);
+					xlabel(['Midline Position (normalized)']);
 					ylabel('Count (normalized)');
+					set(gca,'YLim',1.25.*get(gca,'YLim'));
 			end
+			
+			set(gca,'YTickLabels',strrep(get(gca,'YTickLabels'),'-',''));
 			
 			legend({'1','2','3','4'});
 		case 'PVD Orders - Vertices'
@@ -525,6 +528,9 @@ function Multiple_Choose_Plot(GUI_Parameters)
 					xlabel(['Midline Position (normalized)']);
 					ylabel('Probability');
 			end
+			
+			set(gca,'YTickLabels',strrep(get(gca,'YTickLabels'),'-',''));
+			
 		case 'CB Intensity'
 			Var_Operations = @(x) x; % Sum up all segments lengths of each individual animal (=workspace). The length of a segment has to be positive.
 			Filter_Operations = [];
