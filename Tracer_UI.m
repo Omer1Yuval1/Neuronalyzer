@@ -160,6 +160,7 @@ function Tracer_UI()
 					uimenu(H_Menu31_Angles,'Label','Distribution of the Difference between Vertex and End2End Angles','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
 				H_Menu312 = uimenu(H_Menu31_Angles,'Label','Two Angles Plots','Callback','');
 					H_Menu3121 = uimenu(H_Menu312,'Label','Menorah Orders of 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func);
+					H_Menu3121 = uimenu(H_Menu312,'Label','Angles of Menorah Orders','UserData',2,'Callback',@Menu1_Plots_Func);
 					H_Menu3121 = uimenu(H_Menu312,'Label','Minimal and Maximal Angles of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);
 					H_Menu3122 = uimenu(H_Menu312,'Label','The Two Minimal Angles of each 3-Way junction','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
 					H_Menu3123 = uimenu(H_Menu312,'Label','Linearity-Symmetry of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','on');
@@ -186,12 +187,15 @@ function Tracer_UI()
 				% H_Menu1321_Primary_Vertices_Mean_Distance = uimenu(H_Menu132_Distances,'Label','Primary_Vertices_Mean_Distance','UserData',1,'Callback',@Menu1_Plots_Func);
 			% H_Menu133_Vertices_Density = uimenu(H_Menu13_Vertices,'Label','Density of Vertices','UserData',1,'Callback',@Menu1_Plots_Func);			
 		
-		H_Menu6_Distance = uimenu(Graphs_Menu_Handle,'Label','Distance','Callback','');
-			uimenu(H_Menu6_Distance,'Label','Distribution of Midline Distances (all points)','Callback',@Menu1_Plots_Func);
+		H_Menu6_Distance = uimenu(Graphs_Menu_Handle,'Label','Midline Distance','Callback','');
+			uimenu(H_Menu6_Distance,'Label','Midline Distance of All Points','Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu6_Distance,'Label','Midline Distance of 3-Way Junctions','Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu6_Distance,'Label','Midline Distance of Tips','Callback',@Menu1_Plots_Func);
 		
-		H_Menu7_PVD_Orders = uimenu(Graphs_Menu_Handle,'Label','PVD Orders','Callback','');
+		H_Menu7_PVD_Orders = uimenu(Graphs_Menu_Handle,'Label','Midline Density','Callback','');
 			uimenu(H_Menu7_PVD_Orders,'Label','PVD Orders - Length','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu7_PVD_Orders,'Label','PVD Orders - Vertices','UserData',2,'Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu7_PVD_Orders,'Label','Density of Tips','UserData',2,'Callback',@Menu1_Plots_Func);
 		H_Menu5_2D_Plots = uimenu(Graphs_Menu_Handle,'Label','2D Plots','Callback','');
 			uimenu(H_Menu5_2D_Plots,'Label','Midline Distance VS Midline Orientation','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu5_2D_Plots,'Label','Midline Distance VS Curvature','UserData',2,'Callback',@Menu1_Plots_Func);
@@ -235,35 +239,36 @@ function Tracer_UI()
 	
 	function Apply_NN_Func(source,callbackdata)
 		
-		if(isunix)
-			filetypestr = '../../*.mat';
-		else
-			filetypestr = '..\..\*.mat';
+		if(nargin == 2)
+			if(isunix)
+				filetypestr = '../../*.mat';
+			else
+				filetypestr = '..\..\*.mat';
+			end
+			[FileName,PathName] = uigetfile(filetypestr,'Please Choose a .mat File.',cd); % Lets the user choose a file.
+			if(FileName)
+				Current_Dir = cd(PathName);
+				File1 = load(strcat(PathName,FileName));
+				NN1 = File1.deepnet; % TODO: choose the only variable from the file without specifying the name.
+				clear File1;
+				GUI_Parameters(1).Neural_Network(1).Directory = strcat(PathName,FileName);
+			end
 		end
-		[FileName,PathName] = uigetfile(filetypestr,'Please Choose a .mat File.',cd); % Lets the user choose a file.
-		if(FileName == 0)
-			return;
-		end
-		Current_Dir = cd(PathName);
-		File1 = load(strcat(PathName,FileName));
-		NN1 = File1.deepnet; % TODO: choose the only variable from the file without specifying the name.
-		clear File1;
 		
-		NN_Threshold_0 = GUI_Parameters.Workspace(end).Workspace.Parameters.Neural_Network.Threshold;
-		NN_Min_Object_Size_0 = GUI_Parameters.Workspace(end).Workspace.Parameters.Neural_Network.Min_CC_Size;
+		NN_Threshold_0 = GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.Neural_Network.Threshold;
+		NN_Min_Object_Size_0 = GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.Neural_Network.Min_CC_Size;
+			
+		GUI_Parameters.Handles.Machine_Learning.Probability_Slider = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','slider','Min',0,'Max',1,'Value',NN_Threshold_0,'SliderStep',[0.05,0.05],'Units','Normalized','Position',[0,.6,.8,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@NN_Probability_Slider_Func);
+		GUI_Parameters.Handles.Machine_Learning.Probability_Slider_Text = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','edit','String',num2str(NN_Threshold_0),'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.8,.6,.2,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6]);
 		
-		GUI_Parameters(1).Neural_Network(1).Directory = strcat(PathName,FileName);
-			GUI_Parameters.Handles.Machine_Learning.Probability_Slider = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','slider','Min',0,'Max',1,'Value',NN_Threshold_0,'SliderStep',[0.05,0.05],'Units','Normalized','Position',[0,.6,.8,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@NN_Probability_Slider_Func);
-			GUI_Parameters.Handles.Machine_Learning.Probability_Slider_Text = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','edit','String',num2str(NN_Threshold_0),'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.8,.6,.2,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6]);
+		GUI_Parameters.Handles.Machine_Learning.Min_Obejct_Size_Slider = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','slider','Min',0,'Max',5000,'Value',NN_Min_Object_Size_0,'SliderStep',[.01,.01],'Units','Normalized','Position',[0,.4,.8,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@NN_Min_Obejct_Size_Slider_Func);
+		GUI_Parameters.Handles.Machine_Learning.Min_Obejct_Size_Text = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','edit','String',num2str(NN_Min_Object_Size_0),'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.8,.4,.2,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6]);
 			
-			GUI_Parameters.Handles.Machine_Learning.Min_Obejct_Size_Slider = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','slider','Min',0,'Max',500,'Value',NN_Min_Object_Size_0,'SliderStep',[.01,.01],'Units','Normalized','Position',[0,.4,.8,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@NN_Min_Obejct_Size_Slider_Func);
-			GUI_Parameters.Handles.Machine_Learning.Min_Obejct_Size_Text = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','edit','String',num2str(NN_Min_Object_Size_0),'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.8,.4,.2,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6]);
+		GUI_Parameters.Handles.Machine_Learning.Apply_NN_Multiple_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Apply Neural Network To Multiple Images','Units','Normalized','Position',[0 0.7 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Apply_NN_Multiple_Func);
 			
-			GUI_Parameters.Handles.Machine_Learning.Apply_NN_Multiple_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Apply Neural Network To Multiple Images','Units','Normalized','Position',[0 0.7 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Apply_NN_Multiple_Func);
-			
-			GUI_Parameters.Handles.Machine_Learning.Save_Training_Sample = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Save As Training Sample','Units','Normalized','Position',[0 .01 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Save_Training_Sample_Func); % ,'Enable','off');
+		GUI_Parameters.Handles.Machine_Learning.Save_Training_Sample = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Save As Training Sample','Units','Normalized','Position',[0 .01 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Save_Training_Sample_Func); % ,'Enable','off');
 		
-		[Im_Rows,Im_Cols] = size(GUI_Parameters.Workspace(end).Workspace.Image0);
+		% [Im_Rows,Im_Cols] = size(GUI_Parameters.Workspace(end).Workspace.Image0);
 		
 		% Apply NN to all images:
 		All_Enabled_Objects_0 = findobj(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Enable','on');
@@ -271,18 +276,19 @@ function Tracer_UI()
 		WB_H_NN = waitbar(0,'Applying Neural Network to all Images. Please wait...');
 		waitbar(0,WB_H_NN);
 		
-		for fi=1:length(GUI_Parameters.Handles.FileNames)
-			waitbar(fi/length(GUI_Parameters.Handles.FileNames),WB_H_NN);
+		for fi=1:numel(GUI_Parameters.Workspace)
+			waitbar(fi/length(numel(GUI_Parameters.Workspace)),WB_H_NN);
 			
-			[Im_Rows,Im_Cols] = size(GUI_Parameters.Workspace(fi).Workspace.Image0);
-			GUI_Parameters.Workspace(fi).Workspace.NN_Probabilities = Apply_Trained_Network(NN1,GUI_Parameters.Workspace(fi).Workspace.Image0);
-			GUI_Parameters.Workspace(fi).Workspace.Im_BW = zeros(Im_Rows,Im_Cols);
-			GUI_Parameters.Workspace(fi).Workspace.Im_BW(find(GUI_Parameters.Workspace(fi).Workspace.NN_Probabilities >= NN_Threshold_0)) = 1;
-			% [GUI_Parameters.Workspace(fi).Workspace.NN_Probabilities,GUI_Parameters.Workspace(fi).Workspace.Im_BW] = Apply_NN(GUI_Parameters.Workspace(fi).Workspace.Image0,NN1,GUI_Parameters.Handles.Machine_Learning.Probability_Slider.Value,Im_Rows,Im_Cols,0);
-			
-			% Update NN threshold:
-			GUI_Parameters.Workspace(fi).Workspace.Parameters.Neural_Network.Threshold = NN_Threshold_0;
-			GUI_Parameters.Workspace(fi).Workspace.Parameters.Neural_Network.Min_CC_Size = NN_Min_Object_Size_0; % Min object size for the BW image.
+			if(~isfield(GUI_Parameters.Workspace(fi).Workspace,'Im_BW') || isempty(GUI_Parameters.Workspace(fi).Workspace.Im_BW))
+				[Im_Rows,Im_Cols] = size(GUI_Parameters.Workspace(fi).Workspace.Image0);
+				GUI_Parameters.Workspace(fi).Workspace.NN_Probabilities = Apply_Trained_Network(NN1,GUI_Parameters.Workspace(fi).Workspace.Image0);
+				GUI_Parameters.Workspace(fi).Workspace.Im_BW = zeros(Im_Rows,Im_Cols);
+				GUI_Parameters.Workspace(fi).Workspace.Im_BW(find(GUI_Parameters.Workspace(fi).Workspace.NN_Probabilities >= NN_Threshold_0)) = 1;
+				% [GUI_Parameters.Workspace(fi).Workspace.NN_Probabilities,GUI_Parameters.Workspace(fi).Workspace.Im_BW] = Apply_NN(GUI_Parameters.Workspace(fi).Workspace.Image0,NN1,GUI_Parameters.Handles.Machine_Learning.Probability_Slider.Value,Im_Rows,Im_Cols,0);
+				% Update NN threshold:
+				GUI_Parameters.Workspace(fi).Workspace.Parameters.Neural_Network.Threshold = NN_Threshold_0;
+				GUI_Parameters.Workspace(fi).Workspace.Parameters.Neural_Network.Min_CC_Size = NN_Min_Object_Size_0; % Min object size for the BW image.
+			end
 		end
 		delete(WB_H_NN);
 		
@@ -303,31 +309,29 @@ function Tracer_UI()
 		
 		GUI_Parameters.General.Active_Plot = 'Binary Image';
 		GUI_Parameters.General.Active_View = 1; % Reconstruction mode.
-		Reconstruction_Func(); % Display the BW of the current chosen image (in the image menu).
+		% Reconstruction_Func(); % Display the BW of the current chosen image (in the image menu).
 		
 		function NN_Probability_Slider_Func(source,event) % Slider for controlling the threshold of the probability matrix.
 			All_Enabled_Objects_1 = findobj(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Enable','on');
 			set(All_Enabled_Objects_1,'Enable','off');
 			set(GUI_Parameters.Handles.Machine_Learning.Probability_Slider_Text,'String',source.Value); % Update the NN threshold in the text box.
 			
-			% Each time the probability slider changes, the change in Im_BW0 is only dependent on NN_Probabilities0.
-				% So using it after using this slider (object size threshold), will necessarily reset Im_BW0.
-			[Im_Rows1,Im_Cols1] = size(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.NN_Probabilities);
-			Im_BW0 = zeros(Im_Rows1,Im_Cols1);
-			Im_BW0(find(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.NN_Probabilities >= source.Value)) = 1;
-			
-			% Apply the size thresholding to the updated BW image:
-			CC = bwconncomp(Im_BW0);
-			for c=1:CC.NumObjects
-				if(length(CC.PixelIdxList{1,c}) <= GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.Neural_Network.Min_CC_Size)
-					Im_BW0(CC.PixelIdxList{1,c}) = 0;
-				end
+			if(isfield(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace,'NN_Probabilities') || ~isempty(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.NN_Probabilities))
+				GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW = imbinarize(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.NN_Probabilities,source.Value);
 			end
 			
-			GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW = Im_BW0; % Update the BW image to the workspace.
+			% Apply the CC size thresholding to the updated BW image:
+			CC = bwconncomp(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW);
+			Nc = cellfun(@length,CC.PixelIdxList);
+			Fc = find(Nc <= GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.Neural_Network.Min_CC_Size);
+			for c=Fc
+				GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW(CC.PixelIdxList{1,c}) = 0;
+			end
+			
+			% GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW = Im_BW0; % Update the BW image to the workspace.
 			GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.Neural_Network.Threshold = source.Value; % Update the new threshold value to the workspace.
 			
-			Reconstruction_Func();
+			Reconstruction_Func(0);
 			
 			set(All_Enabled_Objects_1,'Enable','on');
 		end
@@ -337,22 +341,16 @@ function Tracer_UI()
 			set(All_Enabled_Objects_1,'Enable','off');
 			set(GUI_Parameters.Handles.Machine_Learning.Min_Obejct_Size_Text,'String',source.Value);
 			
-			[Im_Rows1,Im_Cols1] = size(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.NN_Probabilities);
-			Im_BW0 = zeros(Im_Rows1,Im_Cols1);
-			Threshold_1 = GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.Neural_Network.Threshold;
-			Im_BW0(find(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.NN_Probabilities >= Threshold_1)) = 1;
-			
-			CC = bwconncomp(Im_BW0);
-			for c=1:CC.NumObjects
-				if(length(CC.PixelIdxList{1,c}) <= source.Value)
-					Im_BW0(CC.PixelIdxList{1,c}) = 0;
-				end
+			CC = bwconncomp(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW);
+			Nc = cellfun(@length,CC.PixelIdxList);
+			Fc = find(Nc <= GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.Neural_Network.Min_CC_Size);
+			for c=Fc
+				GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW(CC.PixelIdxList{1,c}) = 0;
 			end
 			
-			GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW = Im_BW0; % Update the BW image to the workspace:
 			GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.Neural_Network.Min_CC_Size = source.Value; % Update the minimum object size.
 			
-			Reconstruction_Func();
+			Reconstruction_Func(0);
 			
 			set(All_Enabled_Objects_1,'Enable','on');
 		end
@@ -946,6 +944,10 @@ function Tracer_UI()
 		if(isfield(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace,'Im_BW') && strcmp(GUI_Parameters.General.Active_Plot,'Binary Image'))
 			set(allchild(GUI_Parameters.Handles.Axes),'HitTest','off');
 			set(GUI_Parameters.Handles.Axes,'PickableParts','all','ButtonDownFcn',@Mouse_Edit_BW_Func);
+			
+			if(nargin == 2 || (nargin == 1 && source))
+				Apply_NN_Func();
+			end
 		end
 		
 		if(XL(2) > 1 && YL(2) > 1)

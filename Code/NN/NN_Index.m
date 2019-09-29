@@ -1,7 +1,6 @@
 function [My_CNN,X,Y] = NN_Index()
     
-	% Architecture:
-		
+	% Architecture
 		% https://uk.mathworks.com/help/images/ref/dncnnlayers.html
 		% https://uk.mathworks.com/help/images/ref/denoisingnetwork.html
 		
@@ -9,7 +8,16 @@ function [My_CNN,X,Y] = NN_Index()
 		% https://uk.mathworks.com/help/images/ref/denoiseimage.html
 		% https://uk.mathworks.com/help/deeplearning/examples/image-to-image-regression-using-deep-learning.html
 		% https://uk.mathworks.com/help/deeplearning/examples/visualize-features-of-a-convolutional-neural-network.html
-		
+	
+	% Visual
+		% https://uk.mathworks.com/help/deeplearning/ref/deepdreamimage.html
+		% https://uk.mathworks.com/help/deeplearning/examples/extract-image-features-using-pretrained-network.html
+		% https://uk.mathworks.com/help/deeplearning/ref/analyzenetwork.html
+		% https://uk.mathworks.com/help/deeplearning/ref/deepnetworkdesigner-app.html
+		% https://uk.mathworks.com/help/deeplearning/ref/nnet.cnn.layergraph.html
+		% https://uk.mathworks.com/help/deeplearning/ref/activations.html
+	
+	
     tmp = matlab.desktop.editor.getActive;
     cd(fileparts(tmp.Filename));
 	
@@ -31,7 +39,7 @@ function [My_CNN,X,Y] = NN_Index()
 	X_Test = X(:,:,:,ID_Test);
 	Y_Test = Y(:,:,:,ID_Test);
 	
-	Options = trainingOptions('sgdm','MaxEpochs',50,'InitialLearnRate',0.0001,'ValidationData',{X_Test,Y_Test},'ExecutionEnvironment','parallel','Plots','training-progress','Verbose',false);
+	Options = trainingOptions('sgdm','MaxEpochs',100,'InitialLearnRate',0.0001,'ValidationData',{X_Test,Y_Test},'ValidationFrequency',10000,'ExecutionEnvironment','parallel','Plots','training-progress','Verbose',false);
 	
 	Layers = CNN_CCRCCRP_X3(2.*Frame_Half_Size+1);
 	% [Net,y] = CNN_NoPooling(Training_Frames,Training_Classes,Test_Frames,Test_Classes);

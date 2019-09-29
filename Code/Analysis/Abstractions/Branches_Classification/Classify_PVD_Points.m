@@ -31,7 +31,8 @@ function W = Classify_PVD_Points(W,Clusters_Struct)
 	
 	% V = reshape([W.Segments.Vertices],2,[]); % [2 x Ns].
 	W.All_Vertices(end).Class = [];
-    for v=1:numel(W.All_Vertices)
+	W.Vertices(end).Class = [];
+    for v=1:numel(W.Vertices)
 		Vs = [W.Vertices(v).Rectangles.Segment_Index]; % A vector of ordered segment indices corresponding to the vertex rectangles.
 		Ns = length(Vs);
 		l = nan(1,Ns);
@@ -41,6 +42,7 @@ function W = Classify_PVD_Points(W,Clusters_Struct)
 			l(r) = W.Segments(f1).Class;
 		end
 		W.All_Vertices(v).Class = sum(sort(l) .* (10.^(Ns-1:-1:0)));
+		W.Vertices(v).Class = sum(sort(l) .* (10.^(Ns-1:-1:0)));
 	end
 	
 	if(0)
