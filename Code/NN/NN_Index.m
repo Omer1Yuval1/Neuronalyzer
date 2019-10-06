@@ -39,7 +39,10 @@ function [My_CNN,X,Y] = NN_Index()
 	X_Test = X(:,:,:,ID_Test);
 	Y_Test = Y(:,:,:,ID_Test);
 	
-	Options = trainingOptions('sgdm','MaxEpochs',100,'InitialLearnRate',0.0001,'ValidationData',{X_Test,Y_Test},'ValidationFrequency',10000,'ExecutionEnvironment','parallel','Plots','training-progress','Verbose',false);
+	Options = trainingOptions('sgdm','MaxEpochs',100, ...
+			'InitialLearnRate',0.0001,'LearnRateSchedule','piecewise','LearnRateDropFactor',0.1,'LearnRateDropPeriod',20,'Shuffle','every-epoch', ...
+			'ValidationData',{X_Test,Y_Test},'ValidationFrequency',10000, ...
+			'ExecutionEnvironment','parallel','Plots','training-progress','Verbose',false);
 	
 	Layers = CNN_CCRCCRP_X3(2.*Frame_Half_Size+1);
 	% [Net,y] = CNN_NoPooling(Training_Frames,Training_Classes,Test_Frames,Test_Classes);

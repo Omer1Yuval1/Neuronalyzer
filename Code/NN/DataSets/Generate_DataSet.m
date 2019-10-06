@@ -2,7 +2,7 @@ function [X,Y] = Generate_DataSet(Frame_Half_Size)
 	
 	BW_Min_Neuron_Pixels = 5;
 	DataSet_MaxSize = 10^6;
-	Num_Per_Image = 10000; % 25000
+	Num_Per_Image = 5000; % 25000
 	
 	X = zeros(2*Frame_Half_Size+1,2*Frame_Half_Size+1,1,DataSet_MaxSize);
 	Y = zeros(2*Frame_Half_Size+1,2*Frame_Half_Size+1,1,DataSet_MaxSize);
