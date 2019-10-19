@@ -26,7 +26,11 @@ function W = Classify_PVD_Points(W,Clusters_Struct)
 	
 	for s=1:numel(W.Segments)
 		f = find([W.All_Points.Segment_Index] == W.Segments(s).Segment_Index);
-		W.Segments(s).Class = mode([W.All_Points(f).Class]);
+        if(~isempty(f))
+            W.Segments(s).Class = mode([W.All_Points(f).Class]);
+        else
+            W.Segments(s).Class = nan;
+        end
 	end
 	
 	% V = reshape([W.Segments.Vertices],2,[]); % [2 x Ns].

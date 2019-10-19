@@ -29,17 +29,19 @@ function Corrected_Angle = Correct_Projected_Angle(A,A0,At)
 	
 	% TODO: check if this needs to be normalized:
 	Rt = axang2rotm([Vt,At]); % [x,y,z,a]. Axis-angle form.
-	Vt_N = transpose(Rt * transpose([cos(At+pi/2),sin(At+pi/2),0])); % Rotate to get another vector that lies on the tilted plane.
-	Nt = cross(Vt,Vt_N); % Normal vector to the tilted plane.
+	Vt_N = [cos(At+pi/2),sin(At+pi/2),0] * Rt; % Rotate to get another vector that lies on the tilted plane.
+	Nt = cross(Vt,Vt_N); % Normal to the plane.
 	
 	Vr = [cos(A),sin(A),0]; % The vector of the rectangle to be corrected.
 	Dz = dot(Nt,Vr) ./ norm(Nt); % The signed distance between the end of the vector and the tilted plane.
 	
 	Vr_M = [Vr(1),Vr(2),Dz]; % The reconstructed vector (with origin at 0) that lies on the tilted plane.
 	
-	Vr_M_XY = transpose(transpose(Rt) * transpose(Vr_M)); % Rotate back to the XY plane around the midline vector.
+	Vr_M_XY = Vr_M * transpose(Rt); % Rotate back to the XY plane around the midline vector.
 	
-    Corrected_Angle = atan2(Vr_M_XY(2),Vr_M_XY(1)); % Assuming Vr_M_XY's origin is at [0,0].
+    Corrected_Angle = atan2();
+    
+    Axy = atan2(Vr_M_XY(2) , Vr_M_XY(1)) - atan2(Vp(2) , Vp(1)); % The angle correction factor (additive). [0,pi/2].
     
 	%{
 	

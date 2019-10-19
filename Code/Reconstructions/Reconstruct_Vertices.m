@@ -32,17 +32,13 @@ function Reconstruct_Vertices(W,Display_Image)
 	CM2 = [0.8,0,0 ; 0,0.8,0 ; 0,0,0.8];
 	for v=1:numel(W.Vertices)
 		
-		if(W.Vertices(v).Order == 3 && length(W.Vertices(v).Angles) == 3)
+		if(W.Vertices(v).Order == 3 && length(W.Vertices(v).Angles) == 3) %  && v == 211
 			
 			O = W.Vertices(v).Coordinate;
 			[V,I] = sort([W.Vertices(v).Rectangles.Angle]); % Angles of the neuronal segments forming the junctions.
 			
 			C = [W.Vertices(v).Rectangles.Segment_Class]; % The Menorah order of each segment forming the junctions.
 			C = C(I); % Re-order according to V.
-			
-			if(v == 13)
-				disp(1);
-			end
 			
 			dt = [V(2)-V(1) , V(3)-V(2) , 2*pi-V(3)+V(1)];
 			dts = sort(dt);
@@ -67,6 +63,11 @@ function Reconstruct_Vertices(W,Display_Image)
 				for c=1:length(C)
 					if(~isnan(C(c)))
 						quiver(O(1),O(2),d1.*cos(V(c)),d1.*sin(V(c)),'Color',CM(C(c),:),'LineWidth',5,'MaxHeadSize',1);
+						
+						if(isfield(W.Vertices(v).Rectangles,'Corrected_Angle'))
+							Vt = sort([W.Vertices(v).Rectangles.Corrected_Angle]); % Projection-corrected angles.
+							quiver(O(1),O(2),d1.*cos(Vt(c)),d1.*sin(Vt(c)),'Color','k','LineWidth',2.5,'MaxHeadSize',1);
+						end
 					end
 				end
 			else

@@ -19,6 +19,8 @@ function All_Points = Find_Distance_From_Midline(W,All_Points,Worm_Axes,Scale_Fa
 		f = find(Dp == min(Dp));
 		f = f(1);
 		
+		All_Points(p).Midline_Tangent_Angle = Worm_Axes.Axis_0(f).Tangent_Angle;
+		
 		if(In_Dorsal(p) && ~In_Ventral(p)) % If a dorsal pixel.
 			All_Points(p).Midline_Distance = Dp(f) * Scale_Factor; % Pixels to um.
 			

@@ -6,9 +6,6 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 	Rx = @(a) [1,0,0 ; 0,cos(a),-sin(a) ; 0,sin(a),cos(a)]; % Rotation matrix around the x-axis (angle is given in radians).
 	Rz = @(a) [cos(a),-sin(a),0 ; sin(a),cos(a),0 ; 0,0,1]; % Rotation matrix around the z-axis (angle is given in radians).
 	
-	% TODO: move out and scale:
-	Medial_Fit_Res = 1000;
-	
 	Features = struct('Feature_Name',{},'Values',{},'Num_Of_Options',{});
 	N = numel(W);
 	Distance_Func = @(x0,y0,x,y) ( (x-x0).^2 + (y-y0).^2).^(.5);
@@ -18,60 +15,6 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 		Scale_Factor = W(i).Workspace.User_Input.Scale_Factor;
 		W(i).Workspace.Parameters = Parameters_Func(Scale_Factor,W(i).Workspace.Parameters);
 		
-		Worm_Radius_px = W(i).Workspace.Parameters.Angle_Correction.Worm_Radius_um ./ Scale_Factor; % um to pixels.
-		Corrected_Plane_Angle_Func = W(i).Workspace.Parameters.Angle_Correction.Corrected_Plane_Angle_Func; % Input: distance (in um) from the medial axis.
-		
-		Use_Medial_Axis = 0;
-		
-		if(isfield(W(i).Workspace,'Vertices'))
-			[W(i).Workspace.Vertices.Angles_Medial] = deal(-1);
-			[W(i).Workspace.Vertices.Angles_Corrected_Medial] = deal(-1);
-			for v=1:numel(W(i).Workspace.Vertices) % For each vertex.
-				% disp(i); disp(v);
-				W(i).Workspace.Vertices(v).Angles = Calc_Junction_Angles([W(i).Workspace.Vertices(v).Rectangles.Angle]);
-				
-				W(i).Workspace.Vertices(v).Num_of_Branches = numel(W(i).Workspace.Vertices(v).Rectangles);
-				
-				% Find the distance from the CB:
-				D = ( (W(i).Workspace.Vertices(v).Coordinate(1) - W(i).Workspace.CB.Center(1))^2 + ...
-					(W(i).Workspace.Vertices(v).Coordinate(2) - W(i).Workspace.CB.Center(2))^2 )^.5;
-				W(i).Workspace.Vertices(v).Distance_From_CB = D.*Scale_Factor;
-				
-				if(Use_Medial_Axis && numel(W(i).Workspace.Vertices(v).Rectangles)) % Find the corrected angles only if the vertex is <= the length of the radius from the medial axis.
-					% Find the closest point along the medial axis to the vertex center:
-					Cxy = W(i).Workspace.Vertices(v).Coordinate; % Just for readability.
-					Dm = Distance_Func(XY_Eval(1,:),XY_Eval(2,:),Cxy(1),Cxy(2));
-					f1 = find(Dm == min(Dm));
-					Medial_Distance = Dm(f1(1)); % Minimal distance of the vertex center of the medial axis (= distance along the Y' axis).
-					W(i).Workspace.Vertices(v).Distance_From_Medial_Axis = Medial_Distance.*Scale_Factor;
-					if(Medial_Distance <= Worm_Radius_px)
-						Medial_Tangent = [fnval(Medial_Der_Fit_Object,Medial_Eval(f1(1))) ; 0]'; % The medial tangent vector (from the origin).
-						Rects = W(i).Workspace.Vertices(v).Rectangles; % ".
-						Ap = Corrected_Plane_Angle_Func(Medial_Distance .* Scale_Factor); % Using the worm radius and the distance of the vertex from the medial axis to find the tilting angle of the vertex plane.
-						W(i).Workspace.Vertices(v).Rectangles = Projection_Correction(i,v,W(i).Workspace.NN_Probabilities,XY_Eval,Cxy,Rects,Ap,Medial_Tangent,Rx,Rz,Scale_Factor,Corrected_Plane_Angle_Func);
-						
-						W(i).Workspace.Vertices(v).Angles_Medial = [W(i).Workspace.Vertices(v).Rectangles.Angle_Medial];
-						W(i).Workspace.Vertices(v).Angles_Corrected_Medial = [W(i).Workspace.Vertices(v).Rectangles.Angle_Corrected_Medial];
-						
-						W(i).Workspace.Vertices(v).Min_Medial_Angle_Corrected_Diff = ([W(i).Workspace.Vertices(v).Rectangles.Medial_Angle_Corrected_Diff]);
-						
-						% Compute the corrected angles diffs:
-						% W(i).Workspace.Vertices(v).Corrected_Angles = Calc_Junction_Angles([W(i).Workspace.Vertices(v).Rectangles.Angle_Corrected]);
-						W(i).Workspace.Vertices(v).Corrected_Angles = Calc_Junction_Angles([W(i).Workspace.Vertices(v).Rectangles.Angle_Corrected_Medial]);
-					else
-						W(i).Workspace.Vertices(v).Distance_From_Medial_Axis = -1;
-						W(i).Workspace.Vertices(v).Corrected_Angles = -1;
-						W(i).Workspace.Vertices(v).Min_Medial_Angle_Corrected_Diff = -1;
-					end
-				else
-					W(i).Workspace.Vertices(v).Distance_From_Medial_Axis = -1;
-					W(i).Workspace.Vertices(v).Corrected_Angles = -1;
-					W(i).Workspace.Vertices(v).Min_Medial_Angle_Corrected_Diff = -1;
-				end
-			end
-		end
-		
-		% TODO: Compute minimal distance from the CB.
 		if(isfield(W(i).Workspace,'Vertices') && isfield(W(i).Workspace,'Segments'))
 			for s=1:numel(W(i).Workspace.Segments) % For each segment.
 				
@@ -114,77 +57,31 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 					end
 					
 					% Find vertices:
-					Vertices_Flag = 1;
+					%{
 					F1 = find([W(i).Workspace.Vertices.Vertex_Index] == W(i).Workspace.Segments(s).Vertices(1)); % Find the 1st vertex.
 					F2 = find([W(i).Workspace.Vertices.Vertex_Index] == W(i).Workspace.Segments(s).Vertices(2)); % Find the 2nd vertex.
 					
 					if(isempty(F1))
-						Vertices_Flag = 0;
 						disp(['Error: Vertex index (',num2str(W(i).Workspace.Segments(s).Vertices(1)),') not found']);
 					elseif(length(F1) > 1)
-						Vertices_Flag = 0;
 						disp(['Error: Vertex index (',W(i).Workspace.Segments(s).Vertices(1),') appears multiple times']);
 					end
 					if(isempty(F2))
-						Vertices_Flag = 0;
 						disp(['Error: Vertex index (',num2str(W(i).Workspace.Segments(s).Vertices(2)),') not found']);
 					elseif(length(F2) > 1)
-						Vertices_Flag = 0;
 						disp(['Error: Vertex index (',W(i).Workspace.Segments(s).Vertices(2),') appears multiple times']);
 					end
+					%}
 					%{
 					if(length(F1) > 1 || length(F2) > 1)
 						disp(['Error: Multiple vertex',num2str(,' rectangles are associated with the same segment']);
 					end
 					%}
 					
-					if(Vertices_Flag)
-						% Find the specific rectangle within each vertex corresponding to the s-segment:
-						Fs1 = find([W(i).Workspace.Vertices(F1).Rectangles.Segment_Index] == W(i).Workspace.Segments(s).Segment_Index);
-						Fs2 = find([W(i).Workspace.Vertices(F2).Rectangles.Segment_Index] == W(i).Workspace.Segments(s).Segment_Index);
-						
-						% Find the angles corresponding to the vertices at the ends of the s-segment:
-						Angle1 = W(i).Workspace.Vertices(F1).Rectangles(Fs1).Angle;
-						Angle2 = W(i).Workspace.Vertices(F2).Rectangles(Fs2).Angle;
-						
-						% Vertices origins:
-						O1 = W(i).Workspace.Vertices(F1).Coordinate; % W(i).Workspace.Vertices(F1).Rectangles(Fs1).Origin;
-						O2 = W(i).Workspace.Vertices(F2).Coordinate;
-						
-						Angle1_End2End = mod(atan2(O2(2)-O1(2),O2(1)-O1(1)),2.*pi); % End2End angle from vetex 1 to vertex 2.
-						Angle2_End2End = mod(atan2(O1(2)-O2(2),O1(1)-O2(1)),2.*pi); % End2End angle from vetex 2 to vertex 1.
-						
-						Diff1 = max(Angle1,Angle1_End2End) - min(Angle1,Angle1_End2End);
-						Diff2 = max(Angle2,Angle2_End2End) - min(Angle2,Angle2_End2End);
-						
-						W(i).Workspace.Segments(s).End2End_Vertex_Angle_Diffs = [Diff1,Diff2];
-						W(i).Workspace.Segments(s).Vertices_Medial_Distance = [W(i).Workspace.Vertices(F1).Distance_From_Medial_Axis,W(i).Workspace.Vertices(F2).Distance_From_Medial_Axis];					
-						
-						% Classify segments into terminal and non-terminal (based on vertex order):
-						if(W(i).Workspace.Vertices(F1).Order == 1 || W(i).Workspace.Vertices(F2).Order == 1)
-							W(i).Workspace.Segments(s).Terminal = 1;
-						else
-							W(i).Workspace.Segments(s).Terminal = 0;
-						end
-					else
-						W(i).Workspace.Segments(s).End2End_Vertex_Angle_Diffs = [];
-						W(i).Workspace.Segments(s).Terminal = -1;
-					end
-					
-					if(Use_Medial_Axis)
-						W(i).Workspace.Segments(s).Distance_From_Medial_Axis = mean([W(i).Workspace.Vertices([F1,F2]).Distance_From_Medial_Axis]);
-					else
-						W(i).Workspace.Segments(s).Distance_From_Medial_Axis = -1;
-					end
-					
 				else
 					W(i).Workspace.Segments(s).Width = -1;
 					W(i).Workspace.Segments(s).Length = -1;
-					W(i).Workspace.Segments(s).End2End_Length = -1;
 					W(i).Workspace.Segments(s).Curvature = -1;
-					W(i).Workspace.Segments(s).Distance_From_Medial_Axis = -1;
-					W(i).Workspace.Segments(s).End2End_Vertex_Angle_Diffs = [-1,-1];
-					W(i).Workspace.Segments(s).Terminal = -1;
 				end
 			end
 		end
@@ -207,6 +104,28 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 			W(i).Workspace = Classify_PVD_Points(W(i).Workspace,Clusters_Struct);
 		end
 		% W(i).Workspace.Vertices = Find_Distance_From_Midline(W(i).Workspace,W(i).Workspace.Vertices,W(i).Workspace.Neuron_Axes,Scale_Factor); % Add midline distance and orientation to the vertices struct.
+		
+		if(isfield(W(i).Workspace,'Vertices'))
+			for v=1:numel(W(i).Workspace.Vertices) % For each vertex.
+				W(i).Workspace.Vertices(v).Angles = Calc_Junction_Angles([W(i).Workspace.Vertices(v).Rectangles.Angle]);
+				
+				if(numel(W(i).Workspace.Vertices(v).Rectangles) && W(i).Workspace.All_Vertices(v).Midline_Distance <= W(i).Workspace.Parameters.Angle_Correction.Worm_Radius_um && isfield(W(i).Workspace,'Neuron_Axes') && isfield(W(i).Workspace.Neuron_Axes,'Axis_0')) % Find the corrected angles only if the vertex is <= the length of the radius from the medial axis.
+					
+					if(v == 211)
+						disp(1);
+					end
+					
+					W(i).Workspace.Vertices(v).Rectangles = Projection_Correction(W(i).Workspace,v);
+					% Projection_Correction(i,v,W(i).Workspace.NN_Probabilities,XY_Eval,Cxy,Rects,Ap,Medial_Tangent,Rx,Rz,Scale_Factor,Corrected_Plane_Angle_Func);						
+					
+					% Compute the corrected angles diffs:
+					W(i).Workspace.Vertices(v).Corrected_Angles = Calc_Junction_Angles([W(i).Workspace.Vertices(v).Rectangles.Corrected_Angle]); % W(i).Workspace.Vertices(v).Corrected_Angles = Calc_Junction_Angles([W(i).Workspace.Vertices(v).Rectangles.Angle_Corrected]);
+				else
+					W(i).Workspace.Vertices(v).Corrected_Angles = -1;
+				end
+			end
+		end
+		
 		
 		% Generate the Features struct.
 		FN = fieldnames(W(i).Workspace.User_Input.Features);

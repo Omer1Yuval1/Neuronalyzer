@@ -121,7 +121,7 @@ function P = Parameters_Func(Scale_Factor,P)
 	
 	% Angle Correction:
 	Angle_Correction.Worm_Radius_um = 40;
-	Angle_Correction.Corrected_Plane_Angle_Func = @(d) asin(d./Angle_Correction.Worm_Radius_um); % Input (d): distance (in um) from the medial axis.
+	Angle_Correction.Corrected_Plane_Angle_Func = @(d) asin(d./Angle_Correction.Worm_Radius_um); % Input (d): distance (in um) from the medial axis. The resulting angle is in radians.
 	
 	Neural_Network.Threshold = 0.65;
 	Neural_Network.Min_CC_Size = 1;

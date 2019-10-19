@@ -178,6 +178,8 @@ function Reconstruction_Index(GP,ii)
 			Reconstruct_Trace(GP.Workspace(ii).Workspace);
 	end
 	
+	set(gca,'YDir','normal');
+	
 	%{
 	hold on;
 	Scale_Factor = GP.Workspace(1).Workspace.User_Input.Scale_Factor;
