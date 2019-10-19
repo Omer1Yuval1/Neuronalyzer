@@ -4,12 +4,17 @@ function Rects = Projection_Correction(W,v)
 	% At is the 
 	
 	Cxy = W.Vertices(v).Coordinate; % Just for readability.
-	Midline_Distance = abs(W.All_Vertices(v).Midline_Distance);
+	Midline_Distance = W.All_Vertices(v).Midline_Distance; % abs(W.All_Vertices(v).Midline_Distance);
 	% Midline_Distance_px = Midline_Distance .* W.User_Input.Scale_Factor;
 	
-	Am = mod(W.All_Vertices(v).Midline_Tangent_Angle,pi); % Radians. % Taking the mod to obtain an angle within [0,180].
+	Am = W.All_Vertices(v).Midline_Tangent_Angle; % Radians. % Taking the mod to obtain an angle within [0,180].
+	% Am = mod(W.All_Vertices(v).Midline_Tangent_Angle,pi); % Radians. % Taking the mod to obtain an angle within [0,180].
 	
-	At = W.Parameters.Angle_Correction.Corrected_Plane_Angle_Func(Midline_Distance); % Local tilting angle of the plane. The midline distance is given in um. The resulting angle is in radians.
+	if(Midline_Distance > 0) % Dorsal.
+		At = W.Parameters.Angle_Correction.Corrected_Plane_Angle_Func(Midline_Distance); % Local tilting angle of the plane. The midline distance is given in um. The resulting angle is in radians.
+	else % Ventral or 0.
+		At = -W.Parameters.Angle_Correction.Corrected_Plane_Angle_Func(Midline_Distance); % Local tilting angle of the plane. The midline distance is given in um. The resulting angle is in radians.
+	end
 	
 	% Rects(end).Angle_Medial = -1; % Angle of the rectangle with the local tangent of the medial axis.
 	% Rects(end).Angle_Corrected_Medial = -1; % The same but this time using the corrected angle of the rectangle.

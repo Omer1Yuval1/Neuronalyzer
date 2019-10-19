@@ -111,7 +111,7 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 				
 				if(numel(W(i).Workspace.Vertices(v).Rectangles) && W(i).Workspace.All_Vertices(v).Midline_Distance <= W(i).Workspace.Parameters.Angle_Correction.Worm_Radius_um && isfield(W(i).Workspace,'Neuron_Axes') && isfield(W(i).Workspace.Neuron_Axes,'Axis_0')) % Find the corrected angles only if the vertex is <= the length of the radius from the medial axis.
 					
-					if(v == 211)
+					if(v == 264)
 						disp(1);
 					end
 					

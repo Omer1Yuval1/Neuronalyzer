@@ -32,7 +32,7 @@ function Reconstruct_Vertices(W,Display_Image)
 	CM2 = [0.8,0,0 ; 0,0.8,0 ; 0,0,0.8];
 	for v=1:numel(W.Vertices)
 		
-		if(W.Vertices(v).Order == 3 && length(W.Vertices(v).Angles) == 3) %  && v == 211
+		if(W.Vertices(v).Order == 3 && length(W.Vertices(v).Angles) == 3) %  && v == 264)
 			
 			O = W.Vertices(v).Coordinate;
 			[V,I] = sort([W.Vertices(v).Rectangles.Angle]); % Angles of the neuronal segments forming the junctions.
