@@ -109,11 +109,13 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 			for v=1:numel(W(i).Workspace.Vertices) % For each vertex.
 				W(i).Workspace.Vertices(v).Angles = Calc_Junction_Angles([W(i).Workspace.Vertices(v).Rectangles.Angle]);
 				
-				if(numel(W(i).Workspace.Vertices(v).Rectangles) && W(i).Workspace.All_Vertices(v).Midline_Distance <= W(i).Workspace.Parameters.Angle_Correction.Worm_Radius_um && isfield(W(i).Workspace,'Neuron_Axes') && isfield(W(i).Workspace.Neuron_Axes,'Axis_0')) % Find the corrected angles only if the vertex is <= the length of the radius from the medial axis.
+				%
+				if(numel(W(i).Workspace.Vertices(v).Rectangles) && abs(W(i).Workspace.All_Vertices(v).Midline_Distance) <= W(i).Workspace.Parameters.Angle_Correction.Worm_Radius_um && isfield(W(i).Workspace,'Neuron_Axes') && isfield(W(i).Workspace.Neuron_Axes,'Axis_0')) % Find the corrected angles only if the vertex is <= the length of the radius from the medial axis.
 					
-					if(v == 264)
-						disp(1);
-					end
+					% if(i == 3 &&  v == 208)
+						% disp(1);
+					% end
+					% disp([i,v]);
 					
 					W(i).Workspace.Vertices(v).Rectangles = Projection_Correction(W(i).Workspace,v);
 					% Projection_Correction(i,v,W(i).Workspace.NN_Probabilities,XY_Eval,Cxy,Rects,Ap,Medial_Tangent,Rx,Rz,Scale_Factor,Corrected_Plane_Angle_Func);						
@@ -123,6 +125,7 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 				else
 					W(i).Workspace.Vertices(v).Corrected_Angles = -1;
 				end
+				%}
 			end
 		end
 		

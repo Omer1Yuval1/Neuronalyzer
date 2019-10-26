@@ -339,7 +339,7 @@ function Multiple_Choose_Plot(GP)
 			Input_Struct = Generate_Plot_Input(GP,'Segments',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
 			Histogram_Plot(Input_Struct,GP,GP.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
 			
-		case 'PVD Orders - Length'
+		case 'Menorah Orders - Neuronal Length'
 			
 			Max_Midline_Length = 800;
 			Max_PVD_Orders = 4;
@@ -433,7 +433,7 @@ function Multiple_Choose_Plot(GP)
 			%}
 			
 			% xl = 0:pi/6:pi/2;
-			set(gca,'FontSize',26,'xlim',[Edges([1,end])]); % ,'XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)));
+			set(gca,'FontSize',36,'xlim',[Edges([1,end])]); % ,'XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)));
 			
 			YL_D = max(sum(reshape([H_D(:).YData],[],Max_PVD_Orders),2));
 			YL_V = min(sum(reshape([H_V(:).YData],[],Max_PVD_Orders),2));
@@ -442,30 +442,29 @@ function Multiple_Choose_Plot(GP)
 			switch GP.Handles.Normalization_List.Value
 				case 1
 					xlabel(['Midline Position [',char(181),'m]']);
-					ylabel('Count');
+					ylabel(['Neuronal Length  [',char(181),'m]']);
 				case 2 % Normalized to Midline Length.
 					xlabel(['Midline Position (normalized)']);
-					ylabel('Count (normalized)');
+					ylabel('Neuronal Length (normalized)');
 					set(gca,'YLim',1.25.*get(gca,'YLim'));
 			end
 			
 			set(gca,'YTickLabels',strrep(get(gca,'YTickLabels'),'-',''));
 			
-			legend({'1','2','3','4'});
-		case {'PVD Orders - Vertices','Density of Tips'}
+			legend({'1','2','3','4'}); % ,'Orientation','horizontal');
+		case {'Menorah Orders - 3-Way Junctions','Menorah Orders - Tips'}
 			
 			switch GP.General.Active_Plot
-				case 'PVD Orders - Vertices'
+				case 'Menorah Orders - 3-Way Junctions'
 					Vertex_Order = 3;
 					Junction_Classes = [112,233,234,334,344];
-				case 'Density of Tips'
+				case 'Menorah Orders - Tips'
 					Vertex_Order = 1;
 					Junction_Classes = 1:4;
 			end
 			
 			Max_Midline_Length = 800;
 			Max_PVD_Orders = length(Junction_Classes);
-			
 			
 			set(GP.Handles.Normalization_List,'String',{'Not Normalized','Normalized to Midline Length'});
 			set(GP.Handles.Plot_Type_List,'String',{'Default','Dorsal-Ventral Merged','Orders Merged','All Merged'});
@@ -498,7 +497,7 @@ function Multiple_Choose_Plot(GP)
 				
 				for o=1:Max_PVD_Orders
 					
-					% Find all the vertices assigned with class Junction_Classes(o): 
+					% Find all the vertices assigned with class Junction_Classes(o):
 					f_D = find([GP.Workspace(w).Workspace.All_Vertices.Midline_Distance] > 0 & [GP.Workspace(w).Workspace.All_Vertices.Class] == Junction_Classes(o) & [GP.Workspace(w).Workspace.All_Vertices.Order] == Vertex_Order);
 					f_V = find([GP.Workspace(w).Workspace.All_Vertices.Midline_Distance] < 0 & [GP.Workspace(w).Workspace.All_Vertices.Class] == Junction_Classes(o) & [GP.Workspace(w).Workspace.All_Vertices.Order] == Vertex_Order);
 				
@@ -1052,44 +1051,56 @@ function Multiple_Choose_Plot(GP)
 			for w=1:numel(GP.Workspace)
 				for v=1:numel(GP.Workspace(w).Workspace.Vertices)
 					c = find(Junction_Classes == GP.Workspace(w).Workspace.Vertices(v).Class);
-					if(numel(GP.Workspace(w).Workspace.Vertices(v).Rectangles) == 3 && length(c))
+					R = GP.Workspace(w).Workspace.Vertices(v).Rectangles;
+					if(numel(R) == 3 && ~isempty(c) && isfield(R,'Corrected_Angle') && all([R.Corrected_Angle]))
 						
 						Vr = [GP.Workspace(w).Workspace.Vertices(v).Rectangles.Segment_Class]; % Vector of rectangles classes.
-						Va = [GP.Workspace(w).Workspace.Vertices(v).Rectangles.Angle]; % Vector of rectangles angles.
+						Va = [GP.Workspace(w).Workspace.Vertices(v).Rectangles.Corrected_Angle]; % Vector of rectangles angles.
 						
-						d = min([GP.Workspace(w).Workspace.Vertices(v).Angles]);
-						if(1)
+						% d = min([GP.Workspace(w).Workspace.Vertices(v).Angles]); % A vector of the angles between the rectangles of the junction.
+						d = min([GP.Workspace(w).Workspace.Vertices(v).Corrected_Angles]); % A vector of the angles between the rectangles of the junction.
+						if(0) % Just use the minimal angle.
 							A1{c}(end+1) = d;
-						end
-						continue;
-						
-						o1 = min(Vr);
-						m = find(Vr == min(Vr));
-						M = find(Vr == max(Vr));
-						Vc = combvec(m,M); % All possible combinations of row numbers of the min and max orders.
-						for r=1:size(Vc,2) % For each combination (1st row is the lower order, 2nd row is the higher order).
-							da = max([Va(Vc(2,r)),Va(Vc(1,r))]) - min([Va(Vc(2,r)),Va(Vc(1,r))]);
-							d = min([da,2*pi-da]);
-							if(d > 20*pi/180)
-								A1{c}(end+1) = d;
+						else
+							% o1 = min(Vr);
+							m = find(Vr == min(Vr)); % Row numbers of the minimal class.
+							M = find(Vr == max(Vr)); % Row numbers of the maximal class.
+							
+							Vc = combvec(m,M); % All possible combinations of row numbers of the min and max orders.
+							d = nan(1,size(Vc,2));
+							for r=1:size(Vc,2) % For each combination (1st row is the lower class, 2nd row is the higher class).
+								da = max([Va(Vc(2,r)),Va(Vc(1,r))]) - min([Va(Vc(2,r)),Va(Vc(1,r))]); % Angle diff between a pair of rectangles (min and max class).
+								d(r) = min([da,2*pi-da]); % Taking the smaller angle.
 							end
+							A1{c}(end+1) = min(d); % Take the mean angle of all the angles between order o and o+1.
 						end
 					end
 				end
 			end
 			
-			for c=1:length(Junction_Classes)
-				% scatter(c.*ones(1,length(A1{c})),A1{c},20,'k','filled');
-				% histogram(A1{c}.*180./pi,0:3:180);
-				histogram(A1{c}.*180./pi,0:5:180,'Normalization','pdf');
-				hold on;
+			Edges = 0:5:180;
+			yy = 0.175;
+			Np = 3; % Max number of peaks.
+			MinPeakProm = 0.02;
+			Lc = length(Junction_Classes);
+			for c=1:Lc
+				subplot(1,Lc,c);
+					histogram(A1{c}.*180./pi,Edges,'Normalization','probability'); % histogram(A1{c}.*180./pi,0:3:180); % scatter(c.*ones(1,length(A1{c})),A1{c},20,'k','filled');
+					hold on;
+					% plot(mean(A1{c}.*180./pi)+[1,1],[0,0.16],'--k','LineWidth',2);
+					
+					N = histcounts(A1{c}.*180./pi,Edges,'Normalization','probability');
+					xx = (Edges(2:end) + Edges(1:end-1)) ./ 2;
+					findpeaks(N,xx,'SortStr','descend','NPeaks',Np,'MinPeakProminence',MinPeakProm,'Annotate','extents','WidthReference','halfheight');
+					
+					xlim([0,120]);
+					ylim([0,yy]);
+					title([num2str(c),'->',num2str(c+1)]); % legend({'1->2','2->3','3->4'}); % legend(string(Junction_Classes));
+					xlabel(['Angle (',char(176),')']);
+					ylabel('Probability');
+					set(gca,'FontSize',26);
+					axis square;
 			end
-			xlim([0,120]);
-			legend({'1->2','2->3','3->4'}); % legend(string(Junction_Classes));
-			xlabel(['Angle (',char(176),')']);
-			ylabel('Count');
-			set(gca,'FontSize',24);
-			
 		case 'Linearity-Symmetry of 3-Way junctions'
 			
 			S = zeros(1,10^4);
@@ -1114,6 +1125,55 @@ function Multiple_Choose_Plot(GP)
 			disp(ii);
 			
 			scatter(S,L,10,[1-D,0.*D,D],'filled');
+			
+		case 'Inter-Tip Distance'
+			
+			Worm_Radium_Max = 50; % um;
+			Bin_Vector = 0:1:Worm_Radium_Max;
+			
+			V_Dist = [];
+			for w=1:numel(GP.Workspace)
+				F = find([GP.Workspace(w).Workspace.All_Points.Vertex_Order] == 1 & [GP.Workspace(w).Workspace.All_Points.Class] == 4 & [GP.Workspace(w).Workspace.All_Points.Midline_Distance] < Worm_Radium_Max); % Find all 4th order tips.
+				
+				X = [GP.Workspace(w).Workspace.All_Points(F).X];
+				Y = [GP.Workspace(w).Workspace.All_Points(F).Y];
+				
+				% For each 4th-order tip, find the distance to the closest tip (excluding itself):
+				V_Dist_w = nan(1,length(X));
+				for p=1:length(X)
+					Dp = ( (X(p) - X).^2 + (Y(p) - Y).^2 ).^0.5;
+					Dp(Dp == 0) = nan; % Setting distance zero to nan to exclude the distance of the vertex from itself.
+					% Fmin = Find(Dp == min(Dp),1);
+					
+					V_Dist_w(p) = min(Dp) .* GP.Workspace(w).Workspace.User_Input.Scale_Factor;
+				end
+				V_Dist = [V_Dist,V_Dist_w];
+			end
+			
+			histogram(V_Dist,Bin_Vector,'Normalization','Probability');
+			xlabel(['Distance [',char(181),'m]']);
+			ylabel('Probability');
+			% legend(['Menorah Order = ',num2str(o)]);
+			% title(GP.General.Active_Plot);
+			set(gca,'FontSize',22);
+			xlim([0,Worm_Radium_Max]);
+		case 'Distribution of Segment Lengths Per Order'
+			Bin_Vector = 0:5:100;
+			for o=1:4
+				V_Length = [];
+				for w=1:numel(GP.Workspace)
+					F = find([GP.Workspace(w).Workspace.Segments.Class] == o);
+					V_Length = [V_Length,[GP.Workspace(w).Workspace.Segments(F).Length]];
+				end
+				subplot(2,2,o);
+				histogram(V_Length,Bin_Vector,'Normalization','Probability');
+				xlabel(['Segment Length [',char(181),'m]']);
+				ylabel('Probability');
+				legend(['Menorah Order = ',num2str(o)]);
+				% title(GP.General.Active_Plot);
+				set(gca,'FontSize',22);
+				xlim([0,100]); % axis([0,100,0,0.3]);
+			end
 			
 		case 'Sum of 2 Smallest VS Product of 2 Smallest'
 			%{

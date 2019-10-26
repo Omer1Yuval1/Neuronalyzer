@@ -27,16 +27,20 @@ function Corrected_Angle = Correct_Projected_Angle(A,A0,At)
 	
 	Vt = [cos(A0),sin(A0),0]; % The midline tangent vector.
 	
-	% TODO: check if this needs to be normalized:
 	Rt = axang2rotm([Vt,At]); % [x,y,z,a]. Axis-angle form.
 	
-	Vt_90 = [cos(A0+pi/2),sin(A0+pi/2),0];
-	Vt_N_3D = transpose(transpose(Rt) * transpose(Vt_90)); % Rotate to get another vector that lies on the tilted plane.
-	Nt = cross(Vt,Vt_N_3D); % Normal vector to the tilted plane. Also still a normal to the midline tangent because it is rotated around it.
-	
+	% Vt_90 = [cos(A0+pi/2),sin(A0+pi/2),0];
+	% Vt_N_3D = transpose(transpose(Rt) * transpose(Vt_90)); % Rotate to get another vector that lies on the tilted plane.
+	% Nt = cross(Vt,Vt_N_3D); % Normal vector to the tilted plane. Also still a normal to the midline tangent because it is rotated around it.
 
 	% Dz = dot(Nt,Vr) ./ norm(Nt); % The signed distance between the end of the rect vector and the tilted plane, is the projection of the rectangle vector onto the normal to the plane.
 	% Vr_M = [Vr(1),Vr(2),Dz]; % The reconstructed vector (with origin at 0) that lies on the tilted plane.
+	
+	% TODO:
+		% The following section can be implemented in a simpler way:
+			% Just rotate the tangent vector on the tilted plane (such that it is not 0 or 90 from itself).
+			% Then the resulting vector is Vr_3D (the first instance).
+			% Note that it will not have the same length as Vr.
 	
 	% Find the vector corresponding to Vr on the plane if it was to be rotate around z only:
 	Vr = [cos(A),sin(A),0]; % The vector of the rectangle to be corrected.
@@ -44,7 +48,7 @@ function Corrected_Angle = Correct_Projected_Angle(A,A0,At)
 	R2 = axang2rotm([1,0,0,At]); % Rotation of the local plane around x.
 	R3 = R1'*R2*R1; % This is equivalent to Rt. But it goes through x-rotation.
 	Vr_3D = transpose(transpose(R3) * transpose(Vr)); % A vector the same length as Vr on the tilted plane.
-	z-rotation  = [Vr_3D(1),Vr_3D(2),0]; % Projection of Vr_3D by setting z=0.
+	Vr_2D  = [Vr_3D(1),Vr_3D(2),0]; % Projection of Vr_3D by setting z=0.
 
 	Ar = atan2(Vr(2),Vr(1)) - atan2(Vr_2D(2),Vr_2D(1)); % The z-rotation angle needed to align Vr_2D with Vr. Will be used to rotate Vr_3D on the plane around z.
 	R4 = axang2rotm([0,0,1,Ar]);

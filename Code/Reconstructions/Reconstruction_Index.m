@@ -127,10 +127,34 @@ function Reconstruction_Index(GP,ii)
 			O = rescale([GP.Workspace(ii).Workspace.All_Points.Axis_0_Position])';
 			CM = [O,0.*O,1-O];
 			%}
-		case 'Vertices Angles'
+		case {'Vertices Angles','Vertices Angles - Corrected'}
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			Reconstruct_Vertices(GP.Workspace(ii).Workspace);
-		case 'Curvature'
+		case {'3-Way Junctions - Position','Tips - Position'}
+			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
+			
+			switch GP.General.Active_Plot
+				case '3-Way Junctions - Position'
+					Vertex_Order = 3;
+					Junction_Classes = [112,233,234,334,344];
+				case 'Tips - Position'
+					Vertex_Order = 1;
+					Junction_Classes = 1:4;
+			end
+			
+			Max_PVD_Orders = length(Junction_Classes);
+			CM = lines(Max_PVD_Orders);
+			
+			for o=1:Max_PVD_Orders
+				Fo = find([GP.Workspace(ii).Workspace.All_Vertices.Class] == Junction_Classes(o) & [GP.Workspace(ii).Workspace.All_Vertices.Order] == Vertex_Order);
+				X = [GP.Workspace(ii).Workspace.All_Vertices(Fo).X];
+				Y = [GP.Workspace(ii).Workspace.All_Vertices(Fo).Y];
+				
+				hold on;
+				scatter(X,Y,40,CM(o,:),'filled');
+			end
+			
+			case 'Curvature'
 			Curvature_Min_Max = [0,0.2];
 			% Medial_Dist_Range = [0,60];
 			
