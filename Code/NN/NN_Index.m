@@ -39,16 +39,12 @@ function [My_CNN,X,Y] = NN_Index()
 	X_Test = X(:,:,:,ID_Test);
 	Y_Test = Y(:,:,:,ID_Test);
 	
-	Options = trainingOptions('adam','MaxEpochs',1000, ...
+	Options = trainingOptions('adam','MaxEpochs',500, ...
 			'InitialLearnRate',0.0001,'LearnRateSchedule','piecewise','LearnRateDropFactor',0.9,'LearnRateDropPeriod',20,'Shuffle','every-epoch', ...
 			'ValidationData',{X_Test,Y_Test},'ValidationFrequency',10000, ...
 			'ExecutionEnvironment','parallel','Plots','training-progress','Verbose',false);
 	
 	Layers = CNN_CCRCCRP_X3(2.*Frame_Half_Size+1);
-	% [Net,y] = CNN_NoPooling(Training_Frames,Training_Classes,Test_Frames,Test_Classes);
-	% [Net,y] = Simple_CNN(Training_Frames,Training_Classes,Test_Frames,Test_Classes,Frame_Half_Size);
-	% [Net,y] = HiddenX3_CNN(Training_Frames,Training_Classes,Test_Frames,Test_Classes,Frame_Half_Size,layers);
-	% [Net,y] = CascadeForwardNet_NN(Training_Frames,Training_Classes,Test_Frames,Test_Classes,Frame_Half_Size);
 	
 	My_CNN = trainNetwork(X_Train,Y_Train,Layers,Options);
 	

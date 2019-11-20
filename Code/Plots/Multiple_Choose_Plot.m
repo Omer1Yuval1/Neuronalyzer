@@ -24,6 +24,15 @@ function Multiple_Choose_Plot(GP)
 		% Instead, I should change it to use the order field as a filter.
 	%
 	
+	if(0)
+		figure(1);
+		hold on;
+	else
+		figure;
+		GP.Handles.Axes = axes;
+		hold on;
+	end
+	
 	% set(GP.Handles.Normalization_List,'String',{'Not Normalized'},'Value',1);
 	set(GP.Handles.Analysis.Dynamic_Slider_Min,'Enable','off');
 	set(GP.Handles.Analysis.Dynamic_Slider_Max,'Enable','off');
@@ -344,6 +353,9 @@ function Multiple_Choose_Plot(GP)
 			Max_Midline_Length = 800;
 			Max_PVD_Orders = 4;
 			
+			Class_Indices = [1,2,3,4,5];
+			Class_Colors = [0.6,0,0 ; 0,0.6,0 ; 0,0.8,0.8 ; 0.8,0.8,0 ; 0.5,0.5,0.5]; % [1,2,3,3.5,4,5].
+			
 			set(GP.Handles.Normalization_List,'String',{'Not Normalized','Normalized to Midline Length'});
 			set(GP.Handles.Plot_Type_List,'String',{'Default','Dorsal-Ventral Merged','Orders Merged','All Merged'});
 			
@@ -384,7 +396,7 @@ function Multiple_Choose_Plot(GP)
 					
 					dd = Nd+1:Nd+length(f_D);
 					vv = Nv+1:Nv+length(f_V);
-				
+					
 					S_D{o}(dd) = [GP.Workspace(w).Workspace.All_Points(f_D).Length] ./ Midline_Length; % A vector of rectangle lengths (dorsal side only) of class o.
 					L_D{o}(dd) = [GP.Workspace(w).Workspace.All_Points(f_D).Axis_0_Position] ./ Midline_Length; % A vector of midline position (arc-length) from the head (dorsal).
 					S_V{o}(vv) = [GP.Workspace(w).Workspace.All_Points(f_V).Length] ./ Midline_Length; % A vector of rectangle lengths (ventral side only) of class o
@@ -417,16 +429,17 @@ function Multiple_Choose_Plot(GP)
 			set(gca,'ColorOrderIndex',1);
 			H_V = bar(xx,-N_V',1,'stacked','FaceColor','flat'); % histogram(X_V,Edges);
 			
-			%{
-			if(GP.Handles.Plot_Type_List.Value == 2)
-				L = size(H_D.CData,1); % # of bars.
-				% H_D.CData = jet(L);
-				% H_V.CData = jet(L);
-				
-				CM = transpose(rescale(1:L));
-				CM = [1-CM, 0.*CM , CM];
-				H_D.CData = CM;
-				H_V.CData = CM;
+			%
+			if(1 || GP.Handles.Plot_Type_List.Value == 2)
+				L = size([H_D.CData],1); % # of bars.
+				for o=1:Max_PVD_Orders
+					H_D(o).CData = repmat(Class_Colors(o,:),L,1);
+					H_V(o).CData = repmat(Class_Colors(o,:),L,1);
+				end
+				% CM = transpose(rescale(1:L));
+				% CM = [1-CM, 0.*CM , CM];
+				% H_D.CData = CM;
+				% H_V.CData = CM;
 			else
 				legend({'Dorsal','Ventral'});
 			end
@@ -1046,8 +1059,15 @@ function Multiple_Choose_Plot(GP)
 				
 				legend(string(Junction_Classes),'FontSize',14);
 		case 'Angles of Menorah Orders'
-			Junction_Classes = [112,233,334];
+			Junction_Classes = [112,233,234,334,344]; % Junction_Classes = [112,233,334];
+			Lc = length(Junction_Classes);
+			
+			% for c=1:Lc
+			% 	Junction_Classes_Strings{c} = [num2str(c),'<->',num2str(c+1)];
+			% end
+			
 			A1 = cell(1,length(Junction_Classes));
+			A2 = cell(1,length(Junction_Classes));
 			for w=1:numel(GP.Workspace)
 				for v=1:numel(GP.Workspace(w).Workspace.Vertices)
 					c = find(Junction_Classes == GP.Workspace(w).Workspace.Vertices(v).Class);
@@ -1058,9 +1078,11 @@ function Multiple_Choose_Plot(GP)
 						Va = [GP.Workspace(w).Workspace.Vertices(v).Rectangles.Corrected_Angle]; % Vector of rectangles angles.
 						
 						% d = min([GP.Workspace(w).Workspace.Vertices(v).Angles]); % A vector of the angles between the rectangles of the junction.
-						d = min([GP.Workspace(w).Workspace.Vertices(v).Corrected_Angles]); % A vector of the angles between the rectangles of the junction.
+						d = [GP.Workspace(w).Workspace.Vertices(v).Corrected_Angles]; % A vector of the angles between the rectangles of the junction.
+						[Sym,Lin,~] = Vertices_Symmetry_Linearity(d);
+						
 						if(0) % Just use the minimal angle.
-							A1{c}(end+1) = d;
+							A1{c}(end+1) = min(d);
 						else
 							% o1 = min(Vr);
 							m = find(Vr == min(Vr)); % Row numbers of the minimal class.
@@ -1072,35 +1094,70 @@ function Multiple_Choose_Plot(GP)
 								da = max([Va(Vc(2,r)),Va(Vc(1,r))]) - min([Va(Vc(2,r)),Va(Vc(1,r))]); % Angle diff between a pair of rectangles (min and max class).
 								d(r) = min([da,2*pi-da]); % Taking the smaller angle.
 							end
-							A1{c}(end+1) = min(d); % Take the mean angle of all the angles between order o and o+1.
+							A1{c}(end+1) = mean(d); % Take the mean angle of all the angles between order o and o+1.
+							A2{c}(end+1) = Sym;
+							% A1{c}(end+1) = min(d); % Take the min angle of all the angles between order o and o+1.
 						end
 					end
 				end
 			end
 			
-			Edges = 0:5:180;
-			yy = 0.175;
+			Edges_Ang = 0:5:180;
+			Edges_Sym = 0:0.025:1;
+			yy_ang = 0.22;
+			yy_sym = 0.125;
+			
 			Np = 3; % Max number of peaks.
 			MinPeakProm = 0.02;
-			Lc = length(Junction_Classes);
+			Vx = [];
+			Vg = [];
 			for c=1:Lc
-				subplot(1,Lc,c);
-					histogram(A1{c}.*180./pi,Edges,'Normalization','probability'); % histogram(A1{c}.*180./pi,0:3:180); % scatter(c.*ones(1,length(A1{c})),A1{c},20,'k','filled');
+				Vx = [Vx,A1{c}];
+				Vg = [Vg,c*ones(1,length(A1{c}))];
+				scatter(c*ones(1,length(A1{c})),A1{c}.*180./pi,4,'k','filled','Jitter','On','JitterAmount',0.3);
+				%{
+				subplot(2,Lc,c);
+					histogram(A1{c}.*180./pi,Edges_Ang,'Normalization','probability'); % histogram(A1{c}.*180./pi,0:3:180); % scatter(c.*ones(1,length(A1{c})),A1{c},20,'k','filled');
 					hold on;
 					% plot(mean(A1{c}.*180./pi)+[1,1],[0,0.16],'--k','LineWidth',2);
 					
-					N = histcounts(A1{c}.*180./pi,Edges,'Normalization','probability');
-					xx = (Edges(2:end) + Edges(1:end-1)) ./ 2;
-					findpeaks(N,xx,'SortStr','descend','NPeaks',Np,'MinPeakProminence',MinPeakProm,'Annotate','extents','WidthReference','halfheight');
+					N = histcounts(A1{c}.*180./pi,Edges_Ang,'Normalization','probability');
+					xx = (Edges_Ang(2:end) + Edges_Ang(1:end-1)) ./ 2;
+					findpeaks(N,xx,'SortStr','descend','NPeaks',Np,'MinPeakProminence',MinPeakProm,'WidthReference','halfheight'); % ,'Annotate','extents'
 					
-					xlim([0,120]);
-					ylim([0,yy]);
-					title([num2str(c),'->',num2str(c+1)]); % legend({'1->2','2->3','3->4'}); % legend(string(Junction_Classes));
+					xlim([Edges_Ang(1),Edges_Ang(end)]);
+					ylim([0,yy_ang]);
+					% title([num2str(c),'<->',num2str(c+1)]);
+					legend([num2str(c),'<->',num2str(c+1)],'Location','northwest'); % legend({'1<->2','2<->3','3<->4'}); % legend(string(Junction_Classes));
 					xlabel(['Angle (',char(176),')']);
 					ylabel('Probability');
 					set(gca,'FontSize',26);
 					axis square;
+				
+				subplot(2,Lc,c+Lc);
+					histogram(A2{c},Edges_Sym,'Normalization','probability');
+					hold on;
+					
+					N = histcounts(A2{c},Edges_Sym,'Normalization','probability');
+					xx = (Edges_Sym(2:end) + Edges_Sym(1:end-1)) ./ 2;
+					findpeaks(N,xx,'SortStr','descend','NPeaks',Np,'MinPeakProminence',MinPeakProm,'WidthReference','halfheight'); % ,'Annotate','extents'
+					
+					xlim([Edges_Sym(1),Edges_Sym(end)]);
+					ylim([0,yy_sym]);
+					legend([num2str(c),'<->',num2str(c+1)],'Location','northwest');
+					xlabel(['Symmetry']);
+					ylabel('Probability');
+					set(gca,'FontSize',26);
+					axis square;
+				%}
 			end
+			
+			H = boxplot(Vx.*180./pi,Vg,'Labels',Junction_Classes); % Junction_Classes. {'1<->2','2<->3','3<->4'}
+			set(H,{'linew'},{4});
+			xlabel('Junction Class');
+			ylabel(['Mean Angle [',char(176),']']);
+			set(gca,'FontSize',36);
+			
 		case 'Linearity-Symmetry of 3-Way junctions'
 			
 			S = zeros(1,10^4);
@@ -1158,21 +1215,23 @@ function Multiple_Choose_Plot(GP)
 			set(gca,'FontSize',22);
 			xlim([0,Worm_Radium_Max]);
 		case 'Distribution of Segment Lengths Per Order'
-			Bin_Vector = 0:5:100;
+			Bin_Vector = 0:2:100;
 			for o=1:4
 				V_Length = [];
 				for w=1:numel(GP.Workspace)
-					F = find([GP.Workspace(w).Workspace.Segments.Class] == o);
+					F = find([GP.Workspace(w).Workspace.Segments.Class] == o & [GP.Workspace(w).Workspace.Segments.Length] > 0);
 					V_Length = [V_Length,[GP.Workspace(w).Workspace.Segments(F).Length]];
 				end
 				subplot(2,2,o);
 				histogram(V_Length,Bin_Vector,'Normalization','Probability');
+				% scatter(o.*ones(1,length(V_Length)),V_Length,5,'k','filled');
 				xlabel(['Segment Length [',char(181),'m]']);
 				ylabel('Probability');
 				legend(['Menorah Order = ',num2str(o)]);
-				% title(GP.General.Active_Plot);
+				%%% title(GP.General.Active_Plot);
 				set(gca,'FontSize',22);
 				xlim([0,100]); % axis([0,100,0,0.3]);
+				%%%hold on;
 			end
 			
 		case 'Sum of 2 Smallest VS Product of 2 Smallest'
@@ -1345,22 +1404,22 @@ function Multiple_Choose_Plot(GP)
 			V = nan(3,10^4);
 			ii = 0;
 			for w=1:numel(GP.Workspace)
-				for v=1:numel(GP.Workspace(w).Workspace.All_Vertices)
-					if(GP.Workspace(w).Workspace.All_Vertices(v).Order == 3 && length([GP.Workspace(w).Workspace.All_Vertices(v).Angles]) == 3)
-						% if(GP.Workspace(w).Workspace.All_Vertices(v).Class == 112)
+				for v=1:numel(GP.Workspace(w).Workspace.Vertices)
+					if(GP.Workspace(w).Workspace.All_Vertices(v).Order == 3 && length([GP.Workspace(w).Workspace.Vertices(v).Corrected_Angles]) == 3) % Corrected_Angles
+						if(ismember([GP.Workspace(w).Workspace.All_Vertices(v).Class],[112,233,334]))
 							ii = ii + 1;
-							V(:,ii) = GP.Workspace(w).Workspace.All_Vertices(v).Angles;
-						% end
+							V(:,ii) = [GP.Workspace(w).Workspace.Vertices(v).Corrected_Angles];
+						end
 					end
 				end
 			end
 			V = V(:,1:ii);
 			
-			BinSize = 6; % 1 + (30 .* GP.Handles.Analysis.Slider.Value);
+			BinSize = 2; % 1 + (30 .* GP.Handles.Analysis.Slider.Value);
 			Title = 'Histogram of Smallest, Mid & Largest Angles';
-			
+			% assignin('base','A123',V);
 			Plot_3Angles_Junction_Histogram(V,BinSize,Title);
-		
+            
 		case 'Custom_1_Total_Length'
 			Custom_1_Total_Length(GP,GP.Visuals,'Length [\mum]','Total Length');
 		case 'Custom_2_Vertices_Num'

@@ -84,6 +84,8 @@ function Tracer_UI()
 	GUI_Parameters.Single.Handles.Tracing.Update_Multiple_DB = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Project_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Update Multiple Workspaces',...
 			'Units','Normalized','Position',[0 0.5 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Update_Multiple_Workspaces,'TooltipString','Choose a directory that contains multiple workspaces of single neurons (also in subfolders) and run the current version of the code using the same parameters.');	
 	
+	Edit_Properties_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Project_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Export Image',...
+		'Units','Normalized','Position',[0 0.31 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Export_Image_Func,'TooltipString','Save current axis as image.');
 	Edit_Properties_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Project_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Change Project Properties',...
 		'Units','Normalized','Position',[0 0.21 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@User_Input_Single_Func,'TooltipString','Click Here to Display and Change The Current Parameters Values of Your Project');
 	Save_Project_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Project_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Save Current Project',...
@@ -100,15 +102,27 @@ function Tracer_UI()
 	set(Im_Menu_H,'Enable','off');
 	
 	Reconstructions_Menu_Handle = uimenu(GUI_Parameters.Handles.Figure,'Label','Reconstructions');
-		H_Recon_Original_Image = uimenu(Reconstructions_Menu_Handle,'Label','Original Image','UserData',0,'Callback',@Reconstruction_Func);
-		H_Recon_Original_Image_RGB = uimenu(Reconstructions_Menu_Handle,'Label','Original Image - RGB','UserData',0,'Callback',@Reconstruction_Func);
-		H_Recon_Probability_Image = uimenu(Reconstructions_Menu_Handle,'Label','Probability Image','UserData',0,'Callback',@Reconstruction_Func);
-		H_Recon_Probability_Image_RGB = uimenu(Reconstructions_Menu_Handle,'Label','Probability Image - RGB','UserData',0,'Callback',@Reconstruction_Func);
-		H_Recon_Binary_Image = uimenu(Reconstructions_Menu_Handle,'Label','Binary Image','UserData',0,'Callback',@Reconstruction_Func);
+		H_Raw_Image = uimenu(Reconstructions_Menu_Handle,'Label','Raw Image');
+			H_Recon_Original_Image = uimenu(H_Raw_Image,'Label','Raw Image - Grayscale','UserData',0,'Callback',@Reconstruction_Func);
+			H_Recon_Original_Image_RGB = uimenu(H_Raw_Image,'Label','Raw Image - RGB','UserData',0,'Callback',@Reconstruction_Func);
+		
+		H_CNN = uimenu(Reconstructions_Menu_Handle,'Label','CNN');
+			H_Recon_Probability_Image = uimenu(H_CNN,'Label','CNN Image - Grayscale','UserData',0,'Callback',@Reconstruction_Func);
+			H_Recon_Probability_Image_RGB = uimenu(H_CNN,'Label','CNN Image - RGB','UserData',0,'Callback',@Reconstruction_Func);
+		
+		H_Binary = uimenu(Reconstructions_Menu_Handle,'Label','Binary Image');
+			H_Recon_Binary_Image = uimenu(H_Binary,'Label','Binary Image','UserData',0,'Callback',@Reconstruction_Func);
+			H_Recon_Binary_Image = uimenu(H_Binary,'Label','Raw + Binary Image - RGB','UserData',0,'Callback',@Reconstruction_Func);
+		
 		H_Recon_Skeleton_Image = uimenu(Reconstructions_Menu_Handle,'Label','Skeleton','UserData',0,'Callback',@Reconstruction_Func);
+		
 		H_Recon_CB = uimenu(Reconstructions_Menu_Handle,'Label','Cell Body','UserData',0,'Callback',@Reconstruction_Func);
 		H_Recon_CB = uimenu(Reconstructions_Menu_Handle,'Label','Blob','UserData',0,'Callback',@Reconstruction_Func);
-		uimenu(Reconstructions_Menu_Handle,'Label','Segmentation','UserData',0,'Callback',@Reconstruction_Func);
+		
+		H_Segments = uimenu(Reconstructions_Menu_Handle,'Label','Segments');
+			uimenu(H_Segments,'Label','Segmentation','UserData',0,'Callback',@Reconstruction_Func);
+			uimenu(H_Segments,'Label','Segments by Length','UserData',0,'Callback',@Reconstruction_Func);
+		
 		uimenu(Reconstructions_Menu_Handle,'Label','Individual Menorahs','UserData',0,'Callback',@Reconstruction_Func,'Enable','off');
 		
 		H_Vertices = uimenu(Reconstructions_Menu_Handle,'Label','Vertices');
@@ -385,7 +399,8 @@ function Tracer_UI()
 	
 	function Mouse_Edit_BW_Func(source,event)
 		MarkerSize_1 = GUI_Parameters.Handles.Edit_BW_MarkerSize_Radio_Group.SelectedObject.UserData;
-		if(MarkerSize_1 > 0 && strcmp(GUI_Parameters.General.Active_Plot,'Binary Image'))
+		
+		if(MarkerSize_1 > 0 && strcmp(GUI_Parameters.General.Active_Plot,'Binary Image') || strcmp(GUI_Parameters.General.Active_Plot,'Raw + Binary Image - RGB'))
 			D = round((MarkerSize_1-1)/2);
 			C = event.IntersectionPoint;
 			C = [round(C(1)),round(C(2))];
@@ -950,13 +965,13 @@ function Tracer_UI()
 		
 		Reconstruction_Index(GUI_Parameters,Im_Menu_H.UserData);
 		
-		if(isfield(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace,'Im_BW') && strcmp(GUI_Parameters.General.Active_Plot,'Binary Image'))
+		if(isfield(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace,'Im_BW') && strcmp(GUI_Parameters.General.Active_Plot,'Binary Image') || strcmp(GUI_Parameters.General.Active_Plot,'Raw + Binary Image - RGB'))
 			set(allchild(GUI_Parameters.Handles.Axes),'HitTest','off');
 			set(GUI_Parameters.Handles.Axes,'PickableParts','all','ButtonDownFcn',@Mouse_Edit_BW_Func);
 			
-			if(nargin == 2 || (nargin == 1 && source))
-				Apply_NN_Func();
-			end
+			% if(nargin == 2 || (nargin == 1 && source))
+			% 	Apply_NN_Func();
+			% end
 		end
 		
 		if(XL(2) > 1 && YL(2) > 1)
@@ -1175,5 +1190,10 @@ function Tracer_UI()
 			delete(H1);
 		end
 	end
-
+	
+	function Export_Image_Func(source,callbackdata)
+		Output_Dir = 'D:\Dropbox (Technion Dropbox)\Omer Yuval\Neuronalizer\Neuronalizer Paper\Figures\Figure 1 (Intro)\SVG\ToCrop'; % uigetdir;
+		% pos = plotboxpos(GUI_Parameters.Handles.Axes);
+		export_fig([Output_Dir,filesep,'Exported_Figure.svg'],GUI_Parameters.Handles.Axes,'-svg');
+	end
 end

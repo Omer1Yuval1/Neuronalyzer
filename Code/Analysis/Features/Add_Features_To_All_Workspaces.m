@@ -99,7 +99,7 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 				W(i).Workspace.Neuron_Axes = Find_Worm_Longitudinal_Axis(W(i).Workspace,0);
 				[W(i).Workspace.All_Points,W(i).Workspace.All_Vertices,W(i).Workspace.Neuron_Axes] = Map_Worm_Axes(W(i).Workspace,W(i).Workspace.Neuron_Axes,0,0);
 			end
-			Clusters_Struct = load('PVD_Orders.mat');
+			Clusters_Struct = load('Menorah_Class_Clusters.mat');
 			Clusters_Struct = Clusters_Struct.Clusters_Struct;
 			W(i).Workspace = Classify_PVD_Points(W(i).Workspace,Clusters_Struct);
 		end

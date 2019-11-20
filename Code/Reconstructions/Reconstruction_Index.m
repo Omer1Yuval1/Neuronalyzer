@@ -7,15 +7,22 @@ function Reconstruction_Index(GP,ii)
 	
 	Worm_Radius_um = 45;
 	
-	figure(1);
-	hold on;
+	if(1)
+		figure(1);
+		hold on;
+	else
+		figure;
+		GP.Handles.Axes = axes;
+		% XY = [1140,1250,550,660];
+		hold on;
+	end
 	
 	Set_Dynamic_Sliders_Values(GP.Handles.Analysis,0,50);
 	
 	switch GP.General.Active_Plot
-		case 'Original Image'
+		case 'Raw Image - Grayscale'
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
-		case 'Original Image - RGB'
+		case 'Raw Image - RGB'
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			colormap hot;
 		case 'Cell Body' % Detect and display CB and the outsets of the branches connected to it:
@@ -26,16 +33,24 @@ function Reconstruction_Index(GP,ii)
 			[CB_Pixels,CB_Perimeter] = Detect_Cell_Body(GP.Workspace(ii).Workspace.Image0,CB_BW_Threshold,Scale_Factor,0); % Detect cell-body.
 			% set(gca,'YDir','normal','Position',[0,0,1,1]);
 			[CB_Vertices,Pixels0,Pixels1] = Find_CB_Vertices(GP.Workspace(ii).Workspace.Image0,CB_Perimeter,CB_Pixels,Scale_Factor,CB_BW_Threshold,1);
-		case 'Probability Image'
+		case 'CNN Image - Grayscale'
 			imshow(GP.Workspace(ii).Workspace.NN_Probabilities,'Parent',GP.Handles.Axes);
-		case 'Probability Image - RGB'
+		case 'CNN Image - RGB'
 			imshow(GP.Workspace(ii).Workspace.NN_Probabilities,'Parent',GP.Handles.Axes);
 			colormap hot;
 		case 'Binary Image'
 			imshow(GP.Workspace(ii).Workspace.Im_BW,'Parent',GP.Handles.Axes);
+			
+		case 'Raw + Binary Image - RGB'
+			Im_RGB = repmat(GP.Workspace(ii).Workspace.Image0(:,:,1),[1,1,3]);
+			Im_RGB(:,:,1) = Im_RGB(:,:,1) .* uint8(~GP.Workspace(ii).Workspace.Im_BW);
+			Im_RGB(:,:,2) = Im_RGB(:,:,2) .* uint8(GP.Workspace(ii).Workspace.Im_BW);
+			imshow(Im_RGB,'Parent',GP.Handles.Axes);
 		case 'Skeleton'
 			[Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints] = Pixel_Trace_Post_Proccessing(GP.Workspace(ii).Workspace.Im_BW);
 			imshow(Im1_NoiseReduction);
+			
+			%{
 			% Color connected components:
 			CC = bwconncomp(Im1_NoiseReduction);
 			for c=1:length(CC.PixelIdxList)
@@ -43,12 +58,32 @@ function Reconstruction_Index(GP,ii)
 				hold on;
 				plot(x,y,'.','MarkerSize',7);
 			end
+			%}
 		case 'Blob'
 			Find_Worm_Longitudinal_Axis(GP.Workspace(ii).Workspace,1,GP.Handles.Axes);
 		case 'Segmentation'
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			if(isfield(GP.Workspace(ii).Workspace,'Segments'))
 				Reconstruct_Segmented_Trace(GP.Workspace(ii).Workspace,GP.Handles.Analysis); % Reconstruct_Segments(GP.Workspace(1).Workspace);
+			end
+		case 'Segments by Length'
+			
+			Max_Length = 50; % [um].
+			CM = jet(1000);
+			
+			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
+			hold on;
+			for s=1:numel(GP.Workspace(ii).Workspace.Segments)
+				if(numel(GP.Workspace(ii).Workspace.Segments(s).Rectangles))
+					x = [GP.Workspace(ii).Workspace.Segments(s).Rectangles.X];
+					y = [GP.Workspace(ii).Workspace.Segments(s).Rectangles.Y];
+					c = [GP.Workspace(ii).Workspace.Segments(s).Length];
+					if(isnan(c) || c <= 0)
+						plot(x,y,'Color','w','LineWidth',3);
+					else
+						plot(x,y,'Color',CM(round(rescale(c,1,1000,'InputMin',0,'InputMax',Max_Length)),:),'LineWidth',3);
+					end
+				end
 			end
 		case 'Axes'
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
@@ -110,7 +145,7 @@ function Reconstruction_Index(GP,ii)
 			
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			hold on;
-			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],5,CM,'filled');
+			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],100,CM,'filled');
 			% scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],5,CM(O,:),'filled');
 			
 		case 'Longitudinal Gradient'
@@ -163,7 +198,7 @@ function Reconstruction_Index(GP,ii)
 			
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			hold on;
-			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],5,CM,'filled');
+			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],100,CM,'filled');
 			% Reconstruct_Curvature(GP.Workspace(ii).Workspace,Curvature_Min_Max(1),Curvature_Min_Max(2),Medial_Dist_Range(1),Medial_Dist_Range(2),1);
 		case 'PVD Orders - Points'
 			
@@ -181,7 +216,10 @@ function Reconstruction_Index(GP,ii)
 		
 		case 'PVD Orders - Segments'
 			Class_Num = max([GP.Workspace(ii).Workspace.All_Points.Class]);
-			C = lines(Class_Num+1);
+			
+			% C = lines(Class_Num+1);
+			Class_Indices = [1,2,3,3.5,4,5];
+			Class_Colors = [0.6,0,0 ; 0,0.6,0 ; 0,0.8,0.8 ; 0,0,1 ; 0.8,0.8,0 ; 0.5,0.5,0.5]; % [1,2,3,3.5,4,5].
 			
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			hold on;
@@ -189,11 +227,11 @@ function Reconstruction_Index(GP,ii)
 				if(numel(GP.Workspace(ii).Workspace.Segments(s).Rectangles))
 					x = [GP.Workspace(ii).Workspace.Segments(s).Rectangles.X];
 					y = [GP.Workspace(ii).Workspace.Segments(s).Rectangles.Y];
-					c = [GP.Workspace(ii).Workspace.Segments(s).Class];
-					if(isnan(c))
-						plot(x,y,'Color',C(end,:),'LineWidth',3);
+					c = find(Class_Indices == GP.Workspace(ii).Workspace.Segments(s).Class);
+					if(isempty(c)) % isnan(c)
+						plot(x,y,'Color',Class_Colors(end,:),'LineWidth',2);
 					else
-						plot(x,y,'Color',C(c,:),'LineWidth',3);
+						plot(x,y,'Color',Class_Colors(c,:),'LineWidth',2);
 					end
 				end
 			end
@@ -203,6 +241,8 @@ function Reconstruction_Index(GP,ii)
 	end
 	
 	set(gca,'YDir','normal');
+	
+	% axis(XY);
 	
 	%{
 	hold on;

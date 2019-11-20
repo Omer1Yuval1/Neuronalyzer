@@ -1,5 +1,13 @@
 function Plot_3Angles_Junction_Histogram(V,BinSize,Title1)
 	
+	switch(nargin)
+		case 1
+			BinSize = 2; % [mm].
+			Title1 = '';
+		case 2
+			Title1 = '';
+	end
+	
 	XL = [0,250];
 	
 	V = sort(V).*180./pi;
@@ -41,9 +49,12 @@ function Plot_3Angles_Junction_Histogram(V,BinSize,Title1)
 	disp([Am1,Am2,Am3]);
 	
 	V1 = [0,120,240 ; 0,90,180 ; 0,60,120 ; 0,110,250 ; 0,130,230];
-	V2 = 18:.1:22; % 0:.1:25; % 0:50; % 15:25;
+	V2 = 0:1:25; % 0:.1:25; % 0:50; % 15:25;
+	
+	[X,Y] = meshgrid(1:size(V1,1),1:length(V2));
+	
     Angles_Labels = [{'0,120,240'} , {'0,90,180'} , {'0,60,120'} , {'0,110,250'} , {'0,130,230'}];
-    % V3 = zeors(size(V1,1) , );
+    
 	I = [];
 	Vp = 0;
 	P_Vals = zeros(size(V1,1),length(V2));
@@ -67,16 +78,21 @@ function Plot_3Angles_Junction_Histogram(V,BinSize,Title1)
 		for i=1:size(V1,1)
 			plot(V2,P_Vals(i,:),'LineWidth',3);
 		end
-		legend([{'0,120,240'} , {'0,90,180'} , {'0,60,120'} , {'0,110,250'} , {'0,130,230'}],'FontSize',22);
+		legend(Angles_Labels,'FontSize',22);
 		figure(1); % Set the focus back to the main figure.
     elseif(1)
         figure;
-        bar3(V2,P_Vals');
-        set(gca,'XTickLabels',Angles_Labels);
-        ylabel('Noise');
-        xlabel('Angles (degrees)');
+        
+		surf(X,Y,P_Vals','FaceColor','interp','EdgeColor','none','FaceLighting','gouraud'); % % bar3(V2,P_Vals');
+		colormap jet;
+        set(gca,'XTick',1:size(V1,1),'XTickLabels',Angles_Labels);
+        ylabel(['Noise Size [',char(176),']']);
+        xlabel(['Angles [',char(176),']']);
         zlabel('P-Value');
+        xlim([1,size(V1,1)]);
         ylim([V2(1),V2(end)]);
+		set(gca,'FontSize',28);
+		%}
         figure(1); % Set the focus back to the main figure.
 	end
 	
