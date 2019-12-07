@@ -196,7 +196,7 @@ function Rectangles = Find_Vertex_Angles(Im_BW,Cxy,Rc,Scale_Factor,Peaks_Max_Num
 	if(Plot1 || Plot3)
 		figure(1);
 		hold on;
-		viscircles(Cxy,Rc,'Color',[0,0.8,0],'LineWidth',8);
+		viscircles(Cxy,Rc,'Color',[0,0.8,0],'LineWidth',4);
 		plot(Cxy(1),Cxy(2),'.','Color',[0,0.8,0],'MarkerSize',30);
 	end
 	

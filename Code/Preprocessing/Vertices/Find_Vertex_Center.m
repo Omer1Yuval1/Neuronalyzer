@@ -17,17 +17,17 @@ function [New_Cxy,Rc] = Find_Vertex_Center(Im_BW,Cxy,Vr,Circles_X,Circles_Y,Pote
 	Cy = Potential_Centers_XY(2,F);
 	
 	Cr = zeros(1,length(Cy));
-	parfor j=1:length(Cy) % For each potential center.
+	for j=1:length(Cy) % For each potential center.
 		
 		Circles_Xj = round(Circles_X + Cx(j)); % A matrix of circle coordinates [X,Y].
 		Circles_Yj = round(Circles_Y + Cy(j));
 		% Cv = round([Circles_X(ri,:)' + Cx(j) , Circles_Y(ri,:)' + Cy(j)]); % A matrix of circle coordinates [X,Y].
 		
-		Circles_XYj = Im_Rows*(Circles_Xj-1)+Circles_Yj;
+		Circles_XYj = Im_Rows*(Circles_Xj-1)+Circles_Yj; % [4 x N]. Pixel values of circumference coordinates.
+		% Circles_XYj = max(Circles_XYj);
 		
-		for ri=1:length(Vr) % For each circle radius.
-			
-			if(isempty(find(Im_BW(Circles_XYj(ri,:))))) % If there's is at least one black (background) pixel, stop.
+		for ri=1:length(Vr) % For each concentric circle of center j.
+			if(any(~(Im_BW(Circles_XYj(ri,:))),[1,2])) % If there's is at least one black (background) pixel, stop.
 				Cr(j) = Vr(max(1,ri-1)); % Cr(j) = Vr(ri);
 				
 				if(Plot2 && rand(1,1) >= 0.93 && Cr(j) > 0.1)
@@ -81,9 +81,10 @@ function [New_Cxy,Rc] = Find_Vertex_Center(Im_BW,Cxy,Vr,Circles_X,Circles_Y,Pote
 		for k=0:.3:Rc
 			viscircles(New_Cxy,k,'Color','r');
 		end
-		viscircles(New_Cxy,Rc,'Color','r','LineWidth',4);
+		viscircles(New_Cxy,Rc,'Color',[0,0.8,0],'LineWidth',4);
 		plot(New_Cxy(1),New_Cxy(2),'.','MarkerSize',30,'Color',[0,0.8,0]); % The new center.
-		plot(Cxy(1),Cxy(2),'.b','MarkerSize',30); % Approximate center.
+		plot(Cxy(1),Cxy(2),'.','Color',[0.8,0,0],'MarkerSize',30); % Approximate center.
+        % viscircles(Cxy,1.5,'Color',[0.8,0,0],'LineWidth',4);
 	end
 	% assignin('base','Theta',Theta);
 	

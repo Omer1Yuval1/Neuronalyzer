@@ -17,6 +17,8 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 	cmap = [0,0,0 ; 0.1,0.1,0.1]; % ;1 1 1];
 	Class_Colors = [0.6,0,0 ; 0,0.6,0 ; 0,0.8,0.8 ; 0.8,0.8,0 ; 0.5,0.5,0.5]; % [1,2,3,4,5].
 	
+	FontSize_1 = 36;
+	
 	Clusters_Struct = struct('Cluster_ID',{},'X_Boundary',{},'Y_Boundary',{},'Class',{});
 	
 	X0 = [];
@@ -56,14 +58,14 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 			histogram(X,Disatnce_Edges,'Normalization','probability');
 			xlabel('Midline Distance');
 			ylabel('Probability');
-			set(gca,'FontSize',32);
+			set(gca,'FontSize',FontSize_1);
 			xlim([-1,1]);
 			
 		subplot(1,2,2);
 			histogram(Y,Orientation_Edges,'Normalization','probability');
 			xlabel('Midline Orientation');
 			ylabel('Probability');
-			set(gca,'FontSize',32);
+			set(gca,'FontSize',FontSize_1);
 			xlim([-1,1]);
 		
 		return;
@@ -110,7 +112,7 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 	
 	if(Plot_01 == 2)
 		
-		%{
+		%
 		% 3D surface plot
 		H2 = figure(2);
 		set(H2,'color','w');
@@ -149,7 +151,7 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 		h2.Position(3) = 0.025;
 		h2.Position(4) = 0.37;
 		
-		set(gca,'FontSize',18,'XTick',[-1,1],'YTick',[-1,1],'YTickLabels',[0,90]);
+		set(gca,'FontSize',FontSize_1,'XTick',[-1,1],'YTick',[-1,1],'YTickLabels',[0,90]);
 		%}
 		
 		H3 = figure(3);
@@ -180,8 +182,11 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 		xlim(Disatnce_Edges([1,end]));
 		ylim([-1.9,1.7]); % ylim(Orientation_Edges([1,end])); % ylim([-0.4,1.3]);
 		
-		set(gca,'FontSize',24);
+		set(gca,'FontSize',FontSize_1);
 		axis square;
+		
+		set(gca,'unit','normalize');
+		set(gca,'position',[0.10,0.16,0.9,0.83]);
 		
 		%
 		hold on;
@@ -225,10 +230,13 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 		h.YAxis.TickLabels = [0,45,90];
 		% h.GridAlpha = 0.3; 
 		h.GridColor = 'w';
-		set(gca,'FontSize',24);
+		set(gca,'FontSize',FontSize_1);
 		axis square;
 		xlim(Disatnce_Edges([1,end]));
 		ylim([-1.9,1.7]); % ylim(Orientation_Edges([1,end])); % ylim([-0.4,1.3]);
+		
+		set(gca,'unit','normalize');
+		set(gca,'position',[0.10,0.16,0.9,0.83]);
 	else
 		close all;
 	end

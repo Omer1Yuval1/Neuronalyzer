@@ -6,14 +6,20 @@ function Reconstruction_Index(GP,ii)
 		% Move out: Worm_Radius_um.
 	
 	Worm_Radius_um = 45;
+	LineWidth_1 = 2; % [2,6].
+	DotSize_1 = 80;
 	
-	if(1)
+	if(0)
 		figure(1);
 		hold on;
 	else
-		figure;
+		H = figure;
+		
 		GP.Handles.Axes = axes;
-		% XY = [1140,1250,550,660];
+		XY = [1140,1250,550,660];
+		% GP.Workspace(ii).Workspace.Image0 = GP.Workspace(ii).Workspace.Image0(XY(3):XY(4),XY(1):XY(2));
+		GP.Workspace(ii).Workspace.NN_Probabilities = GP.Workspace(ii).Workspace.NN_Probabilities(XY(3):XY(4),XY(1):XY(2));
+		GP.Workspace(ii).Workspace.Im_BW = GP.Workspace(ii).Workspace.Im_BW(XY(3):XY(4),XY(1):XY(2));
 		hold on;
 	end
 	
@@ -63,8 +69,17 @@ function Reconstruction_Index(GP,ii)
 			Find_Worm_Longitudinal_Axis(GP.Workspace(ii).Workspace,1,GP.Handles.Axes);
 		case 'Segmentation'
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
+			hold on;
+			
 			if(isfield(GP.Workspace(ii).Workspace,'Segments'))
-				Reconstruct_Segmented_Trace(GP.Workspace(ii).Workspace,GP.Handles.Analysis); % Reconstruct_Segments(GP.Workspace(1).Workspace);
+				for s=1:numel(GP.Workspace(ii).Workspace.Segments)
+					if(numel(GP.Workspace(ii).Workspace.Segments(s).Rectangles))
+						x = [GP.Workspace(ii).Workspace.Segments(s).Rectangles.X];
+						y = [GP.Workspace(ii).Workspace.Segments(s).Rectangles.Y];
+						plot(x,y,'LineWidth',LineWidth_1);
+					end
+				end
+				% Reconstruct_Segmented_Trace(GP.Workspace(ii).Workspace,GP.Handles.Analysis); % Reconstruct_Segments(GP.Workspace(1).Workspace);
 			end
 		case 'Segments by Length'
 			
@@ -115,13 +130,20 @@ function Reconstruction_Index(GP,ii)
 			Map_Worm_Axes(GP.Workspace(ii).Workspace,GP.Workspace(ii).Workspace.Neuron_Axes,1,0,GP.Handles.Axes);
 		case 'Midline Distance'
 			
-			N = 2 .* [GP.Workspace(ii).Workspace.All_Points.Half_Radius];
-			
 			X = [GP.Workspace(ii).Workspace.All_Points.X];
 			Y = [GP.Workspace(ii).Workspace.All_Points.Y];
-			O = rescale(abs([GP.Workspace(ii).Workspace.All_Points.Midline_Distance]) ./ N)';
 			
-			[~,~,Ic] = histcounts(O,1000);
+			R3 = [GP.Workspace(ii).Workspace.All_Points.Half_Radius]; % Half-radius (on the same side that the point is).
+			R4 = [GP.Workspace(ii).Workspace.All_Points.Radius]; % Radius (on the same side that the point is).
+			
+			D = [GP.Workspace(ii).Workspace.All_Points.Midline_Distance];
+			[D,Fin] = Scale_Midline_Distance_To_Local_Radii(D,R3,R4);
+			
+			X = X(Fin);
+			Y = Y(Fin);
+			D = abs(D(Fin));
+			
+			[~,~,Ic] = histcounts(D,1000);
 			F = find(Ic ~=0);
 			Ic = Ic(F);
 			X = X(F);
@@ -133,7 +155,7 @@ function Reconstruction_Index(GP,ii)
 			
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			hold on;
-			scatter(X,Y,5,CM(Ic,:),'filled');
+			scatter(X,Y,DotSize_1,CM(Ic,:),'filled');
 			% scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],5,CM,'filled');
 		case 'Midline Orientation'
 			
@@ -145,7 +167,7 @@ function Reconstruction_Index(GP,ii)
 			
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			hold on;
-			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],100,CM,'filled');
+			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],DotSize_1,CM,'filled'); % [5,100]
 			% scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],5,CM(O,:),'filled');
 			
 		case 'Longitudinal Gradient'
@@ -198,12 +220,13 @@ function Reconstruction_Index(GP,ii)
 			
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			hold on;
-			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],100,CM,'filled');
+			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],DotSize_1,CM,'filled');
 			% Reconstruct_Curvature(GP.Workspace(ii).Workspace,Curvature_Min_Max(1),Curvature_Min_Max(2),Medial_Dist_Range(1),Medial_Dist_Range(2),1);
 		case 'PVD Orders - Points'
 			
 			Class_Num = max([GP.Workspace(ii).Workspace.All_Points.Class]);
-			C = lines(Class_Num+1);
+			
+			C = [0.6,0,0 ; 0,0.6,0 ; 0,0.8,0.8 ; 0.8,0.8,0 ; 0.5,0.5,0.5]; % lines(Class_Num+1);
 			% figure;
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			hold on;
@@ -213,13 +236,15 @@ function Reconstruction_Index(GP,ii)
 			Classes(isnan(Classes)) = Class_Num + 1;
 			
 			scatter(Midline_Distance,Midline_Orientation,10,C(Classes,:),'filled');
+			
+			% assignin('base','All_Points',GP.Workspace(ii).Workspace.All_Points);
 		
 		case 'PVD Orders - Segments'
 			Class_Num = max([GP.Workspace(ii).Workspace.All_Points.Class]);
 			
 			% C = lines(Class_Num+1);
 			Class_Indices = [1,2,3,3.5,4,5];
-			Class_Colors = [0.6,0,0 ; 0,0.6,0 ; 0,0.8,0.8 ; 0,0,1 ; 0.8,0.8,0 ; 0.5,0.5,0.5]; % [1,2,3,3.5,4,5].
+			Class_Colors = [0.6,0,0 ; 0,0.6,0 ; 0,0.8,0.8 ; 0,0,1 ; 0.8,0.8,0 ; 0.5,0.5,0.5];
 			
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			hold on;
@@ -229,9 +254,9 @@ function Reconstruction_Index(GP,ii)
 					y = [GP.Workspace(ii).Workspace.Segments(s).Rectangles.Y];
 					c = find(Class_Indices == GP.Workspace(ii).Workspace.Segments(s).Class);
 					if(isempty(c)) % isnan(c)
-						plot(x,y,'Color',Class_Colors(end,:),'LineWidth',2);
+						plot(x,y,'Color',Class_Colors(end,:),'LineWidth',LineWidth_1);
 					else
-						plot(x,y,'Color',Class_Colors(c,:),'LineWidth',2);
+						plot(x,y,'Color',Class_Colors(c,:),'LineWidth',LineWidth_1);
 					end
 				end
 			end
@@ -240,7 +265,13 @@ function Reconstruction_Index(GP,ii)
 			Reconstruct_Trace(GP.Workspace(ii).Workspace);
 	end
 	
-	set(gca,'YDir','normal');
+	% set(gca,'YDir','normal');
+	
+	H.Position = [10,50,900,900];
+	set(GP.Handles.Axes,'unit','normalize');
+	set(GP.Handles.Axes,'position',[0,0,1,1]);
+	axis tight;
+	
 	
 	% axis(XY);
 	

@@ -28,10 +28,12 @@ function Multiple_Choose_Plot(GP)
 		figure(1);
 		hold on;
 	else
-		figure;
+		figure('WindowState','maximized');
 		GP.Handles.Axes = axes;
 		hold on;
 	end
+	
+	FontSize_1 = 36;
 	
 	% set(GP.Handles.Normalization_List,'String',{'Not Normalized'},'Value',1);
 	set(GP.Handles.Analysis.Dynamic_Slider_Min,'Enable','off');
@@ -185,7 +187,7 @@ function Multiple_Choose_Plot(GP)
 		
 		case {'Midline Distance of All Points','Midline Distance of 3-Way Junctions','Midline Distance of Tips'}
 			
-			set(GP.Handles.Normalization_List,'String',{'Not Normalized','Normalized to Local Half Radius','Normalized to Local Radius'});
+			set(GP.Handles.Normalization_List,'String',{'Not Normalized','Normalized to Both Local Radii','Normalized to Local Half Radius','Normalized to Local Radius'});
 			set(GP.Handles.Plot_Type_List,'String',{'Default','Dorsal-Ventral Merged','Color Gradient'});
 			
 			switch GP.General.Active_Plot
@@ -201,15 +203,21 @@ function Multiple_Choose_Plot(GP)
 			end
 			
 			X = [];
-			Y = [];
+			R3 = [];
+			R4 = [];
 			for w=1:numel(GP.Workspace)
 				Fx = Vertex_Order_Func([GP.Workspace(w).Workspace.All_Points.Vertex_Order]);
 				X = [X,[GP.Workspace(w).Workspace.All_Points(Fx).Midline_Distance]];
 				switch GP.Handles.Normalization_List.Value
 					case 2
-						Y = [Y,[GP.Workspace(w).Workspace.All_Points(Fx).Half_Radius]];
+						R3 = [R3,[GP.Workspace(w).Workspace.All_Points(Fx).Half_Radius]]; % Half-radius (on the same side that the point is).
+						R4 = [R4,[GP.Workspace(w).Workspace.All_Points(Fx).Radius]]; % Radius (on the same side that the point is).
+						% TODO:
+							% For each point check if D/V and save both radii.
 					case 3
-						Y = [Y,[GP.Workspace(w).Workspace.All_Points(Fx).Radius]];
+						R3 = [R3,[GP.Workspace(w).Workspace.All_Points(Fx).Half_Radius]];
+					case 4
+						R4 = [R4,[GP.Workspace(w).Workspace.All_Points(Fx).Radius]];
 				end
 			end
 			
@@ -219,15 +227,24 @@ function Multiple_Choose_Plot(GP)
 						set(GP.Handles.Analysis.Slider,'Min',1,'Max',5,'Value',3,'SliderStep',[0.5,1]);
 					end
 					Edges = -45:GP.Handles.Analysis.Slider.Value:45;
-				case 2 % Normalized to twice half-radius.
-					X = X ./ (2.*Y);
+				case 2 % Normalized to both radii.
+					
+					[X,Fin] = Scale_Midline_Distance_To_Local_Radii(X,R3,R4);
+					X = X(Fin);
 					
 					if(~GP.Handles.Analysis.Slider.UserData)
 						set(GP.Handles.Analysis.Slider,'Min',0.01,'Max',.11,'Value',0.05,'SliderStep',[0.01,0.02]);
 					end
 					Edges = -1:GP.Handles.Analysis.Slider.Value:1;
-				case 3 % Normalized to radius.
-					X = X ./ Y;
+				case 3 % Normalized to twice half-radius.
+					X = X ./ (2.*R3);
+					
+					if(~GP.Handles.Analysis.Slider.UserData)
+						set(GP.Handles.Analysis.Slider,'Min',0.01,'Max',.11,'Value',0.05,'SliderStep',[0.01,0.02]);
+					end
+					Edges = -1:GP.Handles.Analysis.Slider.Value:1;
+				case 4 % Normalized to radius.
+					X = X ./ R4;
 					if(~GP.Handles.Analysis.Slider.UserData)
 						set(GP.Handles.Analysis.Slider,'Min',0.01,'Max',.11,'Value',0.05,'SliderStep',[0.01,0.02]);
 					end
@@ -265,7 +282,7 @@ function Multiple_Choose_Plot(GP)
 			ylabel('Count');
 			% xl = 0:pi/6:pi/2;
 			% set(gca,'FontSize',18,'xlim',[Edges([1,end])],'XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)));
-			set(gca,'FontSize',30);
+			set(gca,'FontSize',FontSize_1);
 			% legend({'Dorsal','Ventral'});
 		
 		case 'Distribution of Mean Squared Curvature Of Segments'
@@ -351,10 +368,10 @@ function Multiple_Choose_Plot(GP)
 		case 'Menorah Orders - Neuronal Length'
 			
 			Max_Midline_Length = 800;
-			Max_PVD_Orders = 4;
 			
-			Class_Indices = [1,2,3,4,5];
-			Class_Colors = [0.6,0,0 ; 0,0.6,0 ; 0,0.8,0.8 ; 0.8,0.8,0 ; 0.5,0.5,0.5]; % [1,2,3,3.5,4,5].
+			Class_Indices = [1,2,3,3.5,4,5];
+			Class_Colors = [0.6,0,0 ; 0,0.6,0 ; 0,0.8,0.8 ; 0,0,1 ; 0.8,0.8,0 ; 0.5,0.5,0.5];
+			Max_PVD_Orders = length(Class_Colors);
 			
 			set(GP.Handles.Normalization_List,'String',{'Not Normalized','Normalized to Midline Length'});
 			set(GP.Handles.Plot_Type_List,'String',{'Default','Dorsal-Ventral Merged','Orders Merged','All Merged'});
@@ -371,13 +388,14 @@ function Multiple_Choose_Plot(GP)
 					end
 					Edges = 0:GP.Handles.Analysis.Slider.Value:1;
 			end
+			xx = (Edges(2:end) + Edges(1:end-1)) ./ 2;
 			
 			set(GP.Handles.Analysis.Slider_Text,'String',num2str(GP.Handles.Analysis.Slider.Value));
 			
-			S_D = cell(1,Max_PVD_Orders+1);
-			L_D = cell(1,Max_PVD_Orders+1);
-			S_V = cell(1,Max_PVD_Orders+1);
-			L_V = cell(1,Max_PVD_Orders+1);
+			S_D = cell(1,Max_PVD_Orders);
+			L_D = cell(1,Max_PVD_Orders);
+			S_V = cell(1,Max_PVD_Orders);
+			L_V = cell(1,Max_PVD_Orders);
 			for w=1:numel(GP.Workspace)
 				
 				switch GP.Handles.Normalization_List.Value
@@ -387,20 +405,29 @@ function Multiple_Choose_Plot(GP)
 						Midline_Length = GP.Workspace(w).Workspace.Neuron_Axes.Axis_0(end).Arc_Length;
 				end
 				
-				for o=1:Max_PVD_Orders
-					f_D = find([GP.Workspace(w).Workspace.All_Points.Midline_Distance] > 0 & [GP.Workspace(w).Workspace.All_Points.Class] == o);
-					f_V = find([GP.Workspace(w).Workspace.All_Points.Midline_Distance] < 0 & [GP.Workspace(w).Workspace.All_Points.Class] == o);
-				
-					Nd = length(S_D{o});
-					Nv = length(S_V{o});
+				% for o=1:Max_PVD_Orders
+				for s=1:numel(GP.Workspace(w).Workspace.Segments)
 					
-					dd = Nd+1:Nd+length(f_D);
-					vv = Nv+1:Nv+length(f_V);
+					f_D = find([GP.Workspace(w).Workspace.All_Points.Segment_Index] == GP.Workspace(w).Workspace.Segments(s).Segment_Index & [GP.Workspace(w).Workspace.All_Points.Midline_Distance] > 0); % Find all dorsal points that belong to segment s.
+					f_V = find([GP.Workspace(w).Workspace.All_Points.Segment_Index] == GP.Workspace(w).Workspace.Segments(s).Segment_Index & [GP.Workspace(w).Workspace.All_Points.Midline_Distance] < 0); % Find all ventral points that belong to segment s.
+					o = find(Class_Indices == GP.Workspace(w).Workspace.Segments(s).Class); % Find the index of the segment's class.
 					
-					S_D{o}(dd) = [GP.Workspace(w).Workspace.All_Points(f_D).Length] ./ Midline_Length; % A vector of rectangle lengths (dorsal side only) of class o.
-					L_D{o}(dd) = [GP.Workspace(w).Workspace.All_Points(f_D).Axis_0_Position] ./ Midline_Length; % A vector of midline position (arc-length) from the head (dorsal).
-					S_V{o}(vv) = [GP.Workspace(w).Workspace.All_Points(f_V).Length] ./ Midline_Length; % A vector of rectangle lengths (ventral side only) of class o
-					L_V{o}(vv) = [GP.Workspace(w).Workspace.All_Points(f_V).Axis_0_Position] ./ Midline_Length; % A vector of midline position (arc-length) from the head (ventral).
+					% f_D = find([GP.Workspace(w).Workspace.All_Points.Midline_Distance] > 0 & [GP.Workspace(w).Workspace.All_Points.Class] == o);
+					% f_V = find([GP.Workspace(w).Workspace.All_Points.Midline_Distance] < 0 & [GP.Workspace(w).Workspace.All_Points.Class] == o);
+					
+					if(~isempty(o)) % If the class exists in the Class_Indices vector.
+					
+						Nd = length(S_D{o});
+						Nv = length(S_V{o});
+						
+						dd = Nd+1:Nd+length(f_D);
+						vv = Nv+1:Nv+length(f_V);
+						
+						S_D{o}(dd) = [GP.Workspace(w).Workspace.All_Points(f_D).Length] ./ Midline_Length; % A vector of rectangle lengths (dorsal side only) of class o.
+						L_D{o}(dd) = [GP.Workspace(w).Workspace.All_Points(f_D).Axis_0_Position] ./ Midline_Length; % A vector of midline position (arc-length) from the head (dorsal).
+						S_V{o}(vv) = [GP.Workspace(w).Workspace.All_Points(f_V).Length] ./ Midline_Length; % A vector of rectangle lengths (ventral side only) of class o
+						L_V{o}(vv) = [GP.Workspace(w).Workspace.All_Points(f_V).Axis_0_Position] ./ Midline_Length; % A vector of midline position (arc-length) from the head (ventral).
+					end
 				end
 			end
 			
@@ -422,7 +449,6 @@ function Multiple_Choose_Plot(GP)
 				N_D(o,:) = N_D(o,:) .* sum(S_D{o}(I_D));
 				N_V(o,:) = N_V(o,:) .* sum(S_V{o}(I_V));
 			end
-			xx = (Edges(2:end) + Edges(1:end-1)) ./ 2;
 			
 			H_D = bar(xx,N_D',1,'stacked','FaceColor','flat'); % histogram(X_D,Edges);
 			hold on;
@@ -446,11 +472,11 @@ function Multiple_Choose_Plot(GP)
 			%}
 			
 			% xl = 0:pi/6:pi/2;
-			set(gca,'FontSize',36,'xlim',[Edges([1,end])]); % ,'XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)));
+			set(gca,'FontSize',FontSize_1,'xlim',[Edges([1,end])]); % ,'XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)));
 			
 			YL_D = max(sum(reshape([H_D(:).YData],[],Max_PVD_Orders),2));
 			YL_V = min(sum(reshape([H_V(:).YData],[],Max_PVD_Orders),2));
-			ylim([(1.1.*YL_V),1.1.*YL_D]);
+			ylim([(1.05.*YL_V),1.05.*YL_D]);
 			
 			switch GP.Handles.Normalization_List.Value
 				case 1
@@ -459,12 +485,15 @@ function Multiple_Choose_Plot(GP)
 				case 2 % Normalized to Midline Length.
 					xlabel(['Midline Position (normalized)']);
 					ylabel('Neuronal Length (normalized)');
-					set(gca,'YLim',1.25.*get(gca,'YLim'));
+					% set(gca,'YLim',1.25.*get(gca,'YLim'));
 			end
 			
-			set(gca,'YTickLabels',strrep(get(gca,'YTickLabels'),'-',''));
+			legend({'1','2','3','3.5','4','5'},'Orientation','horizontal');
 			
-			legend({'1','2','3','4'}); % ,'Orientation','horizontal');
+			set(gca,'unit','normalize');
+			set(gca,'position',[0.05,0.15,0.94,0.8]); % set(gca,'position',[0.09,0.15,0.88,0.8]);
+			
+			set(gca,'YTickLabels',abs(get(gca,'YTick'))); % set(gca,'YTickLabels',strrep(get(gca,'YTickLabels'),'-',''));
 		case {'Menorah Orders - 3-Way Junctions','Menorah Orders - Tips'}
 			
 			switch GP.General.Active_Plot
@@ -753,8 +782,11 @@ function Multiple_Choose_Plot(GP)
 			xlabel(['Midline Orientation [',char(176),']']);
 			ylabel('Count');
 			xl = 0:pi/6:pi/2;
-			set(gca,'FontSize',30,'xlim',[Edges([1,end])],'XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)));
+			set(gca,'FontSize',FontSize_1,'xlim',[Edges([1,end])],'XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)));
 			ylim([-max(N_V),max(N_D)]);
+			
+			set(gca,'unit','normalize');
+			set(gca,'position',[0.09,0.15,0.89,0.84]);
 		case 'Distances Of Vertices From The Medial Axis - Histogram'
 			
 			Edges = -45:2:45;
@@ -1468,6 +1500,11 @@ function Multiple_Choose_Plot(GP)
 		case 'Midline Distance VS Curvature'
 			Plot_Distance_VS_Curvature(GP.Workspace);
 	end
+	
+	% set(GP.Handles.Axes,'unit','normalize');
+	% set(GP.Handles.Axes,'position',[0,0,1,1]);
+	% axis tight;
+	
 	% assignin('base','Input_Struct',Input_Struct);
 	set(GP.Handles.Analysis.Slider,'UserData',0); % Used as a flag to tell if this script was run as a result of the use of this slider.
 	
@@ -1488,11 +1525,11 @@ function Multiple_Choose_Plot(GP)
 	end
 	
 	function out = Fan(x,m,M)
-		s = sum(x >= m & x<= M);
-		if(s == 0)
+		ss = sum(x >= m & x<= M);
+		if(ss == 0)
 			out = [];
 		else
-			out = s;
+			out = ss;
 		end
 	end
 end

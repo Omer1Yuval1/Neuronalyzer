@@ -28,7 +28,8 @@ function Reconstruct_Vertices(W,Display_Image)
 		Ax = gca;
 	end
 	
-	CM = lines(10);
+	Class_Indices = [1,2,3,3.5,4,5];
+	CM = [0.6,0,0 ; 0,0.6,0 ; 0,0.8,0.8 ; 0,0,1 ; 0.8,0.8,0 ; 0.5,0.5,0.5]; % CM = lines(10);
 	CM2 = [0.8,0,0 ; 0,0.8,0 ; 0,0,0.8];
 	for v=1:numel(W.Vertices)
 		
@@ -62,11 +63,12 @@ function Reconstruct_Vertices(W,Display_Image)
 				
 				for c=1:length(C)
 					if(~isnan(C(c)))
-						quiver(O(1),O(2),d1.*cos(V(c)),d1.*sin(V(c)),'Color',CM(C(c),:),'LineWidth',5,'MaxHeadSize',1);
+						
+                        quiver(O(1),O(2),d1.*cos(V(c)),d1.*sin(V(c)),'Color',CM(Class_Indices == C(c),:),'LineWidth',5,'MaxHeadSize',1);
 						
 						if(isfield(W.Vertices(v).Rectangles,'Corrected_Angle'))
-							Vt = sort([W.Vertices(v).Rectangles.Corrected_Angle]); % Projection-corrected angles.
-							quiver(O(1),O(2),d1.*cos(Vt(c)),d1.*sin(Vt(c)),'Color','k','LineWidth',2.5,'MaxHeadSize',1);
+							% Vt = sort([W.Vertices(v).Rectangles.Corrected_Angle]); % Projection-corrected angles.
+							% quiver(O(1),O(2),d1.*cos(Vt(c)),d1.*sin(Vt(c)),'Color','k','LineWidth',2.5,'MaxHeadSize',1);
 						end
 					end
 				end

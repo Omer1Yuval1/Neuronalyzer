@@ -41,12 +41,15 @@ function Workspace = Analyze_Vertex_Morphology(Workspace,Im_branchpoints)
 	end
 	
 	% Delete_Vertices = [];
-	Segments_Vertices = [Workspace.Segments.Vertices];
-	Segments_Vertices = [Segments_Vertices(1:2:end-1)' , Segments_Vertices(2:2:end)'];
+	% Segments_Vertices = [Workspace.Segments.Vertices];
+	% Segments_Vertices = [Segments_Vertices(1:2:end-1)' , Segments_Vertices(2:2:end)'];
 	
 	% parfor i=1:length(Yb) % For each approximate center.
 	% for i=25 % For each approximate center (row number).
 	for i=1:numel(Workspace.Vertices) % For each approximate center.
+		if(i == 285)
+			disp(i);
+		end
 		if(Workspace.Vertices(i).Order >= 3) % If it's a junction.
 			[New_Cxy,Rc] = Find_Vertex_Center(Workspace.Im_BW,Workspace.Vertices(i).Coordinate,Vr,Circles_X,Circles_Y,Potential_Centers_XY,Im_Rows,Min_Center_Radius);
 		elseif(Workspace.Vertices(i).Order == 1) % If it's a tip.

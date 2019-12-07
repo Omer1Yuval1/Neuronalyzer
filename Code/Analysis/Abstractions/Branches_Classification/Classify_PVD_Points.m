@@ -1,5 +1,9 @@
 function W = Classify_PVD_Points(W,Clusters_Struct)
 	
+	Classification_Method = 1;
+	Clusters_By_Distance = [2,4];
+	% Min_Cluster_Distance = 0.5;
+	
 	Scale_Factor = W.User_Input.Scale_Factor;
 	
 	X0 = [W.All_Points.Midline_Distance];
@@ -10,31 +14,48 @@ function W = Classify_PVD_Points(W,Clusters_Struct)
 	
 	[X,Y] = Rescale_Midline_Distance_And_Orientation(X0,Y0,R3,R4);
 	
-	for p=1:numel(W.All_Points) % Find the distance of each PVD point from all cluster centers.
-		Dp = ( (X(p) - [Clusters_Struct.Mean_X]).^2 + (Y(p) - [Clusters_Struct.Mean_Y]).^2 ).^(0.5); % Find the distance of the p-point from all clusters centers.
-		
-		f = find(Dp == min(Dp));
-		
-		if(isempty(f))
-			W.All_Points(p).Class = nan;
-		else
-			W.All_Points(p).Class = Clusters_Struct(f(1)).Class;
-		end
+	[W.All_Points.Class] = deal(nan);
+	switch(Classification_Method)
+		case 1 % Classify points beased on the closest cluster.
+			for p=1:numel(W.All_Points) % Find the distance of each PVD point from all cluster centers.
+				Dp = ( (X(p) - [Clusters_Struct.Mean_X]).^2 + (Y(p) - [Clusters_Struct.Mean_Y]).^2 ).^(0.5); % Find the distance of the p-point from all clusters centers.
+				f = find(Dp == min(Dp));
+				
+				if(~isempty(f))
+					W.All_Points(p).Class = Clusters_Struct(f(1)).Class;
+				end
+			end
+		case 2 % Classify points within clusters.
+			for c=1:numel(Clusters_Struct) % For each cluster.
+				Bx = Clusters_Struct(c).X_Boundary;
+				By = Clusters_Struct(c).Y_Boundary;
+				
+				in = inpolygon(X,Y,Bx,By);
+				
+				[W.All_Points(in).Class] = deal(Clusters_Struct(c).Class);
+			end
+		case 3 % A mixture of methods 1 and 2.
+			
+			% First classify all points that fall within the boundaries of clusters:
+			for c=1:numel(Clusters_Struct) % For each cluster.
+				Bx = Clusters_Struct(c).X_Boundary;
+				By = Clusters_Struct(c).Y_Boundary;
+				in = inpolygon(X,Y,Bx,By);
+				[W.All_Points(in).Class] = deal(Clusters_Struct(c).Class);
+			end
+			
+			% Then classify on the remaining points by distance from clusters:
+			Vnan = find(isnan([W.All_Points.Class])); % Find all points classified as NaN.
+			for p=Vnan % For each unclassified point.
+				Dp = ( (X(p) - [Clusters_Struct.Mean_X]).^2 + (Y(p) - [Clusters_Struct.Mean_Y]).^2 ).^(0.5); % Find the distance of the p-point from all clusters centers.
+				f = find(Dp == min(Dp),1);
+				if(~isempty(f) && ismember(Clusters_Struct(f).Class,Clusters_By_Distance))
+					W.All_Points(p).Class = Clusters_Struct(f).Class;
+				end
+			end
 	end
 	
-	for s=1:numel(W.Segments)
-		f = find([W.All_Points.Segment_Index] == W.Segments(s).Segment_Index);
-		
-		if(~isempty(f))
-			Sx = [W.All_Points(f).X];
-			Sy = [W.All_Points(f).Y];
-			Sc = [W.All_Points(f).Class];
-			W.Segments(s).Class = Classify_PVD_Segment(Sx,Sy,Sc,W.Segments(s).Terminal);
-			% W.Segments(s).Class = mode([W.All_Points(f).Class]);
-        else
-            W.Segments(s).Class = nan;
-        end
-	end
+	W.Segments = Classify_PVD_Segment(W);
 	
 	% V = reshape([W.Segments.Vertices],2,[]); % [2 x Ns].
 	W.All_Vertices(end).Class = [];
