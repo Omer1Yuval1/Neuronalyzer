@@ -24,7 +24,7 @@ function Multiple_Choose_Plot(GP)
 		% Instead, I should change it to use the order field as a filter.
 	%
 	
-	if(0)
+	if(1)
 		figure(1);
 		hold on;
 	else

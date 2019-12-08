@@ -9,7 +9,7 @@ function Reconstruction_Index(GP,ii)
 	LineWidth_1 = 2; % [2,6].
 	DotSize_1 = 80;
 	
-	if(0)
+	if(1)
 		figure(1);
 		hold on;
 	else
