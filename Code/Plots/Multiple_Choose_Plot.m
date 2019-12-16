@@ -35,6 +35,8 @@ function Multiple_Choose_Plot(GP)
 	
 	FontSize_1 = 36;
 	
+	assignin('base','GP',GP);
+	
 	% set(GP.Handles.Normalization_List,'String',{'Not Normalized'},'Value',1);
 	set(GP.Handles.Analysis.Dynamic_Slider_Min,'Enable','off');
 	set(GP.Handles.Analysis.Dynamic_Slider_Max,'Enable','off');
