@@ -901,23 +901,13 @@ function Tracer_UI()
 			% Trace using skeleton vertices and Im_BW:
 			GUI_Parameters.Workspace(fi).Workspace = Connect_Vertices(GUI_Parameters.Workspace(fi).Workspace);
 			
-			[Final_Curve,Approved] = Find_Center_Line(GUI_Parameters.Workspace(fi).Workspace.Image0,GUI_Parameters.Workspace(fi).Workspace.Im_BW); % Detect medial axis.
-			if(Approved)
-				GUI_Parameters.Workspace(fi).Workspace.Medial_Axis = Final_Curve;
-				disp('Medial Axis Detected Successully.');
-			else
-				GUI_Parameters.Workspace(fi).Workspace.Medial_Axis = [];
-				disp('Medial Axis Detection Failed.');
-			end
-			
 			% GUI_Parameters.Workspace(fi).Workspace = rmfield(GUI_Parameters.Workspace(fi).Workspace,'Im_BW'); % The probabilities matrix is saved instead.
-			
 			% waitfor(msgbox('The Tracing Completed Successully.'));
 		end
 		delete(WB_H_Tracing);
 		
 		if(Nw >= 1)
-			Load_An_Existing_Project_File(); % TODO: what's the purpose of this?
+			% Load_An_Existing_Project_File(); % TODO: what's the purpose of this?
 			set(Graphs_Menu_Handle,'Enable','on');
 			
 			GUI_Parameters.General.Active_Plot = 'Segmentation';
