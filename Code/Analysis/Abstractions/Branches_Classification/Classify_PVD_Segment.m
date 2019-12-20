@@ -29,7 +29,11 @@ function Segments = Classify_PVD_Segment(W)
 	% Step 2:
 	%
 	for s=1:numel(Segments)
-		Segments(s).Class = Step_2(Segments,s,V12);
+		if(isnan(Segments(s).Terminal))
+			Segments(s).Class = nan;
+		else
+			Segments(s).Class = Step_2(Segments,s,V12);
+		end
 	end
 	%}
 	
@@ -49,7 +53,6 @@ function Segments = Classify_PVD_Segment(W)
 	function cc = Step_2(Segments,s,V12) % Ectopic.
 		
 		cc = Segments(s).Class;
-		
 		if(Segments(s).Terminal && cc ~= 4 && Segments(s).Length < Min_Segment_Length) % && Segments(s).Class < 3)
 			% ff = find( (ismember(V12(1,:),Segments(s).Vertices) | ismember(V12(2,:),Segments(s).Vertices)) & [Segments.Segment_Index] ~= Segments(s).Segment_Index);
 			% if(length(unique([Segments(ff).Class]) > 1)); % If the other segments on this vertex are from different classes.

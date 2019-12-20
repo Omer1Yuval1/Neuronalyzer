@@ -57,32 +57,32 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 					end
 					
 					% Find vertices:
-					%{
 					F1 = find([W(i).Workspace.Vertices.Vertex_Index] == W(i).Workspace.Segments(s).Vertices(1)); % Find the 1st vertex.
 					F2 = find([W(i).Workspace.Vertices.Vertex_Index] == W(i).Workspace.Segments(s).Vertices(2)); % Find the 2nd vertex.
 					
-					if(isempty(F1))
-						disp(['Error: Vertex index (',num2str(W(i).Workspace.Segments(s).Vertices(1)),') not found']);
-					elseif(length(F1) > 1)
-						disp(['Error: Vertex index (',W(i).Workspace.Segments(s).Vertices(1),') appears multiple times']);
+					if(length(F1) == 1 && length(F2) == 1)
+						if(W(i).Workspace.Vertices(F1).Order == 1 || W(i).Workspace.Vertices(F2).Order == 1)
+							W(i).Workspace.Segments(s).Terminal = 1;
+						else
+							W(i).Workspace.Segments(s).Terminal = 0;
+						end
+					else
+						W(i).Workspace.Segments(s).Terminal = nan;
+						disp(['Something is wrong with the vertices of segment index ',num2str(W(i).Workspace.Segments(s).Segment_Index)]);
 					end
-					if(isempty(F2))
-						disp(['Error: Vertex index (',num2str(W(i).Workspace.Segments(s).Vertices(2)),') not found']);
-					elseif(length(F2) > 1)
-						disp(['Error: Vertex index (',W(i).Workspace.Segments(s).Vertices(2),') appears multiple times']);
-					end
-					%}
-					%{
-					if(length(F1) > 1 || length(F2) > 1)
-						disp(['Error: Multiple vertex',num2str(,' rectangles are associated with the same segment']);
-					end
-					%}
-					
 				else
 					W(i).Workspace.Segments(s).Width = -1;
 					W(i).Workspace.Segments(s).Length = -1;
 					W(i).Workspace.Segments(s).Curvature = -1;
+					W(i).Workspace.Segments(s).Terminal = nan;
 				end
+			end
+		end
+		
+		% Compute vertices angles (angles between neighboring rectangles):
+		if(isfield(W(i).Workspace,'Vertices'))
+			for v=1:numel(W(i).Workspace.Vertices) % For each vertex.
+				W(i).Workspace.Vertices(v).Angles = Calc_Junction_Angles([W(i).Workspace.Vertices(v).Rectangles.Angle]);
 			end
 		end
 		
@@ -107,18 +107,9 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 		
 		if(isfield(W(i).Workspace,'Vertices'))
 			for v=1:numel(W(i).Workspace.Vertices) % For each vertex.
-				W(i).Workspace.Vertices(v).Angles = Calc_Junction_Angles([W(i).Workspace.Vertices(v).Rectangles.Angle]);
-				
-				%
 				if(numel(W(i).Workspace.Vertices(v).Rectangles) && abs(W(i).Workspace.All_Vertices(v).Midline_Distance) <= W(i).Workspace.Parameters.Angle_Correction.Worm_Radius_um && isfield(W(i).Workspace,'Neuron_Axes') && isfield(W(i).Workspace.Neuron_Axes,'Axis_0')) % Find the corrected angles only if the vertex is <= the length of the radius from the medial axis.
 					
-					% if(i == 3 &&  v == 208)
-						% disp(1);
-					% end
-					% disp([i,v]);
-					
 					W(i).Workspace.Vertices(v).Rectangles = Projection_Correction(W(i).Workspace,v);
-					% Projection_Correction(i,v,W(i).Workspace.NN_Probabilities,XY_Eval,Cxy,Rects,Ap,Medial_Tangent,Rx,Rz,Scale_Factor,Corrected_Plane_Angle_Func);						
 					
 					% Compute the corrected angles diffs:
 					W(i).Workspace.Vertices(v).Corrected_Angles = Calc_Junction_Angles([W(i).Workspace.Vertices(v).Rectangles.Corrected_Angle]); % W(i).Workspace.Vertices(v).Corrected_Angles = Calc_Junction_Angles([W(i).Workspace.Vertices(v).Rectangles.Angle_Corrected]);
@@ -128,7 +119,6 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 				%}
 			end
 		end
-		
 		
 		% Generate the Features struct.
 		FN = fieldnames(W(i).Workspace.User_Input.Features);

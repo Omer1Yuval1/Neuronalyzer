@@ -907,15 +907,12 @@ function Tracer_UI()
 		delete(WB_H_Tracing);
 		
 		if(Nw >= 1)
-			% Load_An_Existing_Project_File(); % TODO: what's the purpose of this?
+			Load_An_Existing_Project_File(); % TODO: what's the purpose of this?
 			set(Graphs_Menu_Handle,'Enable','on');
+			set(Reconstructions_Menu_Handle,'Enable','on');
 			
 			GUI_Parameters.General.Active_Plot = 'Segmentation';
 			Reconstruction_Func();
-			
-			if(Nw == 1)
-				set(Reconstructions_Menu_Handle,'Enable','on');
-			end
 		end
 		assignin('base','GUI_Parameters',GUI_Parameters);
 		
