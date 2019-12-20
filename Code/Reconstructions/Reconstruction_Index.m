@@ -7,7 +7,7 @@ function Reconstruction_Index(GP,ii)
 	
 	Worm_Radius_um = 45;
 	LineWidth_1 = 2; % [2,6].
-	DotSize_1 = 80;
+	DotSize_1 = 10; % 80;
 	
 	if(1)
 		figure(1);
