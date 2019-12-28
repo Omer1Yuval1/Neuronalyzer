@@ -1,7 +1,7 @@
 function Scores = Rect_Scan_Generalized(im,Origin0,Angle,Rect_Width,Rect_Length,Rotation_Range,Rotation_Res,Origin_Type,Im_Rows,Im_Cols,Plot0)
 	
 	if(nargin == 11 && isequal(round(Origin0),round([533.548724265609,515.320512150550]))) % [545.423935392320,517.663121293358]
-		Plot0 = 1; % Compatible with image '0'.
+		Plot0 = 0; % Compatible with image '0'.
 	else
 		Plot0 = 0;
 	end

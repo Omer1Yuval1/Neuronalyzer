@@ -109,9 +109,9 @@ function Workspace = Connect_Vertices(Workspace)
 	Segments_Array = ones(1,numel(Workspace.Segments));
 	Segments_Array(Traced_Segments) = 0; % Ignore short segments for which the skeleton is used instead.
 	
-	Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array(55) = 1; % Workspace 'o'.
-	% Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array([139]) = 1;
-	% Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array([129]) = 1;
+	% Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array(55) = 1; % Workspace 'o'.
+	%%% Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array([139]) = 1;
+	%%% Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array([129]) = 1;
 	
 	Step_Num = 0;
 	while(1)
