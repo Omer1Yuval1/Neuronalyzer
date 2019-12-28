@@ -48,36 +48,45 @@ function [Scores,BG_Intensity,BG_Peak_Width] = Normalize_Rects_Values_Generalize
         [Counts0,Intensities0] = histcounts([Values_Vector0],[-Hist_Bins_Res:Hist_Bins_Res:260],'Normalization','probability');
         Intensities0 = (Intensities0(1:end-1) + Intensities0(2:end)) / 2; % Convert bins to bins centers.
         
-        figure(5);
-			clf(5);
-			histogram([Values_Vector0],-Hist_Bins_Res:Hist_Bins_Res:260,'Normalization','probability');
+        figure;
+			% histogram([Values_Vector0],-Hist_Bins_Res:Hist_Bins_Res:260,'Normalization','probability');
 			hold on;
 			histogram([Values_Vector12],-Hist_Bins_Res:Hist_Bins_Res:260,'Normalization','probability');
-			hold on;
 			
 			% findpeaks(Counts0,Intensities0,'MinPeakHeight',Parameters1(1).Auto_Tracing_Parameters(1).Step_Normalization_Min_Peak_Height,'MinPeakDistance',Parameters1(1).Auto_Tracing_Parameters(1).Step_Normalization_Min_Peak_Distance);
 			% findpeaks(Counts12,Intensities12,'MinPeakHeight',Parameters1(1).Auto_Tracing_Parameters(1).Step_Normalization_Min_Peak_Height,'MinPeakDistance',Parameters1(1).Auto_Tracing_Parameters(1).Step_Normalization_Min_Peak_Distance);
             
             F = fit(Intensities12',Counts12','SmoothingSpline','smoothingparam',0.5);
             Xf = linspace(0,255,500);
+            [~,Locs] = findpeaks(F(Xf),Xf,'MinPeakHeight',Parameters1(1).Auto_Tracing_Parameters(1).Step_Normalization_Min_Peak_Height,'MinPeakDistance',Parameters1(1).Auto_Tracing_Parameters(1).Step_Normalization_Min_Peak_Distance);
             
-            hold on;
-            plot(Xf,F(Xf),'r','LineWidth',3);
-            hold on; plot(Intensities12,Counts12,'.k','MarkerSize',20);
+            % hold on;
+            plot(Xf,F(Xf),'Color',[0.8,0,0],'LineWidth',3);
+            plot(Locs(1) .* [1,1],[0,F(Locs(1))],'--','Color',[0.5,0.5,0.5],'LineWidth',3);
+            plot(Locs(1),F(Locs(1)),'.','Color',[0.1,0.6,0],'MarkerSize',50);
+            % hold on; plot(Intensities12,Counts12,'.k','MarkerSize',20);
             
-            axis([0,255,0,0.4]);
-            set(gca,'FontSize',24);
+            axis([0,255,0,0.25]);
+            set(gca,'FontSize',36);
             xlabel('Pixel Intensity');
-            ylabel('Count');
+            ylabel('Probability');
+    
+			set(gca,'unit','normalize');
+			set(gca,'position',[0.17,0.17,0.80,0.80]);
+			set(gcf,'Position',[10,50,900,900]);
+    
+            grid on; grid minor;
             
             % axis([-Hist_Bins_Res,265,0,.4]);
-		if(1)
-			figure(1); % Draw the rectangles 
-				hold on;
-				plot([XV1;XV1(1)],[YV1;YV1(1)],'r','LineWidth',4);
-				plot([XV2;XV2(1)],[YV2;YV2(1)],'r','LineWidth',4);
-				plot([XVs,XVs(1)],[YVs,YVs(1)],'--','Color',[.1,.7,0],'LineWidth',4);
-				hold off;			
+		if(1) % Plot the rectangles.
+			figure(1);
+			delete(findobj(gca,'-not','Type','image','-and','-not','Type','axes')); % Delete all graphical objects (except for the axes and the image).
+			hold on;
+			plot([XV1;XV1(1)],[YV1;YV1(1)],'Color',[0.8,0,0],'LineWidth',4);
+			plot([XV2;XV2(1)],[YV2;YV2(1)],'Color',[0.8,0,0],'LineWidth',4);
+			plot([XVs,XVs(1)],[YVs,YVs(1)],'--','Color',[.1,.5,0],'LineWidth',4);
+			hold on; plot(Step_Origin(1),Step_Origin(2),'.','Color',[0.6,0,0],'MarkerSize',60);
+				hold off;
             %{
 			figure(8);
 				imshow(Image0);

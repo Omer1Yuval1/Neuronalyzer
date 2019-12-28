@@ -67,28 +67,42 @@ function W = Adjust_Rect_Width_Rot_Generalized(Im,Rotation_Origin,Rect_Angle,Rec
         Scale_Factor = 1; % 50/140;
         
         % Plot the rectangle with the chosen width:
-        figure(1);
-        [XV,YV] = Get_Rect_Vector(Rotation_Origin,Rect_Angle,W,Rect_Length,Origin_Type);
-        hold on; plot([XV,XV(1)],[YV,YV(1)],'Color',[0,.8,0],'LineWidth',4);  
-        
+			delete(findobj(gca,'-not','Type','image','-and','-not','Type','axes'));
+			Np = 10;
+			CM = hsv(Np);
+			for i=Np:-1:1
+				Wi = i;
+				[XV,YV] = Get_Rect_Vector(Rotation_Origin,Rect_Angle,Wi,Rect_Length,Origin_Type);
+				hold on;
+				h = plot([XV,XV(1)],[YV,YV(1)],'Color',CM(i,:),'LineWidth',4);
+				h.Color(4) = 0.5; % 1 - i/Np/1.2;
+			end
+		
+			% [XVf,YVf] = Get_Rect_Vector(Rotation_Origin,Rect_Angle,W,Rect_Length,Origin_Type);
+			% plot([XVf(1),XVf(2)],[YVf(1),YVf(2)],'Color',[0.8,0,0],'LineWidth',4);        
+			
         % Plot the width VS score:
-        figure;
-        % plot(xvf.*Scale_Factor,yvf,'r','LineWidth',3); % Plot the fit object.
-        plot([0,xvf.*Scale_Factor],FitObject([0,xvf.*Scale_Factor]),'r','LineWidth',3); % Plot the fit object.
-        hold on;
-        plot(xv.*Scale_Factor,yv,'.k','MarkerSize',30); % Plot raw points.
-        
-        plot([W.*Scale_Factor,W.*Scale_Factor],[0,FitObject(W)],'--','Color',[.5,.5,.5],'LineWidth',2);
-        plot([xvf(f2(1)).*Scale_Factor,xvf(f2(1)).*Scale_Factor],[0,FitObject(xvf(f2(1)))],'--','Color',[.5,.5,.5],'LineWidth',2);
-        
-        plot(xvf(f2(1)).*Scale_Factor,FitObject(xvf(f2(1))),'.b','MarkerSize',50); % Plot the minimal 1st derivative point.
-        plot(W.*Scale_Factor,FitObject(W),'.','Color',[0,.8,0],'MarkerSize',50); % Plot the final width value.
-        
-        xlabel('Width (\mum)');
-        ylabel('Score');
-        set(gca,'FontSize',24);
-        xlim([0,xv(1).*Scale_Factor]);
-        ylim([0,max(yvf)+5]);
+			Scale_Factor = 1; % 50/140;
+			figure;
+			plot([0,xvf.*Scale_Factor],FitObject([0,xvf.*Scale_Factor]),'Color',[0.8,0,0],'LineWidth',3); % Plot the fit object.
+			hold on;
+			% plot(xv.*Scale_Factor,yv,'.k','MarkerSize',30); % Plot raw points.
+			plot(W.*Scale_Factor .* [1,1],[0,FitObject(W)],'--','Color',[0.5,0.5,0.5],'LineWidth',3); % Plot the final width value.
+			plot(W.*Scale_Factor,FitObject(W),'.','Color',[0.1,0.6,0],'MarkerSize',50); % Plot the final width value.
+			
+			% plot([xvf(f2(1)).*Scale_Factor,xvf(f2(1)).*Scale_Factor],[0,FitObject(xvf(f2(1)))],'--','Color',[.5,.5,.5],'LineWidth',2);
+			% plot(xvf(f2(1)).*Scale_Factor,FitObject(xvf(f2(1))),'.b','MarkerSize',50); % Plot the minimal 1st derivative point.
+			
+			xlabel('Width (\mum)');
+			ylabel('Score');
+			set(gca,'FontSize',24);
+			xlim([0,xv(1).*Scale_Factor]);
+			ylim([min(yvf)-5,max(yvf)+5]);
+			
+			set(gca,'unit','normalize');
+			set(gca,'position',[0.11,0.11,0.88,0.88]);
+			set(gcf,'Position',[10,50,900,900]);
+            grid on; grid minor;
         
         % disp(W);
         %}

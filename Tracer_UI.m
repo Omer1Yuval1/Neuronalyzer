@@ -67,10 +67,9 @@ function Tracer_UI()
 	
 	% Machine Learning Panel:
 	GUI_Parameters.Handles.Machine_Learning.Train_NN_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Train Neural Network','Units','Normalized','Position',[0 0.9 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Multiple_Save_Plot_Func);
-	GUI_Parameters.Handles.Machine_Learning.Load_Trained_NN_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Load A Trained Neural Network','Units','Normalized','Position',[0 0.8 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Apply_NN_Func);
-	GUI_Parameters.Handles.Machine_Learning.Apply_NN_Multiple_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Apply Neural Network On Multiple Images','Units','Normalized','Position',[0 0.7 1 GUI_Parameters.Visuals.Button1_Height],'Enable','off');
+	GUI_Parameters.Handles.Machine_Learning.Apply_NN_Multiple_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Apply Neural Network To All Images','Units','Normalized','Position',[0 0.8 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Apply_NN_Func);
 	set(GUI_Parameters.Handles.Machine_Learning.Train_NN_Button,'Enable','off');
-	set(GUI_Parameters.Handles.Machine_Learning.Load_Trained_NN_Button,'Enable','off');
+	set(GUI_Parameters.Handles.Machine_Learning.Apply_NN_Multiple_Button,'Enable','off');
 	
 	% assignin('base','GUI_Parameters',GUI_Parameters);
 	
@@ -262,20 +261,11 @@ function Tracer_UI()
 	
 	function Apply_NN_Func(source,callbackdata)
 		
-		if(nargin == 2)
-			if(isunix)
-				filetypestr = '../../*.mat';
-			else
-				filetypestr = '..\..\*.mat';
-			end
-			[FileName,PathName] = uigetfile(filetypestr,'Please Choose a .mat File.',cd); % Lets the user choose a file.
-			if(FileName)
-				Current_Dir = cd(PathName);
-				File1 = load(strcat(PathName,FileName));
-				NN1 = File1.deepnet; % TODO: choose the only variable from the file without specifying the name.
-				clear File1;
-				GUI_Parameters(1).Neural_Network(1).Directory = strcat(PathName,FileName);
-			end
+        if(nargin == 2)
+            File1 = load('New_CNN_7.mat');
+            NN1 = File1.My_CNN; % TODO: choose the only variable from the file without specifying the name.
+            clear File1;
+            % GUI_Parameters(1).Neural_Network(1).Directory = strcat(PathName,FileName);
 		end
 		
 		NN_Threshold_0 = GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.Neural_Network.Threshold;
@@ -304,7 +294,11 @@ function Tracer_UI()
 			
 			if(~isfield(GUI_Parameters.Workspace(fi).Workspace,'Im_BW') || isempty(GUI_Parameters.Workspace(fi).Workspace.Im_BW))
 				[Im_Rows,Im_Cols] = size(GUI_Parameters.Workspace(fi).Workspace.Image0);
-				GUI_Parameters.Workspace(fi).Workspace.NN_Probabilities = Apply_Trained_Network(NN1,GUI_Parameters.Workspace(fi).Workspace.Image0);
+				
+				
+				GUI_Parameters.Workspace(fi).Workspace.NN_Probabilities = Apply_CNN_Im2Im(NN1,GUI_Parameters.Workspace(fi).Workspace.Image0); % GUI_Parameters.Workspace(fi).Workspace.NN_Probabilities = Apply_Trained_Network(NN1,GUI_Parameters.Workspace(fi).Workspace.Image0);
+				
+				
 				GUI_Parameters.Workspace(fi).Workspace.Im_BW = zeros(Im_Rows,Im_Cols);
 				GUI_Parameters.Workspace(fi).Workspace.Im_BW(find(GUI_Parameters.Workspace(fi).Workspace.NN_Probabilities >= NN_Threshold_0)) = 1;
 				% [GUI_Parameters.Workspace(fi).Workspace.NN_Probabilities,GUI_Parameters.Workspace(fi).Workspace.Im_BW] = Apply_NN(GUI_Parameters.Workspace(fi).Workspace.Image0,NN1,GUI_Parameters.Handles.Machine_Learning.Probability_Slider.Value,Im_Rows,Im_Cols,0);
@@ -539,7 +533,7 @@ function Tracer_UI()
 			% set(Display_List,'Enable','off');
 		end
 		
-		set(GUI_Parameters.Handles.Machine_Learning.Load_Trained_NN_Button,'Enable','on');
+		set(GUI_Parameters.Handles.Machine_Learning.Apply_NN_Multiple_Button,'Enable','on');
 	end
 	
 	function Load_An_Existing_Project_File(source,callbackdata)

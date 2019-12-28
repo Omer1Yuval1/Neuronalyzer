@@ -109,7 +109,7 @@ function Workspace = Connect_Vertices(Workspace)
 	Segments_Array = ones(1,numel(Workspace.Segments));
 	Segments_Array(Traced_Segments) = 0; % Ignore short segments for which the skeleton is used instead.
 	
-	% Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array([127:141,118,119]) = 1;
+	Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array(55) = 1; % Workspace 'o'.
 	% Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array([139]) = 1;
 	% Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array([129]) = 1;
 	
@@ -167,7 +167,7 @@ function Workspace = Connect_Vertices(Workspace)
 				end
 				
 				Scores = Rect_Scan_Generalized(Workspace.Image0,Step_Params.Rotation_Origin,Step_Params.Angle,max(Min_Scan_Width,Step_Params.Scan_Width),Step_Params.Scan_Length,Rotation_Range, ...
-												Rotation_Res,Origin_Type,Im_Rows,Im_Cols);
+												Rotation_Res,Origin_Type,Im_Rows,Im_Cols,1);
 				
 				[Scores,Step_Params.BG_Intensity,Step_Params.BG_Peak_Width] = Normalize_Rects_Values_Generalized(Workspace.Image0,Scores,Step_Params.Rotation_Origin,Step_Params.Angle,Step_Params.Width,Step_Params.Scan_Length, ...
 													Step_Params.BG_Intensity,Step_Params.BG_Peak_Width,Workspace.Parameters,Im_Rows,Im_Cols);
