@@ -95,12 +95,12 @@ function W = Adjust_Rect_Width_Rot_Generalized(Im,Rotation_Origin,Rect_Angle,Rec
 			
 			xlabel('Width (\mum)');
 			ylabel('Score');
-			set(gca,'FontSize',24);
 			xlim([0,xv(1).*Scale_Factor]);
-			ylim([min(yvf)-5,max(yvf)+5]);
+			ylim([min(yvf)-5,max(yvf)+10]);
+			set(gca,'FontSize',36,'YTickLabels',round(get(gca,'YTick')./255,1));
 			
 			set(gca,'unit','normalize');
-			set(gca,'position',[0.11,0.11,0.88,0.88]);
+			set(gca,'position',[0.17,0.17,0.80,0.81]);
 			set(gcf,'Position',[10,50,900,900]);
             grid on; grid minor;
         

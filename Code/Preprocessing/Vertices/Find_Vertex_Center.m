@@ -1,20 +1,24 @@
-function [New_Cxy,Rc] = Find_Vertex_Center(Im_BW,Cxy,Vr,Circles_X,Circles_Y,Potential_Centers_XY,Im_Rows,Min_Center_Radius)
+function [New_Cxy,Rc] = Find_Vertex_Center(Im_BW,Cxy,Vr,Circles_X,Circles_Y,Pxy,Im_Rows,Im_Cols,Min_Center_Radius)
 	
 	Plot1 = 0;
 	Plot2 = 0;
 	Plot3 = 0;
+	
+	Mr = max(Vr);
 	
 	if(Plot1 || Plot2)
 		Centers_Scan_Res = 0.3;
 		% Centers_Scan_Res = 0.5;
 	end
 	
-	Potential_Centers_XY = Potential_Centers_XY + [Cxy(1) ; Cxy(2)]; % Translate the matrix of potential centers to the current center Cxy.
+	Pxy = Pxy + [Cxy(1) ; Cxy(2)]; % Translate the matrix of potential centers to the current center Cxy.
+	
+	Pxy = Pxy(:,Pxy(1,:) >= 1+Mr & Pxy(1,:) <= Im_Cols-Mr & Pxy(2,:) >= 1+Mr & Pxy(2,:) <= Im_Rows-Mr); % Keep only centers within the boundaries of the image.
 	
 	% Find the indices of the potential centers that has a "1" (white) value in the binary image:
-	F = find(Im_BW(sub2ind(size(Im_BW),round(Potential_Centers_XY(2,:)),round(Potential_Centers_XY(1,:)))));
-	Cx = Potential_Centers_XY(1,F);
-	Cy = Potential_Centers_XY(2,F);
+	F = find(Im_BW(sub2ind(size(Im_BW),round(Pxy(2,:)),round(Pxy(1,:)))));
+	Cx = Pxy(1,F);
+	Cy = Pxy(2,F);
 	
 	Cr = zeros(1,length(Cy));
 	for j=1:length(Cy) % For each potential center.

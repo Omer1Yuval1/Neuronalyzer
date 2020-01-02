@@ -1,7 +1,7 @@
 function Scores = Rect_Scan_Generalized(im,Origin0,Angle,Rect_Width,Rect_Length,Rotation_Range,Rotation_Res,Origin_Type,Im_Rows,Im_Cols,Plot0)
 	
 	if(nargin == 11 && isequal(round(Origin0),round([533.548724265609,515.320512150550]))) % [545.423935392320,517.663121293358]
-		Plot0 = 0; % Compatible with image '0'.
+		Plot0 = 1; % Compatible with image '0'.
 	else
 		Plot0 = 0;
 	end
@@ -76,13 +76,13 @@ function Scores = Rect_Scan_Generalized(im,Origin0,Angle,Rect_Width,Rect_Length,
 		set(gcf,'Position',[10,50,900,900]);
         
         figure;
-        FitObject = fit(Scores(:,1),Scores(:,2),'smoothingspline','SmoothingParam',0.01);
+        FitObject = fit(Scores(:,1),Scores(:,2)./255,'smoothingspline','SmoothingParam',0.01);
         Scores_Fit(:,1) = linspace(Scores(1,1),Scores(end,1),1000);
         Scores_Fit(:,2) = FitObject(Scores_Fit(:,1));
         
         plot(Scores_Fit(:,1),Scores_Fit(:,2),'Color',[0.8,0,0],'LineWidth',3);
         hold on;
-        % plot(Scores(:,1),Scores(:,2),'.k','MarkerSize',20);
+        % plot(Scores(:,1),Scores(:,2)./255,'.k','MarkerSize',20);
         
         [~,Locs] = findpeaks(Scores_Fit(:,2),Scores_Fit(:,1),'MinPeakDistance',15,'SortStr','descend');
         plot(Locs(1).*[1,1],[0,FitObject(Locs(1))],'--','Color',[0.5,0.5,0.5],'LineWidth',3);
@@ -92,10 +92,10 @@ function Scores = Rect_Scan_Generalized(im,Origin0,Angle,Rect_Width,Rect_Length,
         ylabel('Score');
         set(gca,'FontSize',36);
         xlim([min(Scores(:,1))-5,max(Scores(:,1))+5]);
-        ylim([min(Scores(:,2))-5,max(Scores(:,2))+5]);
+        ylim([min(Scores(:,2))-5,max(Scores(:,2))+5]./255);
         
         set(gca,'unit','normalize');
-        set(gca,'position',[0.11,0.11,0.87,0.88]);
+        set(gca,'position',[0.14,0.16,0.85,0.83]); % set(gca,'position',[0.11,0.11,0.87,0.88]);
         set(gcf,'Position',[10,50,900,900]);
         grid on; grid minor;
 	end

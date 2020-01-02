@@ -2,7 +2,7 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 	
 	Messages = 0;
 	
-	[Im_Rows,Im_Cols] = size(Im1_branchpoints);
+	[Ly,Lx] = size(Im1_branchpoints);
 	BP_Min_Dis = 4;
 	
 	if(Messages)
@@ -11,6 +11,11 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 		assignin('base','Im1_endpoints',Im1_endpoints);
 		assignin('base','Im_Skel_Rad',Im_Skel_Rad);
 	end
+	
+	Boundary_Pixels = sub2ind([Ly,Lx] , [ones(1,Lx) , Ly.*ones(1,Lx) , 1:Ly , 1:Ly] , [1:Lx , 1:Lx , ones(1,Ly) , Lx.*ones(1,Ly)]);
+	Im1_NoiseReduction(Boundary_Pixels) = 0;
+	Im1_branchpoints(Boundary_Pixels) = 0;
+	Im1_endpoints(Boundary_Pixels) = 0;
 	
 	Vertices = struct('Vertex_Index',{},'Coordinate',{});
 	% Segments = struct('Segment_Index',{},'Skeleton_Linear_Coordinates',{},'Vertex1_Index',{},'Vertices(2)',{});
@@ -30,20 +35,20 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 		Vi = Vi + 1;
 		% Vertices(Vi).Vertex_Index = Vi*(Im1_Vertices(By(b),Bx(b)) - 2); % Plus 1 (=3-2) for branch-points. Minus 1 (=1-2) for end-points.
 		Vertices(Vi).Vertex_Index = Vi; % Plus 1 (=3-2) for branch-points. Minus 1 (=1-2) for end-points.
-		Vertices(Vi).Coordinate = Im_Rows*(Bx(b)-1)+By(b);
+		Vertices(Vi).Coordinate = Ly*(Bx(b)-1)+By(b);
 		Vertices(Vi).Order = sum(sum(Im1_NoiseReduction(By(b)-1:By(b)+1,Bx(b)-1:Bx(b)+1))) - 1; % # of "1" pixels connected to the vertex (tip or branch-point).
 	end
 	
 	Fv = find([Vertices.Order] >= 3);
 	% for v=Fv % For each branch-point.
 	for v=1:numel(Vertices) % For each vertex (a branch-point or a tip).
-		[Vy,Vx] = ind2sub([Im_Rows,Im_Cols],Vertices(v).Coordinate);
+		[Vy,Vx] = ind2sub([Ly,Lx],Vertices(v).Coordinate);
 		Im1_NoiseReduction(Vy,Vx) = 0; % Delete the branch-point.
 		[Ry,Rx] = find(Im1_NoiseReduction(Vy-1:Vy+1,Vx-1:Vx+1) > 0); % Find the 1st pixel of each route connected to this branch-point.
 		Ry = Ry + Vy - 2; % Convert back to the full image coordinates.
 		Rx = Rx + Vx - 2; %
 		
-		Im1_NoiseReduction(Im_Rows.*(Rx-1)+Ry) = -1; % Mark the 1st pixels (using linear indices).
+		Im1_NoiseReduction(Ly.*(Rx-1)+Ry) = -1; % Mark the 1st pixels (using linear indices).
 		
 		F3 = find(Im1_NoiseReduction == -1);
 		
@@ -66,7 +71,7 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 			
 			Ry0 = Ry(r);
 			Rx0 = Rx(r);
-			Fr1 = Im_Rows*(Rx0-1)+Ry0;
+			Fr1 = Ly*(Rx0-1)+Ry0;
 			Segments(Si).Skeleton_Linear_Coordinates = Fr1; % Log the 1st point of the segment.
 			
 			while(1) % Collect segment coordinates (pixels).
@@ -74,7 +79,7 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 				[Ry1,Rx1] = find(Im1_NoiseReduction(Ry0-1:Ry0+1,Rx0-1:Rx0+1) > 0); % Find the pixels connected to the pixel (excluding the deleted current pixel and previously visited\deleted pixels).
 				Ry2 = Ry1 + Ry0 - 2; % Conversion of the small frame to the coordinates of the full image.
 				Rx2 = Rx1 + Rx0 - 2; % ".
-				Fr1 = Im_Rows*(Rx2-1)+Ry2; % Conversion of the frame coordinates (in the full image) to linear indices.
+				Fr1 = Ly*(Rx2-1)+Ry2; % Conversion of the frame coordinates (in the full image) to linear indices.
 				
 				if(length(Fr1) == 1) % Only one new point in the neighborhood (a segment point, a junction or a tip).
 					if(length(find([Vertices.Coordinate] == Fr1))) % If it's vertex.
@@ -85,7 +90,7 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 						Im1_NoiseReduction(Fr1) = 0; % Delete the current pixel.
 					end
 				elseif(length(Fr1) > 1) % More than one point in the neighborhood.					
-					% [Ry1,Rx1] = ind2sub([Im_Rows,Im_Cols],Fr1); % Conversion of all neighborhood pixels to subscripts.
+					% [Ry1,Rx1] = ind2sub([Ly,Lx],Fr1); % Conversion of all neighborhood pixels to subscripts.
 					% D10 = ((Rx1-Rx2).^2 + (Ry1-Ry2).^2).^.5; % The distance from each new pixel to the current pixel.
 					D10 = (((Rx2-Rx0).^2 + (Ry2-Ry0).^2).^.5)'; % The distance from each new pixel to the current pixel.
                     
@@ -124,7 +129,7 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 						end						
 						Cy2 = Cy1 + Ry0 - 2; % Conversion of the small frame to the coordinates of the full image.
 						Cx2 = Cx1 + Rx0 - 2; % ".
-						Fr1 = Im_Rows*(Cx2-1)+Cy2; % Conversion to linear indices.
+						Fr1 = Ly*(Cx2-1)+Cy2; % Conversion to linear indices.
 						Segments(Si).Vertices(2) = Vertices(find([Vertices.Coordinate] == Fr1)).Vertex_Index; % Find the vertex with the same coordinate.
 						if(Messages)
 							disp('It is a Loop!');
@@ -133,7 +138,7 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 					elseif(length(Ry1)) % This must come after looking for a branch-point (1st if, same level). Because a point might be connected to both a branch-point and a -1 point which belongs to a different segment.
 						Ry2 = Ry1 + Ry0 - 2; % Conversion of the small frame to the coordinates of the full image.
 						Rx2 = Rx1 + Rx0 - 2; % ".
-						Fr1 = Im_Rows*(Rx2-1)+Ry2; % Conversion to linear indices.
+						Fr1 = Ly*(Rx2-1)+Ry2; % Conversion to linear indices.
 						Segments(Si).Skeleton_Linear_Coordinates(end+1) = Fr1(1); % Taking 1st just in case there's more than one option (should not occur).
 						Im1_NoiseReduction(Fr1) = 0; % Delete the current pixel.
 						if(Messages && length(Fr1) > 1)
@@ -156,7 +161,7 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 						% the generation of the skeleton.
 				end
 				Fr1 = Fr1(1);
-				[Ry0,Rx0] = ind2sub([Im_Rows,Im_Cols],Fr1);
+				[Ry0,Rx0] = ind2sub([Ly,Lx],Fr1);
 			end
 		end
 	end
@@ -165,7 +170,7 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 	Segments = Segments(1:Si); % Delete extra rows.
 	
 	for v=1:numel(Vertices) % Convert linear index to subscripts.
-		[I,J] = (ind2sub([Im_Rows,Im_Cols],Vertices(v).Coordinate));
+		[I,J] = (ind2sub([Ly,Lx],Vertices(v).Coordinate));
 		Vertices(v).Coordinate = [J,I];
 	end
 	
@@ -173,7 +178,7 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 	% imshow(Im1_NoiseReduction);
 	% hold on;
 	% for s=1:numel(Segments)
-		% [Py,Px] = ind2sub([Im_Rows,Im_Cols],Segments(s).Skeleton_Linear_Coordinates);
+		% [Py,Px] = ind2sub([Ly,Lx],Segments(s).Skeleton_Linear_Coordinates);
 		% plot(Px,Py,'.','MarkerSize',15,'Color',rand(1,3));
 		
 		% Rads = Im_Skel_Rad(Segments(s).Skeleton_Linear_Coordinates)+1;

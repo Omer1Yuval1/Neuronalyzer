@@ -238,7 +238,7 @@ function Reconstruction_Index(GP,ii)
 			scatter(Midline_Distance,Midline_Orientation,10,C(Classes,:),'filled');
 			
 			% assignin('base','All_Points',GP.Workspace(ii).Workspace.All_Points);
-		
+			
 		case 'PVD Orders - Segments'
 			Class_Num = max([GP.Workspace(ii).Workspace.All_Points.Class]);
 			
@@ -267,7 +267,7 @@ function Reconstruction_Index(GP,ii)
 	
 	% set(gca,'YDir','normal');
 	
-	H.Position = [10,50,900,900];
+	H.Position = [114,469,1692,498]; % [10,50,900,900];
 	set(GP.Handles.Axes,'unit','normalize');
 	set(GP.Handles.Axes,'position',[0,0,1,1]);
 	axis tight;

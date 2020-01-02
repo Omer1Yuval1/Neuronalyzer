@@ -1,4 +1,4 @@
-function Workspace = Connect_Vertices(Workspace)
+function Workspace = Connect_Vertices(Workspace,Ax)
 	
 	% TODO: I'm currently not using the collision condition.
 	
@@ -12,9 +12,8 @@ function Workspace = Connect_Vertices(Workspace)
 	end
 	
 	if(Plot0)
-		% figure(1);
-		imshow(Workspace.Image0);
-		set(gca,'YDir','normal');
+		imshow(Workspace.Image0,'Parent',Ax);
+		set(Ax,'YDir','normal');
 		h = animatedline('LineStyle','none','Marker','.','MarkerEdgeColor',[0,.8,0],'MarkerSize',12);
 		% h = animatedline('Color','r','LineWidth',3);
 	end
@@ -98,10 +97,10 @@ function Workspace = Connect_Vertices(Workspace)
 		Vi = [Workspace.Vertices.Coordinate];
 		Vi = [Vi(1:2:end-1)',Vi(2:2:end)'];
 		viscircles(Vi,[Workspace.Vertices.Center_Radius]');
+		hold(Ax,'on');
 		
 		for s=Traced_Segments % Plot the short segment for which the skeleton is used.
-			hold on;
-			plot([Workspace.Segments(s).Rectangles.X],[Workspace.Segments(s).Rectangles.Y],'r','LineWidth',2);
+			plot(Ax,[Workspace.Segments(s).Rectangles.X],[Workspace.Segments(s).Rectangles.Y],'r','LineWidth',2);
 		end
 	end % assignin('base','Segments_Map',Segments_Map);
 	
@@ -271,11 +270,9 @@ function Workspace = Connect_Vertices(Workspace)
 						Workspace.Segments(s).(Field0)(end).Angle = mod(Locs1,360)*pi/180; % Make sure the angle is positive (mod) and convert to radians.
 						
 						if(Plot0 && mod(Step_Num,1) == 0)
-							% figure(1);
-							hold on;
 							% plot(Step_Params.Rotation_Origin(1),Step_Params.Rotation_Origin(2),'.b','MarkerSize',30);
 							addpoints(h,Step_Params.Rotation_Origin(1),Step_Params.Rotation_Origin(2));
-							drawnow;
+							% drawnow;
 							% plot(Step_Params.Rotation_Origin(1),Step_Params.Rotation_Origin(2),parula(s,:),'.','MarkerSize',24);
 							% plot([XV,XV(1)],[YV,YV(1)],'r');
 						end

@@ -9,10 +9,13 @@ function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes,Plot,Re
 	
 	Smoothing_Parameter = 100000;
 	
-	if(Plot && Record)
+	if(Plot || Record)
 		Vid1 = VideoWriter('Sliding Window','MPEG-4');
 		open(Vid1);
 		figure('WindowState','maximized');
+		imshow(W.Image0);
+		set(gca,'YDir','normal');
+		hold on;
 	end
 	
 	MinPeakHeight = 0.05;
@@ -21,7 +24,7 @@ function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes,Plot,Re
 	Axes_Max_Error = 5; % um;
 	
 	Scale_Factor = W.User_Input.Scale_Factor;
-	Win_Size = 20; % Size of sliding window in um.
+	Win_Size = 40; % *20*. Size of sliding window in um.
 	BinSize = 10;
 	Np_Midline = numel(Worm_Axes.Axis_0);
 	
@@ -115,7 +118,7 @@ function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes,Plot,Re
 		
 		if(Plot)
 			
-			delete(findobj(Ax,'-not','Type','image','-and','-not','Type','axes'));
+			delete(findobj(gca,'-not','Type','image','-and','-not','Type','axes')); % Ax
 			
 			% Histograms of distances from the midline.
 			%{
@@ -136,22 +139,24 @@ function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes,Plot,Re
 				% imshow(W.Image0);
 				% set(gca,'YDir','normal');
 				% hold on;
+				x0 = max(1,f1-60);
 				
-				plot([Worm_Axes.Axis_0(1:f1).X1],[Worm_Axes.Axis_0(1:f1).Y1],'Color',[0,0,0.6],'LineWidth',3);
-				plot([Worm_Axes.Axis_1_Dorsal(1:f1).X],[Worm_Axes.Axis_1_Dorsal(1:f1).Y],'Color',[0.6,0,0],'LineWidth',3);
-				plot([Worm_Axes.Axis_1_Ventral(1:f1).X],[Worm_Axes.Axis_1_Ventral(1:f1).Y],'Color',[0.6,0,0],'LineWidth',3);
+				% plot([Worm_Axes.Axis_0(x0:f1).X1],[Worm_Axes.Axis_0(x0:f1).Y1],'Color',[0.6,0,0],'LineWidth',3);
+				% plot([Worm_Axes.Axis_1_Dorsal(x0:f1).X],[Worm_Axes.Axis_1_Dorsal(x0:f1).Y],'Color',[0,0.8,0.8],'LineWidth',3);
+				% plot([Worm_Axes.Axis_1_Ventral(x0:f1).X],[Worm_Axes.Axis_1_Ventral(x0:f1).Y],'Color',[0,0.8,0.8],'LineWidth',3);
 				
 				% TODO: use the color to show the density of points at each distance. Or just the distance.
 				O_D = rescale(abs([All_Points(In_D).Midline_Distance]))';
 				O_V = rescale(abs([All_Points(In_V).Midline_Distance]))';
 				
-				scatter([All_Points(In_D).X],[All_Points(In_D).Y],10,[O_D,0.*O_D,1-O_D],'filled'); % plot([All_Points(In_D).X],[All_Points(In_D).Y],'.b');
-				scatter([All_Points(In_V).X],[All_Points(In_V).Y],10,[O_V,0.*O_V,1-O_V],'filled'); % plot([All_Points(In_V).X],[All_Points(In_V).Y],'.r');
-				% ,'Color',[0,0.4470,0.7410]); % ,'Color',[0.8500,0.3250,0.0980]);
+				scatter([All_Points(In_D).X],[All_Points(In_D).Y],20,[1-O_D,0.*O_D,O_D],'filled'); % plot([All_Points(In_D).X],[All_Points(In_D).Y],'.b');
+				scatter([All_Points(In_V).X],[All_Points(In_V).Y],20,[1-O_V,0.*O_V,O_V],'filled'); % plot([All_Points(In_V).X],[All_Points(In_V).Y],'.r');
 				
 				% Display the running window:
-				plot([XY_D(:,1) ; flipud(XY_0(:,1)) ; XY_D(1,1)] , [XY_D(:,2) ; flipud(XY_0(:,2)) ; XY_D(1,2)],'k','LineWidth',3);
-				plot([XY_V(:,1) ; flipud(XY_0(:,1)) ; XY_V(1,1)] , [XY_V(:,2) ; flipud(XY_0(:,2)) ; XY_V(1,2)],'k','LineWidth',3);
+				% plot([XY_D(:,1) ; flipud(XY_V(:,1)) ; XY_D(1,1)] , [XY_D(:,2) ; flipud(XY_V(:,2)) ; XY_D(1,1)],'Color',[0.8,0.4,0],'LineWidth',3);
+				% plot(XY_D(1,1) , XY_D(1,2),'.r');
+				% plot([XY_D(:,1) ; flipud(XY_0(:,1)) ; XY_D(1,1)] , [XY_D(:,2) ; flipud(XY_0(:,2)) ; XY_D(1,2)],'k','LineWidth',3);
+				% plot([XY_V(:,1) ; flipud(XY_0(:,1)) ; XY_V(1,1)] , [XY_V(:,2) ; flipud(XY_0(:,2)) ; XY_V(1,2)],'k','LineWidth',3);
 				
 				%{
 				% Plot the center points of the window:
@@ -164,7 +169,45 @@ function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes,Plot,Re
 				
 			drawnow;
 			
-			% waitforbuttonpress;
+			if(w > 800)
+				Np = 1000;
+				XY_All = []; % zeros(2,Np0,5);
+				XY_All_Fit = zeros(2,Np,5);
+				XY_All(:,:,1) = [W.Neuron_Axes.Axis_0.X ; W.Neuron_Axes.Axis_0.Y];
+				XY_All(:,:,2) = [W.Neuron_Axes.Axis_1_Dorsal.X ; W.Neuron_Axes.Axis_1_Dorsal.Y];
+				XY_All(:,:,3) = [W.Neuron_Axes.Axis_1_Ventral.X ; W.Neuron_Axes.Axis_1_Ventral.Y];
+				XY_All(:,:,4) = [W.Neuron_Axes.Axis_2_Dorsal.X ; W.Neuron_Axes.Axis_2_Dorsal.Y];
+				XY_All(:,:,5) = [W.Neuron_Axes.Axis_2_Ventral.X ; W.Neuron_Axes.Axis_2_Ventral.Y];
+				
+				CM = lines(7);
+				CM = CM([7,1,1,3,3],:);
+				% Class_Colors = [0.6,0,0 ; 0,0.6,0 ; 0,0.8,0.8 ; 0,0,1 ; 0.8,0.8,0 ; 0.5,0.5,0.5];
+				for ii=1:5
+					pp = cscvn(XY_All(:,:,ii)); % Fit a cubic spline.
+					Vb = linspace(pp.breaks(1),pp.breaks(end),Np);
+					XY_All_Fit(:,:,ii) = fnval(pp,Vb); % XY = fnval(pp,Vb);
+					if(ii <= 3)
+						plot(gca,XY_All_Fit(1,1:750,ii),XY_All_Fit(2,1:750,ii),'Color',CM(ii,:),'LineWidth',5);
+					else
+						plot(gca,XY_All_Fit(1,:,ii),XY_All_Fit(2,:,ii),'Color',CM(ii,:),'LineWidth',5);
+					end
+				end
+				
+				figure(5); clf(5);
+				Bins_1 = -40:4:40;
+				histogram([All_Points(In_DV).Midline_Distance],Bins_1,'Normalization','Probability');
+				% hold on;
+				% findpeaks(yy,xx,'NPeaks',5,'SortStr','descend','MinPeakHeight',MinPeakHeight);
+				
+				set(gcf,'Position',[10,50,900,900]);
+				set(gca,'unit','normalize');
+				xlabel(['Midline Distance (',char(181),'m)']);
+				ylabel(['Count']);
+				set(gca,'position',[0.18,0.17,0.78,0.8],'FontSize',36);
+				axis tight;
+				
+				waitforbuttonpress;
+			end
 			if(Record)
 				F = getframe(gcf);
 				writeVideo(Vid1,F);
@@ -173,6 +216,11 @@ function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes,Plot,Re
 	end
 	
 	if(Plot && Record)
+		if(Plot)
+			set(gcf,'Position',[114,469,1692,498]);
+			set(gca,'unit','normalize');
+			set(gca,'position',[0,0,1,1]);
+		end
 		close(Vid1);
 	end
 	

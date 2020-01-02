@@ -49,17 +49,14 @@ function Rectangles = Find_Vertex_Angles(Im_BW,Cxy,Rc,Scale_Factor,Peaks_Max_Num
 				% W = Adjust_Rect_Width_Rot_Generalized(Im_BW,Pxy(t,:),(Va(a)+Theta(t))*180/pi,Rect_Length,[1,6],14,0.5,0.8);
 				
 				[XV,YV] = Get_Rect_Vector(Pxy(t,:),Theta(t)*180/pi,W,Rect_Length,14); % Theta(t) is the direction perpendicular to the circle at the current point (rotation origin = Pxy).
-				Coordinates1 = InRect_Coordinates(Im_BW,[XV',YV']);
-				% assignin('base','Im_BW',Im_BW);
-				% assignin('base','XV',XV);
-				% assignin('base','YV',YV);
-				% Filtered_Scores(1,t) = length(find(Im_BW(Coordinates1))); %  / (Rect_Length*W); % Count 1-pixels and normalize to the area of the rectangle.
-				Filtered_Scores(1,t) = sum(Im_BW(Coordinates1)); %  / (Rect_Length*W); % Count 1-pixels and normalize to the area of the rectangle.
-				Filtered_Scores(2,t) = Theta(t); % Take the average of all the angles values that got the best score (for a specific width value).
-				% Filtered_Scores(3,t) = W; % Take the average of all the width values that got the best score (for a specific angle value).
 				
-				% Coordinates1 = InRect_Coordinates(Im_BW,[XV',YV']);
-				% Rects_Scores(a,w) = length(find(Im_BW(Coordinates1))) / (Rect_Length*Vw(w)); % Count 1-pixels and normalize to the area of the rectangle.
+				Coordinates1 = [];
+				if(min(XV) >= 1 && max(XV) <= Im_Cols && min(YV) >= 1 && max(YV) <= Im_Rows)
+					Coordinates1 = InRect_Coordinates(Im_BW,[XV',YV']);
+				end
+				
+				Filtered_Scores(1,t) = sum(Im_BW(Coordinates1)); %  / (Rect_Length*W); % Count 1-pixels and normalize to the area of the rectangle.
+				Filtered_Scores(2,t) = Theta(t); % Take the average of all the angles values that got the best score (for a specific width value).				
 				
 				if(Plot3 && ismember(t,Vt)) % Draw the convolving rectangles and the peak analysis.
 					hold on;
@@ -112,8 +109,13 @@ function Rectangles = Find_Vertex_Angles(Im_BW,Cxy,Rc,Scale_Factor,Peaks_Max_Num
 		Widths(p) = max([Min_Final_Width,Adjust_Rect_Width_Rot_Generalized(Im_BW,Cxy,Locs(p)*180/pi,Rect_Length,...
 								[MinWidth,MaxWidth],14,Width_SmoothingParameter,Width_Ratio,Im_Rows,Im_Cols)]);
 		[XV,YV] = Get_Rect_Vector(Cxy,Locs(p)*180/pi,Widths(p),Rect_Length,14);
-		InRect1 = InRect_Coordinates(Im_BW,[XV',YV']);
-		Scores(p) = length(sum(Im_BW(InRect1))) ./ length(InRect1); % Number of "1" pixels divided by the total # of pixels within the rectangle.
+		
+		if(min(XV) >= 1 && max(XV) <= Im_Cols && min(YV) >= 1 && max(YV) <= Im_Rows)
+			InRect1 = InRect_Coordinates(Im_BW,[XV',YV']);
+			Scores(p) = length(sum(Im_BW(InRect1))) ./ length(InRect1); % Number of "1" pixels divided by the total # of pixels within the rectangle.
+		else
+			Scores(p) = 0; % Number of "1" pixels divided by the total # of pixels within the rectangle.
+		end
 	end
 	[~,Ip] = sort(Scores,'descend'); % Sort the normalized scores.
 	

@@ -9,12 +9,13 @@ function ImP = Apply_CNN_Im2Im(My_CNN,Im0)
 	
 	% profile on;
 	
-	STD_Threshold = 0.05; % 0.1.
+	STD_Threshold = 0; % 0.05; % 0.1.
 	Save_Patches = 0;
 	
 	FHS = 10; % Frame Half Size.
 	FS = (2*FHS) + 1; % Frame Size.
 	
+	% Im0 = rescale(Im0(:,:,1),0,1,'InputMin',0,'InputMax',255);
 	Im0 = rescale(im2double(Im0(:,:,1)));
 	
 	[Rows1,Cols1] = size(Im0);

@@ -262,7 +262,7 @@ function Tracer_UI()
 	function Apply_NN_Func(source,callbackdata)
 		
         if(nargin == 2)
-            File1 = load('New_CNN_7.mat');
+            File1 = load('My_CNN_8.mat');
             NN1 = File1.My_CNN; % TODO: choose the only variable from the file without specifying the name.
             clear File1;
             % GUI_Parameters(1).Neural_Network(1).Directory = strcat(PathName,FileName);
@@ -277,8 +277,7 @@ function Tracer_UI()
 		GUI_Parameters.Handles.Machine_Learning.Min_Obejct_Size_Slider = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','slider','Min',0,'Max',5000,'Value',NN_Min_Object_Size_0,'SliderStep',[.01,.01],'Units','Normalized','Position',[0,.4,.8,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@NN_Min_Obejct_Size_Slider_Func);
 		GUI_Parameters.Handles.Machine_Learning.Min_Obejct_Size_Text = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','edit','String',num2str(NN_Min_Object_Size_0),'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.8,.4,.2,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6]);
 			
-		GUI_Parameters.Handles.Machine_Learning.Apply_NN_Multiple_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Apply Neural Network To Multiple Images','Units','Normalized','Position',[0 0.7 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Apply_NN_Multiple_Func);
-			
+		% GUI_Parameters.Handles.Machine_Learning.Apply_NN_Multiple_Button = uicontrol('Parent',GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Undo','Units','Normalized','Position',[0 0.11 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Undo_Func);
 		GUI_Parameters.Handles.Machine_Learning.Save_Training_Sample = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Save As Training Sample','Units','Normalized','Position',[0 .01 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Save_Training_Sample_Func); % ,'Enable','off');
 		
 		% [Im_Rows,Im_Cols] = size(GUI_Parameters.Workspace(end).Workspace.Image0);
@@ -290,7 +289,7 @@ function Tracer_UI()
 		waitbar(0,WB_H_NN);
 		
 		for fi=1:numel(GUI_Parameters.Workspace)
-			waitbar(fi/length(numel(GUI_Parameters.Workspace)),WB_H_NN);
+			waitbar(fi/numel(GUI_Parameters.Workspace),WB_H_NN);
 			
 			if(~isfield(GUI_Parameters.Workspace(fi).Workspace,'Im_BW') || isempty(GUI_Parameters.Workspace(fi).Workspace.Im_BW))
 				[Im_Rows,Im_Cols] = size(GUI_Parameters.Workspace(fi).Workspace.Image0);
@@ -394,22 +393,35 @@ function Tracer_UI()
 	function Mouse_Edit_BW_Func(source,event)
 		MarkerSize_1 = GUI_Parameters.Handles.Edit_BW_MarkerSize_Radio_Group.SelectedObject.UserData;
 		
-		if(MarkerSize_1 > 0 && strcmp(GUI_Parameters.General.Active_Plot,'Binary Image') || strcmp(GUI_Parameters.General.Active_Plot,'Raw + Binary Image - RGB'))
-			D = round((MarkerSize_1-1)/2);
-			C = event.IntersectionPoint;
-			C = [round(C(1)),round(C(2))];
-			Cxy = combvec(C(1)-D:C(1)+D , C(2)-D:C(2)+D);
+		if(strcmp(GUI_Parameters.General.Active_Plot,'Binary Image') || strcmp(GUI_Parameters.General.Active_Plot,'Raw + Binary Image - RGB'))
 			
 			Im_Rows = GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.General_Parameters.Im_Rows;
-			Ci = (Im_Rows*(Cxy(1,:)-1)+Cxy(2,:)); % Linear indices.
+			Im_Cols = GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.General_Parameters.Im_Cols;
 			
-			switch event.Button
-				case 1 % Left mouse click - add pixels.
-					GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW(Ci) = 1;
-				case 3 % Right mouse click - delete pixels.
-					GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW(Ci) = 0;
+			if(MarkerSize_1 == 0)
+				xy0 = event.IntersectionPoint; % Clicked point.
+				CC = bwconncomp(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW);
+				Vc = nan(1,length(CC.PixelIdxList)); % Vector of minimal distance from the connected objects.
+				for ii=1:length(CC.PixelIdxList)
+					[y,x] = ind2sub([Im_Rows,Im_Cols],CC.PixelIdxList{ii});
+					Vc(ii) = min( ((xy0(1) - x).^2 + (xy0(2) - y).^2).^(0.5) );
+				end
+				GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW(CC.PixelIdxList{find(Vc == min(Vc),1)}) = 0;
+			else
+				D = round((MarkerSize_1-1)/2);
+				C = event.IntersectionPoint;
+				C = [round(C(1)),round(C(2))];
+				Cxy = combvec(C(1)-D:C(1)+D , C(2)-D:C(2)+D);
+				
+				Ci = (Im_Rows*(Cxy(1,:)-1)+Cxy(2,:)); % Linear indices.
+				
+				switch event.Button
+					case 1 % Left mouse click - add pixels.
+						GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW(Ci) = 1;
+					case 3 % Right mouse click - delete pixels.
+						GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW(Ci) = 0;
+				end
 			end
-			
 			Reconstruction_Func();
 		end
 	end
@@ -605,7 +617,7 @@ function Tracer_UI()
 			Reconstruction_Func();
 		end
 		
-		set(GUI_Parameters.Handles.Machine_Learning.Load_Trained_NN_Button,'Enable','on');
+		set(GUI_Parameters.Handles.Machine_Learning.Apply_NN_Multiple_Button,'Enable','on');
 		
 		Features_Buttons_Handles = [];
 		GUI_Parameters.Handles.Analysis.Features_OnOff_Buttons_Handles = [];
@@ -738,6 +750,7 @@ function Tracer_UI()
 		GUI_Parameters.Handles.Tracing.Midline_Points_Num = uicontrol(GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','edit','String','50','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.75,.8,.20,GUI_Parameters.Visuals.Button1_Height],'Callback',@Plot_Draggable_Points); % ,'backgroundcolor',[0.6 0.6 0.6]);
 		GUI_Parameters.Handles.Tracing.Apply_Axes_Button = uicontrol(GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','pushbutton','String','Apply Changes','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0,.01,1,GUI_Parameters.Visuals.Button1_Height],'Callback',@Apply_Axes_Changes_Func); % ,'backgroundcolor',[0.6 0.6 0.6]);
 		
+		GUI_Parameters(1).General.Active_Plot = 'Axes';
 		Reconstruction_Func();
 		Plot_Draggable_Points();
 		
@@ -852,7 +865,7 @@ function Tracer_UI()
 				Curve_Handles(source.UserData.Curve_Index).XData(source.UserData.Point_Index) = source.Position(1);
 				Curve_Handles(source.UserData.Curve_Index).YData(source.UserData.Point_Index) = source.Position(2);
 				
-				assignin('base','Workspace',GUI_Parameters.Workspace);
+				% assignin('base','Workspace',GUI_Parameters.Workspace);
 			end
 		end
 		
@@ -882,8 +895,9 @@ function Tracer_UI()
 		
 		WB_H_Tracing = waitbar(0,'Please wait...');
 		waitbar(0,WB_H_Tracing);
+		% for fi=1:Nw
 		for fi=1:Nw
-			waitbar(fi/Nw,WB_H_Tracing);
+			waitbar(fi/Nw,WB_H_Tracing,[num2str(fi),'/',num2str(Nw)]);
 			
 			Reset_Axes;
 			imshow(GUI_Parameters.Workspace(fi).Workspace.Image0,'Parent',GUI_Parameters.Handles.Axes);
@@ -893,7 +907,7 @@ function Tracer_UI()
 			GUI_Parameters.Workspace(fi).Workspace = Vertices_Analysis_Index(GUI_Parameters.Workspace(fi).Workspace);
 			
 			% Trace using skeleton vertices and Im_BW:
-			GUI_Parameters.Workspace(fi).Workspace = Connect_Vertices(GUI_Parameters.Workspace(fi).Workspace);
+			GUI_Parameters.Workspace(fi).Workspace = Connect_Vertices(GUI_Parameters.Workspace(fi).Workspace,GUI_Parameters.Handles.Axes);
 			
 			% GUI_Parameters.Workspace(fi).Workspace = rmfield(GUI_Parameters.Workspace(fi).Workspace,'Im_BW'); % The probabilities matrix is saved instead.
 			% waitfor(msgbox('The Tracing Completed Successully.'));
@@ -1167,7 +1181,7 @@ function Tracer_UI()
 		
 		Th.Data = [A,B];
 		
-		function Continue_Func(source1,callbackdata1)
+        function Continue_Func(source1,callbackdata1)
 			delete(H1);
 		end
 	end
