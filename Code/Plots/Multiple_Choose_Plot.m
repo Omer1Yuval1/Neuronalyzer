@@ -774,7 +774,7 @@ function Multiple_Choose_Plot(GP)
 				% H_V.CData = jet(L);
 				
 				CM = transpose(rescale(1:L));
-				CM = [CM, 0.*CM , 1-CM];
+				CM = [1-CM, CM , 0.*CM+0.2];
 				H_D.CData = CM;
 				H_V.CData = CM;
 			else
@@ -1440,7 +1440,8 @@ function Multiple_Choose_Plot(GP)
 			for w=1:numel(GP.Workspace)
 				for v=1:numel(GP.Workspace(w).Workspace.Vertices)
 					if(GP.Workspace(w).Workspace.All_Vertices(v).Order == 3 && length([GP.Workspace(w).Workspace.Vertices(v).Corrected_Angles]) == 3) % Corrected_Angles
-						if(ismember([GP.Workspace(w).Workspace.All_Vertices(v).Class],[112,233,334]))
+						if(1)
+							% if(ismember([GP.Workspace(w).Workspace.All_Vertices(v).Class],[334]))
 							ii = ii + 1;
 							V(:,ii) = [GP.Workspace(w).Workspace.Vertices(v).Corrected_Angles];
 						end
@@ -1449,7 +1450,7 @@ function Multiple_Choose_Plot(GP)
 			end
 			V = V(:,1:ii);
 			
-			BinSize = 2; % 1 + (30 .* GP.Handles.Analysis.Slider.Value);
+			BinSize = 5; % 1 + (30 .* GP.Handles.Analysis.Slider.Value);
 			Title = 'Histogram of Smallest, Mid & Largest Angles';
 			% assignin('base','A123',V);
 			Plot_3Angles_Junction_Histogram(V,BinSize,Title);

@@ -160,7 +160,7 @@ function Reconstruction_Index(GP,ii)
 		case 'Midline Orientation'
 			
 			O = rescale([GP.Workspace(ii).Workspace.All_Points.Midline_Orientation])';
-			CM = [O,0.*O,1-O];
+			CM = [1-O,O,0.*O+0.1];
 			
 			% O = round(rescale([GP.Workspace(ii).Workspace.All_Points.Midline_Orientation],1,100)');
 			% CM = jet(100);
@@ -266,12 +266,12 @@ function Reconstruction_Index(GP,ii)
 	end
 	
 	% set(gca,'YDir','normal');
-	
+	%{
 	H.Position = [114,469,1692,498]; % [10,50,900,900];
 	set(GP.Handles.Axes,'unit','normalize');
 	set(GP.Handles.Axes,'position',[0,0,1,1]);
 	axis tight;
-	
+	%}
 	
 	% axis(XY);
 	

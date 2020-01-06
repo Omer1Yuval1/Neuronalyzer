@@ -12,8 +12,8 @@ function ImP = Apply_CNN_Im2Im(My_CNN,Im0)
 	STD_Threshold = 0; % 0.05; % 0.1.
 	Save_Patches = 0;
 	
-	FHS = 10; % Frame Half Size.
-	FS = (2*FHS) + 1; % Frame Size.
+	FS = My_CNN.Layers(1).InputSize(1); % Frame Size.
+	FHS = (FS - 1) ./ 2; % Frame Half Size.
 	
 	% Im0 = rescale(Im0(:,:,1),0,1,'InputMin',0,'InputMax',255);
 	Im0 = rescale(im2double(Im0(:,:,1)));

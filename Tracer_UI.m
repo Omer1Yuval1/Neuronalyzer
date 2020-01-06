@@ -262,7 +262,7 @@ function Tracer_UI()
 	function Apply_NN_Func(source,callbackdata)
 		
         if(nargin == 2)
-            File1 = load('My_CNN_8.mat');
+            File1 = load('My_CNN_13.mat'); % My_CNN_8
             NN1 = File1.My_CNN; % TODO: choose the only variable from the file without specifying the name.
             clear File1;
             % GUI_Parameters(1).Neural_Network(1).Directory = strcat(PathName,FileName);
@@ -294,8 +294,15 @@ function Tracer_UI()
 			if(~isfield(GUI_Parameters.Workspace(fi).Workspace,'Im_BW') || isempty(GUI_Parameters.Workspace(fi).Workspace.Im_BW))
 				[Im_Rows,Im_Cols] = size(GUI_Parameters.Workspace(fi).Workspace.Image0);
 				
+				CB_BW_Threshold = GUI_Parameters.Workspace(fi).Workspace.Parameters.Cell_Body.BW_Threshold;
+				Scale_Factor = GUI_Parameters.Workspace(fi).Workspace.User_Input.Scale_Factor;
+
+				[CB_Pixels,~] = Detect_Cell_Body(GUI_Parameters.Workspace(fi).Workspace.Image0,CB_BW_Threshold,Scale_Factor,0); % Detect cell-body.
+				GUI_Parameters.Workspace(fi).Workspace.NN_Probabilities = GUI_Parameters.Workspace(fi).Workspace.Image0;
+				GUI_Parameters.Workspace(fi).Workspace.NN_Probabilities(CB_Pixels) = 0;
 				
-				GUI_Parameters.Workspace(fi).Workspace.NN_Probabilities = Apply_CNN_Im2Im(NN1,GUI_Parameters.Workspace(fi).Workspace.Image0); % GUI_Parameters.Workspace(fi).Workspace.NN_Probabilities = Apply_Trained_Network(NN1,GUI_Parameters.Workspace(fi).Workspace.Image0);
+				
+				GUI_Parameters.Workspace(fi).Workspace.NN_Probabilities = Apply_CNN_Im2Im(NN1,GUI_Parameters.Workspace(fi).Workspace.NN_Probabilities); % GUI_Parameters.Workspace(fi).Workspace.NN_Probabilities = Apply_Trained_Network(NN1,GUI_Parameters.Workspace(fi).Workspace.Image0);
 				
 				
 				GUI_Parameters.Workspace(fi).Workspace.Im_BW = zeros(Im_Rows,Im_Cols);
@@ -946,12 +953,12 @@ function Tracer_UI()
 		
 		XL = xlim; % Save the current axis limits.
 		YL = ylim;
-		Reset_Axes();
 		
 		if(nargin == 1 && source) % Image changed - reseting the axis limits.
 			[Rows_1,Cols_1] = size(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Image0);
 			XL = [1,Cols_1];
             YL = [1,Rows_1];
+			Reset_Axes();
 		elseif(nargin == 2)
 			GUI_Parameters.General.Active_Plot = source.Label;
 			GUI_Parameters.General.View_Category_Type = source.UserData;

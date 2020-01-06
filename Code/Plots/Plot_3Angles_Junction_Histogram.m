@@ -48,7 +48,12 @@ function Plot_3Angles_Junction_Histogram(V,BinSize,Title1)
 	
 	disp([Am1,Am2,Am3]);
 	
-	V1 = [0,120,240 ; 0,90,180 ; 0,60,120 ; 0,110,250 ; 0,130,230];
+	% V1 = [0,120,240 ; 0,90,180 ; 0,60,120 ; 0,110,250 ; 0,130,230];
+	A1 = 0:15;
+	A2 = 120 + A1;
+	A12 = transpose(combvec(A1,A2));
+	V1 = [ A12 , 360-sum(A12,2) ];
+	
 	V2 = 0:1:25; % 0:.1:25; % 0:50; % 15:25;
 	
 	[X,Y] = meshgrid(1:size(V1,1),1:length(V2));
@@ -73,36 +78,14 @@ function Plot_3Angles_Junction_Histogram(V,BinSize,Title1)
 	end
 	disp(['Angles: ',num2str(V1(I(1),:)) , ' ; Noise: ',num2str(V2(I(2)))]);
 	
-	if(0)
-		figure; hold on;
-		for i=1:size(V1,1)
-			plot(V2,P_Vals(i,:),'LineWidth',3);
-		end
-		legend(Angles_Labels,'FontSize',22);
-		figure(1); % Set the focus back to the main figure.
-    elseif(1)
-        figure;
-        
-		surf(X,Y,P_Vals','FaceColor','interp','EdgeColor','none','FaceLighting','gouraud'); % % bar3(V2,P_Vals');
-		colormap jet;
-        set(gca,'XTick',1:size(V1,1),'XTickLabels',Angles_Labels);
-        ylabel(['Noise Size [',char(176),']']);
-        xlabel(['Angles [',char(176),']']);
-        zlabel('P-Value');
-        xlim([1,size(V1,1)]);
-        ylim([V2(1),V2(end)]);
-		set(gca,'FontSize',28);
-		%}
-        figure(1); % Set the focus back to the main figure.
-	end
-	
-	[f_monte, xi_monte, a_monte] = randomJunction([0,120,240],20,size(V,1)); % numel(X)*1. 100000.
+	[f_monte, xi_monte, a_monte] = randomJunction(V1(I(1),:),V2(I(2)),10000); % numel(X)*1. 100000.
+	% [f_monte, xi_monte, a_monte] = randomJunction([0,120,240],20,size(V,1)); % numel(X)*1. 100000.
 	% [f_monte, xi_monte, a_monte] = randomJunction([0 90 180],20,100000); % numel(X)*1
 	% [f_monte, xi_monte, a_monte] = randomJunction([0 90 180],2,numel(X));
 	% [f_monte, xi_monte, a_monte] = randomJunction([0 90 180],10);
 	
 	hold on;
-	plot(xi_monte(:,1),f_monte(:,1),'LineWidth',4,'Color',[0.8,0,0,.9]);
+	plot(xi_monte(:,1),f_monte(:,1),'LineWidth',4,'Color',[0.8,0,0,0.9]);
 	plot(xi_monte(:,2),f_monte(:,2),'LineWidth',4,'Color',[0,0.8,0,0.9]);
 	plot(xi_monte(:,3),f_monte(:,3),'LineWidth',4,'Color',[0,0,0.8,0.9]);
 
@@ -111,7 +94,30 @@ function Plot_3Angles_Junction_Histogram(V,BinSize,Title1)
 	[h1,p1,k1] = kstest2(V(:,1),a_monte(:,1));
 	[h2,p2,k2] = kstest2(V(:,2),a_monte(:,2));
 	[h3,p3,k3] = kstest2(V(:,3),a_monte(:,3));
-
+	
+	if(0)
+		figure; hold on;
+		for i=1:size(V1,1)
+			plot(V2,P_Vals(i,:),'LineWidth',3);
+		end
+		% legend(Angles_Labels,'FontSize',22);
+		% figure(1); % Set the focus back to the main figure.
+    elseif(1)
+        figure;
+        
+		surf(X,Y,P_Vals','FaceColor','interp','EdgeColor','none','FaceLighting','gouraud'); % % bar3(V2,P_Vals');
+		colormap jet;
+        % set(gca,'XTick',1:size(V1,1),'XTickLabels',Angles_Labels);
+        ylabel(['Noise Size [',char(176),']']);
+        xlabel(['Angles [',char(176),']']);
+        zlabel('P-Value');
+        xlim([1,size(V1,1)]);
+        ylim([V2(1),V2(end)]);
+		set(gca,'FontSize',12);
+		%}
+		% figure(1); % Set the focus back to the main figure.
+	end
+	
 	disp([h1 h2 h3]);
 	disp([p1 p2 p3]);
 	

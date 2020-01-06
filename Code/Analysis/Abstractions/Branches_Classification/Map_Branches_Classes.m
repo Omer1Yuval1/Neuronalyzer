@@ -10,14 +10,14 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 	Disatnce_Edges = -1:0.05:1; % 0.01,0.05.
 	Orientation_Edges = -1:0.05:1;
 	
-	cutoff = 0.00095; % 0.0018, 0.00280, 0.00285. 0.0028. 0.0029;
+	cutoff = 0.00095; % 0.00095, 0.0018, 0.00280, 0.00285. 0.0028. 0.0029;
 	Levels = [cutoff:0.0001:0.01]; % [0.0028:0.001:0.05];
 	Cluster_Size_Threshold = 8.5; % [5,10].
 	
 	cmap = [0,0,0 ; 0.1,0.1,0.1]; % ;1 1 1];
 	Class_Colors = [0.6,0,0 ; 0,0.6,0 ; 0,0.8,0.8 ; 0.8,0.8,0 ; 0.5,0.5,0.5]; % [1,2,3,4,5].
 	
-	FontSize_1 = 36;
+	FontSize_1 = 26; % 36.
 	
 	Clusters_Struct = struct('Cluster_ID',{},'X_Boundary',{},'Y_Boundary',{},'Class',{});
 	
@@ -157,7 +157,7 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 		H3 = figure(3);
 		set(H3,'color','w');
 		[M,c] = contourf(x4,y4,Z4,Levels,'edgecolor','none'); % 16
-		if makeSymmetic
+		if(makeSymmetic)
 			xlabel(['Normalized Midline Distance']); % symmetrical. %  [',char(181),'m]'
 		else
 			xlabel(['Normalized Midline Distance']);
@@ -169,6 +169,13 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 		% CM = lines(7);
 		% CM = CM([2,7,5,3],:);
 		% CM = lines(4);
+		
+		set(gcf,'Position',[10,50,900,600]);
+		axis tight;
+		set(gca,'Position',[0.12,0.2,0.87,0.80]);
+		% axis square;
+		% set(gca,'unit','normalize');
+		% set(gca,'position',[0.10,0.16,0.9,0.83]);
 		
 		h = gca;
 		grid on;
@@ -183,10 +190,6 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 		ylim([-1.9,1.7]); % ylim(Orientation_Edges([1,end])); % ylim([-0.4,1.3]);
 		
 		set(gca,'FontSize',FontSize_1);
-		axis square;
-		
-		set(gca,'unit','normalize');
-		set(gca,'position',[0.10,0.16,0.9,0.83]);
 		
 		%
 		hold on;
@@ -223,6 +226,11 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 		ylabel(['Midline Orientation [',char(176),']']);
 		colormap(cmap);
 		
+		set(gcf,'Position',[10,50,900,600]);
+		axis tight;
+		set(gca,'Position',[0.12,0.2,0.87,0.80]);
+		% axis square;
+		
 		h = gca;
 		grid on    
 		h.XAxis.TickValues = [-1,0,1];
@@ -231,12 +239,11 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 		% h.GridAlpha = 0.3; 
 		h.GridColor = 'w';
 		set(gca,'FontSize',FontSize_1);
-		axis square;
 		xlim(Disatnce_Edges([1,end]));
 		ylim([-1.9,1.7]); % ylim(Orientation_Edges([1,end])); % ylim([-0.4,1.3]);
 		
-		set(gca,'unit','normalize');
-		set(gca,'position',[0.10,0.16,0.9,0.83]);
+		% set(gca,'unit','normalize');
+		% set(gca,'position',[0.10,0.16,0.9,0.83]);
 	else
 		close all;
 	end
