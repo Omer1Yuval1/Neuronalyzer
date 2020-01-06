@@ -963,6 +963,9 @@ function Tracer_UI()
 			GUI_Parameters.General.Active_Plot = source.Label;
 			GUI_Parameters.General.View_Category_Type = source.UserData;
 			GUI_Parameters.General.Active_View = 1;
+			delete(findobj(GUI_Parameters.Handles.Axes,'-not','Type','axes'));
+		else
+			delete(findobj(GUI_Parameters.Handles.Axes,'-not','Type','axes'));
 		end
 		
 		Reconstruction_Index(GUI_Parameters,Im_Menu_H.UserData);
