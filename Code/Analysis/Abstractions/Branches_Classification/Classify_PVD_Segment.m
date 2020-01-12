@@ -41,7 +41,7 @@ function Segments = Classify_PVD_Segment(W)
 	for s=1:numel(Segments)
 		f = find([W.All_Points.Segment_Index] == Segments(s).Segment_Index);
 		
-		if(~isempty(f) && Segments(s).Class == 4)
+		if(~isempty(f)) %  && Segments(s).Class == 4)
 			if(W.All_Points(f(1)).Vertex_Order == 1 && W.All_Points(f(end)).Vertex_Order ~= 1)
 				Sc = fliplr([W.All_Points(f).Class]); % Flip so that the tip is at the end.
 			else
@@ -71,24 +71,18 @@ function Segments = Classify_PVD_Segment(W)
 		Lp = length(Sc(~isnan(Sc))); % Number of classified points.
 		Lp_H = max(1,round(Lp./2));
 		
+		L4 = length(find(Sc == 4)) ./ Lp;
+		L3 = length(find(Sc == 3)) ./ Lp;
 		L3_H1 = length(find(Sc(1:Lp_H) == 3)) ./ Lp;
 		L3_H2 = length(find(Sc(Lp_H:end) == 3)) ./ Lp;
 		L4_H1 = length(find(Sc(1:Lp_H) == 4)) ./ Lp;
 		L4_H2 = length(find(Sc(Lp_H:end) == 4)) ./ Lp;
 		
 		cc = Segments(s).Class;
-		if( (Segments(s).Terminal && L3_H1 > L4_H1 && L3_H2 < L4_H2) || (~Segments(s).Terminal && (L3_H1 > L4_H2 || L4_H1 > L3_H2)) )
-			cc = 3.5;
+		if(L3 >= Threshold_3 && L4 >= Threshold_4) % if(Segments(s).Class == 4).
+			if( (Segments(s).Terminal && L3_H1 > L4_H1 && L3_H2 < L4_H2) ) %  || (~Segments(s).Terminal && (L3_H1 > L4_H2 || L4_H1 > L3_H2)) )
+				cc = 3.5;
+			end
 		end
-		
-		%{
-		L3 = length(find(Sc == 3)) ./ Lp;
-		L4 = length(find(Sc == 4)) ./ Lp;
-		
-		cc = Segments(s).Class;
-		if(L3 >= Threshold_3 && L4 >= Threshold_4)
-			cc = 3.5;
-		end
-		%}
 	end
 end
