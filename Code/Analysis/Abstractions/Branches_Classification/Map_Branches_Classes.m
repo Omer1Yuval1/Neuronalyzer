@@ -17,7 +17,7 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 	cmap = [0,0,0 ; 0.1,0.1,0.1]; % ;1 1 1];
 	Class_Colors = [0.6,0,0 ; 0,0.6,0 ; 0,0.8,0.8 ; 0.8,0.8,0 ; 0.5,0.5,0.5]; % [1,2,3,4,5].
 	
-	FontSize_1 = 26; % 36.
+	FontSize_1 = 22; % 36.
 	
 	Clusters_Struct = struct('Cluster_ID',{},'X_Boundary',{},'Y_Boundary',{},'Class',{});
 	
@@ -112,7 +112,7 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 	
 	if(Plot_01 == 2)
 		
-		%
+		%{
 		% 3D surface plot
 		H2 = figure(2);
 		set(H2,'color','w');
@@ -164,7 +164,7 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 		end
 		ylabel(['Midline Orientation [',char(176),']']);
 		colormap(jet);
-		set(gca,'Color','k');
+		set(gca,'Color','w');
 		
 		% CM = lines(7);
 		% CM = CM([2,7,5,3],:);
@@ -172,7 +172,7 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 		
 		set(gcf,'Position',[10,50,900,600]);
 		axis tight;
-		set(gca,'Position',[0.12,0.2,0.87,0.80]);
+		set(gca,'Position',[0.10,0.18,0.87,0.80]);
 		% axis square;
 		% set(gca,'unit','normalize');
 		% set(gca,'position',[0.10,0.16,0.9,0.83]);
@@ -228,11 +228,11 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 		
 		set(gcf,'Position',[10,50,900,600]);
 		axis tight;
-		set(gca,'Position',[0.12,0.2,0.87,0.80]);
+		set(gca,'Position',[0.10,0.18,0.87,0.80]);
 		% axis square;
 		
 		h = gca;
-		grid on    
+		grid on;
 		h.XAxis.TickValues = [-1,0,1];
 		h.YAxis.TickValues = [-1,0,1];
 		h.YAxis.TickLabels = [0,45,90];

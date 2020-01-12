@@ -67,7 +67,11 @@ function Input_Struct = Generate_Plot_Input(GUI_Parameters,DB_Name,Var_Fields,Fi
 		% F = find([GUI_Parameters.Workspace.Grouping] == Selected_Groups(i,1) & [GUI_Parameters.Workspace.Genotype] == Selected_Groups(i,2)); % Find all the relevant workspaces.
 		for j=1:length(F) % For each workspace within group i.
 			
-			Wi = GUI_Parameters.Workspace(F(j)).Workspace;
+			if(GUI_Parameters.Handles.Workspace_Mode.Value == 2 && F(j) ~= GUI_Parameters.Handles.Im_Menu.UserData) % If it is single workspace mode and it is not the selected workspace.
+				continue;
+			else
+				Wi = GUI_Parameters.Workspace(F(j)).Workspace;
+			end
 			
 			if(~RowWise) % Apply operation to the entire column at once.
 				for l=1:length(Var_Operations)

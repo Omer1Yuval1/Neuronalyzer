@@ -24,6 +24,13 @@ function Multiple_Choose_Plot(GP)
 		% Instead, I should change it to use the order field as a filter.
 	%
 	
+	switch(GP.Handles.Workspace_Mode.Value)
+		case 1 % Use all workspaces.
+			Workspace_Set = 1:numel(GP.Workspace);
+		case 2 % Use current workspace.
+			Workspace_Set = GP.Handles.Im_Menu.UserData;
+	end
+	
 	if(1)
 		figure(1);
 		hold on;
@@ -77,8 +84,6 @@ function Multiple_Choose_Plot(GP)
 			Title = 'Number of Segments';
 			Input_Struct = Generate_Plot_Input(GP,'Segments',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
 			Means_Plot(Input_Struct,GP,GP.Visuals,Y_Label,Title);
-
-			
 		case 'Mean Segment Length'
 			Var_Operations{1} = @(x) x(x>=0); % The length of a segment has to be positive.
 			Filter_Operations = [];
@@ -207,7 +212,7 @@ function Multiple_Choose_Plot(GP)
 			X = [];
 			R3 = [];
 			R4 = [];
-			for w=1:numel(GP.Workspace)
+			for w=Workspace_Set
 				Fx = Vertex_Order_Func([GP.Workspace(w).Workspace.All_Points.Vertex_Order]);
 				X = [X,[GP.Workspace(w).Workspace.All_Points(Fx).Midline_Distance]];
 				switch GP.Handles.Normalization_List.Value
@@ -226,7 +231,7 @@ function Multiple_Choose_Plot(GP)
 			switch(GP.Handles.Normalization_List.Value)
 				case 1 % Not Normalized.
 					if(~GP.Handles.Analysis.Slider.UserData)
-						set(GP.Handles.Analysis.Slider,'Min',1,'Max',5,'Value',3,'SliderStep',[0.5,1]);
+						set(GP.Handles.Analysis.Slider,'Min',1,'Max',6,'Value',2,'SliderStep',[0.2,1]);
 					end
 					Edges = -45:GP.Handles.Analysis.Slider.Value:45;
 				case 2 % Normalized to both radii.
@@ -398,7 +403,7 @@ function Multiple_Choose_Plot(GP)
 			L_D = cell(1,Max_PVD_Orders);
 			S_V = cell(1,Max_PVD_Orders);
 			L_V = cell(1,Max_PVD_Orders);
-			for w=1:numel(GP.Workspace)
+			for w=Workspace_Set
 				
 				switch GP.Handles.Normalization_List.Value
 					case 1
@@ -447,9 +452,9 @@ function Multiple_Choose_Plot(GP)
 				I_D(f_D) = length(Edges) - 1; % Associate uncategorized points with the last bin.
 				I_V(f_V) = length(Edges) - 1; % ".
 				
-				% Multiply the counts by the total lengths within each [bin + class o]:
-				N_D(o,:) = N_D(o,:) .* sum(S_D{o}(I_D));
-				N_V(o,:) = N_V(o,:) .* sum(S_V{o}(I_V));
+				% Multiply the counts by the total lengths within each [bin + class o], and divide by the number of workspaces to get the mean:
+				N_D(o,:) = ( N_D(o,:) .* sum(S_D{o}(I_D)) ) ./ length(Workspace_Set);
+				N_V(o,:) = ( N_V(o,:) .* sum(S_V{o}(I_V)) ) ./ length(Workspace_Set);
 			end
 			
 			H_D = bar(xx,N_D',1,'stacked','FaceColor','flat'); % histogram(X_D,Edges);
@@ -492,8 +497,8 @@ function Multiple_Choose_Plot(GP)
 			
 			legend({'1','2','3','3.5','4','5'},'Orientation','horizontal');
 			
-			set(gca,'unit','normalize');
-			set(gca,'position',[0.05,0.15,0.94,0.8]); % set(gca,'position',[0.09,0.15,0.88,0.8]);
+			% set(gca,'unit','normalize');
+			% set(gca,'position',[0.05,0.15,0.94,0.8]); % set(gca,'position',[0.09,0.15,0.88,0.8]);
 			
 			set(gca,'YTickLabels',abs(get(gca,'YTick'))); % set(gca,'YTickLabels',strrep(get(gca,'YTickLabels'),'-',''));
 		case {'Menorah Orders - 3-Way Junctions','Menorah Orders - Tips'}
@@ -530,7 +535,7 @@ function Multiple_Choose_Plot(GP)
 			
 			L_D = cell(1,Max_PVD_Orders);
 			L_V = cell(1,Max_PVD_Orders);
-			for w=1:numel(GP.Workspace)
+			for w=Workspace_Set
 				
 				switch GP.Handles.Normalization_List.Value
 					case 1
@@ -649,7 +654,7 @@ function Multiple_Choose_Plot(GP)
 			X = []; % Curvature.
 			Y = []; % Midline Orientation.
 			Z = []; % Midline Distance.
-			for w=1:numel(GP.Workspace)
+			for w=Workspace_Set
 				X = [X,[GP.Workspace(w).Workspace.All_Points.Curvature]];
 				Y = [Y,[GP.Workspace(w).Workspace.All_Points.Midline_Orientation]];
 				Z = [Z,[GP.Workspace(w).Workspace.All_Points.Midline_Distance]];
@@ -688,7 +693,7 @@ function Multiple_Choose_Plot(GP)
 			
 			X = []; % Curvature.
 			Y = []; % Midline Orientation.
-			for w=1:numel(GP.Workspace)
+			for w=Workspace_Set
 				X = [X,[GP.Workspace(w).Workspace.All_Points.Curvature]];
 				Y = [Y,[GP.Workspace(w).Workspace.All_Points.Midline_Orientation]];
 			end
@@ -706,7 +711,7 @@ function Multiple_Choose_Plot(GP)
 			
 			X = []; % Midline Arclength.
 			Y = []; % Midline Orientation.
-			for w=1:numel(GP.Workspace)
+			for w=Workspace_Set
 				X = [X,[GP.Workspace(w).Workspace.All_Points.Axis_0_Position]];
 				Y = [Y,[GP.Workspace(w).Workspace.All_Points.Midline_Orientation]];
 			end
@@ -724,7 +729,7 @@ function Multiple_Choose_Plot(GP)
 			
 			X = []; % Midline Arclength.
 			Y = []; % Midline Orientation.
-			for w=1:numel(GP.Workspace)
+			for w=Workspace_Set
 				
 				f = find([GP.Workspace(w).Workspace.All_Points.Vertex_Order] ~= 2);
 				X = [X,[GP.Workspace(w).Workspace.All_Points(f).Axis_0_Position]];
@@ -750,7 +755,7 @@ function Multiple_Choose_Plot(GP)
 			
 			X_D = [];
 			X_V = [];
-			for w=1:numel(GP.Workspace)
+			for w=Workspace_Set
 				
 				% f_0 = find([GP.Workspace(w).Workspace.All_Points.Midline_Distance] == 0);
 				f_D = find([GP.Workspace(w).Workspace.All_Points.Midline_Distance] > 0);
@@ -795,7 +800,7 @@ function Multiple_Choose_Plot(GP)
 			
 			X1 = [];
 			X3 = [];
-			for w=1:numel(GP.Workspace)
+			for w=Workspace_Set
 				f1 = find([GP.Workspace(w).Workspace.All_Vertices.Order] == 1);
 				f3 = find([GP.Workspace(w).Workspace.All_Vertices.Order] == 3);
 				
@@ -873,7 +878,7 @@ function Multiple_Choose_Plot(GP)
 		case 'Histogram of all Angles'
 			V = zeros(1,10^4);
 			ii = 0;
-			for w=1:numel(GP.Workspace)
+			for w=Workspace_Set
 				for v=1:numel(GP.Workspace(w).Workspace.All_Vertices)
 					if(GP.Workspace(w).Workspace.All_Vertices(v).Order == 3 && length([GP.Workspace(w).Workspace.All_Vertices(v).Angles]) == 3)
 						ii = ii + 3;
@@ -891,7 +896,7 @@ function Multiple_Choose_Plot(GP)
 			V = zeros(1,10^4);
 			% D = zeros(1,10^4);
 			ii = 0;
-			for w=1:numel(GP.Workspace)
+			for w=Workspace_Set
 				for v=1:numel(GP.Workspace(w).Workspace.All_Vertices)
 					if(GP.Workspace(w).Workspace.All_Vertices(v).Order == 3 && length([GP.Workspace(w).Workspace.All_Vertices(v).Angles]) == 3)
 						ii = ii + 1;
@@ -913,7 +918,7 @@ function Multiple_Choose_Plot(GP)
 			S = zeros(1,10^4); % Symmetry Index.
 			A = zeros(1,10^4); % Largest Angle.
 			ii = 0;
-			for w=1:numel(GP.Workspace)
+			for w=Workspace_Set
 				for v=1:numel(GP.Workspace(w).Workspace.All_Vertices)
 					if(GP.Workspace(w).Workspace.All_Vertices(v).Order == 3 && length([GP.Workspace(w).Workspace.All_Vertices(v).Angles]) == 3)
 						V = GP.Workspace(w).Workspace.All_Vertices(v).Angles;
@@ -950,7 +955,7 @@ function Multiple_Choose_Plot(GP)
 			D = zeros(1,10^4);
 			L = zeros(1,10^4);
 			r = 0;
-			for w=1:numel(GP.Workspace)
+			for w=Workspace_Set
 				F3 = find([GP.Workspace(w).Workspace.All_Vertices.Order] == 3);
 				Lmax = GP.Workspace(w).Workspace.Neuron_Axes.Axis_0(end).Arc_Length;
 				
@@ -1036,7 +1041,7 @@ function Multiple_Choose_Plot(GP)
 				C = nan(1,10^4); % Vertex class (Menorah orders).
 				ii = 0;
 				l = 3;
-				for w=1:numel(GP.Workspace)
+				for w=Workspace_Set
 					Midline_Length = GP.Workspace(w).Workspace.Neuron_Axes.Axis_0(end).Arc_Length;
 					for v=1:numel(GP.Workspace(w).Workspace.All_Vertices)
 						% if(ismember(GP.Workspace(w).Workspace.All_Vertices(v).Class,Junction_Classes))
@@ -1102,7 +1107,7 @@ function Multiple_Choose_Plot(GP)
 			
 			A1 = cell(1,length(Junction_Classes));
 			A2 = cell(1,length(Junction_Classes));
-			for w=1:numel(GP.Workspace)
+			for w=Workspace_Set
 				for v=1:numel(GP.Workspace(w).Workspace.Vertices)
 					c = find(Junction_Classes == GP.Workspace(w).Workspace.Vertices(v).Class);
 					R = GP.Workspace(w).Workspace.Vertices(v).Rectangles;
@@ -1198,7 +1203,7 @@ function Multiple_Choose_Plot(GP)
 			L = zeros(1,10^4);
 			D = zeros(1,10^4);
 			ii = 0;
-			for w=1:numel(GP.Workspace)
+			for w=Workspace_Set
 				for v=1:numel(GP.Workspace(w).Workspace.All_Vertices)
 					if(GP.Workspace(w).Workspace.All_Vertices(v).Order == 3 && length([GP.Workspace(w).Workspace.All_Vertices(v).Angles]) == 3)
 						V = GP.Workspace(w).Workspace.All_Vertices(v).Angles;
@@ -1223,7 +1228,7 @@ function Multiple_Choose_Plot(GP)
 			Bin_Vector = 0:1:Worm_Radium_Max;
 			
 			V_Dist = [];
-			for w=1:numel(GP.Workspace)
+			for w=Workspace_Set
 				F = find([GP.Workspace(w).Workspace.All_Points.Vertex_Order] == 1 & [GP.Workspace(w).Workspace.All_Points.Class] == 4 & [GP.Workspace(w).Workspace.All_Points.Midline_Distance] < Worm_Radium_Max); % Find all 4th order tips.
 				
 				X = [GP.Workspace(w).Workspace.All_Points(F).X];
@@ -1252,7 +1257,7 @@ function Multiple_Choose_Plot(GP)
 			Bin_Vector = 0:2:100;
 			for o=1:4
 				V_Length = [];
-				for w=1:numel(GP.Workspace)
+				for w=Workspace_Set
 					F = find([GP.Workspace(w).Workspace.Segments.Class] == o & [GP.Workspace(w).Workspace.Segments.Length] > 0);
 					V_Length = [V_Length,[GP.Workspace(w).Workspace.Segments(F).Length]];
 				end
@@ -1437,7 +1442,7 @@ function Multiple_Choose_Plot(GP)
 			
 			V = nan(3,10^4);
 			ii = 0;
-			for w=1:numel(GP.Workspace)
+			for w=Workspace_Set
 				for v=1:numel(GP.Workspace(w).Workspace.Vertices)
 					if(GP.Workspace(w).Workspace.All_Vertices(v).Order == 3 && length([GP.Workspace(w).Workspace.Vertices(v).Corrected_Angles]) == 3) % Corrected_Angles
 						if(1)

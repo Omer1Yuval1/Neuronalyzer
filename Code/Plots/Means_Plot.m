@@ -1,4 +1,4 @@
-function Multiple_Means_Func(Input_Struct,GUI_Parameters,Visuals,YLabel,Title1)
+function Means_Plot(Input_Struct,GUI_Parameters,Visuals,YLabel,Title1)
 	
 	% Description:
 		% This function generated a means plot with large dots representing the mean values, small dots representing the raw data
@@ -11,7 +11,7 @@ function Multiple_Means_Func(Input_Struct,GUI_Parameters,Visuals,YLabel,Title1)
 	% Output:
 		% No output.
 	
-	assignin('base','Input_Struct',Input_Struct);
+	% assignin('base','Input_Struct',Input_Struct);
 	
 	Ncat = 0; % length(GUI_Parameters.General.Categories_Filter_Values);
 	Groups_Num = numel(Input_Struct);
@@ -29,7 +29,7 @@ function Multiple_Means_Func(Input_Struct,GUI_Parameters,Visuals,YLabel,Title1)
 			end
 			
 			for i=1:Groups_Num % For each group (a unique combination of selected features).
-								
+				
 				if(GUI_Parameters.Handles.Significance_Bars_List.Value > 1)
 					Vals{i} = Input_Struct(i).XValues; % Used for statistical tests.
 				end

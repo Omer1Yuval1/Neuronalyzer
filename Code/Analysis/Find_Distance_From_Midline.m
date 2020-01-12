@@ -14,10 +14,13 @@ function All_Points = Find_Distance_From_Midline(W,All_Points,Worm_Axes,Scale_Fa
 	
 	for p=1:numel(All_Points) % For each tracing point (= rectangle).
 		
+		if(p == 8521)
+			disp(1);
+		end
+		
 		% Find the corresponding midline point:
 		Dp = ( ( All_Points(p).X -  [Worm_Axes.Axis_0.X] ).^2 + ( All_Points(p).Y -  [Worm_Axes.Axis_0.Y] ).^2).^(.5); % Distances from all midlines points.
-		f = find(Dp == min(Dp));
-		f = f(1);
+		f = find(Dp == min(Dp),1);
 		
 		All_Points(p).Midline_Tangent_Angle = Worm_Axes.Axis_0(f).Tangent_Angle;
 		
@@ -25,15 +28,17 @@ function All_Points = Find_Distance_From_Midline(W,All_Points,Worm_Axes,Scale_Fa
 			All_Points(p).Midline_Distance = Dp(f) * Scale_Factor; % Pixels to um.
 			
 			if(Step)
-				R3 = ( (Worm_Axes.Axis_1_Dorsal(f).X - Worm_Axes.Axis_0(f).X).^2 + (Worm_Axes.Axis_1_Dorsal(f).Y - Worm_Axes.Axis_0(f).Y).^2 ).^(.5);
-				R4 = ( (Worm_Axes.Axis_2_Dorsal(f).X - Worm_Axes.Axis_0(f).X).^2 + (Worm_Axes.Axis_2_Dorsal(f).Y - Worm_Axes.Axis_0(f).Y).^2 ).^(.5);
+				R3 = min(( ([Worm_Axes.Axis_1_Dorsal.X] - Worm_Axes.Axis_0(f).X).^2 + ([Worm_Axes.Axis_1_Dorsal.Y] - Worm_Axes.Axis_0(f).Y).^2 ).^(.5));
+				R4 = min(( ([Worm_Axes.Axis_2_Dorsal.X] - Worm_Axes.Axis_0(f).X).^2 + ([Worm_Axes.Axis_2_Dorsal.Y] - Worm_Axes.Axis_0(f).Y).^2 ).^(.5));
+				% R3 = ( (Worm_Axes.Axis_1_Dorsal(f).X - Worm_Axes.Axis_0(f).X).^2 + (Worm_Axes.Axis_1_Dorsal(f).Y - Worm_Axes.Axis_0(f).Y).^2 ).^(.5);
+				% R4 = ( (Worm_Axes.Axis_2_Dorsal(f).X - Worm_Axes.Axis_0(f).X).^2 + (Worm_Axes.Axis_2_Dorsal(f).Y - Worm_Axes.Axis_0(f).Y).^2 ).^(.5);
 			end
 		elseif(In_Ventral(p) && ~In_Dorsal(p))
 			All_Points(p).Midline_Distance = -Dp(f) * Scale_Factor; % Pixels to um.
 			
 			if(Step)
-				R3 = ( (Worm_Axes.Axis_1_Ventral(f).X - Worm_Axes.Axis_0(f).X).^2 + (Worm_Axes.Axis_1_Ventral(f).Y - Worm_Axes.Axis_0(f).Y).^2 ).^(.5);
-				R4 = ( (Worm_Axes.Axis_2_Ventral(f).X - Worm_Axes.Axis_0(f).X).^2 + (Worm_Axes.Axis_2_Ventral(f).Y - Worm_Axes.Axis_0(f).Y).^2 ).^(.5);
+				R3 = min(( ([Worm_Axes.Axis_1_Ventral.X] - Worm_Axes.Axis_0(f).X).^2 + ([Worm_Axes.Axis_1_Ventral.Y] - Worm_Axes.Axis_0(f).Y).^2 ).^(.5));
+				R4 = min(( ([Worm_Axes.Axis_2_Ventral.X] - Worm_Axes.Axis_0(f).X).^2 + ([Worm_Axes.Axis_2_Ventral.Y] - Worm_Axes.Axis_0(f).Y).^2 ).^(.5));
 			end
 		elseif(~In_Ventral(p) && ~In_Dorsal(p))
 			All_Points(p).Midline_Distance = nan;

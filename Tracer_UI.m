@@ -28,20 +28,21 @@ function Tracer_UI()
 		
 		GUI_Parameters.Workspace = struct('Group_Name',{},'Handles',{},'Values',{});
 		
-		GUI_Parameters.Handles.Analysis.Filters_Tab = uitab('Parent',GUI_Parameters.Handles.Analysis_Tabs,'Title','Filters','BackgroundColor',[0.5,0.6,1]);
-			GUI_Parameters.Handles.Analysis.Slider = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','slider','Min',0,'Max',1,'Value',GUI_Parameters.General.Slider_Value,'Units','Normalized','UserData',0,'Position',[0 0.01 .8 GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@Slider_Func);
-			GUI_Parameters.Handles.Analysis.Slider_Text = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','edit','String',num2str(GUI_Parameters.General.Slider_Value),'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.8,.01,.2,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6]);
-			GUI_Parameters.Handles.Analysis.Dynamic_Slider_Min = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','slider','Min',0,'Max',1,'Value',0,'Units','Normalized','Position',[.15 0.02+GUI_Parameters.Visuals.Button1_Height .35 GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@Dynamic_Slider_Min_Func,'Enable','off');
-			GUI_Parameters.Handles.Analysis.Dynamic_Slider_Text_Min = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','edit','String',num2str(0),'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0,.02+GUI_Parameters.Visuals.Button1_Height,.15,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6]);
-			GUI_Parameters.Handles.Analysis.Dynamic_Slider_Max = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','slider','Min',0,'Max',1,'Value',1,'Units','Normalized','Position',[.5 0.02+GUI_Parameters.Visuals.Button1_Height .35 GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@Dynamic_Slider_Max_Func,'Enable','off');
-			GUI_Parameters.Handles.Analysis.Dynamic_Slider_Text_Max = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','edit','String',num2str(1),'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.85,.02+GUI_Parameters.Visuals.Button1_Height,.15,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6]);
 		GUI_Parameters.Handles.Analysis.Analysis_Tab = uitab('Parent',GUI_Parameters.Handles.Analysis_Tabs,'Title','Analysis','BackgroundColor',[0.5,0.6,1]);
-			GUI_Parameters.Handles.Error_Bars_List = uicontrol(GUI_Parameters.Handles.Analysis.Analysis_Tab,'Style','popup','String',{'No Error Bars','Standard Deviation','Standard Error of the Mean'},'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0.8 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Rerun_Plot_Func);			
-			GUI_Parameters.Handles.Significance_Bars_List = uicontrol(GUI_Parameters.Handles.Analysis.Analysis_Tab,'Style','popup','String',{'No Statistical Test','T-TEST & U-TEST'},'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0.9 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Rerun_Plot_Func);
+			GUI_Parameters.Handles.Workspace_Mode = uicontrol(GUI_Parameters.Handles.Analysis.Analysis_Tab,'Style','popup','String',{'Use All Workspaces','Use Current Workspace Only'},'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0.9 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Rerun_Plot_Func);
+			GUI_Parameters.Handles.Significance_Bars_List = uicontrol(GUI_Parameters.Handles.Analysis.Analysis_Tab,'Style','popup','String',{'No Statistical Test','T-TEST & U-TEST'},'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0.8 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Rerun_Plot_Func);
+			GUI_Parameters.Handles.Error_Bars_List = uicontrol(GUI_Parameters.Handles.Analysis.Analysis_Tab,'Style','popup','String',{'No Error Bars','Standard Deviation','Standard Error of the Mean'},'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0.7 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Rerun_Plot_Func);
 			% GUI_Parameters.Handles.Analysis.Slider = uicontrol('Parent',GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','slider','Min',0,'Max',1,'Value',GUI_Parameters.General.Slider_Value,'Units','Normalized','Position',[0 0.01 1 GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@Slider_Func);
-			GUI_Parameters.Handles.Normalization_List = uicontrol(GUI_Parameters.Handles.Analysis.Analysis_Tab,'Style','popup','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0.7 1 GUI_Parameters.Visuals.Button1_Height], ...
-				'String',{'Not Normalized'},'Callback',@Rerun_Plot_Func);
-			GUI_Parameters.Handles.Plot_Type_List = uicontrol(GUI_Parameters.Handles.Analysis.Analysis_Tab,'Style','popup','String',{'Default'},'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0.6 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Rerun_Plot_Func);
+			GUI_Parameters.Handles.Normalization_List = uicontrol(GUI_Parameters.Handles.Analysis.Analysis_Tab,'Style','popup','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0.6 1 GUI_Parameters.Visuals.Button1_Height],'String',{'Not Normalized'},'Callback',@Rerun_Plot_Func);
+			GUI_Parameters.Handles.Plot_Type_List = uicontrol(GUI_Parameters.Handles.Analysis.Analysis_Tab,'Style','popup','String',{'Default'},'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0.5 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Rerun_Plot_Func);
+			
+			GUI_Parameters.Handles.Analysis.Slider = uicontrol(GUI_Parameters.Handles.Analysis.Analysis_Tab,'Style','slider','Min',0,'Max',1,'Value',GUI_Parameters.General.Slider_Value,'Units','Normalized','UserData',0,'Position',[0 0.01 .8 GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@Slider_Func);
+			GUI_Parameters.Handles.Analysis.Slider_Text = uicontrol(GUI_Parameters.Handles.Analysis.Analysis_Tab,'Style','edit','String',num2str(GUI_Parameters.General.Slider_Value),'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.8,.01,.2,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6]);
+			GUI_Parameters.Handles.Analysis.Dynamic_Slider_Min = uicontrol(GUI_Parameters.Handles.Analysis.Analysis_Tab,'Style','slider','Min',0,'Max',1,'Value',0,'Units','Normalized','Position',[.15 0.02+GUI_Parameters.Visuals.Button1_Height .35 GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@Dynamic_Slider_Min_Func,'Enable','off');
+			GUI_Parameters.Handles.Analysis.Dynamic_Slider_Text_Min = uicontrol(GUI_Parameters.Handles.Analysis.Analysis_Tab,'Style','edit','String',num2str(0),'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0,.02+GUI_Parameters.Visuals.Button1_Height,.15,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6]);
+			GUI_Parameters.Handles.Analysis.Dynamic_Slider_Max = uicontrol(GUI_Parameters.Handles.Analysis.Analysis_Tab,'Style','slider','Min',0,'Max',1,'Value',1,'Units','Normalized','Position',[.5 0.02+GUI_Parameters.Visuals.Button1_Height .35 GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@Dynamic_Slider_Max_Func,'Enable','off');
+			GUI_Parameters.Handles.Analysis.Dynamic_Slider_Text_Max = uicontrol(GUI_Parameters.Handles.Analysis.Analysis_Tab,'Style','edit','String',num2str(1),'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.85,.02+GUI_Parameters.Visuals.Button1_Height,.15,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6]);
+			
 			% Display_Original_Image_CheckBox = uicontrol(GUI_Parameters.Handles.Display_Tab,'Style','checkbox','Value',0,'String','Display Original Image','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0.2 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Display_Original_Image);
 			% Tree_Center_CheckBox = uicontrol(GUI_Parameters.Handles.Display_Tab,'Style','checkbox','Value',0,'String','Display Tree Center','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0.1 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Tree_Center_CheckBox_Func);
 			% Display_Loops_CheckBox = uicontrol(GUI_Parameters.Handles.Display_Tab,'Style','checkbox','Value',0,'String','Display Loops','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Tree_Center_CheckBox_Func);
@@ -51,6 +52,7 @@ function Tracer_UI()
 				% 'String',{'Eval. Method','Silhouette','Gap','DaviesBouldin','CalinskiHarabasz'},'Callback',@Rerun_Plot_Func);
 			% GUI_Parameters.Handles.Merge_Dorsal_Ventral_CheckBox = uicontrol(GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','checkbox','Value',0,'String','Merge Dorsal-Ventral','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0.7 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Rerun_Plot_Func);
 			% GUI_Parameters.Handles.Find_Peaks_CheckBox = uicontrol(GUI_Parameters.Handles.Tracing.Analysis_Tab,'Style','checkbox','Value',0,'String','Find Peaks','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0.6 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Rerun_Plot_Func);
+		GUI_Parameters.Handles.Analysis.Filters_Tab = uitab('Parent',GUI_Parameters.Handles.Analysis_Tabs,'Title','Filters','BackgroundColor',[0.5,0.6,1]);
 		GUI_Parameters.Handles.Analysis.Display_Tab = uitab('Parent',GUI_Parameters.Handles.Analysis_Tabs,'Title','Format','BackgroundColor',[0.5,0.6,1]);
 			Flip_Contrast_CheckBox = uicontrol(GUI_Parameters.Handles.Analysis.Display_Tab,'Style','checkbox','Value',0,'String','Flip Contrast','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0.9 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Rerun_Plot_Func);
 		GUI_Parameters.Handles.Analysis.Details_Tab = uitab('Parent',GUI_Parameters.Handles.Analysis_Tabs,'Title','Details','BackgroundColor',[0.5,0.6,1]);
@@ -97,8 +99,8 @@ function Tracer_UI()
 			'Units','Normalized','Position',[0 0.9 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Start_Tracing_Func);
 	% Get_Object_Details_Button = uicontrol(GUI_Parameters.Handles.Analysis.Details_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'String','Get Details','Units','Normalized','Position',[0 0.9 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Get_Object_Details_Func);
 	
-	Im_Menu_H = uimenu(GUI_Parameters.Handles.Figure,'Label','Image','UserData',0);
-	set(Im_Menu_H,'Enable','off');
+	GUI_Parameters.Handles.Im_Menu = uimenu(GUI_Parameters.Handles.Figure,'Label','Image','UserData',0);
+	set(GUI_Parameters.Handles.Im_Menu,'Enable','off');
 	
 	Reconstructions_Menu_Handle = uimenu(GUI_Parameters.Handles.Figure,'Label','Reconstructions');
 		H_Raw_Image = uimenu(Reconstructions_Menu_Handle,'Label','Raw Image');
@@ -268,8 +270,8 @@ function Tracer_UI()
             % GUI_Parameters(1).Neural_Network(1).Directory = strcat(PathName,FileName);
 		end
 		
-		NN_Threshold_0 = GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.Neural_Network.Threshold;
-		NN_Min_Object_Size_0 = GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.Neural_Network.Min_CC_Size;
+		NN_Threshold_0 = GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Parameters.Neural_Network.Threshold;
+		NN_Min_Object_Size_0 = GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Parameters.Neural_Network.Min_CC_Size;
 			
 		GUI_Parameters.Handles.Machine_Learning.Probability_Slider = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','slider','Min',0,'Max',1,'Value',NN_Threshold_0,'SliderStep',[0.05,0.05],'Units','Normalized','Position',[0,.6,.8,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@NN_Probability_Slider_Func);
 		GUI_Parameters.Handles.Machine_Learning.Probability_Slider_Text = uicontrol(GUI_Parameters.Handles.Tracing.Machine_Learning_Panel,'Style','edit','String',num2str(NN_Threshold_0),'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.8,.6,.2,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6]);
@@ -339,20 +341,20 @@ function Tracer_UI()
 			set(All_Enabled_Objects_1,'Enable','off');
 			set(GUI_Parameters.Handles.Machine_Learning.Probability_Slider_Text,'String',source.Value); % Update the NN threshold in the text box.
 			
-			if(isfield(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace,'NN_Probabilities') || ~isempty(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.NN_Probabilities))
-				GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW = imbinarize(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.NN_Probabilities,source.Value);
+			if(isfield(GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace,'NN_Probabilities') || ~isempty(GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.NN_Probabilities))
+				GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Im_BW = imbinarize(GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.NN_Probabilities,source.Value);
 			end
 			
 			% Apply the CC size thresholding to the updated BW image:
-			CC = bwconncomp(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW);
+			CC = bwconncomp(GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Im_BW);
 			Nc = cellfun(@length,CC.PixelIdxList);
-			Fc = find(Nc <= GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.Neural_Network.Min_CC_Size);
+			Fc = find(Nc <= GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Parameters.Neural_Network.Min_CC_Size);
 			for c=Fc
-				GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW(CC.PixelIdxList{1,c}) = 0;
+				GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Im_BW(CC.PixelIdxList{1,c}) = 0;
 			end
 			
-			% GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW = Im_BW0; % Update the BW image to the workspace.
-			GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.Neural_Network.Threshold = source.Value; % Update the new threshold value to the workspace.
+			% GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Im_BW = Im_BW0; % Update the BW image to the workspace.
+			GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Parameters.Neural_Network.Threshold = source.Value; % Update the new threshold value to the workspace.
 			
 			Reconstruction_Func(0);
 			
@@ -364,14 +366,14 @@ function Tracer_UI()
 			set(All_Enabled_Objects_1,'Enable','off');
 			set(GUI_Parameters.Handles.Machine_Learning.Min_Obejct_Size_Text,'String',source.Value);
 			
-			CC = bwconncomp(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW);
+			CC = bwconncomp(GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Im_BW);
 			Nc = cellfun(@length,CC.PixelIdxList);
-			Fc = find(Nc <= GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.Neural_Network.Min_CC_Size);
+			Fc = find(Nc <= GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Parameters.Neural_Network.Min_CC_Size);
 			for c=Fc
-				GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW(CC.PixelIdxList{1,c}) = 0;
+				GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Im_BW(CC.PixelIdxList{1,c}) = 0;
 			end
 			
-			GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.Neural_Network.Min_CC_Size = source.Value; % Update the minimum object size.
+			GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Parameters.Neural_Network.Min_CC_Size = source.Value; % Update the minimum object size.
 			
 			Reconstruction_Func(0);
 			
@@ -389,10 +391,10 @@ function Tracer_UI()
 		function Save_Training_Sample_Func(source,event)
 			Dir1 = uigetdir; % Let the user choose a directory.
 			Files_List = dir(Dir1); % List of files.
-			F1_Im = GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Image0;
-            F2_BW = GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW;
-			if(~isempty(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW))
-				uisave({'F1_Im','F2_BW'},[GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.User_Input.File_Name(1:end-4),'_Anotated']);
+			F1_Im = GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Image0;
+            F2_BW = GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Im_BW;
+			if(~isempty(GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Im_BW))
+				uisave({'F1_Im','F2_BW'},[GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.User_Input.File_Name(1:end-4),'_Anotated']);
 			end
 		end
 	end
@@ -402,18 +404,18 @@ function Tracer_UI()
 		
 		if(strcmp(GUI_Parameters.General.Active_Plot,'Binary Image') || strcmp(GUI_Parameters.General.Active_Plot,'Raw + Binary Image - RGB'))
 			
-			Im_Rows = GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.General_Parameters.Im_Rows;
-			Im_Cols = GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.General_Parameters.Im_Cols;
+			Im_Rows = GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Parameters.General_Parameters.Im_Rows;
+			Im_Cols = GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Parameters.General_Parameters.Im_Cols;
 			
 			if(MarkerSize_1 == 0)
 				xy0 = event.IntersectionPoint; % Clicked point.
-				CC = bwconncomp(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW);
+				CC = bwconncomp(GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Im_BW);
 				Vc = nan(1,length(CC.PixelIdxList)); % Vector of minimal distance from the connected objects.
 				for ii=1:length(CC.PixelIdxList)
 					[y,x] = ind2sub([Im_Rows,Im_Cols],CC.PixelIdxList{ii});
 					Vc(ii) = min( ((xy0(1) - x).^2 + (xy0(2) - y).^2).^(0.5) );
 				end
-				GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW(CC.PixelIdxList{find(Vc == min(Vc),1)}) = 0;
+				GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Im_BW(CC.PixelIdxList{find(Vc == min(Vc),1)}) = 0;
 			else
 				D = round((MarkerSize_1-1)/2);
 				C = event.IntersectionPoint;
@@ -424,9 +426,9 @@ function Tracer_UI()
 				
 				switch event.Button
 					case 1 % Left mouse click - add pixels.
-						GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW(Ci) = 1;
+						GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Im_BW(Ci) = 1;
 					case 3 % Right mouse click - delete pixels.
-						GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Im_BW(Ci) = 0;
+						GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Im_BW(Ci) = 0;
 				end
 			end
 			Reconstruction_Func();
@@ -531,14 +533,14 @@ function Tracer_UI()
 				GUI_Parameters.Workspace(fi).Workspace.Parameters.General_Parameters.Im_Rows = Im_Rows;
 				GUI_Parameters.Workspace(fi).Workspace.Parameters.General_Parameters.Im_Cols = Im_Cols;
 				
-				uimenu(Im_Menu_H,'Label',GUI_Parameters.Workspace(fi).Workspace.User_Input.File_Name,'UserData',fi,'Callback',@Image_Menu_Func);
+				uimenu(GUI_Parameters.Handles.Im_Menu,'Label',GUI_Parameters.Workspace(fi).Workspace.User_Input.File_Name,'UserData',fi,'Callback',@Image_Menu_Func);
 			end
 			delete(H1);
 			
 			% Activate the Image menu and specific reconstruction options:
-			set(Im_Menu_H,'Enable','on','UserData',1); % Set the Image menu to display the last image (appears first in the menu).
-			set(allchild(Im_Menu_H),'Checked','off');
-			set(Im_Menu_H.Children(end),'Checked','on'); % The objects are stored in Im_Menu_H in reverse order.
+			set(GUI_Parameters.Handles.Im_Menu,'Enable','on','UserData',1); % Set the Image menu to display the last image (appears first in the menu).
+			set(allchild(GUI_Parameters.Handles.Im_Menu),'Checked','off');
+			set(GUI_Parameters.Handles.Im_Menu.Children(end),'Checked','on'); % The objects are stored in GUI_Parameters.Handles.Im_Menu in reverse order.
 			GUI_Parameters.General.Active_Plot = 'Cell Body';
 			GUI_Parameters.General.Active_View = 1; % Reconstruction mode.
 			% imshow(GUI_Parameters.Workspace(1).Workspace.Image0,'Parent',GUI_Parameters.Handles.Axes); % Display the image just to initialize the axes.
@@ -585,15 +587,15 @@ function Tracer_UI()
 		% Activate Menus:
 		for wi=1:numel(GUI_Parameters.Workspace)
 			if(isfield(GUI_Parameters.Workspace(wi).Workspace.User_Input,'File_Name'))
-				uimenu(Im_Menu_H,'Label',GUI_Parameters.Workspace(wi).Workspace.User_Input.File_Name,'UserData',wi,'Callback',@Image_Menu_Func);
+				uimenu(GUI_Parameters.Handles.Im_Menu,'Label',GUI_Parameters.Workspace(wi).Workspace.User_Input.File_Name,'UserData',wi,'Callback',@Image_Menu_Func);
 			else
-				uimenu(Im_Menu_H,'Label',['Image ',num2str(wi)],'UserData',wi,'Callback',@Image_Menu_Func);
+				uimenu(GUI_Parameters.Handles.Im_Menu,'Label',['Image ',num2str(wi)],'UserData',wi,'Callback',@Image_Menu_Func);
 			end
 		end
 		
-		set(Im_Menu_H,'UserData',1); % Set the Image menu to display the last image (appears first in the menu).
-		set(allchild(Im_Menu_H),'Checked','off');
-		set(Im_Menu_H.Children(end),'Checked','on'); % The objects are stored in Im_Menu_H in reverse order.
+		set(GUI_Parameters.Handles.Im_Menu,'UserData',1); % Set the Image menu to display the last image (appears first in the menu).
+		set(allchild(GUI_Parameters.Handles.Im_Menu),'Checked','off');
+		set(GUI_Parameters.Handles.Im_Menu.Children(end),'Checked','on'); % The objects are stored in GUI_Parameters.Handles.Im_Menu in reverse order.
 		GUI_Parameters.General.Active_View = 1;
 		GUI_Parameters.General.Active_Plot = 'Segmentation';
 		
@@ -638,7 +640,7 @@ function Tracer_UI()
 		% set(H0_1_2,'Enable','on');
 		% set(allchild(H0_1_2),'Enable','on');
 		
-		set(Im_Menu_H,'Enable','on');
+		set(GUI_Parameters.Handles.Im_Menu,'Enable','on');
 		set(Reconstructions_Menu_Handle,'Enable','on');
 		set(allchild(Reconstructions_Menu_Handle),'Enable','on');
 		
@@ -717,20 +719,24 @@ function Tracer_UI()
 	
 	function Image_Menu_Func(source,callbackdata)
 		
-		set(allchild(Im_Menu_H),'Checked','off');
+		set(allchild(GUI_Parameters.Handles.Im_Menu),'Checked','off');
 		set(source,'Checked','on');
-		set(Im_Menu_H,'UserData',source.UserData); % This must come before the following "if" because this value is used there.
+		set(GUI_Parameters.Handles.Im_Menu,'UserData',source.UserData); % This must come before the following "if" because this value is used there.
 		
 		if(GUI_Parameters.General.Active_View == 1) % If the current active plot is a reconstruction.
 			Reconstruction_Func(1);
+		elseif(GUI_Parameters.General.Active_View == 2) % If the current active plot is a graph.
+			Reset_Axes();
+			hold on;
+			Multiple_Choose_Plot(GUI_Parameters);
 		end
 		
-		if(isfield(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace,'NN_Probabilities') && isfield(GUI_Parameters.Handles.Machine_Learning,'Probability_Slider')) % If the probability image menu is ON (an indication that a NN has been loaded and applied to all images) - update the sliders values.
-			set(GUI_Parameters.Handles.Machine_Learning.Probability_Slider,'Value',GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.Neural_Network.Threshold); % Update the NN threshold slider.
-			set(GUI_Parameters.Handles.Machine_Learning.Probability_Slider_Text,'String',GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.Neural_Network.Threshold); % Update the NN threshold text box.
+		if(isfield(GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace,'NN_Probabilities') && isfield(GUI_Parameters.Handles.Machine_Learning,'Probability_Slider')) % If the probability image menu is ON (an indication that a NN has been loaded and applied to all images) - update the sliders values.
+			set(GUI_Parameters.Handles.Machine_Learning.Probability_Slider,'Value',GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Parameters.Neural_Network.Threshold); % Update the NN threshold slider.
+			set(GUI_Parameters.Handles.Machine_Learning.Probability_Slider_Text,'String',GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Parameters.Neural_Network.Threshold); % Update the NN threshold text box.
 			
-			set(GUI_Parameters.Handles.Machine_Learning.Min_Obejct_Size_Slider,'Value',GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.Neural_Network.Min_CC_Size); % Update the NN MinObjectSize slider.
-			set(GUI_Parameters.Handles.Machine_Learning.Min_Obejct_Size_Text,'String',GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.Neural_Network.Min_CC_Size); % Update the NN MinObjectSize text box.
+			set(GUI_Parameters.Handles.Machine_Learning.Min_Obejct_Size_Slider,'Value',GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Parameters.Neural_Network.Min_CC_Size); % Update the NN MinObjectSize slider.
+			set(GUI_Parameters.Handles.Machine_Learning.Min_Obejct_Size_Text,'String',GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Parameters.Neural_Network.Min_CC_Size); % Update the NN MinObjectSize text box.
 		end
 	end
 	
@@ -775,20 +781,20 @@ function Tracer_UI()
 			
 			delete(findobj(GUI_Parameters.Handles.Axes,'-not','Type','image','-and','-not','Type','axes')); % Delete all graphical objects (except for the axes and the image).
 			
-			Np0 = numel(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_0);
+			Np0 = numel(GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.Axis_0);
 			Np = str2num(GUI_Parameters.Handles.Tracing.Midline_Points_Num.String);
 			
 			%
 			XY_All = zeros(2,Np0,5);
 			XY_All_Fit = zeros(2,Np,5);
-			XY_All(:,:,1) = [GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_0.X ; GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_0.Y];
-			XY_All(:,:,2) = [GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_1_Dorsal.X ; GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_1_Dorsal.Y];
-			XY_All(:,:,3) = [GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_1_Ventral.X ; GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_1_Ventral.Y];
-			XY_All(:,:,4) = [GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_2_Dorsal.X ; GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_2_Dorsal.Y];
-			XY_All(:,:,5) = [GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_2_Ventral.X ; GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_2_Ventral.Y];
+			XY_All(:,:,1) = [GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.Axis_0.X ; GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.Axis_0.Y];
+			XY_All(:,:,2) = [GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.Axis_1_Dorsal.X ; GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.Axis_1_Dorsal.Y];
+			XY_All(:,:,3) = [GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.Axis_1_Ventral.X ; GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.Axis_1_Ventral.Y];
+			XY_All(:,:,4) = [GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.Axis_2_Dorsal.X ; GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.Axis_2_Dorsal.Y];
+			XY_All(:,:,5) = [GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.Axis_2_Ventral.X ; GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.Axis_2_Ventral.Y];
 			%}
 			
-			% XY = [GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_0.X ; GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.Axis_0.Y];
+			% XY = [GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.Axis_0.X ; GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.Axis_0.Y];
 			Curve_Handles = gobjects(1,5);
 			DPoint_Handles = gobjects(5,Np);
 			
@@ -836,7 +842,7 @@ function Tracer_UI()
 			
 			function Draggable_Point_Func(source,~) % Update the position of annotated points.
 				
-				Np0 = numel(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.(source.UserData.Axis_Field_Name)); % Original number of points.
+				Np0 = numel(GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.(source.UserData.Axis_Field_Name)); % Original number of points.
 				
 				% XY(1,source.UserData.Point_Index) = source.Position(1);
 				% XY(2,source.UserData.Point_Index) = source.Position(2);
@@ -852,7 +858,7 @@ function Tracer_UI()
 				if(strcmp(source.UserData.Axis_Field_Name,'Axis_0'))
 					% Find arc-lengths and tengents:
 					dxy = sum((XY_All(:,2:end,1) - XY_All(:,1:end-1,1)).^2,1).^(0.5); % sum([2 x Np],1). Summing up Xi+Yi and then taking the sqrt.
-					Arc_Length = cumsum([0 , dxy]) .* GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.User_Input.Scale_Factor; % pixels to real length units (um).
+					Arc_Length = cumsum([0 , dxy]) .* GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.User_Input.Scale_Factor; % pixels to real length units (um).
 					
 					pp_Der1 = fnder(pp,1); % 1st derivative.
 					XY_Der = fnval(pp_Der1,Vb); % [2 x Np].
@@ -861,11 +867,11 @@ function Tracer_UI()
 				
 				% Update points:
 				for iii=1:Np0
-					GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.(source.UserData.Axis_Field_Name)(iii).X = XY_All(1,iii,source.UserData.Curve_Index);
-					GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.(source.UserData.Axis_Field_Name)(iii).Y = XY_All(2,iii,source.UserData.Curve_Index);
+					GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.(source.UserData.Axis_Field_Name)(iii).X = XY_All(1,iii,source.UserData.Curve_Index);
+					GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.(source.UserData.Axis_Field_Name)(iii).Y = XY_All(2,iii,source.UserData.Curve_Index);
 					if(strcmp(source.UserData.Axis_Field_Name,'Axis_0'))
-						GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.(source.UserData.Axis_Field_Name)(iii).Arc_Length = Arc_Length(iii);
-						GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes.(source.UserData.Axis_Field_Name)(iii).Tangent_Angle = Tangent_Angles(iii);
+						GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.(source.UserData.Axis_Field_Name)(iii).Arc_Length = Arc_Length(iii);
+						GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.(source.UserData.Axis_Field_Name)(iii).Tangent_Angle = Tangent_Angles(iii);
 					end
 				end
 				
@@ -878,9 +884,9 @@ function Tracer_UI()
 		
 		function Apply_Axes_Changes_Func(~,~)
 			
-			[GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.All_Points,GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.All_Vertices] = Collect_All_Neuron_Points(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace); % [X, Y, Length, Angle, Curvature].
-			GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.All_Points = Find_Distance_From_Midline(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace,GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.All_Points,GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes,GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.User_Input.Scale_Factor,1);
-			GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.All_Vertices = Find_Distance_From_Midline(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace,GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.All_Vertices,GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Neuron_Axes,GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.User_Input.Scale_Factor,1);
+			[GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.All_Points,GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.All_Vertices] = Collect_All_Neuron_Points(GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace); % [X, Y, Length, Angle, Curvature].
+			GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.All_Points = Find_Distance_From_Midline(GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace,GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.All_Points,GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes,GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.User_Input.Scale_Factor,1);
+			GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.All_Vertices = Find_Distance_From_Midline(GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace,GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.All_Vertices,GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes,GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.User_Input.Scale_Factor,1);
 		end
 		
 		function Draggable_Points_OnOff_Func(~,~)
@@ -937,8 +943,8 @@ function Tracer_UI()
 		
 		switch source.UserData
 			case 1 % Save only the current chosen workspace to a .mat file.
-				Workspace = GUI_Parameters.Workspace(Im_Menu_H.UserData);
-				Version_Num = GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Parameters.General_Parameters.Version_Num;
+				Workspace = GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData);
+				Version_Num = GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Parameters.General_Parameters.Version_Num;
 			case 2 % Save all loaded workspaces into a single .mat file.
 				Workspace = GUI_Parameters.Workspace;
 				Version_Num = GUI_Parameters.Workspace(1).Workspace.Parameters.General_Parameters.Version_Num;
@@ -955,9 +961,14 @@ function Tracer_UI()
 		YL = ylim;
 		
 		if(nargin == 1 && source) % Image changed - reseting the axis limits.
-			[Rows_1,Cols_1] = size(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace.Image0);
+			[Rows_1,Cols_1] = size(GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Image0);
 			XL = [1,Cols_1];
             YL = [1,Rows_1];
+			Reset_Axes();
+		elseif(GUI_Parameters.General.Active_View == 2)
+			GUI_Parameters.General.Active_Plot = source.Label;
+			GUI_Parameters.General.View_Category_Type = source.UserData;
+			GUI_Parameters.General.Active_View = 1;
 			Reset_Axes();
 		elseif(nargin == 2)
 			GUI_Parameters.General.Active_Plot = source.Label;
@@ -968,9 +979,9 @@ function Tracer_UI()
 			delete(findobj(GUI_Parameters.Handles.Axes,'-not','Type','axes'));
 		end
 		
-		Reconstruction_Index(GUI_Parameters,Im_Menu_H.UserData);
+		Reconstruction_Index(GUI_Parameters,GUI_Parameters.Handles.Im_Menu.UserData);
 		
-		if(isfield(GUI_Parameters.Workspace(Im_Menu_H.UserData).Workspace,'Im_BW') && strcmp(GUI_Parameters.General.Active_Plot,'Binary Image') || strcmp(GUI_Parameters.General.Active_Plot,'Raw + Binary Image - RGB'))
+		if(isfield(GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace,'Im_BW') && strcmp(GUI_Parameters.General.Active_Plot,'Binary Image') || strcmp(GUI_Parameters.General.Active_Plot,'Raw + Binary Image - RGB'))
 			set(allchild(GUI_Parameters.Handles.Axes),'HitTest','off');
 			set(GUI_Parameters.Handles.Axes,'PickableParts','all','ButtonDownFcn',@Mouse_Edit_BW_Func);
 			
@@ -1130,7 +1141,7 @@ function Tracer_UI()
 		% GUI_Parameters.General.View_Category_Type = source.UserData;
 		GUI_Parameters.General.Active_Plot = source.Label; % Name of plot.
 		
-		Reset_Axes();		
+		Reset_Axes();
 		
 		% set(GUI_Parameters.Handles.Merge_Dorsal_Ventral_CheckBox,'Value',1);
 		hold on;
@@ -1138,11 +1149,14 @@ function Tracer_UI()
 	end
 	
 	function Reset_Axes()
+		% delete(findobj(GUI_Parameters.Handles.Axes,'-not','Type','axes'));
 		delete(allchild(GUI_Parameters.Handles.Main_Panel));
 		
 		if(GUI_Parameters.General.Active_View == 1) % Image Display Mode.
+			% set(GUI_Parameters.Handles.Axes,'Position',GUI_Parameters.Visuals.Main_Axes_Size_1);
 			GUI_Parameters.Handles.Axes = axes('Units','normalized','Position',GUI_Parameters.Visuals.Main_Axes_Size_1,'Parent',GUI_Parameters.Handles.Main_Panel); % set(GUI_Parameters.Handles.Axes,'Position',[0,0,1,1]);
 		else
+			% set(GUI_Parameters.Handles.Axes,'Position',GUI_Parameters.Visuals.Main_Axes_Size_2);
 			GUI_Parameters.Handles.Axes = axes('Units','normalized','Position',GUI_Parameters.Visuals.Main_Axes_Size_2,'Parent',GUI_Parameters.Handles.Main_Panel);
 		end
 		
