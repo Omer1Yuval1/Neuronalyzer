@@ -792,8 +792,8 @@ function Multiple_Choose_Plot(GP)
 			set(gca,'FontSize',FontSize_1,'xlim',[Edges([1,end])],'XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)));
 			ylim([-max(N_V),max(N_D)]);
 			
-			set(gca,'unit','normalize');
-			set(gca,'position',[0.09,0.15,0.89,0.84]);
+			% set(gca,'unit','normalize');
+			% set(gca,'position',[0.09,0.15,0.89,0.84]);
 		case 'Distances Of Vertices From The Medial Axis - Histogram'
 			
 			Edges = -45:2:45;
