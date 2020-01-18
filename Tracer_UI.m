@@ -150,6 +150,7 @@ function Tracer_UI()
 		
 		H_Menu1_Length = uimenu(Graphs_Menu_Handle,'Label','Length');
 				uimenu(H_Menu1_Length,'Label','Total Length','UserData',1,'Callback',@Menu1_Plots_Func);
+				uimenu(H_Menu1_Length,'Label','Neuronal Length per Menorah Order','UserData',1,'Callback',@Menu1_Plots_Func);
 				uimenu(H_Menu1_Length,'Label','Mean Segment Length','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','on');
 				uimenu(H_Menu1_Length,'Label','Distribution of Segment Lengths Per Order','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','on');
 				uimenu(H_Menu1_Length,'Label','End2End Length Of Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
