@@ -215,6 +215,7 @@ function Tracer_UI()
 		
 		H_Menu6_Distance = uimenu(Graphs_Menu_Handle,'Label','Midline Distance','Callback','');
 			uimenu(H_Menu6_Distance,'Label','Midline Distance of All Points','Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu6_Distance,'Label','Midline Distance of All Points - MoI','Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu6_Distance,'Label','Midline Distance of 3-Way Junctions','Callback',@Menu1_Plots_Func);
 		
 		H_Menu7_Midline_Density = uimenu(Graphs_Menu_Handle,'Label','Midline Density','Callback','');
