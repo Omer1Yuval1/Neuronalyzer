@@ -1,22 +1,30 @@
 function W = Classify_PVD_Points(W,Clusters_Struct)
 	
-	Classification_Method = 1;
-	Clusters_By_Distance = [2,4];
-	% Min_Cluster_Distance = 0.5;
+	% TODO: move to parameters file:
+		X_Min_Max = [-2,2];
+		Y_Min_Max = [-1,1];
+		XFunc = @(x) rescale(x,X_Min_Max(1),X_Min_Max(2),'InputMin',-pi/2,'InputMax',pi/2);
+		YFunc = @(y) rescale(y,Y_Min_Max(1),Y_Min_Max(2),'InputMin',0,'InputMax',pi/2);
+		
+		Classification_Method = 1; % 1 = Classify points based on the closest cluster center.
+		Clusters_By_Distance = [2,4];
+		% Min_Cluster_Distance = 0.5;
 	
 	Scale_Factor = W.User_Input.Scale_Factor;
 	
-	X0 = [W.All_Points.Midline_Distance];
-	Y0 = [W.All_Points.Midline_Orientation];
+	X = [W.All_Points.Angular_Coordinate]; % Midline_Distance.
+	Y = [W.All_Points.Midline_Orientation_Corrected]; % Midline_Orientation.
 	
-	R3 = [W.All_Points.Half_Radius]; % Half-radius.
-	R4 = [W.All_Points.Radius]; % Radius.
+	X = -XFunc(X); % Minus to make the ventral on the negative side (it is defined as positive in the database).
+	Y = YFunc(Y);
 	
-	[X,Y] = Rescale_Midline_Distance_And_Orientation(X0,Y0,R3,R4);
+	% R3 = [W.All_Points.Half_Radius]; % Half-radius.
+	% R4 = [W.All_Points.Radius]; % Radius.
+	% [X,Y] = Rescale_Midline_Distance_And_Orientation(X,Y,R3,R4);
 	
 	[W.All_Points.Class] = deal(nan);
 	switch(Classification_Method)
-		case 1 % Classify points beased on the closest cluster.
+		case 1 % Classify points based on the closest cluster center.
 			for p=1:numel(W.All_Points) % Find the distance of each PVD point from all cluster centers.
 				Dp = ( (X(p) - [Clusters_Struct.Mean_X]).^2 + (Y(p) - [Clusters_Struct.Mean_Y]).^2 ).^(0.5); % Find the distance of the p-point from all clusters centers.
 				f = find(Dp == min(Dp));
@@ -57,6 +65,15 @@ function W = Classify_PVD_Points(W,Clusters_Struct)
 	
 	W.Segments = Classify_PVD_Segment(W);
 	
+	% Add the segment class to the points struct:
+	[W.All_Points.Segment_Class] = deal(nan);
+	for s=1:numel(W.Segments)
+		Fs = find([W.All_Points.Segment_Index] == W.Segments(s).Segment_Index);
+		[W.All_Points(Fs).Segment_Class] = deal(W.Segments(s).Class);
+	end
+	
+	
+	% After classifying the segments, classify vertices accordingly:
 	% V = reshape([W.Segments.Vertices],2,[]); % [2 x Ns].
 	W.All_Vertices(end).Class = [];
 	W.Vertices(end).Class = [];
@@ -65,12 +82,12 @@ function W = Classify_PVD_Points(W,Clusters_Struct)
 		Ns = length(Vs);
 		l = nan(1,Ns);
 		for r=1:Ns % For each vertex rectangle (and its corresponding segment index).
-			f1 = find([W.Segments.Segment_Index] == Vs(r));
-			W.Vertices(v).Rectangles(r).Segment_Class = W.Segments(f1).Class;
+			f1 = find([W.Segments.Segment_Index] == Vs(r)); % Find the segment.
+			W.Vertices(v).Rectangles(r).Segment_Class = W.Segments(f1).Class; % Extract segment class.
 			l(r) = W.Segments(f1).Class;
 		end
-		W.All_Vertices(v).Class = sum(sort(l) .* (10.^(Ns-1:-1:0)));
-		W.Vertices(v).Class = sum(sort(l) .* (10.^(Ns-1:-1:0)));
+		W.All_Vertices(v).Class = l; % sum(sort(l) .* (10.^(Ns-1:-1:0)));
+		W.Vertices(v).Class = l; % sum(sort(l) .* (10.^(Ns-1:-1:0)));
 	end
 	
 	if(0)

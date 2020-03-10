@@ -19,7 +19,7 @@ function Segments = Classify_PVD_Segment(W)
 			% Sx = [W.All_Points(f).X];
 			% Sy = [W.All_Points(f).Y];
 			Sc = [W.All_Points(f).Class];
-			Segments(s).Class = Step_1(Sc); % W.Segments(s).Terminal
+			Segments(s).Class = mode(Sc); % Segments(s).Class = Step_1(Sc); % W.Segments(s).Terminal
 			% Segments(s).Class = mode([W.All_Points(f).Class]);
         else
             Segments(s).Class = nan;
@@ -27,7 +27,7 @@ function Segments = Classify_PVD_Segment(W)
 	end
 	
 	% Step 2:
-	%
+	%{
 	for s=1:numel(Segments)
 		if(isnan(Segments(s).Terminal))
 			Segments(s).Class = nan;
@@ -38,6 +38,7 @@ function Segments = Classify_PVD_Segment(W)
 	%}
 	
 	% Step 3:
+	%{
 	for s=1:numel(Segments)
 		f = find([W.All_Points.Segment_Index] == Segments(s).Segment_Index);
 		
@@ -50,13 +51,16 @@ function Segments = Classify_PVD_Segment(W)
 			Segments(s).Class = Step_3(Segments,s,Sc,Threshold_3,Threshold_4);
 		end
 	end
-	
+	%}
 	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 	
+	%{
 	function cc = Step_1(Sc)
 		cc = mode(Sc);
 	end
+	%}
 	
+	%{
 	function cc = Step_2(Segments,s,V12) % Ectopic.
 		
 		cc = Segments(s).Class;
@@ -85,4 +89,5 @@ function Segments = Classify_PVD_Segment(W)
 			end
 		end
 	end
+	%}
 end

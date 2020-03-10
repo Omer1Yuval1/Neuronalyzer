@@ -7,49 +7,107 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 	% clear all;
 	% close all;
 	
-	Disatnce_Edges = -1:0.05:1; % 0.01,0.05.
-	Orientation_Edges = -1:0.05:1;
+	Mode = 2;
+    FontSize_1 = 36; % 36.
 	
-	cutoff = 0.00095; % 0.00095, 0.0018, 0.00280, 0.00285. 0.0028. 0.0029;
-	Levels = [cutoff:0.0001:0.01]; % [0.0028:0.001:0.05];
-	Cluster_Size_Threshold = 8.5; % [5,10].
-	
+    switch Mode
+		case 1
+			Field_1 = 'Radial_Distance_Corrected'; % 'Angular_Coordinate'.
+			Field_2 = 'Midline_Orientation_Corrected';
+			Field_3 = 'Length_Corrected';
+			
+			cutoff = 0.000275; % [0.00029,0.00035,0.000287].
+			X_Min_Max = [-1,1];
+			
+			% cutoff = 0.00053; % [0.00029,0.00035,0.000287].
+			% X_Min_Max = [-1,1]./2;
+			
+			Levels = cutoff:0.00001:0.05; % [0.0001:0.01 , 0.0028:0.001:0.05];
+			Cluster_Size_Threshold = 10; % [5,10,*50*].
+			
+			XFunc = @(x) rescale(x,X_Min_Max(1),X_Min_Max(2),'InputMin',-1,'InputMax',1);
+			YFunc = @(y) rescale(y,-1,1,'InputMin',0,'InputMax',pi/2);
+		case 2
+			Field_1 = 'Angular_Coordinate';
+			Field_2 = 'Midline_Orientation_Corrected';
+			Field_3 = 'Length_Corrected';
+			
+			% cutoff = 0.0004; % [0.00029,0.00035,0.000287]. % cutoff = 0.000000071; % For total length normalization.
+			% X_Min_Max = [-1,1];
+			% dx = 0.05; % 0.025;
+			% dy = 0.05; % 0.025;
+			
+			% cutoff = 0.000195;
+			% X_Min_Max = [-2,2];
+			% dx = 0.05; % 0.025;
+			% dy = 0.05; % 0.025;
+			
+			cutoff = 0.000047; % [0.00029,0.00035,0.000287]. % cutoff = 0.000000071; % For total length normalization.
+			X_Min_Max = [-2,2];
+			dx = 0.025; % 0.025;
+			dy = 0.025; % 0.025;
+			Cluster_Size_Threshold = 50; % [5,10,*50*].
+			
+			Levels = cutoff:0.00001:0.05; % [0.0001:0.01 , 0.0028:0.001:0.05];
+			% Cluster_Size_Threshold = 10; % [5,10,*50*].
+			
+			XFunc = @(x) rescale(x,X_Min_Max(1),X_Min_Max(2),'InputMin',-pi/2,'InputMax',pi/2);
+			YFunc = @(y) rescale(y,-1,1,'InputMin',0,'InputMax',pi/2);
+		case 3
+			Field_1 = 'Midline_Distance';
+			Field_2 = 'Midline_Orientation';
+			Field_3 = 'Length';
+			cutoff = 0.00024; % 0.00024, 0.000238, 0.00095, 0.0018, 0.00280, 0.00285. 0.0028. 0.0029;
+			
+			Levels = cutoff:0.0001:0.05; % [0.0001:0.01 , 0.0028:0.001:0.05];
+			Cluster_Size_Threshold = 10; % [5,10,*50*].
+    end
+    
+	Disatnce_Edges = X_Min_Max(1):dx:X_Min_Max(2);
+	Orientation_Edges = -1:dy:1;
+		
 	cmap = [0,0,0 ; 0.1,0.1,0.1]; % ;1 1 1];
-	Class_Colors = [0.6,0,0 ; 0,0.6,0 ; 0,0.8,0.8 ; 0.8,0.8,0 ; 0.5,0.5,0.5]; % [1,2,3,4,5].
+	Class_Colors = [0.6,0,0 ; 0,0.6,0 ; 0.12,0.56,1 ; 0.8,0.8,0]; % [0.6,0,0 ; 0,0.6,0 ; 0,0.8,0.8 ; 0.8,0.8,0]; % [1,2,3,4].
+	YLIM = [-2.3,2.05];
 	
-	FontSize_1 = 22; % 36.
+	
 	
 	Clusters_Struct = struct('Cluster_ID',{},'X_Boundary',{},'Y_Boundary',{},'Class',{});
 	
-	X0 = [];
-	Y0 = [];
-	R3 = [];
-	R4 = [];
+	X = [];
+	Y = [];
+	L0 = [];
 	
 	% Extract midline distance and orientation of all workspaces:
 	for w=1:numel(W) % For each workspace.
-		% X0 = [X0,[W(w).Workspace.All_Points.X]];
-		% Y0 = [Y0,[W(w).Workspace.All_Points.Y]];
-		X0 = [X0,[W(w).Workspace.All_Points.Midline_Distance]]; % Midline distance.
-		Y0 = [Y0,[W(w).Workspace.All_Points.Midline_Orientation]]; % Midline orientation.
-		R3 = [R3,[W(w).Workspace.All_Points.Half_Radius]]; % Half-radius (on the same side that the point is).
-		R4 = [R4,[W(w).Workspace.All_Points.Radius]]; % Radius (on the same side that the point is).
+		
+		R3 = [W(w).Workspace.All_Points.Half_Radius];
+		R4 = [W(w).Workspace.All_Points.Radius];
+		Dw = [W(w).Workspace.All_Points.(Field_1)];
+		Ow = [W(w).Workspace.All_Points.(Field_2)];
+		Lw = [W(w).Workspace.All_Points.(Field_3)];
+		
+		% Total_Length = nansum([W(w).Workspace.All_Points.(Field_3)]);
+		% Lw = Lw ./ Total_Length;
+		
+		switch Mode
+			case 3 % Both radii.
+				[Dw,in] = Scale_Midline_Distance_To_Local_Radii(Dw,R3,R4);
+			case 4 % Half_Radius. cutoff = 0.00028;
+				Dw = Dw ./ (2.*R3);
+				in = (~isnan(Dw) & ~isnan(Lw) & abs(Dw) <= 1);
+		end
+		
+		X = [X,Dw]; % Midline distance.
+		Y = [Y,Ow]; % Midline orientation.
+		L0 = [L0,Lw]; % Rectangle length.
 	end
 	
-	% Rescale midline distance to PVD raddi:
-	F3 = find(abs(X0) <= R3); % Find points that are between the midline and half-radius.
-	F4 = find(abs(X0) > R3 & abs(X0) <= R4); % Find points that are between the half-radius and radius.
+	% in = (~isnan(Dw) & ~isnan(Lw) & abs(Dw) <= 1);
 	
-	X = abs(X0);
-	X(F3) = rescale(X(F3),0,0.5,'InputMin',zeros(1,length(F3)),'InputMax',R3(F3)); % Rescale the midline distance from [0,R3(:)] to [0,0.5].
-	X(F4) = rescale(X(F4),0.5,1,'InputMin',R3(F4),'InputMax',R4(F4)); % Rescale the midline distance from [R3(:),R4(:)] to [0.5,1].
-	X = X .* sign(X0); % Add back the sign of the midline distance.
-	
-	Y = rescale(Y0,-1,1,'InputMin',0,'InputMax',pi/2);
-	
-	F5 = find(abs(X0) > R4); % Find points that are outside the neuron's boundaries.
-	X(F5) = [];
-	Y(F5) = [];
+	X = -XFunc(X); % Minus to make the ventral on the negative side (it is defined as positive in the database).
+	Y = YFunc(Y);
+	% Y = rescale(Y,-1,1,'InputMin',0,'InputMax',pi/2);
 	
 	% For testing:
 	%{
@@ -80,10 +138,23 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 	PVD_Orders(6).Class = 4; PVD_Orders(6).X = -0.5; PVD_Orders(6).Y = 1;
 	PVD_Orders(7).Class = 4; PVD_Orders(7).X = 0.5; PVD_Orders(7).Y = 1;
 	
-	ZZ = histcounts2(X,Y,Disatnce_Edges,Orientation_Edges,'Normalization','probability');
+	[~,~,~,binX,binY] = histcounts2(X,Y,Disatnce_Edges,Orientation_Edges,'Normalization','probability');
+	
+	% Scale bin heights using neuronal length:
+	Ixy = combvec(1:length(Disatnce_Edges)-1,1:length(Orientation_Edges)-1);
+	
+	binXY = transpose([ [binX ; binY] , Ixy ]);
+	L0 = [L0,zeros(1,size(Ixy,2))];
+	
+	f = find(binX > 0 & binY > 0);
+	binXY = binXY(f,:);
+	L0 = L0(f);
+	
+	ZZ = accumarray(binXY,L0) ./ length(binX);
+	
 	Z = transpose(ZZ);
 	
-	zrows = ceil(size(Z,1)/2);
+	zrows = ceil(size(Z,1)/4);
 	
 	xR = linspace(min(X),max(X),size(Z,2));
 	yR = linspace(min(Y),max(Y),size(Z,1));
@@ -92,13 +163,11 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 	% This makes minus/plus distances symmetrical:
 	makeSymmetic = 1;
 	if(makeSymmetic)
-		Z2 = fliplr(Z(:,1:zrows)) + Z(:,zrows:end-1);
-		Z2 = Z; % [fliplr(Z2) , Z2];
-		Z3 = [flipud(Z2); Z2 ; flipud(Z2)]; % patch together to get full peaks.
-		
 		x3 = [x ; x ; x];
 		y3 = [-flipud(y)-2 ; y ; -flipud(y)+2]; % y3 = [-flipud(y) ; y ; -flipud(y) + 2*y(end)];
-		
+		Z3 = [flipud(Z); Z ; flipud(Z)]; % patch together to get full peaks.
+        % N = interp2(x3,y3,Z3,x3,y3,'spline'); figure; surf(x3,y3,N,'FaceColor','interp','EdgeColor','none');
+        
 		% cut away surperflupus regions:
 		Z4 = Z3(zrows:end-zrows,:);
 		y4 = y3(zrows:end-zrows,:);
@@ -187,7 +256,7 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 		
 		h.GridColor = 'w';
 		xlim(Disatnce_Edges([1,end]));
-		ylim([-1.9,1.7]); % ylim(Orientation_Edges([1,end])); % ylim([-0.4,1.3]);
+		ylim(YLIM); % ylim(Orientation_Edges([1,end])); % ylim([-0.4,1.3]);
 		
 		set(gca,'FontSize',FontSize_1);
 		
@@ -218,29 +287,28 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
     
 	if(Plot_01)
 		c.LineWidth = 3;
-		if(makeSymmetic)
-			xlabel(['Normalized Midline Distance']); % symmetrical. %  [',char(181),'m]'
-		else
-			xlabel(['Normalized Midline Distance']);
-		end
-		ylabel(['Midline Orientation [',char(176),']']);
+		
+		xlabel('$$Angular \; Coordinate \; \phi \; (^{\circ})$$','Interpreter','latex'); % \hat{R}
+		ylabel('$$Midline \; Orientation \; (^{\circ})$$','Interpreter','latex');
 		colormap(cmap);
 		
-		set(gcf,'Position',[10,50,900,600]);
+		set(gcf,'Position',[10,50,1160,900]); % [10,50,900,600]
 		axis tight;
-		set(gca,'Position',[0.10,0.18,0.87,0.80]);
+		set(gca,'Position',[0.13,0.15,0.85,0.84]); % set(gca,'Position',[0.10,0.18,0.87,0.80]);
 		% axis square;
 		
 		h = gca;
 		grid on;
-		h.XAxis.TickValues = [-1,0,1];
+		h.XAxis.TickValues = X_Min_Max(1):X_Min_Max(2)./2:X_Min_Max(2); % -1:0.5:1; % [-1,0,1];
+		h.XAxis.TickLabels = {'$$-90$$','$$-45$$',0,'$$45$$','$$90$$'}; % {'$$-\phi$$','$$-\frac{\phi}{2}$$',0,'$$\frac{\phi}{2}$$','$$\phi$$'}
 		h.YAxis.TickValues = [-1,0,1];
 		h.YAxis.TickLabels = [0,45,90];
 		% h.GridAlpha = 0.3; 
 		h.GridColor = 'w';
 		set(gca,'FontSize',FontSize_1);
-		xlim(Disatnce_Edges([1,end]));
-		ylim([-1.9,1.7]); % ylim(Orientation_Edges([1,end])); % ylim([-0.4,1.3]);
+		xlim(X_Min_Max([1,end])*1.1);
+		ylim(YLIM); % ylim(Orientation_Edges([1,end])); % ylim([-0.4,1.3]);
+		set(gca,'TickLabelInterpreter','latex');
 		
 		% set(gca,'unit','normalize');
 		% set(gca,'position',[0.10,0.16,0.9,0.83]);
@@ -253,7 +321,7 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 	
 	% CM = lines(7);
 	% CM = CM([1,3,5,7],:);
-	hold on;
+	
 	for i=1:length(C)-1
 		
 		x = M(1,C(i)+1:C(i+1)-1);
@@ -271,9 +339,10 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 			Clusters_Struct(end).Class = PVD_Orders(Fi).Class;
 			
 			if(Plot_01)
+				hold on;
 				plot(x,y,'Color',Class_Colors(Clusters_Struct(end).Class,:),'LineWidth',5);
 			end
 		end
 	end
-	
+	assignin('base','Clusters_Struct',Clusters_Struct);
 end

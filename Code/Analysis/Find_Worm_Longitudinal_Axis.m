@@ -4,6 +4,7 @@ function Worm_Axes = Find_Worm_Longitudinal_Axis(Workspace,Plot1,Ax)
 	Scale_Factor = Workspace.User_Input.Scale_Factor;
 	Initial_Radius = 120; % 60 ./ Scale_Factor;
 	Min_Branch_Length = 300;
+	Mask_Size = 100;
 	
 	% This functions uses a higher level perspective (the entire neuron) to detect the longitudinal axis of the worm.
 	% It first performs closing to transform the neuron into a large blob.
@@ -20,9 +21,10 @@ function Worm_Axes = Find_Worm_Longitudinal_Axis(Workspace,Plot1,Ax)
 	Worm_Axes(1).Axis_2_Dorsal = struct('X',{},'Y',{});
 	Worm_Axes(1).Axis_2_Ventral = struct('X',{},'Y',{});
 	
-	ImB = Neuron_To_Blob(Workspace.Image0);
-	
-	Im_Skel = bwmorph(imclose(ImB,strel('disk',100)),'skel',inf); % The skeleton of the blob. % Im_Axis = bwmorph(imclose(ImB,strel('disk',100)),'thin',inf);
+	[ImB,XYper] = Neuron_To_Blob(Workspace.Im_BW); % Workspace.Image0, NN_Probabilities
+	S(1).Boundary_Pixels = XYper;
+    
+	Im_Skel = bwmorph(imclose(ImB,strel('disk',Mask_Size)),'skel',inf); % The skeleton of the blob. % Im_Axis = bwmorph(imclose(ImB,strel('disk',100)),'thin',inf);
 	Im_Skel_Pruned = bwskel(Im_Skel,'MinBranchLength',Min_Branch_Length);
 	
 	% Save midline pixels ordered from head (left) to tail:
@@ -45,11 +47,13 @@ function Worm_Axes = Find_Worm_Longitudinal_Axis(Workspace,Plot1,Ax)
 	% XY_Der = XY_Der ./ (sqrt(sum(XY_Der.^2,2));
 	S.Tangent_Angles = atan2(XY_Der(:,2),XY_Der(:,1));
 	
-    Im_Perim = bwperim(ImB);
+   %{
+	Im_Perim = bwperim(ImB);
 	[Y,X] = find(Im_Perim);
     f = find(X == min(X));
     XY = Order_Connected_Pixels(Im_Perim,[X(f(1)),Y(f(1))]); % [Nx2].
 	S.Boundary_Pixels = XY;
+	%}
 	
 	S.Boundary_Points_Dorsal = S.Midline_Points + (Initial_Radius .* [cos(S.Tangent_Angles + (pi/2)) , sin(S.Tangent_Angles + (pi/2))]);
 	S.Boundary_Points_Ventral = S.Midline_Points + (Initial_Radius .* [cos(S.Tangent_Angles - (pi/2)) , sin(S.Tangent_Angles - (pi/2))]);
@@ -76,21 +80,28 @@ function Worm_Axes = Find_Worm_Longitudinal_Axis(Workspace,Plot1,Ax)
 	
 	switch(Plot1)
 		case 1
-			[Y,X] = find(Im_Skel_Pruned); % [Y,X] = find(Im_Skel);
-			imshow(ImB,'Parent',Ax);
+			if(nargin >= 3 && ~isempty(Ax))
+				HI = imshow(ImB,'Parent',Ax);
+			else
+				HI = imshow(ImB.*0.8);
+			end
+			set(gca,'units','normalized','Position',[0,0,1,1]);
 			% set(gca,'YDir','normal');
-			drawnow;
+			% drawnow;
 			hold on;
-			
+			% HI = imshow(Workspace.Image0);
+			set(HI,'AlphaData',Workspace.Image0);
 			
 			% Plot dorsal arrows:
+			%{
 			for p=1:15:length(Vb)
 				% plot(S.Midline_Points(p,1) +  40.*[0,cos(S.Tangent_Angles(p))] , S.Midline_Points(p,2) +  40.*[0,sin(S.Tangent_Angles(p))]);
 			   quiver(S.Midline_Points(p,1),S.Midline_Points(p,2) , cos(S.Tangent_Angles(p)-pi/2),sin(S.Tangent_Angles(p)-pi/2),'LineWidth',1,'AutoScaleFactor',40,'MaxHeadSize',3,'Color','k');
 			end
+			%}
 			
-			scatter(S.Midline_Points(:,1),S.Midline_Points(:,2),20,jet(size(S.Midline_Points,1)),'filled'); % plot(X,Y,'.b','LineWidth',2);
-			plot(S.Boundary_Pixels(:,1),S.Boundary_Pixels(:,2),'.','Color',[0.8,0,0],'MarkerSize',15);
+			scatter(S.Midline_Points(:,1),S.Midline_Points(:,2),30,jet(size(S.Midline_Points,1)),'filled'); % plot(X,Y,'.b','LineWidth',2);
+			plot(S.Boundary_Pixels(:,1),S.Boundary_Pixels(:,2),'.','Color',[0.8,0,0],'MarkerSize',15); % [0.8,0,0], [0.5,0.5,0]
 			
 		case 2
 			[Y,X] = find(Im_Skel_Pruned);

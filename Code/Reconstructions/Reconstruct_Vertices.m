@@ -28,8 +28,8 @@ function Reconstruct_Vertices(W,Display_Image)
 		Ax = gca;
 	end
 	
-	Class_Indices = [1,2,3,3.5,4,5];
-	CM = [0.6,0,0 ; 0,0.6,0 ; 0,0.8,0.8 ; 0,0,1 ; 0.8,0.8,0 ; 0.5,0.5,0.5]; % CM = lines(10);
+	Class_Indices = [1,2,3,4]; % [1,2,3,3.5,4,5];
+	CM = [0.6,0,0 ; 0,0.6,0 ; 0.12,0.56,1 ; 0.8,0.8,0]; % [0.6,0,0 ; 0,0.6,0 ; 0,0.8,0.8 ; 0,0,1 ; 0.8,0.8,0 ; 0.5,0.5,0.5]; % CM = lines(10);
 	CM2 = [0.8,0,0 ; 0,0.8,0 ; 0,0,0.8];
 	for v=1:numel(W.Vertices)
 		
@@ -57,14 +57,14 @@ function Reconstruct_Vertices(W,Display_Image)
 			
 			if(isnumeric(Path1))
 				hold on;
-				patch(x1+O(1),y1+O(2),CM2(Idt(1),:),'FaceAlpha',.3,'LineWidth',5);
-				patch(x2+O(1),y2+O(2),CM2(Idt(2),:),'FaceAlpha',.3,'LineWidth',5);
-				patch(x3+O(1),y3+O(2),CM2(Idt(3),:),'FaceAlpha',.3,'LineWidth',5);
+				patch(x1+O(1),y1+O(2),CM2(Idt(1),:),'FaceAlpha',.3,'LineWidth',10);
+				patch(x2+O(1),y2+O(2),CM2(Idt(2),:),'FaceAlpha',.3,'LineWidth',10);
+				patch(x3+O(1),y3+O(2),CM2(Idt(3),:),'FaceAlpha',.3,'LineWidth',10);
 				
 				for c=1:length(C)
 					if(~isnan(C(c)))
 						
-                        quiver(O(1),O(2),d1.*cos(V(c)),d1.*sin(V(c)),'Color',CM(Class_Indices == C(c),:),'LineWidth',5,'MaxHeadSize',1);
+                        quiver(O(1),O(2),d1.*cos(V(c)),d1.*sin(V(c)),'Color',CM(Class_Indices == C(c),:),'LineWidth',15,'MaxHeadSize',0); % ,'MarkerSize',1,'MarkerEdgeColor',[0,0,0]
 						
 						if(isfield(W.Vertices(v).Rectangles,'Corrected_Angle'))
 							% Vt = sort([W.Vertices(v).Rectangles.Corrected_Angle]); % Projection-corrected angles.
@@ -72,6 +72,14 @@ function Reconstruct_Vertices(W,Display_Image)
 						end
 					end
 				end
+				
+				plot(O(1),O(2),'.k','MarkerSize',60);
+				
+				set(gcf,'Position',[50,50,900,900]);
+				set(gca,'position',[0,0,1,1]);
+				
+				% axis([O(1)+[-10,+10] , O(2)+[-10,+10]]);
+				% waitforbuttonpress;
 			else
 				if(O(1) > D && O(1) < Cols-D && O(2) > D && O(2) < Rows-D)
 					if(ismember(W.Vertices(v).Class,[112,233,334,344]))

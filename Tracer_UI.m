@@ -35,6 +35,7 @@ function Tracer_UI()
 			% GUI_Parameters.Handles.Analysis.Slider = uicontrol('Parent',GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','slider','Min',0,'Max',1,'Value',GUI_Parameters.General.Slider_Value,'Units','Normalized','Position',[0 0.01 1 GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@Slider_Func);
 			GUI_Parameters.Handles.Normalization_List = uicontrol(GUI_Parameters.Handles.Analysis.Analysis_Tab,'Style','popup','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0.6 1 GUI_Parameters.Visuals.Button1_Height],'String',{'Not Normalized'},'Callback',@Rerun_Plot_Func);
 			GUI_Parameters.Handles.Plot_Type_List = uicontrol(GUI_Parameters.Handles.Analysis.Analysis_Tab,'Style','popup','String',{'Default'},'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0.5 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Rerun_Plot_Func);
+			GUI_Parameters.Handles.Projection_Correction_Checkbox = uicontrol(GUI_Parameters.Handles.Analysis.Analysis_Tab,'Style','checkbox','Value',1,'String','Apply Projection Correction','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0.4 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Rerun_Plot_Func);
 			
 			GUI_Parameters.Handles.Analysis.Slider = uicontrol(GUI_Parameters.Handles.Analysis.Analysis_Tab,'Style','slider','Min',0,'Max',1,'Value',GUI_Parameters.General.Slider_Value,'Units','Normalized','UserData',0,'Position',[0 0.01 .8 GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6],'Callback',@Slider_Func);
 			GUI_Parameters.Handles.Analysis.Slider_Text = uicontrol(GUI_Parameters.Handles.Analysis.Analysis_Tab,'Style','edit','String',num2str(GUI_Parameters.General.Slider_Value),'FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[.8,.01,.2,GUI_Parameters.Visuals.Button1_Height],'backgroundcolor',[0.6 0.6 0.6]);
@@ -136,7 +137,8 @@ function Tracer_UI()
 		H0_1_8 = uimenu(Reconstructions_Menu_Handle,'Label','Axes');
 			uimenu(H0_1_8,'Label','Axes','UserData',0,'Callback',@Display_Neuron_Axes);
 			uimenu(H0_1_8,'Label','Axes Mapping Process','UserData',0,'Callback',@Reconstruction_Func);
-		uimenu(Reconstructions_Menu_Handle,'Label','Midline Distance','UserData',0,'Callback',@Reconstruction_Func);
+		uimenu(Reconstructions_Menu_Handle,'Label','Radial Distance','UserData',0,'Callback',@Reconstruction_Func);
+		uimenu(Reconstructions_Menu_Handle,'Label','Angular Coordinate','UserData',0,'Callback',@Reconstruction_Func);
 		uimenu(Reconstructions_Menu_Handle,'Label','Midline Orientation','UserData',0,'Callback',@Reconstruction_Func);
 		uimenu(Reconstructions_Menu_Handle,'Label','Longitudinal Gradient','UserData',0,'Callback',@Reconstruction_Func,'Enable','off');
 		uimenu(Reconstructions_Menu_Handle,'Label','Curvature','UserData',0,'Callback',@Reconstruction_Func);
@@ -156,12 +158,14 @@ function Tracer_UI()
 				uimenu(H_Menu1_Length,'Label','End2End Length Of Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
 		
 		H_Menu2_Counts = uimenu(Graphs_Menu_Handle,'Label','Counts');
-			uimenu(H_Menu2_Counts,'Label','Number of Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
-			uimenu(H_Menu2_Counts,'Label','Number of Terminal Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
+			uimenu(H_Menu2_Counts,'Label','Number of 3-way Junctions','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','on');
+			uimenu(H_Menu2_Counts,'Label','Number of Tips','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','on');
+			uimenu(H_Menu2_Counts,'Label','Number of Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','on');
+			uimenu(H_Menu2_Counts,'Label','Number of Menorahs','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','on');
 			
 		H_Menu3_Curvature = uimenu(Graphs_Menu_Handle,'Label','Curvature');
-			uimenu(H_Menu3_Curvature,'Label','Mean Curvature Of Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
-			uimenu(H_Menu3_Curvature,'Label','Max Curvature Of Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
+			uimenu(H_Menu3_Curvature,'Label','Curvature Per Menorah Order','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','on');
+			uimenu(H_Menu3_Curvature,'Label','Curvature Distribution','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','on');
 			uimenu(H_Menu3_Curvature,'Label','Mean Curvature Of Terminal Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
 			uimenu(H_Menu3_Curvature,'Label','Max Curvature Of Terminal Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
 			uimenu(H_Menu3_Curvature,'Label','Distribution of Mean Squared Curvature Of Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
@@ -186,10 +190,11 @@ function Tracer_UI()
 					uimenu(H_Menu31_Angles,'Label','Distribution of the Difference between Vertex and End2End Angles','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
 				H_Menu312 = uimenu(H_Menu31_Angles,'Label','Two Angles Plots','Callback','');
 					H_Menu3120 = uimenu(H_Menu312,'Label','Menorah Orders of 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func);
-					H_Menu3121 = uimenu(H_Menu312,'Label','Minimal and Maximal Angles of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);
-					H_Menu3122 = uimenu(H_Menu312,'Label','The Two Minimal Angles of each 3-Way junction','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
-					H_Menu3123 = uimenu(H_Menu312,'Label','Linearity-Symmetry of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','on');
-					H_Menu3124 = uimenu(H_Menu312,'Label','Sum of 2 Smallest VS Product of 2 Smallest','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
+					H_Menu3121 = uimenu(H_Menu312,'Label','All Angles VS Midline Distance','UserData',2,'Callback',@Menu1_Plots_Func);
+					H_Menu3122 = uimenu(H_Menu312,'Label','Minimal and Maximal Angles of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func);
+					H_Menu3123 = uimenu(H_Menu312,'Label','The Two Minimal Angles of each 3-Way junction','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
+					H_Menu3124 = uimenu(H_Menu312,'Label','Linearity-Symmetry of 3-Way junctions','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','on');
+					H_Menu3125 = uimenu(H_Menu312,'Label','Sum of 2 Smallest VS Product of 2 Smallest','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
 					H_Menu3126 = uimenu(H_Menu312,'Label','Smallest Angle VS Diff between 2 Smallest','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
 				H_Menu313 = uimenu(H_Menu31_Angles,'Label','Three Angles Plots','Callback','');
 					H_Menu3131 = uimenu(H_Menu313,'Label','2D Histogram Angles of 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
@@ -213,52 +218,27 @@ function Tracer_UI()
 				% H_Menu1321_Primary_Vertices_Mean_Distance = uimenu(H_Menu132_Distances,'Label','Primary_Vertices_Mean_Distance','UserData',1,'Callback',@Menu1_Plots_Func);
 			% H_Menu133_Vertices_Density = uimenu(H_Menu13_Vertices,'Label','Density of Vertices','UserData',1,'Callback',@Menu1_Plots_Func);			
 		
-		H_Menu6_Distance = uimenu(Graphs_Menu_Handle,'Label','Midline Distance','Callback','');
-			uimenu(H_Menu6_Distance,'Label','Midline Distance of All Points','Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu6_Distance,'Label','Midline Distance of All Points - MoI','Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu6_Distance,'Label','Midline Distance of 3-Way Junctions','Callback',@Menu1_Plots_Func);
+		H_Menu6_Distance = uimenu(Graphs_Menu_Handle,'Label','Radial Distance','Callback','');
+			uimenu(H_Menu6_Distance,'Label','Radial Distance of All Points','Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu6_Distance,'Label','Radial Distance of All Points - Second Moment','Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu6_Distance,'Label','Radial Distance of 3-Way Junctions','Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu6_Distance,'Label','Radial Distance of Tips','Callback',@Menu1_Plots_Func);
+			
+		H_Menu8_Angular = uimenu(Graphs_Menu_Handle,'Label','Angular Coordinate','Callback','');
+			uimenu(H_Menu8_Angular,'Label','Angular Coordinate of All Points','Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu8_Angular,'Label','Angular Coordinate of All Points - Second Moment','Callback',@Menu1_Plots_Func);
 		
-		H_Menu7_Midline_Density = uimenu(Graphs_Menu_Handle,'Label','Midline Density','Callback','');
-			uimenu(H_Menu7_Midline_Density,'Label','Menorah Orders - Neuronal Length','UserData',2,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu7_Midline_Density,'Label','Menorah Orders - 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu7_Midline_Density,'Label','Menorah Orders - Tips','Callback',@Menu1_Plots_Func);
+		H_Menu7_Midline_Density = uimenu(Graphs_Menu_Handle,'Label','Menorah Orders','Callback','');
+			uimenu(H_Menu7_Midline_Density,'Label','Menorah Orders Classification','UserData',2,'Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu7_Midline_Density,'Label','Midline Density - Neuronal Length','UserData',2,'Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu7_Midline_Density,'Label','Midline Density - 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu7_Midline_Density,'Label','Midline Density - Tips','Callback',@Menu1_Plots_Func);
 		H_Menu5_2D_Plots = uimenu(Graphs_Menu_Handle,'Label','2D Plots','Callback','');
 			uimenu(H_Menu5_2D_Plots,'Label','Midline Distance VS Midline Orientation','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu5_2D_Plots,'Label','Midline Distance VS Curvature','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu5_2D_Plots,'Label','Midline Orientation VS Curvature','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu5_2D_Plots,'Label','Midline Orientation VS Curvature VS Midlines Distance','UserData',2,'Callback',@Menu1_Plots_Func);
             
-		%{
-		H_Menu4_Customized = uimenu(Graphs_Menu_Handle,'Label','Customized','Callback','');
-			% Basics:
-			uimenu(H_Menu4_Customized,'Label','Custom_1_Total_Length','UserData',2,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu4_Customized,'Label','Custom_2_Vertices_Num','UserData',2,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu4_Customized,'Label','Custom_1_3_3Way_Junctions_Num','UserData',2,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu4_Customized,'Label','Custom_3_Tips_Num','UserData',2,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu4_Customized,'Label','Custom_4_Mean_Segment_Length','UserData',2,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu4_Customized,'Label','Custom_5_Segment_Length_Dist','UserData',2,'Callback',@Menu1_Plots_Func);
-			
-			% Curvature:
-			uimenu(H_Menu4_Customized,'Label','Custom_2_1_Mean_Segment_Curvature_Hist','UserData',2,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu4_Customized,'Label','Custom_2_2_Mean_Segment_Curvature','UserData',2,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu4_Customized,'Label','Custom_2_3_Max_Segment_Curvature_Hist','UserData',2,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu4_Customized,'Label','Custom_2_4_Max_Segment_Curvature','UserData',2,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu4_Customized,'Label','Custom_2_5_Point_Curvature_Hist','UserData',2,'Callback',@Menu1_Plots_Func);
-			% uimenu(H_Menu4_Customized,'Label','Custom_6_Rects_Orientation','UserData',2,'Callback',@Menu1_Plots_Func);
-			
-			% Medial Distance:			
-			uimenu(H_Menu4_Customized,'Label','Custom_3_1_Rects_Medial_Distance_Dist','UserData',2,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu4_Customized,'Label','Custom_3_2_Vertices_Rects_Medial_Distance_Dist','UserData',2,'Callback',@Menu1_Plots_Func);
-			
-			% Medial Axis Orientation:
-			uimenu(H_Menu4_Customized,'Label','Custom_4_1_Rects_Medial_Orientation_Hist','UserData',2,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu4_Customized,'Label','Custom_4_2_Vertex_End2End_Angles_Correlation_Hist','UserData',2,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu4_Customized,'Label','Custom_4_3_Rects_Medial_Orientation_VS_Distance_2D_Hist','UserData',2,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu4_Customized,'Label','Custom_4_3_1_Medial_Orientation_VS_Distance_2D_Hist_Groups','UserData',2,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu4_Customized,'Label','Custom_4_4_Segment_Angles_Correlation_VS_Medial_Distance_Hist','UserData',2,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu4_Customized,'Label','Custom_4_5_Rects_Curvature_VS_Distance_2D_Hist','UserData',2,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu4_Customized,'Label','Custom_4_6_Curvature_VS_Distance_2D_Hist_Groups','UserData',2,'Callback',@Menu1_Plots_Func);
-			%}
 	set(allchild(Graphs_Menu_Handle),'Enable','off');
 	
 	GUI_Parameters.Handles.Figure.Visible = 'on'; % Make figure visible after adding all components.

@@ -99,6 +99,19 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 				W(i).Workspace.Neuron_Axes = Find_Worm_Longitudinal_Axis(W(i).Workspace,0);
 				[W(i).Workspace.All_Points,W(i).Workspace.All_Vertices,W(i).Workspace.Neuron_Axes] = Map_Worm_Axes(W(i).Workspace,W(i).Workspace.Neuron_Axes,0,0);
 			end
+			% disp(i);
+			[D,A,L,phi,out] = Get_Corrected_Cylinder_Params([W(i).Workspace.All_Points.Midline_Distance],[W(i).Workspace.All_Points.Midline_Orientation],[W(i).Workspace.All_Points.Length],[W(i).Workspace.All_Points.Radius]);
+			
+			D = num2cell(D);
+			A = num2cell(A);
+			L = num2cell(L);
+			phi = num2cell(phi);
+			
+			[W(i).Workspace.All_Points.Radial_Distance_Corrected] = D{:};
+			[W(i).Workspace.All_Points.Midline_Orientation_Corrected] = A{:};
+			[W(i).Workspace.All_Points.Length_Corrected] = L{:};
+			[W(i).Workspace.All_Points.Angular_Coordinate] = phi{:};
+			
 			Clusters_Struct = load('Menorah_Class_Clusters.mat');
 			Clusters_Struct = Clusters_Struct.Clusters_Struct;
 			W(i).Workspace = Classify_PVD_Points(W(i).Workspace,Clusters_Struct);
