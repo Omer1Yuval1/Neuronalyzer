@@ -57,7 +57,7 @@ function Tracer_UI()
 		GUI_Parameters.Handles.Analysis.Display_Tab = uitab('Parent',GUI_Parameters.Handles.Analysis_Tabs,'Title','Format','BackgroundColor',[0.5,0.6,1]);
 			Flip_Contrast_CheckBox = uicontrol(GUI_Parameters.Handles.Analysis.Display_Tab,'Style','checkbox','Value',0,'String','Flip Contrast','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'Units','Normalized','Position',[0 0.9 1 GUI_Parameters.Visuals.Button1_Height],'Callback',@Rerun_Plot_Func);
 		GUI_Parameters.Handles.Analysis.Details_Tab = uitab('Parent',GUI_Parameters.Handles.Analysis_Tabs,'Title','Details','BackgroundColor',[0.5,0.6,1]);
-		GUI_Parameters.Handles.Analysis.Virtual_Keyboard_Tab = uitab('Parent',GUI_Parameters.Handles.Analysis_Tabs,'Title','Virtual Keyboard','BackgroundColor',[0.5,0.6,1]);
+		% GUI_Parameters.Handles.Analysis.Virtual_Keyboard_Tab = uitab('Parent',GUI_Parameters.Handles.Analysis_Tabs,'Title','Virtual Keyboard','BackgroundColor',[0.5,0.6,1]);
 		% GUI_Parameters.Handles.Groups_Filter_Panel = uipanel('Parent',GUI_Parameters.Handles.Filters_Tab,'Units','Normalized','Position',[0 0.86 1 .1],'BackgroundColor','w');
 		% GUI_Parameters.Handles.Categories_Filter_Panel = uipanel('Parent',GUI_Parameters.Handles.Filters_Tab,'FontSize',12,'Units','Normalized','Position',[0 0.63 1 .2],'BackgroundColor','w');
 		
@@ -120,6 +120,8 @@ function Tracer_UI()
 		
 		H_Recon_CB = uimenu(Reconstructions_Menu_Handle,'Label','Cell Body','UserData',0,'Callback',@Reconstruction_Func);
 		H_Recon_CB = uimenu(Reconstructions_Menu_Handle,'Label','Blob','UserData',0,'Callback',@Reconstruction_Func);
+		
+		uimenu(H_Segments,'Label','Trace','UserData',0,'Callback',@Reconstruction_Func);
 		
 		H_Segments = uimenu(Reconstructions_Menu_Handle,'Label','Segments');
 			uimenu(H_Segments,'Label','Segmentation','UserData',0,'Callback',@Reconstruction_Func);
@@ -896,7 +898,7 @@ function Tracer_UI()
 			
 			Reset_Axes;
 			imshow(GUI_Parameters.Workspace(fi).Workspace.Image0,'Parent',GUI_Parameters.Handles.Axes);
-			set(GUI_Parameters.Handles.Axes,'YDir','normal');
+			% set(GUI_Parameters.Handles.Axes,'YDir','normal');
             
 			% Skeletonize, detect vertices and segments and find vertices angles:
 			GUI_Parameters.Workspace(fi).Workspace = Vertices_Analysis_Index(GUI_Parameters.Workspace(fi).Workspace);

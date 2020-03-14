@@ -8,6 +8,7 @@ function Reconstruction_Index(GP,ii)
 	Worm_Radius_um = 45;
 	LineWidth_1 = 2; % [2,6].
 	DotSize_1 = 10; % 80;
+	Scale_Factor = GP.Workspace(ii).Workspace.User_Input.Scale_Factor;
 	
 	if(1)
 		figure(1);
@@ -37,7 +38,7 @@ function Reconstruction_Index(GP,ii)
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			hold on;
 			CB_BW_Threshold = GP.Workspace(ii).Workspace.Parameters.Cell_Body.BW_Threshold;
-			Scale_Factor = GP.Workspace(ii).Workspace.User_Input.Scale_Factor;
+			
 			[CB_Pixels,CB_Perimeter] = Detect_Cell_Body(GP.Workspace(ii).Workspace.Image0,CB_BW_Threshold,Scale_Factor,0); % Detect cell-body.
 			% set(gca,'YDir','normal','Position',[0,0,1,1]);
 			[CB_Vertices,Pixels0,Pixels1] = Find_CB_Vertices(GP.Workspace(ii).Workspace.Image0,CB_Perimeter,CB_Pixels,Scale_Factor,CB_BW_Threshold,1);
@@ -55,7 +56,7 @@ function Reconstruction_Index(GP,ii)
 			Im_RGB(:,:,2) = Im_RGB(:,:,2) .* uint8(GP.Workspace(ii).Workspace.Im_BW);
 			imshow(Im_RGB,'Parent',GP.Handles.Axes);
 		case 'Skeleton'
-			[Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints] = Pixel_Trace_Post_Proccessing(GP.Workspace(ii).Workspace.Im_BW);
+			[Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints] = Pixel_Trace_Post_Proccessing(GP.Workspace(ii).Workspace.Im_BW,Scale_Factor);
 			imshow(Im1_NoiseReduction);
 			
 			%{
@@ -69,6 +70,10 @@ function Reconstruction_Index(GP,ii)
 			%}
 		case 'Blob'
 			Find_Worm_Longitudinal_Axis(GP.Workspace(ii).Workspace,1); % GP.Handles.Axes
+		case 'Trace'
+			imshow(GP.Workspace(ii).Workspace.Image0); % ,'Parent',GP.Handles.Axes);
+			hold on;
+			plot([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],'.','Color',[0.12,0.56,1],'MarkerSize',DotSize_1);
 		case 'Segmentation'
 			imshow(GP.Workspace(ii).Workspace.Image0); % ,'Parent',GP.Handles.Axes);
 			hold on;
@@ -78,7 +83,7 @@ function Reconstruction_Index(GP,ii)
 					if(numel(GP.Workspace(ii).Workspace.Segments(s).Rectangles))
 						x = [GP.Workspace(ii).Workspace.Segments(s).Rectangles.X];
 						y = [GP.Workspace(ii).Workspace.Segments(s).Rectangles.Y];
-						plot(x,y,'Color',[0.12,0.56,1],'LineWidth',LineWidth_1);
+						plot(x,y,'LineWidth',LineWidth_1);
 					end
 				end
 				% Reconstruct_Segmented_Trace(GP.Workspace(ii).Workspace,GP.Handles.Analysis); % Reconstruct_Segments(GP.Workspace(1).Workspace);

@@ -114,7 +114,7 @@ function Workspace = Connect_Vertices(Workspace,Ax)
 	
 	Step_Num = 0;
 	while(1)
-		F0 = find(Segments_Array);
+		F0 = find(Segments_Array == 1);
 		if(length(F0) == 0)
 			break;
 		end
@@ -123,7 +123,8 @@ function Workspace = Connect_Vertices(Workspace,Ax)
 		for s=F0 % 1:length(Workspace.Segments) % For each Segment.
 			
 			if(numel(Workspace.Segments(s).Rectangles1) == 0 || numel(Workspace.Segments(s).Rectangles2) == 0) % If the one of the two vertices does not have a rectangle.
-				Segments_Array(s) = 0;
+				Workspace.Segments(s) = Connect_Using_Skeleton(Workspace.Segments(s),Im_Rows,Im_Cols,Scale_Factor);
+				Segments_Array(s) = -2;
 				if(Messages)
 					disp(['One of the vertices of segment ',num2str(s),' does not have a rectangle (= start point)']);
 				end
@@ -216,7 +217,8 @@ function Workspace = Connect_Vertices(Workspace,Ax)
 				end
 				
 				if(~isempty(F1) && ~isempty(Locs1)) % If there's a collision with another segment.
-					Segments_Array(s) = 0;
+					Workspace.Segments(s) = Connect_Using_Skeleton(Workspace.Segments(s),Im_Rows,Im_Cols,Scale_Factor);
+					Segments_Array(s) = -1;
 					if(Messages)
 						% disp(f1);
 						disp(['Oh No, I(',num2str(s),') Lost My Segment.']);
@@ -227,7 +229,7 @@ function Workspace = Connect_Vertices(Workspace,Ax)
 						NoPeaks_V12_Flag = NoPeaks_V12_Flag + 1;
 						if(NoPeaks_V12_Flag == 2) % If both directions have no peaks.
 							Workspace.Segments(s) = Connect_Using_Skeleton(Workspace.Segments(s),Im_Rows,Im_Cols,Scale_Factor);
-							Segments_Array(s) = 0;
+							Segments_Array(s) = -1;
 							if(Messages)
 								disp(['I could not find any peaks for both direction. Using skeleton to complete the missing part. Segment ',num2str(s),' tracing is terminated.']);
 							end
@@ -331,7 +333,7 @@ function Workspace = Connect_Vertices(Workspace,Ax)
 	if(Messages)
 		assignin('base','Workspace_Trace_1',Workspace);
 	end
-	% assignin('base','Workspace_Trace_1',Workspace);
+	assignin('base','Segments_Array',Segments_Array);
 	% figure; imshow(Locations_Map);
 	% set(gca,'YDir','normal');
 	% assignin('base','Workspace',Workspace);

@@ -1,13 +1,11 @@
-function [Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints,Im_Skel_Rad] = Pixel_Trace_Post_Proccessing(Im1)
+function [Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints,Im_Skel_Rad] = Pixel_Trace_Post_Proccessing(Im1,Scale_Factor)
 	
-	% TODO: extract from the Parameters struct:
-	% Scale_Factor = 50/140;
-	% GS2BW_Threshold = 0.95;
+	% TODO: get params from the Parameters struct.
 	
 	EndPoint_Min_Distance = 3;
-	Min_Object_Pixel_Size = 30; % 30.
-	Min_Object_Size_Ratio = 0.02;
-	Better_Skeletonization_Threshold = 20;
+	% Min_Object_Pixel_Size = 30; % 30.
+	Min_Object_Size_Ratio = round(10 ./ Scale_Factor); % um to pixels.
+	
 	
 	% Fill "black holes" (isolated black pixels):
 	[Hy,Hx] = find(Im1(2:end-1,2:end-1) == 0 & Im1(1:end-2,2:end-1) & ...
@@ -20,13 +18,14 @@ function [Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints,Im_Skel_Rad] = Pixel
 		Im1_thin = bwmorph(Im1,'thin',Inf); % 'skel' \ 'thin'.
 		Im_Skel_Rad = 0;
 	else
+		Better_Skeletonization_Threshold = 20;
 		[Im1_thin,Im_Skel_Rad] = skeleton(Im1);
 		Im1_thin = bwmorph((Im1_thin > Better_Skeletonization_Threshold),'skel',inf);
 	end
 	
 	% assignin('base','Im1_thin',Im1_thin);
 	
-	Im1_NoiseReduction = bwareaopen(Im1_thin,round(sum(Im1_thin(:))*Min_Object_Size_Ratio));
+	Im1_NoiseReduction = bwareaopen(Im1_thin,Min_Object_Size_Ratio);
 	[Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints] = Delete_Short_EndPoints(Im1_NoiseReduction);
 	
 	% Find white pixels that connect branch-points and delete the branchpoints if they are touching each other:

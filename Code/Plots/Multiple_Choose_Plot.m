@@ -102,7 +102,7 @@ function Multiple_Choose_Plot(GP)
 				for w=1:length(Workspace_Set{g})
 					ww = Workspace_Set{g}(w);
 					
-					Fw = find([GP.Workspace(ww).Workspace.Segments.Class] == 4);
+					Fw = find([GP.Workspace(ww).Workspace.Segments.Class] == 1);
 					Cw = [GP.Workspace(ww).Workspace.Segments(Fw).(Field_1_Name)]; % (Fw)
 					% Cw(Cw < Curvature_Min_Max(1) | Cw > Curvature_Min_Max(2)) = nan;
 					X{g} = [X{g},Cw];
@@ -1853,7 +1853,7 @@ function Multiple_Choose_Plot(GP)
 					V_Length = [V_Length,[GP.Workspace(w).Workspace.Segments(F).Length]];
 				end
 				subplot(2,2,o);
-				histogram(V_Length,Bin_Vector,'Normalization','Probability');
+				histogram(V_Length,'Normalization','Probability'); % Bin_Vector,
 				% scatter(o.*ones(1,length(V_Length)),V_Length,5,'k','filled');
 				xlabel(['Segment Length [',char(181),'m]']);
 				ylabel('Probability');
