@@ -299,8 +299,8 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 		
 		h = gca;
 		grid on;
-		h.XAxis.TickValues = X_Min_Max(1):X_Min_Max(2)./2:X_Min_Max(2); % -1:0.5:1; % [-1,0,1];
-		h.XAxis.TickLabels = {'$$-90$$','$$-45$$',0,'$$45$$','$$90$$'}; % {'$$-\phi$$','$$-\frac{\phi}{2}$$',0,'$$\frac{\phi}{2}$$','$$\phi$$'}
+		h.XAxis.TickValues = X_Min_Max(1):X_Min_Max(2)./3:X_Min_Max(2); % -1:0.5:1; % [-1,0,1];
+		h.XAxis.TickLabels = {'$$-90$$','$$-60$$','$$-30$$','$$0$$','$$30$$','$$60$$','$$90$$'}; % {'$$-90$$','$$-45$$',0,'$$45$$','$$90$$'}; % {'$$-\phi$$','$$-\frac{\phi}{2}$$',0,'$$\frac{\phi}{2}$$','$$\phi$$'}
 		h.YAxis.TickValues = [-1,0,1];
 		h.YAxis.TickLabels = [0,45,90];
 		% h.GridAlpha = 0.3; 

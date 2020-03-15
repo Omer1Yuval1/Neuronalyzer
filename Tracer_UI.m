@@ -121,7 +121,7 @@ function Tracer_UI()
 		H_Recon_CB = uimenu(Reconstructions_Menu_Handle,'Label','Cell Body','UserData',0,'Callback',@Reconstruction_Func);
 		H_Recon_CB = uimenu(Reconstructions_Menu_Handle,'Label','Blob','UserData',0,'Callback',@Reconstruction_Func);
 		
-		uimenu(H_Segments,'Label','Trace','UserData',0,'Callback',@Reconstruction_Func);
+		uimenu(Reconstructions_Menu_Handle,'Label','Trace','UserData',0,'Callback',@Reconstruction_Func);
 		
 		H_Segments = uimenu(Reconstructions_Menu_Handle,'Label','Segments');
 			uimenu(H_Segments,'Label','Segmentation','UserData',0,'Callback',@Reconstruction_Func);
@@ -233,6 +233,7 @@ function Tracer_UI()
 		H_Menu7_Midline_Density = uimenu(Graphs_Menu_Handle,'Label','Menorah Orders','Callback','');
 			uimenu(H_Menu7_Midline_Density,'Label','Menorah Orders Classification','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu7_Midline_Density,'Label','Midline Density - Neuronal Length','UserData',2,'Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu7_Midline_Density,'Label','Density of Segments per Menorah order','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu7_Midline_Density,'Label','Midline Density - 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu7_Midline_Density,'Label','Midline Density - Tips','Callback',@Menu1_Plots_Func);
 		H_Menu5_2D_Plots = uimenu(Graphs_Menu_Handle,'Label','2D Plots','Callback','');

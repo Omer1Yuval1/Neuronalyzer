@@ -35,7 +35,7 @@ function Multiple_Choose_Plot(GP)
 		Workspace_Set = {GP.Handles.Im_Menu.UserData};
 	end
 	
-	if(1)
+	if(0)
 		figure(1);
 		hold on;
 	else
@@ -812,7 +812,7 @@ function Multiple_Choose_Plot(GP)
 			set(gca,'TickLabelInterpreter','latex');
 			set(gca,'YTickLabels',abs(get(gca,'YTick')));
 			% set(gca,'unit','normalize','position',[0.098,0.15,0.89,0.82]);
-			
+		
 		case 'Midline Density - Neuronal Length'
 			% profile clear; profile on;
 			
@@ -837,7 +837,7 @@ function Multiple_Choose_Plot(GP)
 			switch GP.Handles.Normalization_List.Value
 				case {1,3}
 					if(~GP.Handles.Analysis.Slider.UserData)
-						set(GP.Handles.Analysis.Slider,'Min',20,'Max',120,'Value',50,'SliderStep',[0.01,0.1]);
+						set(GP.Handles.Analysis.Slider,'Min',10,'Max',110,'Value',50,'SliderStep',[0.01,0.1]);
 					end
 					Edges = 0:GP.Handles.Analysis.Slider.Value:Max_Midline_Length;
 				case {2,4} % Normalized to Midline Length.
@@ -1070,7 +1070,11 @@ function Multiple_Choose_Plot(GP)
 			end
 			
 			set(gca,'YTickLabels',strrep(get(gca,'YTickLabels'),'-',''));
-			
+		
+		case 'Density of Segments per Menorah order'
+			for phi=0:0.001:pi/2 % For each angular coordinate.
+				% Draw a line parallel to midline, and find all intersection points of orders 2 and 4.
+			end
 		case 'CB Intensity'
 			Var_Operations = @(x) x; % Sum up all segments lengths of each individual animal (=workspace). The length of a segment has to be positive.
 			Filter_Operations = [];
