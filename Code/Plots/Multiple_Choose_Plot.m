@@ -35,7 +35,7 @@ function Multiple_Choose_Plot(GP)
 		Workspace_Set = {GP.Handles.Im_Menu.UserData};
 	end
 	
-	if(0)
+	if(1)
 		figure(1);
 		hold on;
 	else
