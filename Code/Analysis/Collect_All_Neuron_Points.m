@@ -13,12 +13,26 @@ function [All_Points,All_Vertices] = Collect_All_Neuron_Points(W)
 			f_v1 = find([W.Vertices.Vertex_Index] == W.Segments(s).Vertices(1));
 			f_v2 = find([W.Vertices.Vertex_Index] == W.Segments(s).Vertices(2));
 			
+			% Find the specific rectangle within each vertex that correspond to the current segment:
+			% a_v1 = find([W.Vertices(f_v1).Rectangles.Segment_Index] == W.Segments(s).Segment_Index);
+			% a_v2 = find([W.Vertices(f_v2).Rectangles.Segment_Index] == W.Segments(s).Segment_Index);
+			
+			% Add the end-points of the segments (junctions or tips):
 			Sx = [ W.Vertices(f_v1).Coordinate(1) , [W.Segments(s).Rectangles.X] , W.Vertices(f_v2).Coordinate(1)];
 			Sy = [ W.Vertices(f_v1).Coordinate(2) , [W.Segments(s).Rectangles.Y] , W.Vertices(f_v2).Coordinate(2)];
 			
-			Vertices_Orders = 2.*ones(1,length(Sx)); % All points that are not tips of junctions are vertices of order 2.
+			Vertices_Orders = 2.*ones(1,length(Sx)-1); % All points that are not tips of junctions are vertices of order 2.
 			Vertices_Orders(1) = W.Vertices(f_v1).Order;
 			Vertices_Orders(end) = W.Vertices(f_v2).Order;
+			
+			Vertex_Indices = nan(1,length(Sx)-1);
+			Vertex_Indices(1) = W.Vertices(f_v1).Vertex_Index;
+			Vertex_Indices(end) = W.Vertices(f_v2).Vertex_Index;
+			
+			% Angles = nan(1,length(Sx)); % Rectangle angles.
+			% ds = nan(1,length(Sx)); % Rectangle lengths.
+			% Angles(1) = W.Vertices(f_v1).Rectangles(a_v1).Angle;
+			% Angles(end) = W.Vertices(f_v1).Rectangles(a_v2).Angle;
 			
 			dsx = Sx(2:end)-Sx(1:end-1);
 			dsy = Sy(2:end)-Sy(1:end-1);
@@ -36,6 +50,7 @@ function [All_Points,All_Vertices] = Collect_All_Neuron_Points(W)
 				All_Points(ii).Curvature = Cxy(p) ./ W.User_Input.Scale_Factor; % 1/Pixels to 1/Micrometers.
 				All_Points(ii).Vertex_Order = Vertices_Orders(p);
 				All_Points(ii).Segment_Index = W.Segments(s).Segment_Index;
+				All_Points(ii).Vertex_Index = Vertex_Indices(p);
 			end
 		end
 	end

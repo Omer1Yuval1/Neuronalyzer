@@ -93,7 +93,7 @@ function Reconstruction_Index(GP,ii)
 			Max_Length = 50; % [um].
 			CM = jet(1000);
 			
-			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
+			imshow(GP.Workspace(ii).Workspace.Image0); % ,'Parent',GP.Handles.Axes);
 			hold on;
 			for s=1:numel(GP.Workspace(ii).Workspace.Segments)
 				if(numel(GP.Workspace(ii).Workspace.Segments(s).Rectangles))
@@ -107,6 +107,11 @@ function Reconstruction_Index(GP,ii)
 					end
 				end
 			end
+			
+			X = [GP.Workspace(ii).Workspace.All_Vertices.X];
+			Y = [GP.Workspace(ii).Workspace.All_Vertices.Y];
+			hold on;
+			scatter(X,Y,20,[0,0.6,0],'filled');
 		case 'Axes'
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			
@@ -301,6 +306,11 @@ function Reconstruction_Index(GP,ii)
 					end
 				end
 			end
+			
+			X = [GP.Workspace(ii).Workspace.All_Vertices.X];
+			Y = [GP.Workspace(ii).Workspace.All_Vertices.Y];
+			hold on;
+			scatter(X,Y,20,'r','filled');
 		otherwise
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			Reconstruct_Trace(GP.Workspace(ii).Workspace);

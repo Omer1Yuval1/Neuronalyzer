@@ -153,7 +153,6 @@ function Tracer_UI()
 	Graphs_Menu_Handle = uimenu(GUI_Parameters.Handles.Figure,'Label','Analysis Plots');
 		
 		H_Menu1_Length = uimenu(Graphs_Menu_Handle,'Label','Length');
-				uimenu(H_Menu1_Length,'Label','Total Length','UserData',1,'Callback',@Menu1_Plots_Func);
 				uimenu(H_Menu1_Length,'Label','Neuronal Length per Menorah Order','UserData',1,'Callback',@Menu1_Plots_Func);
 				uimenu(H_Menu1_Length,'Label','Mean Segment Length','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','on');
 				uimenu(H_Menu1_Length,'Label','Distribution of Segment Lengths Per Order','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','on');
@@ -168,10 +167,7 @@ function Tracer_UI()
 		H_Menu3_Curvature = uimenu(Graphs_Menu_Handle,'Label','Curvature');
 			uimenu(H_Menu3_Curvature,'Label','Curvature Per Menorah Order','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','on');
 			uimenu(H_Menu3_Curvature,'Label','Curvature Distribution','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','on');
-			uimenu(H_Menu3_Curvature,'Label','Mean Curvature Of Terminal Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
-			uimenu(H_Menu3_Curvature,'Label','Max Curvature Of Terminal Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
-			uimenu(H_Menu3_Curvature,'Label','Distribution of Mean Squared Curvature Of Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
-			uimenu(H_Menu3_Curvature,'Label','Distribution of Max Squared Curvature Of Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
+			uimenu(H_Menu3_Curvature,'Label','Max Segment Curvature per Menorah Order','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','on');
 		
 		H_Menu2_CB = uimenu(Graphs_Menu_Handle,'Label','Cell Body','Callback','');
 			H_Menu21_CB = uimenu(H_Menu2_CB,'Label','CB Intensity','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
@@ -233,7 +229,8 @@ function Tracer_UI()
 		H_Menu7_Midline_Density = uimenu(Graphs_Menu_Handle,'Label','Menorah Orders','Callback','');
 			uimenu(H_Menu7_Midline_Density,'Label','Menorah Orders Classification','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu7_Midline_Density,'Label','Midline Density - Neuronal Length','UserData',2,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu7_Midline_Density,'Label','Density of Segments per Menorah order','UserData',2,'Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu7_Midline_Density,'Label','Density of Points per Menorah order','UserData',2,'Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu7_Midline_Density,'Label','Density of Vertices per Menorah order','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu7_Midline_Density,'Label','Midline Density - 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu7_Midline_Density,'Label','Midline Density - Tips','Callback',@Menu1_Plots_Func);
 		H_Menu5_2D_Plots = uimenu(Graphs_Menu_Handle,'Label','2D Plots','Callback','');

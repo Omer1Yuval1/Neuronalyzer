@@ -123,7 +123,7 @@ function Workspace = Connect_Vertices(Workspace,Ax)
 		for s=F0 % 1:length(Workspace.Segments) % For each Segment.
 			
 			if(numel(Workspace.Segments(s).Rectangles1) == 0 || numel(Workspace.Segments(s).Rectangles2) == 0) % If the one of the two vertices does not have a rectangle.
-				Workspace.Segments(s) = Connect_Using_Skeleton(Workspace.Segments(s),Im_Rows,Im_Cols,Scale_Factor);
+				% Workspace.Segments(s) = Connect_Using_Skeleton(Workspace.Segments(s),Im_Rows,Im_Cols,Scale_Factor);
 				Segments_Array(s) = -2;
 				if(Messages)
 					disp(['One of the vertices of segment ',num2str(s),' does not have a rectangle (= start point)']);

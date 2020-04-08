@@ -24,7 +24,7 @@ function Multiple_Choose_Plot(GP)
 		% Instead, I should change it to use the order field as a filter.
 	%
 	
-	if(GP.Handles.Workspace_Mode.Value == 1 || max([GP.Workspace.Genotype]) > 1) % Use all workspaces.
+	if( (GP.Handles.Workspace_Mode.Value == 1 || max([GP.Workspace.Genotype]) > 1) && GP.Handles.Workspace_Mode.Value == 1) % Use all workspaces.
 		Groups = cell(1,max([GP.Workspace.Genotype]));
 		for g=1:max([GP.Workspace.Genotype])
 			Workspace_Set{g} = find([GP.Workspace.Genotype] == g);
@@ -71,23 +71,73 @@ function Multiple_Choose_Plot(GP)
 			Input_Struct = Generate_Plot_Input(GP,'Segments',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
 			Means_Plot(Input_Struct,GP,GP.Visuals,Y_Label,Title);
 			
-		case 'Number of Terminal Segments'
-			Set_Dynamic_Sliders_Values(GP.Handles.Analysis,0,50);
-			m = GP.Handles.Analysis.Dynamic_Slider_Min.Value;
-			M = GP.Handles.Analysis.Dynamic_Slider_Max.Value;
-			Var_Operations{1} = @(x) sum(x >= m & x<= M); % Summing up the logical 1s.
-			Var_Operations{2} = @(x) sum(x >= m & x<= M); % Summing up the logical 1s.
-			Filter_Operations = [];
-			Var_Fields = {'Distance_From_Medial_Axis','Terminal'};
-			Filter_Fields = [];
-			%
-			RowWise = 0;
-			Dynamic_Field = 'Distance_From_Medial_Axis';
-			%
-			Y_Label = 'Count';
-			Title = 'Number of Segments';
-			Input_Struct = Generate_Plot_Input(GP,'Segments',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
-			Means_Plot(Input_Struct,GP,GP.Visuals,Y_Label,Title);
+		case {'Number of 3-way Junctions','Number of Tips'}
+			
+			switch GP.General.Active_Plot
+				case 'Number of 3-way Junctions'
+					Vertex_Order = 3;
+					Name = '$$\# \; of \; 3-Way \; Junctions$$';
+				case 'Number of Tips'
+					Vertex_Order = 1;
+					Name = '$$\# \; of \; Tips$$';
+			end
+			
+			Classes = 1:4;
+			Ng = length(Workspace_Set);
+			CM = lines(Ng);
+			
+			for g=1:Ng
+				N3{g} = nan(length(Classes),length(Workspace_Set{g}));
+				for w=1:length(Workspace_Set{g})
+					ww = Workspace_Set{g}(w);
+					
+					for o=1:length(Classes)
+						f3 = find([GP.Workspace(ww).Workspace.All_Points.Segment_Class] == Classes(o) & [GP.Workspace(ww).Workspace.All_Points.Vertex_Order] == Vertex_Order); % Find all rectangles that belong to a 3-way junction of class o.						
+						
+						I3 = unique([GP.Workspace(ww).Workspace.All_Points(f3).Vertex_Index]); % Number of junction (uniqe vertex indices to avoid counting an vertex more than once because its rectangles classes).
+						
+						N3{g}(o,w) = length(I3); % Number of (3-way or tip) vertices that have at least one rectangle of order o.
+						
+					end
+				end
+			end
+			
+			for g=1:Ng
+				R3{g} = N3{g};
+				
+				% R1_Mean(:,g) = nanmean(R1{g},2); % Number of tips per unit length per menorah order.
+				R3_Mean(:,g) = nanmean(R3{g},2); % Number of junctions per unit length per menorah order.
+				
+				% R1_std(:,g) = nanstd(R1{g},0,2);
+				R3_std(:,g) = nanstd(R3{g},0,2);
+			end
+			
+			% H1 = bar(1:length(Classes),-R1_Mean,'hist','FaceColor','flat'); % Average across animals.
+			% hold on;
+			H3 = bar(1:length(Classes),R3_Mean,'hist','FaceColor','flat'); % ".
+			for g=1:Ng
+				% H1(g).FaceColor = CM(g,:);
+				H3(g).FaceColor = CM(g,:);
+				% errorbar(mean(H1(g).XData,1),-R1_Mean(:,g),R1_std(:,g),'Color','k','LineWidth',2,'LineStyle','none'); % 1:length(Classes)
+				errorbar(mean(H3(g).XData,1),R3_Mean(:,g),R3_std(:,g),'Color','k','LineWidth',2,'LineStyle','none');
+			end
+			
+			if(Ng > 1)
+				% disp(['Vertices per Menorah Order - Result:']);
+				for o=1:length(Classes)
+					% [PVal_Tips,Test_Name_Tips] = Stat_Test(R1{1}(o,:),R1{2}(o,:));
+					[PVal_Junctions,Test_Name_Junctions] = Stat_Test(R3{1}(o,:),R3{2}(o,:));
+					
+					disp(['Menorah Order = ',num2str(Classes(o)),': ','P-Value = ',num2str(PVal_Junctions),' (',Test_Name_Junctions,')']);
+					% disp(['Menorah Order = ',num2str(Classes(o)),' (Tips): ','P-Value = ',num2str(PVal_Tips),' (',Test_Name_Tips,')']);
+				end
+			end
+			
+			xlabel('$$Menorah \; Order$$','Interpreter','latex');
+			ylabel(Name,'Interpreter','latex'); % ylabel('$$\frac{\# \; of \; 3-Way \; Junctions}{Total \; Length \; (\mu m)}$$','Interpreter','latex');
+			set(gca,'FontSize',FontSize_1,'TickLabelInterpreter','latex','XTick',1:length(Classes)+1,'xlim',[0.5,length(Classes)+0.5]);
+			legend(Groups,'Interpreter','latex');
+			grid on;
 		case 'Mean Segment Length'
 			set(GP.Handles.Normalization_List,'String',{'Not Normalized'});
 			set(GP.Handles.Plot_Type_List,'String',{'Default'});
@@ -117,24 +167,6 @@ function Multiple_Choose_Plot(GP)
 			set(gca,'FontSize',FontSize_1,'TickLabelInterpreter','latex');
 			legend(Groups,'Interpreter','latex');
 			grid on;
-		case 'Total Length'
-			Var_Operations{1} = @(x) sum(x(x>=0)); % Sum up all segments lengths of each individual animal (=workspace). The length of a segment has to be positive.
-			Filter_Operations = [];
-			Var_Fields = {'Length'};
-			Filter_Fields = [];
-			%
-			set(GP.Handles.Normalization_List,'String',{'Not Normalized','Normalized to Primary Branch'});
-			set(GP.Handles.Plot_Type_List,'String',{'Default','Box Plot'});
-			%
-			RowWise = 0;
-			Dynamic_Field = 'Distance_From_Medial_Axis';
-			Set_Dynamic_Sliders_Values(GP.Handles.Analysis,0,50);
-			%
-			Y_Label = 'Length (\mum)';
-			Title = 'Total Length';
-			Input_Struct = Generate_Plot_Input(GP,'Segments',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
-			Means_Plot(Input_Struct,GP,GP.Visuals,Y_Label,Title);
-			
 		case 'End2End Length Of Segments'
 			Var_Operations{1} = @(x) x(x>=0); % The length of a segment has to be positive.
 			Filter_Operations = [];
@@ -237,7 +269,7 @@ function Multiple_Choose_Plot(GP)
 					H_DV = bar(1:Max_PVD_Orders,B_DV,0.8,'hist','FaceColor','flat');
 					for g=1:length(Workspace_Set)
 						H_DV(g).FaceColor = CM(g,:); % H_DV.CData(o,:) = Class_Colors(o,:);
-						errorbar(mean(H_DV(g).XData,1),B_DV(:,g),std(sum(M{g},3),0,2)','Color','k','LineWidth',2,'LineStyle','none');
+						errorbar(mean(H_DV(g).XData,1),B_DV(:,g),std(nanmean(M{g},3),0,2)','Color','k','LineWidth',2,'LineStyle','none');
 					end
 					
 					if(g == 1)
@@ -415,13 +447,13 @@ function Multiple_Choose_Plot(GP)
 			switch(GP.Handles.Normalization_List.Value)
 				case 1 % Not Normalized.
 					switch GP.General.Active_Plot
-						case {'Radial Distance of All Points'}
+						case {'Radial Distance of All Points','Radial Distance of All Points - Second Moment'}
 							if(~GP.Handles.Analysis.Slider.UserData)
 								set(GP.Handles.Analysis.Slider,'Min',0.01,'Max',.11,'Value',0.02,'SliderStep',[0.05,0.2]); % set(GP.Handles.Analysis.Slider,'Min',1,'Max',6,'Value',2,'SliderStep',[0.2,1]);
 							end
 							Bin_Min = -1;
 							Bin_Max = 1;
-						case {'Angular Coordinate of All Points'}
+						case {'Angular Coordinate of All Points','Angular Coordinate of All Points - Second Moment'}
 							if(~GP.Handles.Analysis.Slider.UserData)
 								set(GP.Handles.Analysis.Slider,'Min',pi/180,'Max',pi/30,'Value',pi/90,'SliderStep',[pi/180,1]); % [5,20] degrees.
 							end
@@ -600,26 +632,79 @@ function Multiple_Choose_Plot(GP)
 			Input_Struct = Generate_Plot_Input(GP,'Segments',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
 			Histogram_Plot(Input_Struct,GP,GP.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
 			
-		case 'Distribution of Max Squared Curvature Of Segments'
-			Var_Operations{1} = @(x) x(x>=0 & x<=0.1); % The curvature of a segment has to be positive.
-			Filter_Operations = {};
-			Var_Fields = {'Max_Curvature'};
-			Filter_Fields = {};
-			%
-			RowWise = 1;
-			Dynamic_Field = 'Distance_From_Medial_Axis';
-			Set_Dynamic_Sliders_Values(GP.Handles.Analysis,0,50);
-			%
-			X_Label = 'Squared Curvature (1/(\mum)^2)';
-			Y_Label = 'Count';
-			Title = 'Max of Squared Curvature of Segments';
-			%
-			X_Min_Max = [0,0.1];
-			BinSize = 0.005 .* GP.Handles.Analysis.Slider.Value;
-			%
-			Input_Struct = Generate_Plot_Input(GP,'Segments',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
-			Histogram_Plot(Input_Struct,GP,GP.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);		
+		case 'Max Segment Curvature per Menorah Order'
+			Class_Indices = 1:4;
+			Curvature_Min_Max = [0,0.3];
+			Max_PVD_Orders = length(Class_Indices);
 			
+			set(GP.Handles.Normalization_List,'String',{'Not Normalized'});
+			set(GP.Handles.Plot_Type_List,'String',{'Default'});
+			
+			if(GP.Handles.Projection_Correction_Checkbox.Value) % Apply projection correction.
+				Field_1_Name = 'Curvature';
+				Field_2_Name = 'Length_Corrected';
+			else
+				Field_1_Name = 'Curvature';
+				Field_2_Name = 'Length';
+			end
+			
+			Ng = length(Workspace_Set);
+			for g=1:Ng
+				M{g} = zeros(length(Class_Indices) , length(Workspace_Set{g})); % Class x workspace x dorsal-ventral.
+				
+				for w=1:length(Workspace_Set{g})
+					ww = Workspace_Set{g}(w);
+					Cw = cell(1,Max_PVD_Orders);
+					for s=1:numel(GP.Workspace(ww).Workspace.Segments)
+						if(~isempty(GP.Workspace(ww).Workspace.Segments(s).Rectangles))
+							C = [GP.Workspace(ww).Workspace.Segments(s).Rectangles.Curvature];
+							C(C < Curvature_Min_Max(1) | C > Curvature_Min_Max(2)) = nan;
+							C = max(C);
+							o = find(Class_Indices == GP.Workspace(ww).Workspace.Segments(s).Class);
+							if(~isnan(o))
+								Cw{o} = [Cw{o},C];
+							end
+						end
+					end
+					for o=1:Max_PVD_Orders
+						M{g}(o,w) = nanmean(Cw{o});
+					end
+				end
+            end
+			
+            CM = lines(Ng);
+			for g=1:Ng
+				B(:,g) = nanmean(M{g},2); % Average across animals.
+			end
+			H = bar(1:Max_PVD_Orders,B,0.8,'hist','FaceColor','flat');
+			for g=1:length(Workspace_Set)
+				H(g).FaceColor = CM(g,:);
+				errorbar(mean(H(g).XData,1),B(:,g),nanstd(M{g},0,2)','Color','k','LineWidth',2,'LineStyle','none');
+			end
+			
+			if(g == 1)
+				disp(['Max segment curvature per Menorah Order - Result:']);
+				for o1=1:Max_PVD_Orders-1
+					for o2=o1+1:Max_PVD_Orders
+						[PVal_DV,Test_Name_DV] = Stat_Test(M{1}(o1,:),M{1}(o2,:)); % Ventral ...".
+						disp(['Menorah Order = ',num2str(Class_Indices([o1 o2])),' (D+V): ','P-Value = ',num2str(PVal_DV),' (',Test_Name_DV,')']);
+					end
+				end
+			else
+				disp(['Mean curvature per Menorah Order - Result:']);
+				for o=1:Max_PVD_Orders
+					[PVal_DV,Test_Name_DV] = Stat_Test(M{1}(o,:),M{2}(o,:)); % Dorsal length of order Class_Indices(o).
+					disp(['Menorah Order = ',num2str(Class_Indices(o)),': ','; P-Value = ',num2str(PVal_DV),' (',Test_Name_DV,')']);
+				end
+			end
+			
+			xlabel(['Menorah Order'],'interpreter','latex');
+			ylabel('$$Mean \; Curvature \; (\frac{1}{{\mu}m})$$','Interpreter','latex');
+			% ylim([0,2.*YLIM(2)]);
+			set(gca,'FontSize',FontSize_1);
+			legend(Groups,'Interpreter','latex');
+			grid on;
+			set(gca,'XTick',1:Max_PVD_Orders,'XTickLabels',Class_Indices,'TickLabelInterpreter','latex');
 		case 'Distribution of Min Medial Angle Diff'
 			Var_Operations{1} = @(x) x(x>=0) .*180 ./ pi;
 			Filter_Operations = {};
@@ -735,7 +820,7 @@ function Multiple_Choose_Plot(GP)
 					grid on;
 					set(gca,'XTick',1:Max_PVD_Orders,'XTickLabels',Class_Indices);
 					
-					if(g > 1)
+					if(Ng > 1)
 						disp(['Neuronal Length per Menorah Order - Result:']);
 						for o=1:Max_PVD_Orders
 							[PVal_D,Test_Name_D] = Stat_Test(M{1}(o,:,1),M{2}(o,:,1)); % Dorsal length of order Class_Indices(o).
@@ -1070,11 +1155,151 @@ function Multiple_Choose_Plot(GP)
 			end
 			
 			set(gca,'YTickLabels',strrep(get(gca,'YTickLabels'),'-',''));
-		
-		case 'Density of Segments per Menorah order'
-			for phi=0:0.001:pi/2 % For each angular coordinate.
-				% Draw a line parallel to midline, and find all intersection points of orders 2 and 4.
+			
+		case 'Density of Points per Menorah order'
+			% For each point (rectangle), find all points from the same class and not from the same segment.
+			% Then order them by midline distance (normalized to local radius), and find the closest one (in terms of midline distance), one from each side (along the midline).
+			% Do separatly for dorsal and ventral.
+			
+			Menorah_Classes = [2,4];
+			Radial_Tolerance = 0.025;
+			Ng = length(Workspace_Set);
+			
+			X = cell(Ng,length(Menorah_Classes)); % nan(2,0);
+			
+			for g=1:Ng
+				ii = 0;
+				for w=1:length(Workspace_Set{g})
+					ww = Workspace_Set{g}(w);
+					for o=1:length(Menorah_Classes)
+						f1 = find([GP.Workspace(ww).Workspace.All_Points.Segment_Class] == Menorah_Classes(o)); % All points of *segment* class o.
+						for p=1:length(f1)
+							Segment_Index = GP.Workspace(ww).Workspace.All_Points(f1(p)).Segment_Index;
+							Midline_Position = GP.Workspace(ww).Workspace.All_Points(f1(p)).Axis_0_Position;
+							Radial_Distance = GP.Workspace(ww).Workspace.All_Points(f1(p)).Radial_Distance_Corrected;
+							
+							% From all points of order o (f1), find the ones within some radial distance tolerance, and that do not belong to the same segment as point p:
+							f2 = find([GP.Workspace(ww).Workspace.All_Points(f1).Segment_Index] ~= Segment_Index & ...
+										[GP.Workspace(ww).Workspace.All_Points(f1).Radial_Distance_Corrected] >= Radial_Distance - Radial_Tolerance & ...
+										[GP.Workspace(ww).Workspace.All_Points(f1).Radial_Distance_Corrected] <= Radial_Distance + Radial_Tolerance);
+							
+							x = sort([GP.Workspace(ww).Workspace.All_Points(f1(f2)).Axis_0_Position] - Midline_Position); % The midline position of all points found in f2, minus the tested point, sorted in increasing order.
+							f3 = find(x < 0);
+							f4 = find(x > 0);
+							
+							if( (~isempty(f3) && x(f3(end)) == 0) || (~isempty(f4) && x(f4(1)) == 0) )
+								disp(1);
+							end
+							
+							if(~isempty(f3))
+								ii = ii + 1;
+								X{g,o}(:,ii) = [Midline_Position ; abs(x(f3(end)))]; % Closest midline position from below (last negative number).
+							end
+							
+							if(~isempty(f4))
+								ii = ii + 1;
+								X{g,o}(:,ii) = [Midline_Position ; abs(x(f4(1)))]; % Closest midline position from above (first positive number).
+							end
+						end
+					end
+				end
 			end
+			
+			for g=1:Ng
+				for o=1:length(Menorah_Classes)
+					subplot(Ng,2,o+(2*(g-1)));
+					
+					if(o == 1)
+						histogram(X{g,o}(2,:),0:5:150,'Normalization','Probability');
+						axis([0,150,0,0.06]);
+					elseif(o == 2)
+						histogram(X{g,o}(2,:),0:1:100,'Normalization','Probability');
+						axis([0,100,0,0.07]);
+					end
+					
+					xlabel('$$Distance \; (\mu m)$$','Interpreter','latex');
+					ylabel('Probability');
+					set(gca,'FontSize',22,'TickLabelInterpreter','latex');
+				end
+			end
+			
+			assignin('base','X',X);
+			
+		case 'Density of Vertices per Menorah order'
+			
+			Field_1 = 'Length_Corrected'; % 'Length';
+			Vertex_Order = 3; % 1.
+			
+			Classes = 1:4;
+			Ng = length(Workspace_Set);
+			CM = lines(Ng);
+			
+			for g=1:Ng
+				L{g} = nan(length(Classes),length(Workspace_Set{g}));
+				N1{g} = nan(length(Classes),length(Workspace_Set{g}));
+				N3{g} = nan(length(Classes),length(Workspace_Set{g}));
+				for w=1:length(Workspace_Set{g})
+					ww = Workspace_Set{g}(w);
+					% F_Non_Tips = find([GP.Workspace(ww).Workspace.Segments.Terminal] == 0); % Find all non-tip segments. Uncomment to exclude tips.
+					% V_Non_Tips = [GP.Workspace(ww).Workspace.Segments(F_Non_Tips).Segment_Index];
+					
+					for o=1:length(Classes)
+						f0 = find([GP.Workspace(ww).Workspace.All_Points.Segment_Class] == Classes(o)); % Find all points of class Classes(o).
+						f3 = find([GP.Workspace(ww).Workspace.All_Points.Segment_Class] == Classes(o) & [GP.Workspace(ww).Workspace.All_Points.Vertex_Order] == Vertex_Order); % Find all rectangles that belong to a 3-way junction of class o.
+						
+						% Uncomment to exlucde tips:
+						% f0 = find([GP.Workspace(ww).Workspace.All_Points.Segment_Class] == Classes(o) & ismember([GP.Workspace(ww).Workspace.All_Points.Segment_Index],V_Non_Tips)); % Find all points of class Classes(o).
+						% f3 = find([GP.Workspace(ww).Workspace.All_Points.Segment_Class] == Classes(o) & [GP.Workspace(ww).Workspace.All_Points.Vertex_Order] == Vertex_Order & ismember([GP.Workspace(ww).Workspace.All_Points.Segment_Index],V_Non_Tips)); % Find all rectangles that belong to a 3-way junction of class o.
+						
+						
+						I3 = unique([GP.Workspace(ww).Workspace.All_Points(f3).Vertex_Index]); % Number of junction (uniqe vertex indices).
+						
+						L{g}(o,w) = nansum([GP.Workspace(ww).Workspace.All_Points(f0).(Field_1)]); % Total length of order o in workspace ww.
+						% N1{g}(o,w) = length(f1); % Number of tips.
+						N3{g}(o,w) = length(I3); % Number of 3-way junctions that have at least one rectangle of order o.
+						
+					end
+				end
+			end
+			
+			for g=1:Ng
+				% R1{g} = N1{g} ./ L{g};
+				R3{g} = N3{g} ./ L{g}; % L{g} ./ N3{g};
+				
+				% R1_Mean(:,g) = nanmean(R1{g},2); % Number of tips per unit length per menorah order.
+				R3_Mean(:,g) = nanmean(R3{g},2); % Number of junctions per unit length per menorah order.
+				
+				% R1_std(:,g) = nanstd(R1{g},0,2);
+				R3_std(:,g) = nanstd(R3{g},0,2);
+			end
+			
+			% H1 = bar(1:length(Classes),-R1_Mean,'hist','FaceColor','flat'); % Average across animals.
+			% hold on;
+			H3 = bar(1:length(Classes),R3_Mean,'hist','FaceColor','flat'); % ".
+			for g=1:Ng
+				% H1(g).FaceColor = CM(g,:);
+				H3(g).FaceColor = CM(g,:);
+				% errorbar(mean(H1(g).XData,1),-R1_Mean(:,g),R1_std(:,g),'Color','k','LineWidth',2,'LineStyle','none'); % 1:length(Classes)
+				errorbar(mean(H3(g).XData,1),R3_Mean(:,g),R3_std(:,g),'Color','k','LineWidth',2,'LineStyle','none');
+			end
+			
+			if(Ng > 1)
+				disp(['Neuronal Length per Menorah Order - Result:']);
+				for o=1:length(Classes)
+					% [PVal_Tips,Test_Name_Tips] = Stat_Test(R1{1}(o,:),R1{2}(o,:));
+					[PVal_Junctions,Test_Name_Junctions] = Stat_Test(R3{1}(o,:),R3{2}(o,:));
+					
+					disp(['Menorah Order = ',num2str(Classes(o)),' (Junctions): ','P-Value = ',num2str(PVal_Junctions),' (',Test_Name_Junctions,')']);
+					% disp(['Menorah Order = ',num2str(Classes(o)),' (Tips): ','P-Value = ',num2str(PVal_Tips),' (',Test_Name_Tips,')']);
+				end
+			end
+			
+			xlabel('$$Menorah \; Order$$','Interpreter','latex');
+			ylabel('$$\frac{\# \; of \; 3-Way \; Junctions}{Total \; Length \; (\mu m)}$$','Interpreter','latex'); % ylabel('$$\frac{\# \; of \; 3-Way \; Junctions}{Total \; Length \; (\mu m)}$$','Interpreter','latex');
+			set(gca,'FontSize',FontSize_1,'TickLabelInterpreter','latex','XTick',1:length(Classes)+1,'xlim',[0.5,length(Classes)+0.5]);
+			legend(Groups,'Interpreter','latex');
+			grid on;
+			
 		case 'CB Intensity'
 			Var_Operations = @(x) x; % Sum up all segments lengths of each individual animal (=workspace). The length of a segment has to be positive.
 			Filter_Operations = [];
@@ -1847,25 +2072,57 @@ function Multiple_Choose_Plot(GP)
 			xlim([0,Worm_Radium_Max]);
 		case 'Distribution of Segment Lengths Per Order'
 			
-			Workspace_Set = Workspace_Set{1};
+			% Workspace_Set = Workspace_Set(2);
+			Ng = length(Workspace_Set);
+			CM = lines(Ng);
 			
-			Bin_Vector = 0:2:100;
-			for o=1:4
-				V_Length = [];
-				for w=Workspace_Set
-					F = find([GP.Workspace(w).Workspace.Segments.Class] == o & [GP.Workspace(w).Workspace.Segments.Length] > 0);
-					V_Length = [V_Length,[GP.Workspace(w).Workspace.Segments(F).Length]];
+			Length_Field = 'Length_Corrected';
+			
+			Bin_Vector = 0:2:50;
+			SP = 0.8; % Smoothing parameter.
+			
+			H = [];
+			for g=1:Ng
+				
+				for o=1:4
+					V_Length = [];
+					for w=1:length(Workspace_Set{g})
+						ww = Workspace_Set{g}(w);
+						F1 = find([GP.Workspace(ww).Workspace.Segments.Class] == o);
+						
+						V = nan(1,length(F1));
+						for s=1:length(F1) % For each segment of order o in animal w.
+							% if(GP.Workspace(ww).Workspace.Segments(F1(s)).Terminal == 0) % Uncomment to exclude tips.
+								F2 = find([GP.Workspace(ww).Workspace.All_Points.Segment_Index] == GP.Workspace(ww).Workspace.Segments(F1(s)).Segment_Index);
+								V(s) = nansum([GP.Workspace(ww).Workspace.All_Points(F2).(Length_Field)]);
+							% end
+						end
+						V_Length = [V_Length,V];
+					end
+					% disp(length(V_Length));
+					
+					N = histcounts(V_Length,Bin_Vector); % ,'Normalization','Probability'. % histogram(V_Length,Bin_Vector,'Normalization','Probability');
+					xx = (Bin_Vector(1:end-1) + Bin_Vector(2:end)) ./  2;
+					subplot(2,2,o);
+					hold on;
+					
+					Fit_Obj = fit(xx',N','smoothingspline','smoothingparam',SP);
+					Fx = linspace(Bin_Vector(1),Bin_Vector(end),1000);
+					Fy = Fit_Obj(Fx);
+					
+					area(Fx,Fy,'FaceColor',CM(g,:),'FaceAlpha',0.1);
+					H(g,o) = plot(Fx,Fy,'Color',CM(g,:),'LineWidth',4);
+					
+					% scatter(o.*ones(1,length(V_Length)),V_Length,5,'k','filled');
+					xlabel('$$Segment \; Length \; (\mu m)$$','Interpreter','Latex');
+					ylabel('$$Count$$','Interpreter','Latex'); % ylabel('$$Probability$$','Interpreter','Latex');
+					title(['Menorah Order = ',num2str(o)],'Interpreter','Latex');
+					legend(H(:,o),{'$$WT$$','$$git-1$$'},'Interpreter','Latex');
+					
+					set(gca,'FontSize',22,'TickLabelInterpreter','Latex');
+					xlim([0,Bin_Vector(end)]);
+					%%%hold on;
 				end
-				subplot(2,2,o);
-				histogram(V_Length,'Normalization','Probability'); % Bin_Vector,
-				% scatter(o.*ones(1,length(V_Length)),V_Length,5,'k','filled');
-				xlabel(['Segment Length [',char(181),'m]']);
-				ylabel('Probability');
-				legend(['Menorah Order = ',num2str(o)]);
-				%%% title(GP.General.Active_Plot);
-				set(gca,'FontSize',22);
-				xlim([0,100]); % axis([0,100,0,0.3]);
-				%%%hold on;
 			end
 			
 		case 'Number of 3-way Junctions'
