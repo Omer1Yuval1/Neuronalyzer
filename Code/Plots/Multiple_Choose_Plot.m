@@ -73,6 +73,12 @@ function Multiple_Choose_Plot(GP)
 			
 		case {'Number of 3-way Junctions','Number of Tips'}
 			
+			Length_Field = 'Length_Corrected';
+			Max_Slider_Length = 51; % um. Threshold applied only if a filtering option is chosen.
+			
+			set(GP.Handles.Normalization_List,'String',{'Not Normalized','Total Length (per class)'});
+			set(GP.Handles.Plot_Type_List,'String',{'Default','Filter by Segment Length','Merge Classes','Filter and Merge'});
+			
 			switch GP.General.Active_Plot
 				case 'Number of 3-way Junctions'
 					Vertex_Order = 3;
@@ -82,7 +88,31 @@ function Multiple_Choose_Plot(GP)
 					Name = '$$\# \; of \; Tips$$';
 			end
 			
-			Classes = 1:4;
+			switch(GP.Handles.Plot_Type_List.Value)
+				case 1
+					Classes = 1:4; % Show classes separately and no length filtering.
+					Max_Length = inf; % No segment length limit.
+				case 2
+					Classes = 1:4;
+					
+					if(~GP.Handles.Analysis.Slider.UserData)
+						set(GP.Handles.Analysis.Slider,'Min',1,'Max',Max_Slider_Length,'Value',5,'SliderStep',[0.05,0.2]);
+						set(GP.Handles.Analysis.Slider_Text,'String',num2str(GP.Handles.Analysis.Slider.Value));
+					end
+					Max_Length = GP.Handles.Analysis.Slider.Value;
+				case 3
+					Classes = 1;
+					Max_Length = inf; % No segment length limit.
+				case 4
+					Classes = 1;
+					
+					if(~GP.Handles.Analysis.Slider.UserData)
+						set(GP.Handles.Analysis.Slider,'Min',1,'Max',Max_Slider_Length,'Value',3,'SliderStep',[0.05,0.2]);
+						set(GP.Handles.Analysis.Slider_Text,'String',num2str(GP.Handles.Analysis.Slider.Value));
+					end
+					Max_Length = GP.Handles.Analysis.Slider.Value;
+			end
+			
 			Ng = length(Workspace_Set);
 			CM = lines(Ng);
 			
@@ -91,13 +121,36 @@ function Multiple_Choose_Plot(GP)
 				for w=1:length(Workspace_Set{g})
 					ww = Workspace_Set{g}(w);
 					
-					for o=1:length(Classes)
-						f3 = find([GP.Workspace(ww).Workspace.All_Points.Segment_Class] == Classes(o) & [GP.Workspace(ww).Workspace.All_Points.Vertex_Order] == Vertex_Order); % Find all rectangles that belong to a 3-way junction of class o.						
-						
-						I3 = unique([GP.Workspace(ww).Workspace.All_Points(f3).Vertex_Index]); % Number of junction (uniqe vertex indices to avoid counting an vertex more than once because its rectangles classes).
-						
-						N3{g}(o,w) = length(I3); % Number of (3-way or tip) vertices that have at least one rectangle of order o.
-						
+					Segment_Indices = [GP.Workspace(ww).Workspace.All_Points.Segment_Index];
+					Rect_Lengths = [GP.Workspace(ww).Workspace.All_Points.(Length_Field)];
+					Segment_Lengths = accumarray(Segment_Indices',Rect_Lengths); % Position of length values correspond to segment index.
+					Segment_Indices_Included = find(Segment_Lengths <= Max_Length); % Values in f0 are already the segment indices.
+					
+					switch(GP.Handles.Plot_Type_List.Value)
+						case {1,2}
+							for o=1:length(Classes)
+								
+								if(GP.Handles.Normalization_List.Value == 1) % Normalized (divided by total length of each order).
+									Total_Length = 1;
+								elseif(GP.Handles.Normalization_List.Value == 2)
+									f1 = find([GP.Workspace(ww).Workspace.All_Points.Segment_Class] == Classes(o)); % Total length of class Classes(o).
+									Total_Length = nansum([GP.Workspace(ww).Workspace.All_Points(f1).(Length_Field)]);
+								end
+								f3 = find([GP.Workspace(ww).Workspace.All_Points.Segment_Class] == Classes(o) & [GP.Workspace(ww).Workspace.All_Points.Vertex_Order] == Vertex_Order & ismember([GP.Workspace(ww).Workspace.All_Points.Segment_Index],Segment_Indices_Included)); % Find all rectangles that belong to a 3-way junction of class o.						
+								I3 = unique([GP.Workspace(ww).Workspace.All_Points(f3).Vertex_Index]); % Number of junction (uniqe vertex indices to avoid counting an vertex more than once because its rectangles classes).
+								N3{g}(o,w) = length(I3) ./ Total_Length; % Number of (3-way or tip) vertices that have at least one rectangle of order o.
+							end
+						case {3,4} % Merge classes.
+							
+							if(GP.Handles.Normalization_List.Value == 1) % Normalized (divided by total length).
+								Total_Length = 1;
+							elseif(GP.Handles.Normalization_List.Value == 2)
+								Total_Length = nansum([GP.Workspace(ww).Workspace.All_Points.(Length_Field)]); % Total length of neuron ww.
+							end
+							
+							f3 = find([GP.Workspace(ww).Workspace.All_Points.Vertex_Order] == Vertex_Order & ismember([GP.Workspace(ww).Workspace.All_Points.Segment_Index],Segment_Indices_Included)); % Find all rectangles that belong to a 3-way junction of class o.						
+							I3 = unique([GP.Workspace(ww).Workspace.All_Points(f3).Vertex_Index]); % Number of junction (uniqe vertex indices to avoid counting an vertex more than once because its rectangles classes).
+							N3{g}(w) = length(I3) ./ Total_Length; % Number of (3-way or tip) vertices that have at least one rectangle of order o.
 					end
 				end
 			end
@@ -761,8 +814,15 @@ function Multiple_Choose_Plot(GP)
 				Field_1_Name = 'Length';
 			end
 			
-			% switch GP.Handles.Normalization_List.Value
-			% end
+			switch GP.Handles.Normalization_List.Value
+				case 1
+					Y_Name = '$$Neuronal \; Length$$';
+				case 2
+					Y_Name = '$$\frac{Neuronal \; Length}{Midline \; Length}$$';
+				case 3
+					Y_Name = '$$\frac{Neuronal \; Length}{Total \; Length}$$';
+			end
+			
 			Ng = length(Workspace_Set);
 			for g=1:Ng
 				M{g} = zeros(length(Class_Indices) , length(Workspace_Set{g}) , 2); % Class x workspace x dorsal-ventral.
@@ -812,7 +872,7 @@ function Multiple_Choose_Plot(GP)
 					end
 					
 					xlabel(['Menorah Order'],'Interpreter','latex');
-					ylabel('$$Neuronal \; Length \; ({\mu}m)$$','Interpreter','latex'); % $$\frac{Neuronal \; Length}{Midline \; Length}$$
+					ylabel(Y_Name,'Interpreter','latex'); % $$\frac{Neuronal \; Length}{Midline \; Length}$$
 					
 					ylim(YLIM);
 					set(gca,'FontSize',FontSize_1);
@@ -841,12 +901,18 @@ function Multiple_Choose_Plot(GP)
 					end
 					
 					xlabel(['Menorah Order'],'interpreter','latex');
-					ylabel('$$Neuronal \; Length \; [{\mu}m]$$','Interpreter','latex');
+					ylabel(Y_Name,'Interpreter','latex');
 					ylim([0,2.*YLIM(2)]);
 					set(gca,'FontSize',FontSize_1);
 					legend(Groups,'Interpreter','latex');
 					grid on;
 					set(gca,'XTick',1:Max_PVD_Orders,'XTickLabels',Class_Indices,'TickLabelInterpreter','latex');
+					
+					disp(['Stats (D-V merged):']);
+					for o=1:Max_PVD_Orders
+						[PVal_D,Test_Name_D] = Stat_Test(nansum(M{1}(o,:,:),3),nansum(M{2}(o,:,:),3)); % Sum up across D-V.
+						disp(['P-Value = ',num2str(PVal_D),' (',Test_Name_D,')']);
+					end
 				case 3 % Total length (all classes merged).
 					for g=1:Ng
 						B_D(:,g) = mean(sum(sum(M{g}(:,:,1),1),3),2);
@@ -865,8 +931,8 @@ function Multiple_Choose_Plot(GP)
 					end
 					
 					disp(['Total Neuronal Length - Result:']);
-					Total_Length_1 = sum(sum(M{1}(:,:,:),1),3);
-					Total_Length_2 = sum(sum(M{2}(:,:,:),1),3);
+					Total_Length_1 = nansum(sum(M{1}(:,:,:),1),3); % Sum up across menorah orders and D-V.
+					Total_Length_2 = nansum(sum(M{2}(:,:,:),1),3); % ".
 					[PVal_D,Test_Name_D] = Stat_Test(Total_Length_1,Total_Length_2); % Summing up the classes and then dorsal-ventral.
 					disp(['P-Value = ',num2str(PVal_D),' (',Test_Name_D,')']);
 					
@@ -874,27 +940,31 @@ function Multiple_Choose_Plot(GP)
 					disp(['Total Length STDs (1) = ',num2str(mean(Total_Length_1)),'um +\- ',num2str(std(sum(sum(M{1}(:,:,1),1),3),0,2))]);
 					disp(['Total Length STDs (1) = ',num2str(mean(Total_Length_2)),'um +\- ',num2str(std(sum(sum(M{2}(:,:,1),1),3),0,2))]);
 					
-					switch GP.Handles.Normalization_List.Value
-						case 1
-							ylabel('$$Neuronal \; Length \; [{\mu}m]$$','Interpreter','latex');
-						case 2
-							ylabel('$$\frac{Neuronal \; Length}{Total \; Length}$$','Interpreter','latex');
-					end
+					ylabel(Y_Name,'Interpreter','latex');
 					
 					ylim([0,3.*YLIM(2)]); % ylim(3*YLIM);
 					set(gca,'FontSize',FontSize_1);
 					set(gca,'XTick',1:length(Workspace_Set),'XTickLabels',Groups,'TickLabelInterpreter','latex'); % ,'YTickLabels',abs(get(gca,'YTick'))
 					grid on;
 				case 4 % Pie chart.
-					for g=1:length(Workspace_Set)
+					set(0,'defaulttextInterpreter','latex');
+					% H = nan(Ng,2*length(Class_Indices));
+					for g=1:Ng
 						subplot(1,Ng,g);
-						H = pie( mean(sum(M{g},3),2) ); % Sum dorsal ventral, and average across animals.
+						H = pie( mean(sum(M{g},3),2) ); % Sum up dorsal ventral, and average across animals.
 						axis equal;
 						set(gca,'XTick',[],'YTick',[],'TickLabelInterpreter','latex','FontSize',FontSize_1);
 						set(findobj(H,'type','text'),'fontsize',FontSize_1);
+						for i=1:length(H)
+							if(strcmp(H(i).Type,'text'))
+								H(i).String = ['$$',H(i).String(1:end-1),'\%$$'];
+							end
+						end
 					end
+					% assignin('base','H',H);
 			end
 			set(gca,'TickLabelInterpreter','latex');
+			drawnow;
 			set(gca,'YTickLabels',abs(get(gca,'YTick')));
 			% set(gca,'unit','normalize','position',[0.098,0.15,0.89,0.82]);
 		
@@ -1058,10 +1128,10 @@ function Multiple_Choose_Plot(GP)
 			Workspace_Set = Workspace_Set{1};
 			
 			switch GP.General.Active_Plot
-				case 'Menorah Orders - 3-Way Junctions'
+				case 'Midline Density - 3-Way Junctions'
 					Vertex_Order = 3;
 					Junction_Classes = [112,233,234,334,344];
-				case 'Menorah Orders - Tips'
+				case 'Midline Density - Tips'
 					Vertex_Order = 1;
 					Junction_Classes = 1:4;
 			end
@@ -1084,11 +1154,12 @@ function Multiple_Choose_Plot(GP)
 					end
 					Edges = 0:GP.Handles.Analysis.Slider.Value:1;
 			end
+			xx = (Edges(2:end) + Edges(1:end-1)) ./ 2;
 			
 			set(GP.Handles.Analysis.Slider_Text,'String',num2str(GP.Handles.Analysis.Slider.Value));
 			
-			L_D = cell(1,Max_PVD_Orders);
-			L_V = cell(1,Max_PVD_Orders);
+			L_D = [];
+			L_V = [];
 			for w=Workspace_Set
 				
 				switch GP.Handles.Normalization_List.Value
@@ -1098,12 +1169,12 @@ function Multiple_Choose_Plot(GP)
 						Midline_Length = GP.Workspace(w).Workspace.Neuron_Axes.Axis_0(end).Arc_Length;
 				end
 				
-				for o=1:Max_PVD_Orders
+				% for o=1:Max_PVD_Orders
 					
 					% Find all the vertices assigned with class Junction_Classes(o):
-					f_D = find([GP.Workspace(w).Workspace.All_Vertices.Midline_Distance] > 0 & [GP.Workspace(w).Workspace.All_Vertices.Class] == Junction_Classes(o) & [GP.Workspace(w).Workspace.All_Vertices.Order] == Vertex_Order);
-					f_V = find([GP.Workspace(w).Workspace.All_Vertices.Midline_Distance] < 0 & [GP.Workspace(w).Workspace.All_Vertices.Class] == Junction_Classes(o) & [GP.Workspace(w).Workspace.All_Vertices.Order] == Vertex_Order);
-				
+					f_D = find([GP.Workspace(w).Workspace.All_Points.Midline_Distance] > 0 & [GP.Workspace(w).Workspace.All_Vertices.Order] == Vertex_Order);
+					f_V = find([GP.Workspace(w).Workspace.All_Points.Midline_Distance] < 0 & [GP.Workspace(w).Workspace.All_Vertices.Order] == Vertex_Order);
+					
 					Nd = length(L_D{o});
 					Nv = length(L_V{o});
 					
@@ -1113,7 +1184,7 @@ function Multiple_Choose_Plot(GP)
 					% Add the midline positions corresponding to the current vertex subset:
 					L_D{o}(dd) = [GP.Workspace(w).Workspace.All_Vertices(f_D).Axis_0_Position] ./ Midline_Length; % A vector of midline position (arc-length) from the head (dorsal).
 					L_V{o}(vv) = [GP.Workspace(w).Workspace.All_Vertices(f_V).Axis_0_Position] ./ Midline_Length; % A vector of midline position (arc-length) from the head (ventral).
-				end
+				% end
 			end
 			
 			for o=1:Max_PVD_Orders
@@ -1130,7 +1201,6 @@ function Multiple_Choose_Plot(GP)
 				% I_D(f_D) = length(Edges) - 1; % Associate uncategorized points with the last bin.
 				% I_V(f_V) = length(Edges) - 1; % ".
 			end
-			xx = (Edges(2:end) + Edges(1:end-1)) ./ 2;
 			
 			H_D = bar(xx,N_D',1,'stacked','FaceColor','flat'); % histogram(X_D,Edges);
 			hold on;
@@ -2072,60 +2142,154 @@ function Multiple_Choose_Plot(GP)
 			xlim([0,Worm_Radium_Max]);
 		case 'Distribution of Segment Lengths Per Order'
 			
-			% Workspace_Set = Workspace_Set(2);
+			set(GP.Handles.Normalization_List,'String',{'Not Normalized','Total Length'});
+			set(GP.Handles.Plot_Type_List,'String',{'Default'});
+			
 			Ng = length(Workspace_Set);
 			CM = lines(Ng);
+			Menorah_Classes = 1:4;
 			
 			Length_Field = 'Length_Corrected';
 			
 			Bin_Vector = 0:2:50;
 			SP = 0.8; % Smoothing parameter.
 			
+			xx = (Bin_Vector(1:end-1) + Bin_Vector(2:end)) ./  2;
+			
 			H = [];
+			N = cell(1,Ng);
+			N_Total = cell(1,Ng);
 			for g=1:Ng
-				
-				for o=1:4
-					V_Length = [];
-					for w=1:length(Workspace_Set{g})
-						ww = Workspace_Set{g}(w);
-						F1 = find([GP.Workspace(ww).Workspace.Segments.Class] == o);
+				N{g} = nan(length(Workspace_Set{g}),length(xx),length(Menorah_Classes));
+				N_Total{g} = nan(length(Workspace_Set{g}),length(xx));
+				for w=1:length(Workspace_Set{g})
+					ww = Workspace_Set{g}(w);
+					Total_Length = nan(1,length(Menorah_Classes));
+					V_Total = [];
+					
+					for o=1:length(Menorah_Classes)
+						F1 = find([GP.Workspace(ww).Workspace.Segments.Class] == Menorah_Classes(o));
+						
+						switch(GP.Handles.Normalization_List.Value)
+							case 1
+								Total_Length(o) = 1;
+							case 2
+								f1 = find([GP.Workspace(ww).Workspace.All_Points.Segment_Class] == Menorah_Classes(o));
+								Total_Length(o) = nansum([GP.Workspace(ww).Workspace.All_Points(f1).(Length_Field)]); % Total length of order Menorah_Classes(o).
+						end
 						
 						V = nan(1,length(F1));
 						for s=1:length(F1) % For each segment of order o in animal w.
-							% if(GP.Workspace(ww).Workspace.Segments(F1(s)).Terminal == 0) % Uncomment to exclude tips.
+							% if(GP.Workspace(ww).Workspace.Segments(F1(s)).Terminal == 0) % Uncomment to exclude tips. Change to 1 to show only tips.
 								F2 = find([GP.Workspace(ww).Workspace.All_Points.Segment_Index] == GP.Workspace(ww).Workspace.Segments(F1(s)).Segment_Index);
 								V(s) = nansum([GP.Workspace(ww).Workspace.All_Points(F2).(Length_Field)]);
 							% end
 						end
-						V_Length = [V_Length,V];
+						N{g}(w,:,o) = histcounts(V,Bin_Vector) ./ Total_Length(o);
+						V_Total = [V_Total,V];
 					end
-					% disp(length(V_Length));
-					
-					N = histcounts(V_Length,Bin_Vector); % ,'Normalization','Probability'. % histogram(V_Length,Bin_Vector,'Normalization','Probability');
-					xx = (Bin_Vector(1:end-1) + Bin_Vector(2:end)) ./  2;
-					subplot(2,2,o);
-					hold on;
-					
-					Fit_Obj = fit(xx',N','smoothingspline','smoothingparam',SP);
-					Fx = linspace(Bin_Vector(1),Bin_Vector(end),1000);
-					Fy = Fit_Obj(Fx);
-					
-					area(Fx,Fy,'FaceColor',CM(g,:),'FaceAlpha',0.1);
-					H(g,o) = plot(Fx,Fy,'Color',CM(g,:),'LineWidth',4);
-					
-					% scatter(o.*ones(1,length(V_Length)),V_Length,5,'k','filled');
-					xlabel('$$Segment \; Length \; (\mu m)$$','Interpreter','Latex');
-					ylabel('$$Count$$','Interpreter','Latex'); % ylabel('$$Probability$$','Interpreter','Latex');
-					title(['Menorah Order = ',num2str(o)],'Interpreter','Latex');
-					legend(H(:,o),{'$$WT$$','$$git-1$$'},'Interpreter','Latex');
-					
-					set(gca,'FontSize',22,'TickLabelInterpreter','Latex');
-					xlim([0,Bin_Vector(end)]);
-					%%%hold on;
+					N_Total{g}(w,:) = histcounts(V_Total,Bin_Vector) ./ sum(Total_Length);
 				end
 			end
 			
-		case 'Number of 3-way Junctions'
+			for o=1:length(Menorah_Classes)
+				subplot(2,2,o);
+				
+				for g=1:Ng
+					bar(xx,mean(N{g}(:,:,o),1)','BarWidth',1,'FaceAlpha',0.5); % Average bins across animals.
+					hold on;
+				end
+				
+				xlabel('$$Segment \; Length \; (\mu m)$$','Interpreter','Latex');
+				switch(GP.Handles.Normalization_List.Value)
+					case 1
+						ylabel('$$Count$$','Interpreter','Latex');
+					case 2
+						ylabel('$$\frac{Count}{Total \; Length}$$','Interpreter','Latex');
+				end
+				
+				title(['Menorah Order = ',num2str(o)],'Interpreter','Latex');
+				legend(Groups,'Interpreter','Latex');
+				
+				set(gca,'FontSize',22,'TickLabelInterpreter','Latex');
+				xlim([0,Bin_Vector(end)]);
+					
+				% disp([Groups{g},'(',num2str(o),'): ',num2str(nanmean(V_Length)),' ',char(177),' ',num2str(nanstd(V_Length))]);
+			end
+			
+			%{
+			figure; % Compare first bin.
+			CM = lines(Ng);
+			M = [];
+			for g=1:Ng
+				M(:,g) = squeeze(nanmean(N{g}(:,1,:),1)); % Mean across animals.
+				S(:,g) = squeeze(nanstd(N{g}(:,1,:),0,1)); % std across animals.
+			end
+			H = bar(1:length(Menorah_Classes),M,'hist','FaceColor','flat','BarWidth',1,'FaceAlpha',0.5); % Average bins across animals.
+			
+			hold on;
+			for g=1:Ng
+				H(g).FaceColor = CM(g,:);
+				errorbar(mean(H(g).XData,1),M(:,g),S(:,g),'Color','k','LineWidth',2,'LineStyle','none');
+			end
+			xlabel('$$Menorah Order$$','Interpreter','Latex');
+			
+			switch(GP.Handles.Normalization_List.Value)
+				case 1
+					ylabel('$$Count$$','Interpreter','Latex');
+				case 2
+					ylabel('$$\frac{Count}{Total \; Length}$$','Interpreter','Latex');
+			end
+			set(gca,'FontSize',22,'TickLabelInterpreter','Latex');
+			legend(Groups,'Interpreter','Latex');
+			
+			set(gca,'Position',[0.05,0.1,0.92,0.86]);
+			
+			if(Ng > 1)
+				disp(['Number of Short segments - Stats:']); % First bin.
+				for o=1:length(Menorah_Classes)
+					[PVal,Test_Name] = Stat_Test(squeeze(N{1}(:,1,o)),squeeze(N{2}(:,1,o)));
+					disp(['Menorah Order = ',num2str(Menorah_Classes(o)),': P-Value = ',num2str(PVal),' (',Test_Name,')']);
+				end
+			end
+			
+			% Total length of first bin
+			figure;
+			CM = lines(Ng);
+			M = [];
+            S = [];
+			for g=1:Ng
+				M(:,g) = squeeze(nanmean(N_Total{g}(:,1),1)); % Average across animals.
+				S(:,g) = squeeze(nanstd(N_Total{g}(:,1),0,1)); % std across animals.
+			end
+			H = bar(M,'hist','FaceColor','flat','BarWidth',1,'FaceAlpha',0.5); % Average bins across animals.
+			
+			hold on;
+			for g=1:Ng
+				% H(g).FaceColor = CM(g,:);
+				errorbar(g,M(:,g),S(:,g),'Color','k','LineWidth',2,'LineStyle','none');
+			end
+			% xlabel('$$Menorah Order$$','Interpreter','Latex');
+			
+			switch(GP.Handles.Normalization_List.Value)
+				case 1
+					ylabel('$$Count$$','Interpreter','Latex');
+				case 2
+					ylabel('$$\frac{Count}{Total \; Length}$$','Interpreter','Latex');
+			end
+			set(gca,'FontSize',22,'TickLabelInterpreter','Latex');
+			legend(Groups,'Interpreter','Latex');
+			
+			set(gca,'Position',[0.05,0.1,0.92,0.86]);
+			
+			if(Ng > 1)
+				disp(['Number of Short segments - Stats:']); % First bin.
+				[PVal,Test_Name] = Stat_Test(N_Total{1}(:,1),N_Total{2}(:,1));
+				disp(['P-Value = ',num2str(PVal),' (',Test_Name,')']);
+			end
+			
+			%}
+			
 			
 		case {'Histogram of all Angles','Histogram of Smallest, Mid & Largest Angles'}
 			

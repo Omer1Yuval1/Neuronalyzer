@@ -231,8 +231,8 @@ function Tracer_UI()
 			uimenu(H_Menu7_Midline_Density,'Label','Midline Density - Neuronal Length','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu7_Midline_Density,'Label','Density of Points per Menorah order','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu7_Midline_Density,'Label','Density of Vertices per Menorah order','UserData',2,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu7_Midline_Density,'Label','Midline Density - 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu7_Midline_Density,'Label','Midline Density - Tips','Callback',@Menu1_Plots_Func);
+			% uimenu(H_Menu7_Midline_Density,'Label','Midline Density - 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func);
+			% uimenu(H_Menu7_Midline_Density,'Label','Midline Density - Tips','Callback',@Menu1_Plots_Func);
 		H_Menu5_2D_Plots = uimenu(Graphs_Menu_Handle,'Label','2D Plots','Callback','');
 			uimenu(H_Menu5_2D_Plots,'Label','Midline Distance VS Midline Orientation','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu5_2D_Plots,'Label','Midline Distance VS Curvature','UserData',2,'Callback',@Menu1_Plots_Func);
