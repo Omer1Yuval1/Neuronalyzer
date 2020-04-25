@@ -302,15 +302,21 @@ function Reconstruction_Index(GP,ii)
 					if(isempty(c)) % isnan(c)
 						plot(x,y,'Color',Class_Colors(end,:),'LineWidth',LineWidth_1);
 					else
-						plot(x,y,'Color',Class_Colors(c,:),'LineWidth',2); % 10
+						plot(x,y,'Color',Class_Colors(c,:),'LineWidth',2); % Use 5 when zooming in.
 					end
 				end
 			end
 			
 			X = [GP.Workspace(ii).Workspace.All_Vertices.X];
 			Y = [GP.Workspace(ii).Workspace.All_Vertices.Y];
+			
 			hold on;
-			scatter(X,Y,20,'r','filled');
+			scatter(X,Y,10,'k','filled'); % Use 100 when zooming in.
+			
+			% Use when zooming in:
+			% F = find([GP.Workspace(ii).Workspace.All_Vertices.Order] >= 2);
+			% R = [GP.Workspace(ii).Workspace.All_Vertices.Radius] .* GP.Workspace(1).Workspace.User_Input.Scale_Factor ./ 10;
+			% viscircles([X(F)',Y(F)'],R(F),'Color','k','LineWidth',5); % [0.6350 0.0780 0.1840]
 		otherwise
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			Reconstruct_Trace(GP.Workspace(ii).Workspace);

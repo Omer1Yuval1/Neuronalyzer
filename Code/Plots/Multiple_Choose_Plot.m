@@ -76,16 +76,32 @@ function Multiple_Choose_Plot(GP)
 			Length_Field = 'Length_Corrected';
 			Max_Slider_Length = 51; % um. Threshold applied only if a filtering option is chosen.
 			
-			set(GP.Handles.Normalization_List,'String',{'Not Normalized','Total Length (per class)'});
+			set(GP.Handles.Normalization_List,'String',{'Not Normalized','Total Length (per class)','Midline Length'});
 			set(GP.Handles.Plot_Type_List,'String',{'Default','Filter by Segment Length','Merge Classes','Filter and Merge'});
 			
 			switch GP.General.Active_Plot
 				case 'Number of 3-way Junctions'
 					Vertex_Order = 3;
 					Name = '$$\# \; of \; 3-Way \; Junctions$$';
+					
+					switch(GP.Handles.Normalization_List.Value)
+						case 1
+							Name = '$$\# \; of \; 3-Way \; Junctions$$';
+						case 2
+							Name = '$$\frac{\# \; of \; 3-Way \; Junctions}{Total \; Neuron \; Length}$$';
+						case 3
+							Name = '$$\frac{\# \; of \; 3-Way \; Junctions}{Midline \; Length}$$';
+					end
 				case 'Number of Tips'
 					Vertex_Order = 1;
-					Name = '$$\# \; of \; Tips$$';
+					switch(GP.Handles.Normalization_List.Value)
+						case 1
+							Name = '$$\# \; of \; Tips$$';
+						case 2
+							Name = '$$\frac{\# \; of \; Tips}{Total \; Neuron \; Length}$$';
+						case 3
+							Name = '$$\frac{\# \; of \; Tips}{Midline \; Length}$$';
+					end
 			end
 			
 			switch(GP.Handles.Plot_Type_List.Value)
@@ -130,11 +146,14 @@ function Multiple_Choose_Plot(GP)
 						case {1,2}
 							for o=1:length(Classes)
 								
-								if(GP.Handles.Normalization_List.Value == 1) % Normalized (divided by total length of each order).
-									Total_Length = 1;
-								elseif(GP.Handles.Normalization_List.Value == 2)
-									f1 = find([GP.Workspace(ww).Workspace.All_Points.Segment_Class] == Classes(o)); % Total length of class Classes(o).
-									Total_Length = nansum([GP.Workspace(ww).Workspace.All_Points(f1).(Length_Field)]);
+								switch(GP.Handles.Normalization_List.Value)
+									case 1% Normalized (divided by total length of each order).
+										Total_Length = 1;
+									case  2
+										f1 = find([GP.Workspace(ww).Workspace.All_Points.Segment_Class] == Classes(o)); % Total length of class Classes(o).
+										Total_Length = nansum([GP.Workspace(ww).Workspace.All_Points(f1).(Length_Field)]);
+									case 3
+										Total_Length = GP.Workspace(ww).Workspace.Neuron_Axes.Axis_0(end).Arc_Length;
 								end
 								f3 = find([GP.Workspace(ww).Workspace.All_Points.Segment_Class] == Classes(o) & [GP.Workspace(ww).Workspace.All_Points.Vertex_Order] == Vertex_Order & ismember([GP.Workspace(ww).Workspace.All_Points.Segment_Index],Segment_Indices_Included)); % Find all rectangles that belong to a 3-way junction of class o.						
 								I3 = unique([GP.Workspace(ww).Workspace.All_Points(f3).Vertex_Index]); % Number of junction (uniqe vertex indices to avoid counting an vertex more than once because its rectangles classes).
@@ -142,10 +161,13 @@ function Multiple_Choose_Plot(GP)
 							end
 						case {3,4} % Merge classes.
 							
-							if(GP.Handles.Normalization_List.Value == 1) % Normalized (divided by total length).
-								Total_Length = 1;
-							elseif(GP.Handles.Normalization_List.Value == 2)
-								Total_Length = nansum([GP.Workspace(ww).Workspace.All_Points.(Length_Field)]); % Total length of neuron ww.
+							switch(GP.Handles.Normalization_List.Value)
+								case 1 % Normalized (divided by total length).
+									Total_Length = 1;
+								case 2
+									Total_Length = nansum([GP.Workspace(ww).Workspace.All_Points.(Length_Field)]); % Total length of neuron ww.
+								case 3
+									Total_Length = GP.Workspace(ww).Workspace.Neuron_Axes.Axis_0(end).Arc_Length;
 							end
 							
 							f3 = find([GP.Workspace(ww).Workspace.All_Points.Vertex_Order] == Vertex_Order & ismember([GP.Workspace(ww).Workspace.All_Points.Segment_Index],Segment_Indices_Included)); % Find all rectangles that belong to a 3-way junction of class o.						
@@ -589,7 +611,7 @@ function Multiple_Choose_Plot(GP)
 					end
 			end
 			
-			if(strcmp(GP.General.Active_Plot(end-2:end),'MoI')) % Moment of inertia.
+			if(contains(GP.General.Active_Plot,'Moment')) % Moment of inertia.
 				MoI = cell(1,Ng);
 				for g=1:Ng
 					MoI{g} = sum(Y{g} .* (xx.^2),2); % disp(['Moment of Inertia = ',num2str(sum(N .* (xx.^2)))]);
@@ -621,7 +643,8 @@ function Multiple_Choose_Plot(GP)
 					otherwise
 						CM = lines(Ng);
 						for g=1:Ng
-							% bar(xx,mean(Y{g},1),1,'FaceColor','flat'); % ,'EdgeColor','none'); hold on;
+							% bar(xx,mean(Y{g},1),1,'FaceColor','flat'); % ,'EdgeColor','none');
+							% hold on;
 							switch(GP.Handles.Normalization_List.Value)
 								% case {3,5} % PDF.
 									% TODO: this uses all values together, while other places average across animals.
@@ -909,7 +932,13 @@ function Multiple_Choose_Plot(GP)
 					set(gca,'XTick',1:Max_PVD_Orders,'XTickLabels',Class_Indices,'TickLabelInterpreter','latex');
 					
 					disp(['Stats (D-V merged):']);
-					for o=1:Max_PVD_Orders
+					disp(['WT:']);
+					for o=2:Max_PVD_Orders % Compare all orders to order 1 in wt.
+						[PVal_D,Test_Name_D] = Stat_Test(nansum(M{1}(1,:,:),3),nansum(M{1}(o,:,:),3)); % Sum up across D-V.
+						disp(['P-Value = ',num2str(PVal_D),' (',Test_Name_D,')']);
+					end
+					disp(['WT-Mutant:']);
+					for o=1:Max_PVD_Orders % Compare each order between wt and mutant.
 						[PVal_D,Test_Name_D] = Stat_Test(nansum(M{1}(o,:,:),3),nansum(M{2}(o,:,:),3)); % Sum up across D-V.
 						disp(['P-Value = ',num2str(PVal_D),' (',Test_Name_D,')']);
 					end
@@ -1295,80 +1324,166 @@ function Multiple_Choose_Plot(GP)
 			
 			assignin('base','X',X);
 			
-		case 'Density of Vertices per Menorah order'
+		case {'Junctions Density','Tips Density'}
 			
 			Field_1 = 'Length_Corrected'; % 'Length';
-			Vertex_Order = 3; % 1.
 			
-			Classes = 1:4;
+			set(GP.Handles.Normalization_List,'String',{'Not Normalized','Midline Length','Total Length'});
+			set(GP.Handles.Plot_Type_List,'String',{'Default','Orders Merged','Orders 1-3'}); % ,'Dorsal-Ventral Merged',
+			
+			switch(GP.General.Active_Plot)
+				case 'Junctions Density'
+					Vertex_Order = 3;
+					Name = '3-Way \; Junctions';
+				case 'Tips Density'
+					Vertex_Order = 1;
+					Name = 'Tips';
+				case 'Points Density'
+					% Vertex_Order = [1,2,3];
+			end
+			
+			switch(GP.Handles.Plot_Type_List.Value)
+				case 1 % Per menorah order.
+					Classes = 1:4;
+					Nc = length(Classes);
+				case 2 % Orders merged.
+					Classes = nan;
+					Nc = 1;
+				case 3
+					Classes = 1:3;
+					Nc = 1;
+			end
+			
+			switch(GP.Handles.Normalization_List.Value)
+				case 1
+					Y_Name = ['$$\# \; of \; ',Name,'$$'];
+				case 2
+					Y_Name = ['$$\frac{\# \; of \; ',Name,'}{Midline \; Length \; (\mu m)}$$'];
+				case 3
+					Y_Name = ['$$Density \; of \; ',Name,'$$'];
+			end
+			
 			Ng = length(Workspace_Set);
 			CM = lines(Ng);
 			
 			for g=1:Ng
-				L{g} = nan(length(Classes),length(Workspace_Set{g}));
-				N1{g} = nan(length(Classes),length(Workspace_Set{g}));
-				N3{g} = nan(length(Classes),length(Workspace_Set{g}));
+				N{g} = nan(Nc,length(Workspace_Set{g}));
 				for w=1:length(Workspace_Set{g})
 					ww = Workspace_Set{g}(w);
-					% F_Non_Tips = find([GP.Workspace(ww).Workspace.Segments.Terminal] == 0); % Find all non-tip segments. Uncomment to exclude tips.
-					% V_Non_Tips = [GP.Workspace(ww).Workspace.Segments(F_Non_Tips).Segment_Index];
 					
-					for o=1:length(Classes)
-						f0 = find([GP.Workspace(ww).Workspace.All_Points.Segment_Class] == Classes(o)); % Find all points of class Classes(o).
-						f3 = find([GP.Workspace(ww).Workspace.All_Points.Segment_Class] == Classes(o) & [GP.Workspace(ww).Workspace.All_Points.Vertex_Order] == Vertex_Order); % Find all rectangles that belong to a 3-way junction of class o.
-						
-						% Uncomment to exlucde tips:
-						% f0 = find([GP.Workspace(ww).Workspace.All_Points.Segment_Class] == Classes(o) & ismember([GP.Workspace(ww).Workspace.All_Points.Segment_Index],V_Non_Tips)); % Find all points of class Classes(o).
-						% f3 = find([GP.Workspace(ww).Workspace.All_Points.Segment_Class] == Classes(o) & [GP.Workspace(ww).Workspace.All_Points.Vertex_Order] == Vertex_Order & ismember([GP.Workspace(ww).Workspace.All_Points.Segment_Index],V_Non_Tips)); % Find all rectangles that belong to a 3-way junction of class o.
-						
-						
-						I3 = unique([GP.Workspace(ww).Workspace.All_Points(f3).Vertex_Index]); % Number of junction (uniqe vertex indices).
-						
-						L{g}(o,w) = nansum([GP.Workspace(ww).Workspace.All_Points(f0).(Field_1)]); % Total length of order o in workspace ww.
-						% N1{g}(o,w) = length(f1); % Number of tips.
-						N3{g}(o,w) = length(I3); % Number of 3-way junctions that have at least one rectangle of order o.
-						
+					switch(GP.Handles.Plot_Type_List.Value)
+						case 1 % Per class.
+							for o=1:length(Classes)
+								
+								switch(GP.Handles.Normalization_List.Value)
+									case 1
+										Normalization_Factor = 1;
+									case 2 % Midline.
+										Normalization_Factor = GP.Workspace(ww).Workspace.Neuron_Axes.Axis_0(end).Arc_Length;
+									case 3 % Total length of order Classes(o).
+										f0 = find([GP.Workspace(ww).Workspace.All_Points.Segment_Class] == Classes(o)); % Find all points of class Classes(o).
+										Normalization_Factor = nansum([GP.Workspace(ww).Workspace.All_Points(f0).(Field_1)]); % Total length of order o in workspace ww.
+								end
+								
+								f3 = find([GP.Workspace(ww).Workspace.All_Points.Segment_Class] == Classes(o) & [GP.Workspace(ww).Workspace.All_Points.Vertex_Order] == Vertex_Order); % Find all rectangles that belong to a 3-way junction of class o.
+								I3 = unique([GP.Workspace(ww).Workspace.All_Points(f3).Vertex_Index]); % Number of vertices (uniqe vertex indices). Junctions or tips (Vertex_Order).
+								
+								N{g}(o,w) = length(I3) ./ Normalization_Factor; % Number of 3-way junctions (or tips) that have at least one rectangle of order o.
+								
+							end
+						case 2 % No classification
+							switch(GP.Handles.Normalization_List.Value)
+								case 1
+									Normalization_Factor = 1;
+								case 2 % Midline.
+									Normalization_Factor = GP.Workspace(ww).Workspace.Neuron_Axes.Axis_0(end).Arc_Length;
+								case 3 % Total length of entire neuron.
+									Normalization_Factor = nansum([GP.Workspace(ww).Workspace.All_Points.(Field_1)]); % Total neuron length.
+							end
+							
+							f3 = find([GP.Workspace(ww).Workspace.All_Points.Vertex_Order] == Vertex_Order);
+							I3 = unique([GP.Workspace(ww).Workspace.All_Points(f3).Vertex_Index]); % Number of vertices (uniqe vertex indices). Junctions or tips (Vertex_Order).
+							
+							N{g}(w) = length(I3) ./ Normalization_Factor; % Number of 3-way junctions (or tips).
+						case 3 % Classes 1-3.
+							switch(GP.Handles.Normalization_List.Value)
+								case 1
+									Normalization_Factor = 1;
+								case 2 % Midline.
+									Normalization_Factor = GP.Workspace(ww).Workspace.Neuron_Axes.Axis_0(end).Arc_Length;
+								case 3 % Total length of entire neuron.
+									f0 = find(ismember([GP.Workspace(ww).Workspace.All_Points.Segment_Class],Classes)); % Find all points of Classes (1-3).
+									Normalization_Factor = nansum([GP.Workspace(ww).Workspace.All_Points(f0).(Field_1)]); % Total length of Classes (1-3).
+							end
+							
+							f3 = find([GP.Workspace(ww).Workspace.All_Points.Vertex_Order] == Vertex_Order & ismember([GP.Workspace(ww).Workspace.All_Points.Segment_Class],Classes));
+							I3 = unique([GP.Workspace(ww).Workspace.All_Points(f3).Vertex_Index]); % Number of vertices (uniqe vertex indices). Junctions or tips (Vertex_Order).
+							
+							N{g}(w) = length(I3) ./ Normalization_Factor; % Number of 3-way junctions (or tips).
 					end
 				end
 			end
 			
 			for g=1:Ng
-				% R1{g} = N1{g} ./ L{g};
-				R3{g} = N3{g} ./ L{g}; % L{g} ./ N3{g};
-				
-				% R1_Mean(:,g) = nanmean(R1{g},2); % Number of tips per unit length per menorah order.
-				R3_Mean(:,g) = nanmean(R3{g},2); % Number of junctions per unit length per menorah order.
-				
-				% R1_std(:,g) = nanstd(R1{g},0,2);
-				R3_std(:,g) = nanstd(R3{g},0,2);
+				N_Mean(:,g) = nanmean(N{g},2); % Average across animals.
+				N_std(:,g) = nanstd(N{g},0,2); % ".
 			end
 			
-			% H1 = bar(1:length(Classes),-R1_Mean,'hist','FaceColor','flat'); % Average across animals.
-			% hold on;
-			H3 = bar(1:length(Classes),R3_Mean,'hist','FaceColor','flat'); % ".
+			switch(GP.Handles.Plot_Type_List.Value)
+				case 1 % Per order.
+					H = bar(1:length(Classes),N_Mean,'hist','FaceColor','flat'); % ".
+				case {2,3} % Orders merged. X-axis used for groups.
+					H = bar(1:Ng,N_Mean,'FaceColor','flat'); % ".
+			end
+			
 			for g=1:Ng
-				% H1(g).FaceColor = CM(g,:);
-				H3(g).FaceColor = CM(g,:);
-				% errorbar(mean(H1(g).XData,1),-R1_Mean(:,g),R1_std(:,g),'Color','k','LineWidth',2,'LineStyle','none'); % 1:length(Classes)
-				errorbar(mean(H3(g).XData,1),R3_Mean(:,g),R3_std(:,g),'Color','k','LineWidth',2,'LineStyle','none');
+				switch(GP.Handles.Plot_Type_List.Value)
+					case 1 % Per order.
+						H(g).FaceColor = CM(g,:);
+						errorbar(mean(H(g).XData,1),N_Mean(:,g),N_std(:,g),'Color','k','LineWidth',2,'LineStyle','none');
+					case {2,3} % Orders merged. X-axis used for groups.
+						H.CData(g,:) = CM(g,:);
+						errorbar(H.XData(g),N_Mean(:,g),N_std(:,g),'Color','k','LineWidth',2,'LineStyle','none');
+				end
+			end
+			
+			disp(['Stats (',Name,')']);
+			disp(['Across Classes:']);
+			for g=1:Ng % First compare classes within each group.
+				disp([Groups{g},':']);
+				for o=2:Nc
+					switch(GP.Handles.Plot_Type_List.Value)
+						case 1 % Per order.
+							[PVal_Junctions,Test_Name_Junctions] = Stat_Test(N{g}(o-1,:),N{g}(o,:));
+							disp(['P-Value (',num2str(Classes(o)),') = ',num2str(PVal_Junctions),' (',Test_Name_Junctions,')']);
+					end
+				end
 			end
 			
 			if(Ng > 1)
-				disp(['Neuronal Length per Menorah Order - Result:']);
-				for o=1:length(Classes)
-					% [PVal_Tips,Test_Name_Tips] = Stat_Test(R1{1}(o,:),R1{2}(o,:));
-					[PVal_Junctions,Test_Name_Junctions] = Stat_Test(R3{1}(o,:),R3{2}(o,:));
-					
-					disp(['Menorah Order = ',num2str(Classes(o)),' (Junctions): ','P-Value = ',num2str(PVal_Junctions),' (',Test_Name_Junctions,')']);
-					% disp(['Menorah Order = ',num2str(Classes(o)),' (Tips): ','P-Value = ',num2str(PVal_Tips),' (',Test_Name_Tips,')']);
+				disp(['Across Groups:']);
+				for g=2:Ng % Then compare across groups.
+					for o=1:Nc
+						[PVal_Junctions,Test_Name_Junctions] = Stat_Test(N{g-1}(o,:),N{g}(o,:));
+						disp(['P-Value (',num2str(Classes(o)),') = ',num2str(PVal_Junctions),' (',Test_Name_Junctions,')']);
+					end
 				end
 			end
 			
 			xlabel('$$Menorah \; Order$$','Interpreter','latex');
-			ylabel('$$\frac{\# \; of \; 3-Way \; Junctions}{Total \; Length \; (\mu m)}$$','Interpreter','latex'); % ylabel('$$\frac{\# \; of \; 3-Way \; Junctions}{Total \; Length \; (\mu m)}$$','Interpreter','latex');
-			set(gca,'FontSize',FontSize_1,'TickLabelInterpreter','latex','XTick',1:length(Classes)+1,'xlim',[0.5,length(Classes)+0.5]);
-			legend(Groups,'Interpreter','latex');
+			ylabel(Y_Name,'Interpreter','latex'); % ylabel('$$\frac{\# \; of \; 3-Way \; Junctions}{Total \; Length \; (\mu m)}$$','Interpreter','latex');
 			grid on;
+			
+			switch(GP.Handles.Plot_Type_List.Value)
+				case 1 % Per order.
+					xlabel('$$Menorah \; Order$$','Interpreter','latex');
+					legend(Groups,'Interpreter','latex');
+					set(gca,'FontSize',FontSize_1,'TickLabelInterpreter','latex','XTick',1:length(Classes),'xlim',[0.5,length(Classes)+0.5]);
+				case {2,3} % Orders merged. X-axis used for groups.
+					xlabel('$$Menorah \; Order$$','Interpreter','latex');
+					set(gca,'FontSize',FontSize_1,'TickLabelInterpreter','latex','XTick',1:Ng,'XTickLabels',Groups,'xlim',[0.5,Ng+0.5]);
+			end
+			set(gca,'unit','normalize','position',[0.1,0.15,0.87,0.8]);
 			
 		case 'CB Intensity'
 			Var_Operations = @(x) x; % Sum up all segments lengths of each individual animal (=workspace). The length of a segment has to be positive.
@@ -2180,7 +2295,7 @@ function Multiple_Choose_Plot(GP)
 						
 						V = nan(1,length(F1));
 						for s=1:length(F1) % For each segment of order o in animal w.
-							% if(GP.Workspace(ww).Workspace.Segments(F1(s)).Terminal == 0) % Uncomment to exclude tips. Change to 1 to show only tips.
+							% if(GP.Workspace(ww).Workspace.Segments(F1(s)).Terminal == 0) % Uncomment to exclude tips (== 0). Change to 1 to show only tips.
 								F2 = find([GP.Workspace(ww).Workspace.All_Points.Segment_Index] == GP.Workspace(ww).Workspace.Segments(F1(s)).Segment_Index);
 								V(s) = nansum([GP.Workspace(ww).Workspace.All_Points(F2).(Length_Field)]);
 							% end
