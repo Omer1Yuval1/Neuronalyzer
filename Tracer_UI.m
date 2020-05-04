@@ -854,6 +854,18 @@ function Tracer_UI()
 				end
 				
 				% Update points:
+				xxyy = num2cell(XY_All(:,:,source.UserData.Curve_Index));
+				[GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.(source.UserData.Axis_Field_Name).X] = xxyy{1,:};
+				[GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.(source.UserData.Axis_Field_Name).Y] = xxyy{2,:};
+				
+				if(strcmp(source.UserData.Axis_Field_Name,'Axis_0'))
+					Arc_Length = num2cell(Arc_Length);
+					Tangent_Angles = num2cell(Tangent_Angles);
+					[GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.(source.UserData.Axis_Field_Name).Arc_Length] = Arc_Length{:};
+					[GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.(source.UserData.Axis_Field_Name).Tangent_Angle] = Tangent_Angles{:};
+				end
+				
+				%{
 				for iii=1:Np0
 					GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.(source.UserData.Axis_Field_Name)(iii).X = XY_All(1,iii,source.UserData.Curve_Index);
 					GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.(source.UserData.Axis_Field_Name)(iii).Y = XY_All(2,iii,source.UserData.Curve_Index);
@@ -862,6 +874,7 @@ function Tracer_UI()
 						GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.(source.UserData.Axis_Field_Name)(iii).Tangent_Angle = Tangent_Angles(iii);
 					end
 				end
+				%}
 				
 				Curve_Handles(source.UserData.Curve_Index).XData(source.UserData.Point_Index) = source.Position(1);
 				Curve_Handles(source.UserData.Curve_Index).YData(source.UserData.Point_Index) = source.Position(2);
