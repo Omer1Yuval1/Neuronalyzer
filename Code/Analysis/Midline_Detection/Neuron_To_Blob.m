@@ -9,6 +9,7 @@ function [ImB,XY] = Neuron_To_Blob(Im)
 	se = strel('disk',20);
 	ImD1 = imdilate(Im_BW,se);
 	ImB = imdilate(ImD1,se); % The Blob.
+    ImB = imclose(ImB,strel('disk',20));
 	
     Im_Perim = bwperim(ImB);
     Im_Perim(:,1) = 0;

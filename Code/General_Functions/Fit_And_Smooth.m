@@ -10,7 +10,7 @@ function [X_Fit,Y_Fit,Success_Flag] = Fit_And_Smooth(Vx,Vy,SmoothingParameter)
 		Success_Flag = 0;
 		X_Fit = Vx;
 		Y_Fit = Vy;
-		disp('Oops. X vector not increasing or decreasing. Cannot smooth.');
+		disp('Oops. X vector not increasing nor decreasing. Cannot smooth.');
 		return;
 	end
 	

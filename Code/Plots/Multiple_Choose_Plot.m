@@ -155,8 +155,11 @@ function Multiple_Choose_Plot(GP)
 									case 3
 										Total_Length = GP.Workspace(ww).Workspace.Neuron_Axes.Axis_0(end).Arc_Length;
 								end
+								
+								% Find all vertex rectangles (junction or tip) of class Classes(o), and apply unique to the vertex index, to avoid counting vertices more than once:
 								f3 = find([GP.Workspace(ww).Workspace.All_Points.Segment_Class] == Classes(o) & [GP.Workspace(ww).Workspace.All_Points.Vertex_Order] == Vertex_Order & ismember([GP.Workspace(ww).Workspace.All_Points.Segment_Index],Segment_Indices_Included)); % Find all rectangles that belong to a 3-way junction of class o.						
 								I3 = unique([GP.Workspace(ww).Workspace.All_Points(f3).Vertex_Index]); % Number of junction (uniqe vertex indices to avoid counting an vertex more than once because its rectangles classes).
+								
 								N3{g}(o,w) = length(I3) ./ Total_Length; % Number of (3-way or tip) vertices that have at least one rectangle of order o.
 							end
 						case {3,4} % Merge classes.
@@ -227,8 +230,8 @@ function Multiple_Choose_Plot(GP)
 				for w=1:length(Workspace_Set{g})
 					ww = Workspace_Set{g}(w);
 					
-					Fw = find([GP.Workspace(ww).Workspace.Segments.Class] == 1);
-					Cw = [GP.Workspace(ww).Workspace.Segments(Fw).(Field_1_Name)]; % (Fw)
+					% Fw = find([GP.Workspace(ww).Workspace.Segments.Class] == 1);
+					Cw = [GP.Workspace(ww).Workspace.Segments.(Field_1_Name)]; % (Fw)
 					% Cw(Cw < Curvature_Min_Max(1) | Cw > Curvature_Min_Max(2)) = nan;
 					X{g} = [X{g},Cw];
 				end
@@ -238,6 +241,40 @@ function Multiple_Choose_Plot(GP)
 			% ylim([0,0.07]);
 			
 			xlabel('$$Segment \; Length \; ({\mu}m)$$','Interpreter','latex');
+			ylabel('Probability','Interpreter','latex');
+			set(gca,'FontSize',FontSize_1,'TickLabelInterpreter','latex');
+			legend(Groups,'Interpreter','latex');
+			grid on;
+		case 'Segment Linearity'
+			set(GP.Handles.Normalization_List,'String',{'Not Normalized'});
+			set(GP.Handles.Plot_Type_List,'String',{'Default'});
+			
+			% Length_Min_Max = [0,0.5];
+			Field_1_Name = 'Length_Corrected';
+			Edges = 0:0.25:20;
+			
+			for g=1:length(Workspace_Set)
+				X{g} = [];
+				
+				for w=1:length(Workspace_Set{g})
+					ww = Workspace_Set{g}(w);
+					Ns = max([GP.Workspace(ww).Workspace.All_Points.Segment_Index]);
+					Vw = nan(1,Ns);
+					for s=1:Ns
+						Fs = find([GP.Workspace(ww).Workspace.All_Points.Segment_Index] == s);
+						Ls = nansum([GP.Workspace(ww).Workspace.All_Points(Fs).(Field_1_Name)]);
+						% Ls = nansum();
+						Vw(s) = mean([ std([GP.Workspace(ww).Workspace.All_Points(Fs).X]) , std([GP.Workspace(ww).Workspace.All_Points(Fs).Y]) ]);
+					end
+					X{g} = [X{g},Vw];
+				end
+				histogram(X{g},Edges,'normalization','probability'); % ,Edges
+				hold on;
+			end
+			xlim(Edges([1,end]));
+			% ylim([0,0.07]);
+			
+			xlabel('$$STD$$','Interpreter','latex');
 			ylabel('Probability','Interpreter','latex');
 			set(gca,'FontSize',FontSize_1,'TickLabelInterpreter','latex');
 			legend(Groups,'Interpreter','latex');

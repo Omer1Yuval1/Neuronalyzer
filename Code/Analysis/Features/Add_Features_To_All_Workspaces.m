@@ -13,7 +13,17 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 	for i=1:N % For each workspace.
 		
 		Scale_Factor = W(i).Workspace.User_Input.Scale_Factor;
-		W(i).Workspace.Parameters = Parameters_Func(Scale_Factor,W(i).Workspace.Parameters);
+		
+		if(isfield(W(i).Workspace,'Parameters'))
+			W(i).Workspace.Parameters = Parameters_Func(Scale_Factor,W(i).Workspace.Parameters);
+		else
+			W(i).Workspace.Parameters = Parameters_Func(Scale_Factor);
+		end
+		
+		if(~isfield(W(i).Workspace,'Im_BW') || isempty(W(i).Workspace.Im_BW))
+			W(i).Workspace.Im_BW = zeros(size(W(i).Workspace.Image0));
+			W(i).Workspace.Im_BW(find(W(i).Workspace.NN_Probabilities >= W(i).Workspace.Parameters.Neural_Network.Threshold)) = 1;
+		end
 		
 		if(isfield(W(i).Workspace,'Vertices') && isfield(W(i).Workspace,'Segments'))
 			for s=1:numel(W(i).Workspace.Segments) % For each segment.
@@ -141,18 +151,18 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 				Features(end).Values = struct('Name',{},'ON_OFF',{});
 			end
 		end
-		
+		disp(i);
 		% Go over each feature *value* and add it if it doesn't exist yet (but the feature *names* cannot change anymore):
 		for j=1:length(FN) % For each feature field.
 			c = 0;
 			for k=1:length(Features(j).Values) % For each existing value assigned to the j-feature field.
-				if(strcmp(Features(j).Values(k).Name,W(i).Workspace.User_Input.Features.(FN{j})))
+				if(strcmp(lower(Features(j).Values(k).Name),lower(W(i).Workspace.User_Input.Features.(FN{j}))))
 					c = k; % The value already exists.
 					break;
 				end
 			end
 			if(~c) % The value does not exist yet, add it.
-				Features(j).Values(end+1).Name = W(i).Workspace.User_Input.Features.(FN{j});
+				Features(j).Values(end+1).Name = lower(W(i).Workspace.User_Input.Features.(FN{j}));
 				Features(j).Values(end).ON_OFF = 1;
 				c = numel(Features(j).Values);
 			end

@@ -156,6 +156,7 @@ function Tracer_UI()
 				uimenu(H_Menu1_Length,'Label','Neuronal Length per Menorah Order','UserData',1,'Callback',@Menu1_Plots_Func);
 				uimenu(H_Menu1_Length,'Label','Mean Segment Length','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','on');
 				uimenu(H_Menu1_Length,'Label','Distribution of Segment Lengths Per Order','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','on');
+				uimenu(H_Menu1_Length,'Label','Segment Linearity','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','on');
 				uimenu(H_Menu1_Length,'Label','End2End Length Of Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
 		
 		H_Menu2_Counts = uimenu(Graphs_Menu_Handle,'Label','Counts');
@@ -635,30 +636,35 @@ function Tracer_UI()
 		function Generate_Filter_Buttons
 			% Field_Names = fieldnames(GUI_Parameters.Workspace); % Extract feature fields names.
 			
+			Field_Names = {GUI_Parameters.Features.Feature_Name}; % Extract feature fields names.
+			F1 = 1:length(Field_Names); % [7,5]; % TODO: temporarily choosing these features only. find([GUI_Parameters.Features.Num_Of_Options] > 1);
 			
-			
-			F1 = [7,5]; % TODO: temporarily choosing these features only. find([GUI_Parameters.Features.Num_Of_Options] > 1);
-			
-			
-			Field_Names = {GUI_Parameters.Features(F1).Feature_Name}; % Extract feature fields names.
-			Features_Buttons_Handles = zeros(10,length(Field_Names)); % Features buttons. 10 is the maximal number of buttons per feature (1st row is an ON\OFF button).
+			Features_Buttons_Handles = zeros(10,length(Field_Names)); % Features buttons. 10 is the maximum number of buttons per feature (1st row is an ON\OFF button).
 			GUI_Parameters.Handles.Analysis.Features_OnOff_Buttons_Handles = zeros(1,length(Field_Names)); % ON\OFF title buttons. 10 is the maximal number of buttons per feature (1st row is an ON\OFF button).
+			
+			ff = 0;
+			bb = 0;
+			
 			for f=1:length(F1) % For each field (=feature) (except the 1st field which is the workspace).
 				V = unique([GUI_Parameters.Workspace.(Field_Names{f})]);
 				N = length(V); % Number of values in a specific field.
-				for b=1:min(N,numel(GUI_Parameters.Features(F1(f)).Values)) % Generate N buttons.
-					Features_Buttons_Handles(b,f) = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','pushbutton',...
-						'String',GUI_Parameters.Features(F1(f)).Values(b).Name, ...
-						'UserData',[F1(f),b],'Callback',@Categories_Filter_Func,'Units','normalized','Position',[.03+(f-1)*(.44),(.92-.08*b),0.42,0.07], ...
-						'FontSize',GUI_Parameters.Visuals.Button3_Font_Size,'BackgroundColor',[.9,.9,.9],'Callback',@Features_Buttons_Func);
-				end
-				GUI_Parameters.Handles.Analysis.Features_OnOff_Buttons_Handles(f) = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,...
-				'UserData',[f,F1(f),1],'Units','Normalized','Position',[.03+(f-1)*(.44),0.92,0.42,0.07],... % UserData=[,,ON\OFF].
-				'BackgroundColor',[.2,.8,.4],'String',Field_Names{f},'Callback',@Features_OnOff_Buttons_Func);
+				if(N > 1) % If the field contains more than one value.
+					
+					ff = ff + 1;
+					for b=1:min(N,numel(GUI_Parameters.Features(F1(f)).Values)) % Generate N buttons.
+						Features_Buttons_Handles(b,f) = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','pushbutton',...
+							'String',GUI_Parameters.Features(F1(f)).Values(b).Name, ...
+							'UserData',[F1(f),b],'Callback',@Categories_Filter_Func,'Units','normalized','Position',[.03+(ff-1)*(.44),(.92-.08*b),0.42,0.07], ...
+							'FontSize',GUI_Parameters.Visuals.Button3_Font_Size,'BackgroundColor',[.9,.9,.9],'Callback',@Features_Buttons_Func);
+					end
+					GUI_Parameters.Handles.Analysis.Features_OnOff_Buttons_Handles(f) = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,...
+					'UserData',[f,F1(f),1],'Units','Normalized','Position',[.03+(ff-1)*(.44),0.92,0.42,0.07],... % UserData=[f,F(f),ON\OFF].
+					'BackgroundColor',[.2,.8,.4],'String',Field_Names{f},'Callback',@Features_OnOff_Buttons_Func);
 				
-				% Remove_Feature_Buttons_Handles(f) = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'UserData',[f,F1(f)], ...
-				% 		'Units','Normalized','Position',[.03+(f-1)*(.44),0.1,0.42,0.09],'BackgroundColor',[.2,.8,.4],'String','Remove','Callback',@Remove_Feature_Buttons_Func);
-				% set(Remove_Feature_Buttons_Handles,'Enable','off');
+					% Remove_Feature_Buttons_Handles(f) = uicontrol(GUI_Parameters.Handles.Analysis.Filters_Tab,'Style','pushbutton','FontSize',GUI_Parameters.Visuals.Button1_Font_Size,'UserData',[f,F1(f)], ...
+					% 		'Units','Normalized','Position',[.03+(f-1)*(.44),0.1,0.42,0.09],'BackgroundColor',[.2,.8,.4],'String','Remove','Callback',@Remove_Feature_Buttons_Func);
+					% set(Remove_Feature_Buttons_Handles,'Enable','off');
+				end
 			end
 			% % set(allchild(GUI_Parameters.Handles.Groups_Filter_Panel),'Enable','off');
 			% assignin('base','GUI_Parameters1',GUI_Parameters);
@@ -821,8 +827,7 @@ function Tracer_UI()
 					
 					drawnow;
 				end
-			end
-			
+			end			
 			function Draggable_Point_Func(source,~) % Update the position of annotated points.
 				
 				Np0 = numel(GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Neuron_Axes.(source.UserData.Axis_Field_Name)); % Original number of points.

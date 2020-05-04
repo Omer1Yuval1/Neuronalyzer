@@ -6,7 +6,7 @@ function Coordinates1 = InRect_Coordinates(Mat1,Rxy)
 		% Scale 'S' based of the # of pixels in the smallest bounding matrix.
 		% Make sure the coordinates of the rectangle to are not outside the matrix (max(1,Rxy(1,1))...
 	
-	% Mat1 is the image.
+	% Mat1 is the input image.
 	% Rxy is an NX2 [x,y] ordered vector of the coordinates of a rectangle inside Mat1.
 	% 1---------2
 	% |         |

@@ -154,11 +154,12 @@ function P = Parameters_Func(Scale_Factor,P)
 		if(~isfield(P,'Analysis'))
 			P.Analysis = Analysis;
 		end
-		if(~isfield(P,'Neural_Network'))
+		if(~isfield(P,'Neural_Network') || length(fields(Neural_Network)) ~= length(fields(P.Neural_Network)))
 			P.Neural_Network = Neural_Network;
 		end
 		if(~isfield(P,'Angle_Correction'))
 			P.Angle_Correction = Angle_Correction;
 		end
 	end
+	
 end

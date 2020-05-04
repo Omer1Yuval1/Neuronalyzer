@@ -2,6 +2,7 @@ function [Mean_Curvature,SxS,SyS,xx,Cxy] = Get_Segment_Curvature(X,Y,Im)
 	
 	Method = 1;
 	Distance_Func = @(x1,y1,x2,y2) ( (x1-x2).^2 + (y1-y2).^2).^(.5);
+    Min_Points_Num = 5;
 	
 	if(nargin == 3) % If an image if provided.
 		Plot = 1;
@@ -25,13 +26,19 @@ function [Mean_Curvature,SxS,SyS,xx,Cxy] = Get_Segment_Curvature(X,Y,Im)
 			%}
 			
 			%
-			SP1 = 0.1;
-			[X,Y,Success_Flag] = Fit_And_Smooth(X0,Y0,SP1);
-			
-			if(~Success_Flag)
-				SP2 = 100; % 50 ./ (L0);
-				[X,Y] = Smooth_Points(X0,Y0,SP2);
-			end
+            if(length(X0) >= Min_Points_Num)
+                SP1 = 0.1;
+                try
+                    [X,Y,Success_Flag] = Fit_And_Smooth(X0,Y0,SP1);
+                catch
+                    disp(1);
+                end
+
+                if(~Success_Flag)
+                    SP2 = 100; % 50 ./ (L0);
+                    [X,Y] = Smooth_Points(X0,Y0,SP2);
+                end
+            end
 			%}
 			
 			%{
