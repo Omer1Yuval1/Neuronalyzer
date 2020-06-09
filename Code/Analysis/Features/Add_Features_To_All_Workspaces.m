@@ -3,12 +3,8 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 	% TODO: the step length in the Rectangles struct is currently in ***pixels***
 	% This affects many things (e.g. curvature).
 	
-	Rx = @(a) [1,0,0 ; 0,cos(a),-sin(a) ; 0,sin(a),cos(a)]; % Rotation matrix around the x-axis (angle is given in radians).
-	Rz = @(a) [cos(a),-sin(a),0 ; sin(a),cos(a),0 ; 0,0,1]; % Rotation matrix around the z-axis (angle is given in radians).
-	
 	Features = struct('Feature_Name',{},'Values',{},'Num_Of_Options',{});
 	N = numel(W);
-	Distance_Func = @(x0,y0,x,y) ( (x-x0).^2 + (y-y0).^2).^(.5);
 	
 	for i=1:N % For each workspace.
 		
@@ -19,6 +15,7 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 		else
 			W(i).Workspace.Parameters = Parameters_Func(Scale_Factor);
 		end
+		W(i).Workspace.Parameters = Parameters_Func(Scale_Factor);
 		
 		if(~isfield(W(i).Workspace,'Im_BW') || isempty(W(i).Workspace.Im_BW))
 			W(i).Workspace.Im_BW = zeros(size(W(i).Workspace.Image0));

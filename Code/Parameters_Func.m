@@ -44,7 +44,7 @@ function P = Parameters_Func(Scale_Factor,P)
 	
 	Tracing(1).Skel_Angle_Min_Length = 1.7857 ./ Scale_Factor; % In particular used with the skeleton since the segment width is 1 (=W_Min).	
 	
-	Auto_Tracing_Parameters(1).Step_Smoothing_Parameter = 0.01; % 0.01. % TODO: should also be a function of Scale_Factor.
+	% Auto_Tracing_Parameters(1).Step_Smoothing_Parameter = 0.01; % 0.01. % TODO: should also be a function of Scale_Factor.
 	% Auto_Tracing_Parameters(1).Plot_Steps_Num = -10;
 	% Auto_Tracing_Parameters(1).Semi_Mode_Auto_Steps_Num = 10; % Number of steps to jump forward in manual mode.
 	
@@ -69,16 +69,16 @@ function P = Parameters_Func(Scale_Factor,P)
 	Auto_Tracing_Parameters(1).Rect_Rotation_Origin = 14; % Center: 0 ; Between corners 1&4: 14.
 	Auto_Tracing_Parameters(1).Rect_Rotation_Range = 70; % Rotation angle (to one side, in degrees).
 	Auto_Tracing_Parameters(1).Rotation_Res = 5; % 5,10; % Rotation resolution (in degrees).
-	Auto_Tracing_Parameters(1).Max_Angle_Diff = 150; % Max angle diff between succesive steps.
+	% Auto_Tracing_Parameters(1).Max_Angle_Diff = 150; % Max angle diff between succesive steps.
 	Auto_Tracing_Parameters(1).Step_Min_Peak_Distance = 15; % [degrees]. Used in 'findpeaks' to merge peaks with distance smaller than this value (using the smallest x-value as the resolution).
 	Auto_Tracing_Parameters(1).Step_Min_Peak_Prominence = 0.4; % 0.5, 0.3, 0.1, 60, 400, 1000, 0.02; % Definition: the vertical distance between a peak and it's heighest minima.
-	Auto_Tracing_Parameters(1).Branch_First_Steps_Num_Limit_Angle = 3; % Including the first step.
+	% Auto_Tracing_Parameters(1).Branch_First_Steps_Num_Limit_Angle = 3; % Including the first step.
 	% Auto_Tracing_Parameters(1).Branch_First_Steps_Limit_Angle = 30; % Including the first step.
 	% Auto_Tracing_Parameters(1).Min_Signal_Noise_diff = ; % 60, 400, 1000, 0.02; % Definition: the vertical distance between a peak and it's heighest minima.
 				 % Left\Right minimum - the end of the peak or a minimum point between the peak and a higher peak.
 				 % http://www.mathworks.com/help/signal/ref/findpeaks.html#buff2uu
 	% Auto_Tracing_Parameters(1).Filter_Box = 2/Scale_Factor; %
-	Auto_Tracing_Parameters.Rect_Width_Filter_Raduis_Ratio = 2;
+	% Auto_Tracing_Parameters.Rect_Width_Filter_Raduis_Ratio = 2;
 	% Auto_Tracing_Parameters.Skel_Overlap_Treshold = 0.25;
 	Auto_Tracing_Parameters.Trace_Skel_Max_Distance = .5/Scale_Factor; % In pixels (converted to micrometers).
 	Auto_Tracing_Parameters.Normalization_Width_Factor = 3; % Multiplication factor of the width of the BG sampling rectnangles.
@@ -89,32 +89,25 @@ function P = Parameters_Func(Scale_Factor,P)
 	Auto_Tracing_Parameters.Step_Normalization_Min_Peak_Height = 0.07; % 0.8; % 1,1.5,1.7,2.
 	Auto_Tracing_Parameters.Step_Normalization_Min_Peak_Distance = 30; % 20.
 	
-	Auto_Tracing_Parameters.OverLap_Min_Distance = .7/Scale_Factor; % Used in 'Locations_Mat'.
-	Auto_Tracing_Parameters.OverLap_Ignore_Last_Steps_Distance = .5/Scale_Factor; % Used in 'Locations_Mat'.
-	Auto_Tracing_Parameters.OverLap_Num_Of_Steps = 1; % max(round(.4/Scale_Factor),3); % Used in 'Locations_Mat'. 'max' so that this value is always >0 pixels.
+	% Auto_Tracing_Parameters.OverLap_Min_Distance = .7/Scale_Factor; % Used in 'Locations_Mat'.
+	% Auto_Tracing_Parameters.OverLap_Ignore_Last_Steps_Distance = .5/Scale_Factor; % Used in 'Locations_Mat'.
+	% Auto_Tracing_Parameters.OverLap_Num_Of_Steps = 1; % max(round(.4/Scale_Factor),3); % Used in 'Locations_Mat'. 'max' so that this value is always >0 pixels.
 	
-	% Auto_Tracing_Parameters(1).Sub_Rects_Num = 4;
-	% Auto_Tracing_Parameters(1).Sub_Rects_Threshold = 27;
-	Auto_Tracing_Parameters.Tip_Scores_Ratio = 2; % 1.8,1.9,1.41; % Main route.
-	Auto_Tracing_Parameters.Tip_Scores_Ratio_Minor = 1.66; % Minor Route. TODO: Currently not in use.
-	Auto_Tracing_Parameters.Tip_Step_Probing_Length = 0.3/Scale_Factor; % Length to sum up scores of previous steps for one step.
-	Auto_Tracing_Parameters.Tip_Steps_Probing_Length = 1.5/Scale_Factor; % Length for comparing sums.
-	Auto_Tracing_Parameters.Trial_Steps_Num = 3; % TODO: Add Explaination.
-	Auto_Tracing_Parameters.Min_Branch_Length = 1;
-	Auto_Tracing_Parameters.Min_Branch_Steps = 5;
+	% Auto_Tracing_Parameters.Tip_Scores_Ratio = 2; % 1.8,1.9,1.41; % Main route.
+	% Auto_Tracing_Parameters.Tip_Scores_Ratio_Minor = 1.66; % Minor Route. TODO: Currently not in use.
+	% Auto_Tracing_Parameters.Tip_Step_Probing_Length = 0.3/Scale_Factor; % Length to sum up scores of previous steps for one step.
+	% Auto_Tracing_Parameters.Tip_Steps_Probing_Length = 1.5/Scale_Factor; % Length for comparing sums.
+	% Auto_Tracing_Parameters.Trial_Steps_Num = 3; % TODO: Add Explaination.
+	% Auto_Tracing_Parameters.Min_Branch_Length = 1;
+	% Auto_Tracing_Parameters.Min_Branch_Steps = 5;
 	
 	Auto_Tracing_Parameters.Tracing_Scores_Weights = [0;0;1];
 	
-	Auto_Tracing_Parameters.Self_Collision_Overlap_Ratio = 0.6;
-	
-	Manual_Tracing_Parameters.Closing_Disk = 1;
-	Manual_Tracing_Parameters.BW_Threshold = 0.1;
-	Manual_Tracing_Parameters.Zoom_Length = round(1/Scale_Factor);
-	Manual_Tracing_Parameters.Save_Steps_Num = 500;
+	% Auto_Tracing_Parameters.Self_Collision_Overlap_Ratio = 0.6;
 	
 	Analysis.Curvature.SmoothingParameter = 0.01;
 	Analysis.Curvature.Sample_Length = 1.8; % Micrometers. Sample length from each side of the point. ~5 pixels for Scale_Factor=50/40.
-	Analysis.Curvature.Distance_From_Tips = 0;
+	% Analysis.Curvature.Distance_From_Tips = 0;
 	Analysis.Curvature.Min_Points_Num = 3;
 	% Analysis.Persistence_Length.BinSize = .4;
 	%
@@ -131,7 +124,7 @@ function P = Parameters_Func(Scale_Factor,P)
 		P.Cell_Body = Cell_Body;
 		P.Tracing = Tracing;
 		P.Auto_Tracing_Parameters = Auto_Tracing_Parameters;
-		P.Manual_Tracing_Parameters = Manual_Tracing_Parameters;
+		% P.Manual_Tracing_Parameters = Manual_Tracing_Parameters;
 		P.Analysis = Analysis;
 		P.Neural_Network = Neural_Network;
 		P.Angle_Correction = Angle_Correction;
@@ -148,9 +141,9 @@ function P = Parameters_Func(Scale_Factor,P)
 		if(~isfield(P,'Auto_Tracing_Parameters'))
 			P.Auto_Tracing_Parameters = Auto_Tracing_Parameters;
 		end
-		if(~isfield(P,'Manual_Tracing_Parameters'))
-			P.Manual_Tracing_Parameters = Manual_Tracing_Parameters;
-		end
+		% if(~isfield(P,'Manual_Tracing_Parameters'))
+		% 	P.Manual_Tracing_Parameters = Manual_Tracing_Parameters;
+		% end
 		if(~isfield(P,'Analysis'))
 			P.Analysis = Analysis;
 		end

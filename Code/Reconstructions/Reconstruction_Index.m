@@ -8,6 +8,7 @@ function Reconstruction_Index(GP,ii)
 	Worm_Radius_um = 45;
 	LineWidth_1 = 2; % [2,6].
 	DotSize_1 = 10; % 80;
+	DotSize_2 = 15; % 80;
 	Scale_Factor = GP.Workspace(ii).Workspace.User_Input.Scale_Factor;
 	
 	if(1)
@@ -15,7 +16,7 @@ function Reconstruction_Index(GP,ii)
 		hold on;
 	else
 		H = figure;
-		
+		set(H,'Position',[19,561,1786,526]);
 		%{
 		GP.Handles.Axes = axes;
 		XY = [1140,1250,550,660];
@@ -35,20 +36,22 @@ function Reconstruction_Index(GP,ii)
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			colormap hot;
 		case 'Cell Body' % Detect and display CB and the outsets of the branches connected to it:
-			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
+			imshow(GP.Workspace(ii).Workspace.Image0); % ,'Parent',GP.Handles.Axes
 			hold on;
 			CB_BW_Threshold = GP.Workspace(ii).Workspace.Parameters.Cell_Body.BW_Threshold;
 			
 			[CB_Pixels,CB_Perimeter] = Detect_Cell_Body(GP.Workspace(ii).Workspace.Image0,CB_BW_Threshold,Scale_Factor,0); % Detect cell-body.
 			% set(gca,'YDir','normal','Position',[0,0,1,1]);
 			[CB_Vertices,Pixels0,Pixels1] = Find_CB_Vertices(GP.Workspace(ii).Workspace.Image0,CB_Perimeter,CB_Pixels,Scale_Factor,CB_BW_Threshold,1);
+			
+			% plot(CB_Perimeter(:,1),CB_Perimeter(:,2),'LineWidth',4);
 		case 'CNN Image - Grayscale'
 			imshow(GP.Workspace(ii).Workspace.NN_Probabilities); % ,'Parent',GP.Handles.Axes);
 		case 'CNN Image - RGB'
-			imshow(GP.Workspace(ii).Workspace.NN_Probabilities,'Parent',GP.Handles.Axes);
+			imshow(GP.Workspace(ii).Workspace.NN_Probabilities); % ,'Parent',GP.Handles.Axes
 			colormap hot;
 		case 'Binary Image'
-			imshow(GP.Workspace(ii).Workspace.Im_BW,'Parent',GP.Handles.Axes);
+			imshow(GP.Workspace(ii).Workspace.Im_BW); % ,'Parent',GP.Handles.Axes
 			
 		case 'Raw + Binary Image - RGB'
 			Im_RGB = repmat(GP.Workspace(ii).Workspace.Image0(:,:,1),[1,1,3]);
@@ -74,9 +77,13 @@ function Reconstruction_Index(GP,ii)
 			imshow(GP.Workspace(ii).Workspace.Image0); % ,'Parent',GP.Handles.Axes);
 			hold on;
 			plot([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],'.','Color',[0.12,0.56,1],'MarkerSize',DotSize_1);
+			plot([GP.Workspace(ii).Workspace.All_Vertices.X],[GP.Workspace(ii).Workspace.All_Vertices.Y],'.','Color',[0.6,0,0],'MarkerSize',DotSize_2);
 		case 'Segmentation'
 			imshow(GP.Workspace(ii).Workspace.Image0); % ,'Parent',GP.Handles.Axes);
 			hold on;
+			
+			Class_Indices = [1,2,3,4];
+			Class_Colors = [0.6,0,0 ; 0,0.6,0 ; 0.12,0.56,1 ; 0.8,0.8,0];
 			
 			if(isfield(GP.Workspace(ii).Workspace,'Segments'))
 				for s=1:numel(GP.Workspace(ii).Workspace.Segments)
@@ -194,9 +201,41 @@ function Reconstruction_Index(GP,ii)
 			O = rescale([GP.Workspace(ii).Workspace.All_Points.Axis_0_Position])';
 			CM = [O,0.*O,1-O];
 			%}
+		case 'Dorsal-Vental'
+			
+			Field_1 = 'Radial_Distance_Corrected';
+			
+			X = [GP.Workspace(ii).Workspace.All_Points.X];
+			Y = [GP.Workspace(ii).Workspace.All_Points.Y];
+			Dist = [GP.Workspace(ii).Workspace.All_Points.(Field_1)];
+			
+			D = find(Dist <= 0);
+			V = find(Dist > 0);
+			
+			imshow(GP.Workspace(ii).Workspace.Image0); % ,'Parent',GP.Handles.Axes);
+			hold on;
+			scatter(X(D),Y(D),DotSize_1,'b','filled');
+			scatter(X(V),Y(V),DotSize_1,'r','filled');
+		
 		case {'Vertices Angles','Vertices Angles - Corrected'}
+			
+			a = 5;
+			
 			imshow(GP.Workspace(ii).Workspace.Image0); % ,'Parent',GP.Handles.Axes);
 			Reconstruct_Vertices(GP.Workspace(ii).Workspace);
+			
+			%{
+			F1 = find([GP.Workspace(ii).Workspace.All_Points.Vertex_Order] >= 3); % Find rectangles of junctions.
+			X = [GP.Workspace(ii).Workspace.All_Points(F1).X];
+			Y = [GP.Workspace(ii).Workspace.All_Points(F1).Y];
+			A = [GP.Workspace(ii).Workspace.All_Points(F1).Angle];
+			Vx = [X ; X + a.*cos(A)];
+			Vy = [Y ; Y + a.*sin(A)];
+			
+			plot([GP.Workspace(ii).Workspace.All_Vertices.X],[GP.Workspace(ii).Workspace.All_Vertices.Y],'.','MarkerSize',50);
+			hold on;
+			plot(Vx,Vy,'LineWidth',3);
+			%}
 		case {'3-Way Junctions - Position','Tips - Position'}
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			
@@ -272,13 +311,14 @@ function Reconstruction_Index(GP,ii)
 			
 			Class_Num = max([GP.Workspace(ii).Workspace.All_Points.Class]);
 			
-			C = [0.6,0,0 ; 0,0.6,0 ; 0,0.8,0.8 ; 0.8,0.8,0 ; 0.5,0.5,0.5]; % lines(Class_Num+1);
+			C = [0.6,0,0 ; 0,0.6,0 ; 0.12,0.56,1 ; 0.8,0.8,0 ; .5,.5,.5];
+			
 			% figure;
 			imshow(GP.Workspace(ii).Workspace.Image0); % ,'Parent',GP.Handles.Axes);
 			hold on;
 			Midline_Distance = [GP.Workspace(ii).Workspace.All_Points.X];
 			Midline_Orientation = [GP.Workspace(ii).Workspace.All_Points.Y];
-			Classes = [GP.Workspace(ii).Workspace.All_Points.Class];
+			Classes = [GP.Workspace(ii).Workspace.All_Points.Class]; % Classes = [GP.Workspace(ii).Workspace.All_Points.Segment_Class];
 			Classes(isnan(Classes)) = Class_Num + 1;
 			
 			scatter(Midline_Distance,Midline_Orientation,10,C(Classes,:),'filled');
@@ -323,6 +363,7 @@ function Reconstruction_Index(GP,ii)
 	end
 	set(gca,'position',[0,0,1,1]);
 	axis tight;
+	
 	% set(gca,'YDir','normal');
 	%{
 	H.Position = [114,469,1692,498]; % [10,50,900,900];

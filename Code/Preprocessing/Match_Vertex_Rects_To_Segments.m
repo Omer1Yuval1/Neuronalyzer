@@ -89,7 +89,7 @@ function Workspace = Match_Vertex_Rects_To_Segments(Workspace)
 			N = length(Sv);
 			Ls = sum((sum( [(Sx(2:end) - Sx(1:end-1)).^2 ; (Sy(2:end) - Sy(1:end-1)).^2] )).^0.5); % Segment arc length.
 			
-			if(Ls < Min_Segment_Length)
+			if(Ls < Min_Segment_Length) % For short segments use the skeleton.
 				Lr = min([N,Skel_Angle_Min_Length]);
 				
 				if(Workspace.Segments(F1(s)).Vertices(1) == Workspace.Vertices(v).Vertex_Index)

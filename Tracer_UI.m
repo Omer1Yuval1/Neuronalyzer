@@ -144,6 +144,7 @@ function Tracer_UI()
 		uimenu(Reconstructions_Menu_Handle,'Label','Midline Orientation','UserData',0,'Callback',@Reconstruction_Func);
 		uimenu(Reconstructions_Menu_Handle,'Label','Longitudinal Gradient','UserData',0,'Callback',@Reconstruction_Func,'Enable','off');
 		uimenu(Reconstructions_Menu_Handle,'Label','Curvature','UserData',0,'Callback',@Reconstruction_Func);
+		uimenu(Reconstructions_Menu_Handle,'Label','Dorsal-Vental','UserData',0,'Callback',@Reconstruction_Func);
 		H0_1_7 = uimenu(Reconstructions_Menu_Handle,'Label','PVD Orders');
 			uimenu(H0_1_7,'Label','PVD Orders - Points','UserData',0,'Callback',@Reconstruction_Func);
 			uimenu(H0_1_7,'Label','PVD Orders - Segments','UserData',0,'Callback',@Reconstruction_Func);
@@ -159,9 +160,9 @@ function Tracer_UI()
 				uimenu(H_Menu1_Length,'Label','Segment Linearity','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','on');
 				uimenu(H_Menu1_Length,'Label','End2End Length Of Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
 		
-		H_Menu2_Counts = uimenu(Graphs_Menu_Handle,'Label','Counts');
-			uimenu(H_Menu2_Counts,'Label','Number of 3-way Junctions','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','on');
-			uimenu(H_Menu2_Counts,'Label','Number of Tips','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','on');
+		H_Menu2_Counts = uimenu(Graphs_Menu_Handle,'Label','Count / Density');
+			uimenu(H_Menu2_Counts,'Label','Junction Number/Density','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','on');
+			uimenu(H_Menu2_Counts,'Label','Tip Number/Density','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','on');
 			uimenu(H_Menu2_Counts,'Label','Number of Segments','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','on');
 			uimenu(H_Menu2_Counts,'Label','Number of Menorahs','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','on');
 			
@@ -231,10 +232,6 @@ function Tracer_UI()
 			uimenu(H_Menu7_Midline_Density,'Label','Menorah Orders Classification','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu7_Midline_Density,'Label','Midline Density - Neuronal Length','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu7_Midline_Density,'Label','Density of Points per Menorah order','UserData',2,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu7_Midline_Density,'Label','Junctions Density','UserData',2,'Callback',@Menu1_Plots_Func);
-			uimenu(H_Menu7_Midline_Density,'Label','Tips Density','UserData',2,'Callback',@Menu1_Plots_Func);
-			% uimenu(H_Menu7_Midline_Density,'Label','Midline Density - 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func);
-			% uimenu(H_Menu7_Midline_Density,'Label','Midline Density - Tips','Callback',@Menu1_Plots_Func);
 		H_Menu5_2D_Plots = uimenu(Graphs_Menu_Handle,'Label','2D Plots','Callback','');
 			uimenu(H_Menu5_2D_Plots,'Label','Midline Distance VS Midline Orientation','UserData',2,'Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu5_2D_Plots,'Label','Midline Distance VS Curvature','UserData',2,'Callback',@Menu1_Plots_Func);

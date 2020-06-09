@@ -65,8 +65,8 @@ function Workspace = Connect_Vertices(Workspace,Ax)
 	Scores_Fit_Sampling_Ratio = 3;
 	Origin_Type = Workspace.Parameters.Auto_Tracing_Parameters.Rect_Rotation_Origin; % 0 = Center of the rectangle. 14 = one of the sides.
 	
-	Min_Step_Num_Collision = round(1/Step_Length); % TODO: define better.
-	Self_Collision_Overlap_Ratio = Workspace.Parameters.Auto_Tracing_Parameters.Self_Collision_Overlap_Ratio; % 0.6;
+	% Min_Step_Num_Collision = round(1/Step_Length); % TODO: define better.
+	% Self_Collision_Overlap_Ratio = Workspace.Parameters.Auto_Tracing_Parameters.Self_Collision_Overlap_Ratio; % 0.6;
 	Image_Margin_Threshold = 20;
 	
 	Step_Params = struct('Origin_Type',{});
