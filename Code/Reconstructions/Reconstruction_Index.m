@@ -11,7 +11,7 @@ function Reconstruction_Index(GP,ii)
 	DotSize_2 = 15; % 80;
 	Scale_Factor = GP.Workspace(ii).Workspace.User_Input.Scale_Factor;
 	
-	if(1)
+	if(0)
 		figure(1);
 		hold on;
 	else
@@ -347,11 +347,13 @@ function Reconstruction_Index(GP,ii)
 				end
 			end
 			
+			%{
 			X = [GP.Workspace(ii).Workspace.All_Vertices.X];
 			Y = [GP.Workspace(ii).Workspace.All_Vertices.Y];
 			
 			hold on;
 			scatter(X,Y,10,'k','filled'); % Use 100 when zooming in.
+			%}
 			
 			% Use when zooming in:
 			% F = find([GP.Workspace(ii).Workspace.All_Vertices.Order] >= 2);

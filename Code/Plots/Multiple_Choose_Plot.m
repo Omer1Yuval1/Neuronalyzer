@@ -43,7 +43,7 @@ function Multiple_Choose_Plot(GP)
 		Workspace_Set{1} = 1;
 	end
 	
-	if(1)
+	if(0)
 		figure(1);
 		hold on;
 	else
@@ -610,8 +610,8 @@ function Multiple_Choose_Plot(GP)
 				% ylim([0,0.07]);
 				
 				xlabel('$$Mean \; Curvature \; (\frac{1}{{\mu}m})$$','Interpreter','latex');
-				% ylabel('Probability','Interpreter','latex');
-				% set(gca,'FontSize',FontSize_1,'TickLabelInterpreter','latex');
+				ylabel('Probability','Interpreter','latex');
+				set(gca,'FontSize',FontSize_1/2,'TickLabelInterpreter','latex');
 				% legend(Groups,'Interpreter','latex');
 				grid on;
 			end
@@ -1776,7 +1776,7 @@ function Multiple_Choose_Plot(GP)
 			Ng = length(Workspace_Set);
 			
 			set(GP.Handles.Normalization_List,'String',{'Not Normalized','Total Length'});
-			set(GP.Handles.Plot_Type_List,'String',{'Default','Color Gradient'});
+			set(GP.Handles.Plot_Type_List,'String',{'Default','Color Gradient','Vertices Only'});
 			
 			if(GP.Handles.Projection_Correction_Checkbox.Value) % Apply projection correction.
 				Field_1_Name = 'Midline_Orientation_Corrected';
@@ -1808,8 +1808,13 @@ function Multiple_Choose_Plot(GP)
 							Total_Length = nansum([GP.Workspace(ww).Workspace.All_Points.(Field_2_Name)]);
 					end
 					
-					f_D = find([GP.Workspace(ww).Workspace.All_Points.Midline_Distance] <= 0); %  & [GP.Workspace(w).Workspace.All_Points.Vertex_Order] == 3
-					f_V = find([GP.Workspace(ww).Workspace.All_Points.Midline_Distance] >= 0);
+					if(GP.Handles.Plot_Type_List.Value <= 2)
+						f_D = find([GP.Workspace(ww).Workspace.All_Points.Midline_Distance] <= 0);
+						f_V = find([GP.Workspace(ww).Workspace.All_Points.Midline_Distance] >= 0);
+					elseif(GP.Handles.Plot_Type_List.Value == 3) % Only use rectangles of vertices.
+						f_D = find([GP.Workspace(ww).Workspace.All_Points.Midline_Distance] <= 0 & [GP.Workspace(ww).Workspace.All_Points.Vertex_Order] == 3);
+						f_V = find([GP.Workspace(ww).Workspace.All_Points.Midline_Distance] >= 0 & [GP.Workspace(ww).Workspace.All_Points.Vertex_Order] == 3);
+					end
 					
 					Xw_D = [GP.Workspace(ww).Workspace.All_Points(f_D).(Field_1_Name)];
 					Xw_V = [GP.Workspace(ww).Workspace.All_Points(f_V).(Field_1_Name)];
@@ -1829,7 +1834,7 @@ function Multiple_Choose_Plot(GP)
 					Y_L_V = accumarray([Iw_V,1:length(Edges)-1]',[Lw_V,zeros(1,length(Edges)-1)])'; % Y_L is a vector of summed length (values of Lw) into bins corresponding to Y{g}(w,:). It is used to weigh the bins by their total neuron length.
 					
 					Y_D{g}(w,:) = Y_L_D; % Now the height of the bins is neuronal length.
-					Y_V{g}(w,:) = Y_L_V; % Now the height of the bins is neuronal length.
+					Y_V{g}(w,:) = Y_L_V; % ".
 				end
 			end
 			
@@ -1838,7 +1843,7 @@ function Multiple_Choose_Plot(GP)
 				hold on;
 				H_V = bar(xx,-mean(Y_V{1},1),1,'FaceColor','flat');
 				
-				if(GP.Handles.Plot_Type_List.Value == 2)
+				if(GP.Handles.Plot_Type_List.Value == 2 || GP.Handles.Plot_Type_List.Value == 3)
 					L = size(H_D.CData,1); % # of bars.
 					CM = transpose(rescale(1:L));
 					CM = [1-CM, CM , 0.*CM+0.2];
@@ -1882,7 +1887,7 @@ function Multiple_Choose_Plot(GP)
 			
 			set(gca,'YTickLabels',abs(get(gca,'YTick')));
 			xl = 0:pi/6:pi/2;
-			set(gca,'FontSize',FontSize_1,'xlim',[Edges([1,end])],'XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)));
+			set(gca,'FontSize',FontSize_1/2,'xlim',[Edges([1,end])],'XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)));
 			% ylim([-max(N_V),max(N_D)]);
 			
 			set(gca,'TickLabelInterpreter','latex');
