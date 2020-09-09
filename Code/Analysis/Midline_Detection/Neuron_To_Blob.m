@@ -2,8 +2,12 @@ function [ImB,XY] = Neuron_To_Blob(Im)
 	
 	BW_Threshold = 0.5;
 	
-	% Im_BW = imbinarize(Im,BW_Threshold);
-    Im_BW = Im;
+    if(islogical(Im))
+        Im_BW = Im;
+    else
+        Im_BW = imbinarize(Im,BW_Threshold);
+    end
+    
     
 	Im_BW = bwareafilt(Im_BW,[5,inf]);
 	

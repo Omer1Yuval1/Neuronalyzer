@@ -18,32 +18,34 @@ function Multiple_Choose_Plot(GP)
 	
 	% assignin('base','GP2',GP);
 	
-	% Impotrant TODO:
+	% Important TODO:
 		% The Angles field now contains the angle for tips (instead of -1).
 		% Some of the plots here rely on that -1 to filter out tips.
 		% Instead, I should change it to use the order field as a filter.
 	%
 	
-	if( (GP.Handles.Workspace_Mode.Value == 1 && max([GP.Workspace.Genotype]) > 1) && GP.Handles.Workspace_Mode.Value == 1) % Use all workspaces.
+	if(GP.Handles.Workspace_Mode.Value == 1 && max([GP.Workspace.Genotype]) >= 1) % Use all workspaces.
 		Groups = cell(1,max([GP.Workspace.Genotype]));
 		for g=1:max([GP.Workspace.Genotype])
 			Workspace_Set{g} = find([GP.Workspace.Genotype] == g);
 			Groups{g} = GP.Workspace(Workspace_Set{g}(1)).Workspace.User_Input.Features.Genotype;
 		end
 		% Workspace_Set = 1:numel(GP.Workspace);
-	elseif( (GP.Handles.Workspace_Mode.Value == 1 && max([GP.Workspace.Age]) > 1) && GP.Handles.Workspace_Mode.Value == 1) % Use all workspaces.
+	elseif(GP.Handles.Workspace_Mode.Value == 1 && max([GP.Workspace.Age]) >= 1) % Use all workspaces.
 		Groups = cell(1,max([GP.Workspace.Age]));
 		for g=1:max([GP.Workspace.Age])
 			Workspace_Set{g} = find([GP.Workspace.Age] == g);
 			Groups{g} = GP.Workspace(Workspace_Set{g}(1)).Workspace.User_Input.Features.Age;
 		end
 	elseif(GP.Handles.Workspace_Mode.Value == 2) % Use current workspace.
-		Workspace_Set = {GP.Handles.Im_Menu.UserData};
+		% Workspace_Set = {GP.Handles.Im_Menu.UserData};
+		% Workspace_Set{1} = 10;
+		% Workspace_Set{2} = 19;
 	else
 		Workspace_Set{1} = 1;
 	end
 	
-	if(0)
+	if(1)
 		figure(1);
 		hold on;
 	else
@@ -52,7 +54,7 @@ function Multiple_Choose_Plot(GP)
 		hold on;
 	end
 	
-	FontSize_1 = 36;
+	FontSize_1 = 32; % 36.
 	
 	% assignin('base','GP',GP);
 	
@@ -648,7 +650,8 @@ function Multiple_Choose_Plot(GP)
 			Means_Plot(Input_Struct,GP,GP.Visuals,Y_Label,Title);
 			
 		
-		case {'Radial Distance of All Points','Radial Distance of 3-Way Junctions','Radial Distance of Tips','Radial Distance of All Points - Second Moment','Angular Coordinate of All Points','Angular Coordinate of All Points - Second Moment'}
+		case {'Radial Distance of All Points','Radial Distance of 3-Way Junctions','Radial Distance of Tips','Radial Distance of All Points - Second Moment','Angular Coordinate of All Points','Angular Coordinate of All Points - Second Moment',...
+			'Angular Coordinate of Junctions','Angular Coordinate of Tips'}
 			
 			set(GP.Handles.Normalization_List,'String',{'Not Normalized','Total Length','Midline Length'});
 			set(GP.Handles.Plot_Type_List,'String',{'Default','Dorsal-Ventral Merged','Color Gradient'});
@@ -668,9 +671,9 @@ function Multiple_Choose_Plot(GP)
 					end
 					Bin_Min = -1;
 					Bin_Max = 1;
-				case {'Angular Coordinate of All Points','Angular Coordinate of All Points - Second Moment'}
+				case {'Angular Coordinate of All Points','Angular Coordinate of All Points - Second Moment','Angular Coordinate of Tips','Angular Coordinate of Junctions'}
 					if(~GP.Handles.Analysis.Slider.UserData)
-						set(GP.Handles.Analysis.Slider,'Min',pi/180,'Max',pi/30,'Value',pi/90,'SliderStep',[pi/180,1]); % [5,20] degrees.
+						set(GP.Handles.Analysis.Slider,'Min',pi/180,'Max',pi/30,'Value',pi/45,'SliderStep',[pi/180,1]); % [5,20] degrees.
 					end
 					Bin_Min = -pi/2; % Radians.
 					Bin_Max = pi/2; % Radians.
@@ -685,17 +688,37 @@ function Multiple_Choose_Plot(GP)
 				case {'Radial Distance of All Points','Radial Distance of All Points - Second Moment'}
 					Field_1_Name = 'Radial_Distance_Corrected';
 					Vertex_Order_Func = @(X) find(X);
+					Weigh_by_Length = 1;
+					Y_Label = 'Neuronal \; Length';
 				case {'Angular Coordinate of All Points','Angular Coordinate of All Points - Second Moment'}
 					Field_1_Name = 'Angular_Coordinate';
 					Vertex_Order_Func = @(X) find(X);
+					Weigh_by_Length = 1;
+					Y_Label = 'Neuronal \; Length';
 				case 'Radial Distance of Tips'
 					Field_1_Name = 'Radial_Distance_Corrected';
 					Vertex_Order = 1;
 					Vertex_Order_Func = @(X) find(X == Vertex_Order);
+					Weigh_by_Length = 0;
+					Y_Label = 'Number \; of \; Tips';
+				case 'Angular Coordinate of Tips'
+					Field_1_Name = 'Angular_Coordinate';
+					Vertex_Order = 1;
+					Vertex_Order_Func = @(X) find(X == Vertex_Order);
+					Weigh_by_Length = 0;
+					Y_Label = 'Number \; of \; Tips';
 				case 'Radial Distance of 3-Way Junctions'
 					Field_1_Name = 'Radial_Distance_Corrected';
 					Vertex_Order = 3;
 					Vertex_Order_Func = @(X) find(X == Vertex_Order);
+					Weigh_by_Length = 0;
+					Y_Label = 'Number \; of \; Junctions';
+				case 'Angular Coordinate of Junctions'
+					Field_1_Name = 'Angular_Coordinate';
+					Vertex_Order = 3;
+					Vertex_Order_Func = @(X) find(X == Vertex_Order);
+					Weigh_by_Length = 0;
+					Y_Label = 'Number \; of \; Junctions';
 			end
 			
 			Ng = length(Workspace_Set);
@@ -709,7 +732,12 @@ function Multiple_Choose_Plot(GP)
 					
 					Fx = Vertex_Order_Func([GP.Workspace(ww).Workspace.All_Points.Vertex_Order]);
 					Xw = -[GP.Workspace(ww).Workspace.All_Points(Fx).(Field_1_Name)]; % Multiplying by (-1) to make ventral positive.
-					Lw = [GP.Workspace(ww).Workspace.All_Points(Fx).(Field_2_Name)]; % Corresponding rectangle lengths. % Use this for weight = 1: ones(1,length(Xw)); % 
+					
+					if(Weigh_by_Length)
+						Lw = [GP.Workspace(ww).Workspace.All_Points(Fx).(Field_2_Name)]; % Corresponding rectangle lengths. % Use this for weight = 1: ones(1,length(Xw)); % 
+					else % Just count.
+						Lw = ones(1,length(Fx)) ./ [GP.Workspace(ww).Workspace.All_Points(Fx).Vertex_Order]; % The weight of each vertex rectangle is 1 divided by the number of rectangles (the vertex order).
+					end
 					
 					switch GP.Handles.Normalization_List.Value
 						case 1
@@ -764,7 +792,7 @@ function Multiple_Choose_Plot(GP)
 			else % Histogram of midline distances.
 				
 				switch Ng
-					case 1
+					case 1 % If there is only one group, show as a histogram.
 						H{1} = bar(xx,nanmean(Y{1},1),1,'FaceColor','flat'); % ,'EdgeColor','none');
 						
 						if(GP.Handles.Plot_Type_List.Value == 3) % Color gradient.
@@ -774,11 +802,11 @@ function Multiple_Choose_Plot(GP)
 							H{1}.CData(L_D,:) = CM(1:length(L_D),:);
 							H{1}.CData(L_V,:) = flipud(CM(1:length(L_V),:));
 						end
-					otherwise
+					otherwise % If there are multiple groups, show as an area plot.
 						CM = lines(Ng);
 						for g=1:Ng
-							% bar(xx,mean(Y{g},1),1,'FaceColor','flat'); % ,'EdgeColor','none');
-							% hold on;
+							bar(xx,mean(Y{g},1),1,'FaceColor','flat'); % ,'EdgeColor','none');
+							hold on;
 							switch(GP.Handles.Normalization_List.Value)
 								% case {3,5} % PDF.
 									% TODO: this uses all values together, while other places average across animals.
@@ -788,13 +816,13 @@ function Multiple_Choose_Plot(GP)
 									xk{g} = linspace(Edges(1),Edges(end),1000);
 									fk{g} = Fit_Object(xk{g});
                             end
-							H{g} = area(xk{g},fk{g},'FaceColor',CM(g,:),'FaceAlpha',0.5); % 1./(Ng-g+1)./1.5
-							hold on;
+							% H{g} = area(xk{g},fk{g},'FaceColor',CM(g,:),'FaceAlpha',0.5); % 1./(Ng-g+1)./1.5
+							% hold on;
 						end
 						for g=1:Ng
 							plot(xk{g},fk{g},'LineWidth',2,'Color',CM(g,:));
 						end
-						legend(Groups,'Interpreter','latex');
+						% legend(Groups,'Interpreter','latex');
 				end
 				
 				set(gca,'FontSize',FontSize_1);
@@ -802,15 +830,19 @@ function Multiple_Choose_Plot(GP)
 				switch(GP.Handles.Normalization_List.Value)
 					case 1
 						xlabel('$$\phi \; (^{\circ})$$','Interpreter','latex'); % xlabel(['$$Midline Distance $$'],'Interpreter','latex');
-						ylabel('$$Neuronal \; Length \; (\mu m)$$','Interpreter','latex');
+						if(Weigh_by_Length)
+							ylabel('$$Neuronal \; Length \; (\mu m)$$','Interpreter','latex');
+						else
+							ylabel(['$$',Y_Label,'$$'],'Interpreter','latex');
+						end
 						set(gca,'position',[0.09,0.1490,0.89,0.8],'XTick',-pi/2:pi/4:pi/2,'XTickLabels',{'$$-90$$','$$-45$$',0,'$$45$$','$$90$$'});
 					case 2
 						xlabel('$$\phi \; (^{\circ})$$','Interpreter','latex');
-						ylabel('$$\frac{Neuronal \; Length}{Total Length}$$','Interpreter','latex');
+						ylabel(['$$\frac{',Y_Label,'}{Total Length}$$'],'Interpreter','latex');
 						% set(gca,'position',[0.1,0.1490,0.87,0.7760],'XTick',-1:0.5:1,'XTickLabels',{'$$-\phi$$','$$-\frac{\phi}{2}$$',0,'$$\frac{\phi}{2}$$','$$\phi$$'});
 					case 5
 						xlabel('$$\phi \; (^{\circ})$$','Interpreter','latex');
-						ylabel('$$\frac{Neuronal \; Length}{Midline \; Length}$$','Interpreter','latex');
+						ylabel(['$$\frac{',Y_Label,'}$$'],'Interpreter','latex');
 						% set(gca,'position',[0.13,0.1490,0.85,0.7760]); % set(gca,'position',[0.1,0.1490,0.87,0.7760]);
 				end
 				set(gca,'position',[0.09,0.1490,0.89,0.8],'XTick',-pi/2:pi/4:pi/2,'XTickLabels',{'$$-90$$','$$-45$$',0,'$$45$$','$$90$$'});
@@ -918,25 +950,13 @@ function Multiple_Choose_Plot(GP)
 			legend(Groups,'Interpreter','latex');
 			grid on;
 			set(gca,'XTick',1:Max_PVD_Orders,'XTickLabels',Class_Indices,'TickLabelInterpreter','latex');
-		case 'Distribution of Min Medial Angle Diff'
-			Var_Operations{1} = @(x) x(x>=0) .*180 ./ pi;
-			Filter_Operations = {};
-			Var_Fields = {'Min_Medial_Angle_Corrected_Diff'};
-			Filter_Fields = [];
-			%
-			RowWise = 1;
-			Dynamic_Field = 'Distance_From_Medial_Axis';
-			Set_Dynamic_Sliders_Values(GP.Handles.Analysis,0,50);
-			%
-			X_Label = ['Angle (',char(176),')'];
-			Y_Label = 'Count';
-			Title = 'Minimal Difference between Medial Angle and Vertex Angles';
-			%
-			X_Min_Max = [0,180];
-			BinSize = 20 .* GP.Handles.Analysis.Slider.Value;
-			%
-			Input_Struct = Generate_Plot_Input(GP,'Vertices',Var_Fields,Filter_Fields,Dynamic_Field,Var_Operations,Filter_Operations,RowWise);
-			Histogram_Plot(Input_Struct,GP,GP.Visuals,X_Min_Max,BinSize,X_Label,Y_Label,Title);
+		case 'Signed Midline Orientation of Junction Rectangles'
+			
+			% First show the distribution of class-2 and class-4 midline orientation, with respect to AP (A is positive).
+				% I'm expecting the two classes to both give symmetrical distribution around 90.
+			
+			% Then show the distribution of class-1 and class-3 midline orientation, with respect to R (away from midline is positive).
+				% I'm expecting the two classes to give mirror image distributions, both with a peak at 0 (parallel to midline).
 			
 		case 'Distribution of the Difference between Vertex and End2End Angles'
 			Var_Operations{1} = @(x) x(x>0).*180./pi; % Angle difference in degrees (this values is supposed to always be positive: max(a1,a2)-min(a1,a2) ; a1,a2=[0,2.*pi]).
@@ -1019,9 +1039,9 @@ function Multiple_Choose_Plot(GP)
 						B_D(:,g) = mean(M{g}(:,:,1),2); % Average across animals (columns). Rows correspond to Menorah orders.
 						B_V(:,g) = -mean(M{g}(:,:,2),2); % ".
 					end
-					H_D = bar(1:Max_PVD_Orders,B_D,0.8,'hist','FaceColor','flat');
+					H_D = bar(1:Max_PVD_Orders,B_D,1,'hist','FaceColor','flat');
 					hold on;
-					H_V = bar(1:Max_PVD_Orders,B_V,0.8,'hist','FaceColor','flat');
+					H_V = bar(1:Max_PVD_Orders,B_V,1,'hist','FaceColor','flat');
 					
 					for g=1:length(Workspace_Set)
 						H_D(g).FaceColor = CM(g,:); % Class_Colors(o,:);
@@ -1054,7 +1074,7 @@ function Multiple_Choose_Plot(GP)
 					for g=1:Ng
 						B_DV(:,g) = mean(sum(M{g},3),2);
 					end
-					H_DV = bar(1:Max_PVD_Orders,B_DV,0.8,'hist','FaceColor','flat');
+					H_DV = bar(1:Max_PVD_Orders,B_DV,1,'hist','FaceColor','flat');
 					for g=1:length(Workspace_Set)
 						H_DV(g).FaceColor = CM(g,:); % H_DV.CData(o,:) = Class_Colors(o,:);
 						errorbar(mean(H_DV(g).XData,1),B_DV(:,g),std(sum(M{g},3),0,2)','Color','k','LineWidth',2,'LineStyle','none');
@@ -1084,7 +1104,7 @@ function Multiple_Choose_Plot(GP)
 						B_D(:,g) = mean(sum(sum(M{g}(:,:,1),1),3),2);
 						% B_V(:,g) = -mean(sum(M{g}(:,:,2),1),2);
 					end
-					H_D = bar(1:Ng,B_D,0.8,'FaceColor','flat');
+					H_D = bar(1:Ng,B_D,1,'FaceColor','flat');
 					hold on;
 					% H_V = bar(1:length(Workspace_Set),B_V,0.8,'FaceColor','flat');
 					
@@ -1819,8 +1839,14 @@ function Multiple_Choose_Plot(GP)
 					Xw_D = [GP.Workspace(ww).Workspace.All_Points(f_D).(Field_1_Name)];
 					Xw_V = [GP.Workspace(ww).Workspace.All_Points(f_V).(Field_1_Name)];
 					
-					Lw_D = [GP.Workspace(ww).Workspace.All_Points(f_D).(Field_2_Name)] ./ Total_Length;
-					Lw_V = [GP.Workspace(ww).Workspace.All_Points(f_V).(Field_2_Name)] ./ Total_Length;
+					% Length:
+					if(GP.Handles.Plot_Type_List.Value <= 2)
+						Lw_D = [GP.Workspace(ww).Workspace.All_Points(f_D).(Field_2_Name)] ./ Total_Length;
+						Lw_V = [GP.Workspace(ww).Workspace.All_Points(f_V).(Field_2_Name)] ./ Total_Length;
+					else % Only use rectangles of vertices. Weigh vertices as length 1.
+						Lw_D = ones(1,length(f_D)) ./ Total_Length;
+						Lw_V = ones(1,length(f_V)) ./ Total_Length;
+					end
 					
 					[Y_D{g}(w,:),~,Iw_D] = histcounts(Xw_D,Edges);
 					[Y_V{g}(w,:),~,Iw_V] = histcounts(Xw_V,Edges);
@@ -1839,16 +1865,24 @@ function Multiple_Choose_Plot(GP)
 			end
 			
 			if(Ng == 1)
-				H_D = bar(xx,mean(Y_D{1},1),1,'FaceColor','flat');
-				hold on;
-				H_V = bar(xx,-mean(Y_V{1},1),1,'FaceColor','flat');
+				Merge_DV = 1;
+				switch Merge_DV
+					case 0
+						H_D = bar(xx,mean(Y_D{1},1),1,'FaceColor','flat');
+						hold on;
+						H_V = bar(xx,-mean(Y_V{1},1),1,'FaceColor','flat');
+					case 1
+						H_D = bar(xx,mean(Y_D{1},1)+mean(Y_V{1},1),1,'FaceColor','flat');
+				end
 				
-				if(GP.Handles.Plot_Type_List.Value == 2 || GP.Handles.Plot_Type_List.Value == 3)
+				if(GP.Handles.Plot_Type_List.Value == 2 || GP.Handles.Plot_Type_List.Value == 3) % Color gradient.
 					L = size(H_D.CData,1); % # of bars.
 					CM = transpose(rescale(1:L));
 					CM = [1-CM, CM , 0.*CM+0.2];
 					H_D.CData = CM;
-					H_V.CData = CM;
+					if(~Merge_DV)
+						H_V.CData = CM;
+					end
 				end
 			else
 				CM = lines(Ng);
@@ -1887,7 +1921,7 @@ function Multiple_Choose_Plot(GP)
 			
 			set(gca,'YTickLabels',abs(get(gca,'YTick')));
 			xl = 0:pi/6:pi/2;
-			set(gca,'FontSize',FontSize_1/2,'xlim',[Edges([1,end])],'XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)));
+			set(gca,'FontSize',FontSize_1,'xlim',[Edges([1,end])],'XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)));
 			% ylim([-max(N_V),max(N_D)]);
 			
 			set(gca,'TickLabelInterpreter','latex');

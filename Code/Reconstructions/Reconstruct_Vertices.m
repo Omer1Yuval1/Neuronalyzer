@@ -4,7 +4,10 @@ function Reconstruct_Vertices(W,Display_Image)
 	
 	Scale_Factor = W.User_Input(1).Scale_Factor;
 	% SmoothingParameter = 5000000;
+	
 	D = 10;
+	Dxy = 20;
+	
 	[Rows,Cols] = size(W.Image0);
 	
 	if(nargin == 2)
@@ -64,7 +67,8 @@ function Reconstruct_Vertices(W,Display_Image)
 				for c=1:length(C)
 					if(~isnan(C(c)))
 						
-                        quiver(O(1),O(2),d1.*cos(V(c)),d1.*sin(V(c)),'Color',CM(Class_Indices == C(c),:),'LineWidth',15,'MaxHeadSize',0); % ,'MarkerSize',1,'MarkerEdgeColor',[0,0,0]
+                        % quiver(O(1),O(2),d1.*cos(V(c)),d1.*sin(V(c)),'Color',CM(Class_Indices == C(c),:),'LineWidth',15,'MaxHeadSize',0); % ,'MarkerSize',1,'MarkerEdgeColor',[0,0,0]
+                        quiver(O(1),O(2),d1.*cos(V(c)),d1.*sin(V(c)),'Color','k','LineWidth',10,'MaxHeadSize',0); % ,'MarkerSize',1,'MarkerEdgeColor',[0,0,0]. [10,15].
 						
 						if(isfield(W.Vertices(v).Rectangles,'Corrected_Angle'))
 							% Vt = sort([W.Vertices(v).Rectangles.Corrected_Angle]); % Projection-corrected angles.
@@ -75,10 +79,10 @@ function Reconstruct_Vertices(W,Display_Image)
 				
 				plot(O(1),O(2),'.k','MarkerSize',60);
 				
-				set(gcf,'Position',[50,50,900,900]);
+				set(gcf,'Position',[50,50,700,700]);
 				set(gca,'position',[0,0,1,1]);
 				
-				% axis([O(1)+[-10,+10] , O(2)+[-10,+10]]);
+				% axis([O(1)+[-Dxy,+Dxy] , O(2)+[-Dxy,+Dxy]]);
 				% waitforbuttonpress;
 			else
 				if(O(1) > D && O(1) < Cols-D && O(2) > D && O(2) < Rows-D)

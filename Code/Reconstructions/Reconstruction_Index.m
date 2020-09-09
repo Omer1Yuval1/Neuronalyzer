@@ -11,7 +11,7 @@ function Reconstruction_Index(GP,ii)
 	DotSize_2 = 15; % 80;
 	Scale_Factor = GP.Workspace(ii).Workspace.User_Input.Scale_Factor;
 	
-	if(0)
+	if(1)
 		figure(1);
 		hold on;
 	else
@@ -32,6 +32,7 @@ function Reconstruction_Index(GP,ii)
 	switch GP.General.Active_Plot
 		case 'Raw Image - Grayscale'
 			imshow(GP.Workspace(ii).Workspace.Image0); % ,'Parent',GP.Handles.Axes);
+			
 		case 'Raw Image - RGB'
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			colormap hot;
@@ -77,7 +78,7 @@ function Reconstruction_Index(GP,ii)
 			imshow(GP.Workspace(ii).Workspace.Image0); % ,'Parent',GP.Handles.Axes);
 			hold on;
 			plot([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],'.','Color',[0.12,0.56,1],'MarkerSize',DotSize_1);
-			plot([GP.Workspace(ii).Workspace.All_Vertices.X],[GP.Workspace(ii).Workspace.All_Vertices.Y],'.','Color',[0.6,0,0],'MarkerSize',DotSize_2);
+			plot([GP.Workspace(ii).Workspace.All_Vertices.X],[GP.Workspace(ii).Workspace.All_Vertices.Y],'.k','MarkerSize',DotSize_2); % [0.6,0,0].
 		case 'Segmentation'
 			imshow(GP.Workspace(ii).Workspace.Image0); % ,'Parent',GP.Handles.Axes);
 			hold on;
@@ -182,14 +183,18 @@ function Reconstruction_Index(GP,ii)
 			% O = round(rescale([GP.Workspace(ii).Workspace.All_Points.Midline_Orientation],1,100)');
 			% CM = jet(100);
 			
-			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
+			imshow(GP.Workspace(ii).Workspace.Image0); % ,'Parent',GP.Handles.Axes
 			hold on;
 			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],DotSize_1,CM,'filled'); % [5,100]
 			% scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],5,CM(O,:),'filled');
 			
+			% C = CM(round(rescale(C,CM_Lims(1),CM_Lims(2),'InputMin',Curvature_Min_Max(1),'InputMax',Curvature_Min_Max(2))),:);
+			% CM = jet(1000);
+			% h = patch(X',Y',1,'FaceVertexCData',C,'EdgeColor','interp','MarkerFaceColor','flat','LineWidth',3);
+			
 		case 'Longitudinal Gradient'
 			
-			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
+			imshow(GP.Workspace(ii).Workspace.Image0); % ,'Parent',GP.Handles.Axes
 			hold on;
 			
 			O = round(rescale([GP.Workspace(ii).Workspace.All_Points.Axis_0_Position],1,100)');
@@ -268,25 +273,9 @@ function Reconstruction_Index(GP,ii)
 			Curvature_Min_Max = [0,0.3]; % 0.2
 			CM_Lims = [1,1000];
 			CM = jet(CM_Lims(2));
-			% Medial_Dist_Range = [0,60];
 			
 			imshow(GP.Workspace(ii).Workspace.Image0); % ,'Parent',GP.Handles.Axes);
 			hold on;
-			
-			%{
-			C = [GP.Workspace(ii).Workspace.All_Points.Curvature];
-			f = find(~isnan(C));
-			
-			X = [GP.Workspace(ii).Workspace.All_Points(f).X];
-			Y = [GP.Workspace(ii).Workspace.All_Points(f).Y];
-			C = C(f);
-			
-			C = rescale(C,CM_Lims(1),CM_Lims(2),'InputMin',Curvature_Min_Max(1),'InputMax',Curvature_Min_Max(2))';
-			
-			C = CM(round(C),:); % [O,0.*O,1-O];
-			%}
-			
-			% scatter(X,Y,DotSize_1.*10,C,'filled');
 			
 			for s=1:numel(GP.Workspace(ii).Workspace.Segments)
 				if(numel(GP.Workspace(ii).Workspace.Segments(s).Rectangles))
@@ -298,12 +287,11 @@ function Reconstruction_Index(GP,ii)
 					Y = [GP.Workspace(ii).Workspace.Segments(s).Rectangles(f).Y];
 					C = C(f);
 					
-					C = rescale(C,CM_Lims(1),CM_Lims(2),'InputMin',Curvature_Min_Max(1),'InputMax',Curvature_Min_Max(2))';
-					C = [uint8(255.*CM(round(C),:)) , uint8(ones(length(X),1))]';
+					C = CM(round(rescale(C,CM_Lims(1),CM_Lims(2),'InputMin',Curvature_Min_Max(1),'InputMax',Curvature_Min_Max(2))),:);
+					% C = rescale(C,0,1,'InputMin',Curvature_Min_Max(1),'InputMax',Curvature_Min_Max(2))';
 					
-					h = plot(X,Y,'LineWidth',2);
-					drawnow;
-					set(h.Edge,'ColorBinding','interpolated','ColorData',C);
+					Y(end) = nan;
+					h = patch(X',Y',1,'FaceVertexCData',C,'EdgeColor','interp','MarkerFaceColor','flat','LineWidth',2); % 8.
 				end
 			end
 			% Reconstruct_Curvature(GP.Workspace(ii).Workspace,Curvature_Min_Max(1),Curvature_Min_Max(2),Medial_Dist_Range(1),Medial_Dist_Range(2),1);
@@ -342,17 +330,18 @@ function Reconstruction_Index(GP,ii)
 					if(isempty(c)) % isnan(c)
 						plot(x,y,'Color',Class_Colors(end,:),'LineWidth',LineWidth_1);
 					else
-						plot(x,y,'Color',Class_Colors(c,:),'LineWidth',2); % Use 5 when zooming in.
+						plot(x,y,'Color',Class_Colors(c,:),'LineWidth',2); % Use 5 when zooming in. Otherwise 2.
 					end
 				end
 			end
 			
-			%{
+			% Plot the vertices:
+			%
 			X = [GP.Workspace(ii).Workspace.All_Vertices.X];
 			Y = [GP.Workspace(ii).Workspace.All_Vertices.Y];
 			
 			hold on;
-			scatter(X,Y,10,'k','filled'); % Use 100 when zooming in.
+			scatter(X,Y,10,'k','filled'); % Use 100 when zooming in. Otherwise 10.
 			%}
 			
 			% Use when zooming in:

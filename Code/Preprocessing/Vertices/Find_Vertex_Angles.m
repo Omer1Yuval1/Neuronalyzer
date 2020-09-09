@@ -1,35 +1,32 @@
-function Rectangles = Find_Vertex_Angles(Im_BW,Cxy,Rc,Scale_Factor,Peaks_Max_Num,Im_Rows,Im_Cols)
+function Rectangles = Find_Vertex_Angles(Workspace,Cxy,Rc,Scale_Factor,Peaks_Max_Num,Im_Rows,Im_Cols)
 	
 	Plot1 = 0;
 	Plot2 = 0;
 	Plot3 = 0;
 	
-	% TODO: Move to the parameters func:
-	SmoothingParameter = 0.99;
-	MinWidth = .5;
-	MaxWidth = 6;
-	Width_Ratio = .9;
-	Width_SmoothingParameter = 0.5;
-	Min_Final_Width = 1;
+	SmoothingParameter = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_SmoothingParameter;
+	MinWidth = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Rect_Width_Min_Max(1);
+	MaxWidth = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Rect_Width_Min_Max(2);
+	Width_Ratio = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Rect_Width_Ratio;
+	Width_SmoothingParameter = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Width_SmoothingParameter;
+	Min_Final_Width = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Min_Width;
+	Extension_Length = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Extension_Length;	
+	W = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Scan_Rect_Width;	
+	Rect_Length = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Scan_Rect_Length;	
+	
+	Min_Score_Ratio = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Min_Score_Ratio;	
+	MinPeakDis = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_MinPeakDis;	
+	MinPeakWidth = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_MinPeakWidth;	
+	MinPeakProm = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_MinPeakProm;
 	
 	Angle_Res = 1*(pi/180); % 1 degree. old version: round(60 * Rc); % 360*
 	N = round(2*pi/Angle_Res);
 	Theta = linspace(0,2*pi,N);
-	Extension_Length = 60*pi/180;
+	
 	Unique_Tolerance = Angle_Res; % 10^(-4);
 	
 	Polar_Extension = 2:find(abs([Theta-Extension_Length]) == min(abs([Theta-Extension_Length]))); % TODO: why start from 2?
 	Extension_Neglect_Length = 20*pi/180;
-	
-	W = 3; % Scanning rectangle width.
-	Va = 0; % (-5:5)*pi/180; % Angle range for rotation around each perimeter point. Not in Use!!!
-	Vw = 2:.1:8; % :.5:5; % TODO: scale.
-	Rect_Length = 5; % In pixels.
-	
-	Min_Score_Ratio = 0.95;
-	MinPeakDis = 20*(pi/180); % 10 degrees.
-	MinPeakWidth = 5*(pi/180); % 5 degrees.
-	MinPeakProm = .15; % .15
 	
 	Filtered_Scores = zeros(3,length(Theta)); % An array of scores for each perimeter point. 1st row  = score. 2nd row = angle. 3rd row = width.
 	Pxy = [Rc*cos(Theta') + Cxy(1) , Rc*sin(Theta') + Cxy(2)]; % Coordinates on the perimeter of the center circle.
@@ -41,30 +38,21 @@ function Rectangles = Find_Vertex_Angles(Im_BW,Cxy,Rc,Scale_Factor,Peaks_Max_Num
 	
 	for t=1:length(Theta) % For each angle. Scan for signal around (and outside) the vertex center using a series of straight lines.
 		
-		Rects_Scores = zeros(length(Va),length(Vw)); % Rows are angles, cols are width values.
-		% for w=1:length(Vw) % For each rectangle width.
-			for a=1:length(Va) % For each angle (rotation using a center perimeter point (t) as the rotation origin).
-				
-				% [XV,YV] = Get_Rect_Vector(Pxy(t,:),(Va(a)+Theta(t))*180/pi,Vw(w),Rect_Length,14); % Theta(t) is the direction perpendicular to the circle at the current point (rotation origin = Pxy).
-				% W = Adjust_Rect_Width_Rot_Generalized(Im_BW,Pxy(t,:),(Va(a)+Theta(t))*180/pi,Rect_Length,[1,6],14,0.5,0.8);
-				
-				[XV,YV] = Get_Rect_Vector(Pxy(t,:),Theta(t)*180/pi,W,Rect_Length,14); % Theta(t) is the direction perpendicular to the circle at the current point (rotation origin = Pxy).
-				
-				Coordinates1 = [];
-				if(min(XV) >= 1 && max(XV) <= Im_Cols && min(YV) >= 1 && max(YV) <= Im_Rows)
-					Coordinates1 = InRect_Coordinates(Im_BW,[XV',YV']);
-				end
-				
-				Filtered_Scores(1,t) = sum(Im_BW(Coordinates1)); %  / (Rect_Length*W); % Count 1-pixels and normalize to the area of the rectangle.
-				Filtered_Scores(2,t) = Theta(t); % Take the average of all the angles values that got the best score (for a specific width value).				
-				
-				if(Plot3 && ismember(t,Vt)) % Draw the convolving rectangles and the peak analysis.
-					hold on;
-					figure(1);
-					plot([XV,XV(1)],[YV,YV(1)],'Color',CM(find(t == Vt,1),:),'LineWidth',3);
-				end
-			end
-		% end
+		[XV,YV] = Get_Rect_Vector(Pxy(t,:),Theta(t)*180/pi,W,Rect_Length,14); % Theta(t) is the direction perpendicular to the circle at the current point (rotation origin = Pxy).
+		
+		Coordinates1 = [];
+		if(min(XV) >= 1 && max(XV) <= Im_Cols && min(YV) >= 1 && max(YV) <= Im_Rows)
+			Coordinates1 = InRect_Coordinates(Workspace.Im_BW,[XV',YV']);
+		end
+		
+		Filtered_Scores(1,t) = sum(Workspace.Im_BW(Coordinates1)); %  / (Rect_Length*W); % Count 1-pixels and normalize to the area of the rectangle.
+		Filtered_Scores(2,t) = Theta(t); % Take the average of all the angles values that got the best score (for a specific width value).				
+		
+		if(Plot3 && ismember(t,Vt)) % Draw the convolving rectangles and the peak analysis.
+			hold on;
+			figure(1);
+			plot([XV,XV(1)],[YV,YV(1)],'Color',CM(find(t == Vt,1),:),'LineWidth',3);
+		end
 	end
 	if(max(Filtered_Scores(1,:)) > 0)
 		Filtered_Scores(1,:) = Filtered_Scores(1,:) ./ max(Filtered_Scores(1,:)); % Normalize Scores to [0,1].
@@ -106,13 +94,13 @@ function Rectangles = Find_Vertex_Angles(Im_BW,Cxy,Rc,Scale_Factor,Peaks_Max_Num
 	Scores = zeros(1,length(Peaks));
 	Widths = zeros(1,length(Peaks));
 	for p=1:length(Peaks)
-		Widths(p) = max([Min_Final_Width,Adjust_Rect_Width_Rot_Generalized(Im_BW,Cxy,Locs(p)*180/pi,Rect_Length,...
+		Widths(p) = max([Min_Final_Width,Adjust_Rect_Width_Rot_Generalized(Workspace.Im_BW,Cxy,Locs(p)*180/pi,Rect_Length,...
 								[MinWidth,MaxWidth],14,Width_SmoothingParameter,Width_Ratio,Im_Rows,Im_Cols)]);
 		[XV,YV] = Get_Rect_Vector(Cxy,Locs(p)*180/pi,Widths(p),Rect_Length,14);
 		
 		if(min(XV) >= 1 && max(XV) <= Im_Cols && min(YV) >= 1 && max(YV) <= Im_Rows)
-			InRect1 = InRect_Coordinates(Im_BW,[XV',YV']);
-			Scores(p) = length(sum(Im_BW(InRect1))) ./ length(InRect1); % Number of "1" pixels divided by the total # of pixels within the rectangle.
+			InRect1 = InRect_Coordinates(Workspace.Im_BW,[XV',YV']);
+			Scores(p) = length(sum(Workspace.Im_BW(InRect1))) ./ length(InRect1); % Number of "1" pixels divided by the total # of pixels within the rectangle.
 		else
 			Scores(p) = 0; % Number of "1" pixels divided by the total # of pixels within the rectangle.
 		end
@@ -123,9 +111,9 @@ function Rectangles = Find_Vertex_Angles(Im_BW,Cxy,Rc,Scale_Factor,Peaks_Max_Num
 	% Overlaps = zeros(1,length(Peaks));
 	% if(Vertex_Type == 1) % If it's a tip.
 		% for p=1:length(Peaks) % Assign a score to each peak based on it's pixel overlap with the corresponding segment.
-			% W = max([1,Adjust_Rect_Width_Rot_Generalized(Im_BW,Cxy,Locs(p)*180/pi,Rect_Length,[MinWidth,MaxWidth],14,Width_SmoothingParameter,Width_Ratio)]);
+			% W = max([1,Adjust_Rect_Width_Rot_Generalized(Workspace.Im_BW,Cxy,Locs(p)*180/pi,Rect_Length,[MinWidth,MaxWidth],14,Width_SmoothingParameter,Width_Ratio)]);
 			% [XV,YV] = Get_Rect_Vector(Cxy,Locs(p)*180/pi,W,Rect_Length,14);
-			% InRect1 = InRect_Coordinates(Im_BW,[XV',YV']);
+			% InRect1 = InRect_Coordinates(Workspace.Im_BW,[XV',YV']);
 			% Overlaps(p) = length(intersect(Segment_Coordinates,InRect1)) / length(InRect1);
 			% hold on;
 			% plot(XV,YV,'r','LineWidth',3);
@@ -176,7 +164,7 @@ function Rectangles = Find_Vertex_Angles(Im_BW,Cxy,Rc,Scale_Factor,Peaks_Max_Num
 	for p=1:length(Peaks)
 		F1 = find(Theta == Locs(p)); % Find the central angle that corresponds to this peak.		
 		Rectangles(p).Angle = Filtered_Scores(2,F1);
-		% Rectangles(p).Width = Adjust_Rect_Width_Rot_Generalized(Im_BW,Pxy(F1,:),Theta(F1)*180/pi,Rect_Length,[1,6],14,0.5,0.8);
+		% Rectangles(p).Width = Adjust_Rect_Width_Rot_Generalized(Workspace.Im_BW,Pxy(F1,:),Theta(F1)*180/pi,Rect_Length,[1,6],14,0.5,0.8);
 		Rectangles(p).Width = Widths(p) * Scale_Factor; % Conversion to micrometers.
 		% Rectangles(p).Width = max([1,Widths(p)]);
 		% Rectangles(p).Width = Filtered_Scores(3,F1);

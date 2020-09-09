@@ -1,7 +1,5 @@
 function P = Parameters_Func(Scale_Factor,P)
 	
-	% To Keep in Mind (temp): I changes the maximal width ratio from 2 to 3. And the scan range from 130 to 90.
-	
 	General_Parameters.Version_Num = '2.0';
 	
 	General_Parameters.Image_Format = @(x) im2uint8(x(:,:,1));
@@ -44,10 +42,6 @@ function P = Parameters_Func(Scale_Factor,P)
 	
 	Tracing(1).Skel_Angle_Min_Length = 1.7857 ./ Scale_Factor; % In particular used with the skeleton since the segment width is 1 (=W_Min).	
 	
-	% Auto_Tracing_Parameters(1).Step_Smoothing_Parameter = 0.01; % 0.01. % TODO: should also be a function of Scale_Factor.
-	% Auto_Tracing_Parameters(1).Plot_Steps_Num = -10;
-	% Auto_Tracing_Parameters(1).Semi_Mode_Auto_Steps_Num = 10; % Number of steps to jump forward in manual mode.
-	
 	Auto_Tracing_Parameters(1).Global_Step_Length = 1; % In pixels.
 	Auto_Tracing_Parameters(1).Min_Rect_Width = .35/Scale_Factor; % Micrometers converted to pixels.
 	Auto_Tracing_Parameters(1).Max_Rect_Width_Ratio = 2; % Uppoer bound for width scanning (2 rects on both sides of the signal rect). Multiplication factor with the previous step width. Micrometers converted to pixels.
@@ -59,11 +53,26 @@ function P = Parameters_Func(Scale_Factor,P)
 	Auto_Tracing_Parameters(1).Rect_Width_Num_Of_Last_Steps = 6; % XXX
 	Auto_Tracing_Parameters(1).Skel_Vertex_Overlap_Factor = 2;
 	
-	% Auto_Tracing_Parameters(1).Rect_Length = 1.7/Scale_Factor; % 1.6
-	% Auto_Tracing_Parameters(1).Rect_Scan_Length_Width_Ratio = 2; % 2. 1.4, 1.5, 1.8, 2, 2.5;
-	% Auto_Tracing_Parameters(1).Rect_Length_Width_Ratio = 2; % 2. 1.4, 1.5, 1.8, 2, 2.5;
-	% Auto_Tracing_Parameters(1).Rect_Width_StepLength_Ratio = 2.5; % 4.
-	% Auto_Tracing_Parameters(1).Rect_Step_Length_Ratio = 5; % 4.
+	% Vertex center
+	Auto_Tracing_Parameters(1).Vertex_Center_Radius_Vector = .1:.01:5; % Radii vector (of increasing concentric circles) for junction center detection.
+	Auto_Tracing_Parameters(1).Vertex_Center_Cirle_Res = 500*Scale_Factor;
+	Auto_Tracing_Parameters(1).Vertex_Center_Min_Radius = 4*Scale_Factor;
+	Auto_Tracing_Parameters(1).Vertex_Center_Frame_Size = 5*Scale_Factor; % [6.5]. Neighborhood to test new potential centers around the approximated center. ~2.3 pixels for Scale_Factor=50/140.
+	Auto_Tracing_Parameters(1).Vertex_Center_Scan_Res = .25*Scale_Factor; % vertical\horizontal distance between potential centers. ~0.35 pixels for Scale_Factor=50/140.
+	
+	% Vertex angles
+	Auto_Tracing_Parameters(1).Vertex_Angles_SmoothingParameter = 0.99;
+	Auto_Tracing_Parameters(1).Vertex_Angles_Rect_Width_Min_Max = [.5,6];
+	Auto_Tracing_Parameters(1).Vertex_Angles_Rect_Width_Ratio = .9;
+	Auto_Tracing_Parameters(1).Vertex_Angles_Width_SmoothingParameter = 0.5;
+	Auto_Tracing_Parameters(1).Vertex_Angles_Min_Width = 1;
+	Auto_Tracing_Parameters(1).Vertex_Angles_Extension_Length = 60*pi/180;
+	Auto_Tracing_Parameters(1).Vertex_Angles_Scan_Rect_Width = 3; % Scanning rectangle width.
+	Auto_Tracing_Parameters(1).Vertex_Angles_Scan_Rect_Length = 5; % In pixels.
+	Auto_Tracing_Parameters(1).Vertex_Angles_Min_Score_Ratio = 0.95;
+	Auto_Tracing_Parameters(1).Vertex_Angles_MinPeakDis = 20*(pi/180); % 10 degrees.
+	Auto_Tracing_Parameters(1).Vertex_Angles_MinPeakWidth = 5*(pi/180); % 5 degrees.
+	Auto_Tracing_Parameters(1).Vertex_Angles_MinPeakProm = .15; % .15
 	
 	Auto_Tracing_Parameters.Zoom_Box = 10/Scale_Factor;
 	Auto_Tracing_Parameters(1).Rect_Rotation_Origin = 14; % Center: 0 ; Between corners 1&4: 14.
@@ -72,14 +81,7 @@ function P = Parameters_Func(Scale_Factor,P)
 	% Auto_Tracing_Parameters(1).Max_Angle_Diff = 150; % Max angle diff between succesive steps.
 	Auto_Tracing_Parameters(1).Step_Min_Peak_Distance = 15; % [degrees]. Used in 'findpeaks' to merge peaks with distance smaller than this value (using the smallest x-value as the resolution).
 	Auto_Tracing_Parameters(1).Step_Min_Peak_Prominence = 0.4; % 0.5, 0.3, 0.1, 60, 400, 1000, 0.02; % Definition: the vertical distance between a peak and it's heighest minima.
-	% Auto_Tracing_Parameters(1).Branch_First_Steps_Num_Limit_Angle = 3; % Including the first step.
-	% Auto_Tracing_Parameters(1).Branch_First_Steps_Limit_Angle = 30; % Including the first step.
-	% Auto_Tracing_Parameters(1).Min_Signal_Noise_diff = ; % 60, 400, 1000, 0.02; % Definition: the vertical distance between a peak and it's heighest minima.
-				 % Left\Right minimum - the end of the peak or a minimum point between the peak and a higher peak.
-				 % http://www.mathworks.com/help/signal/ref/findpeaks.html#buff2uu
-	% Auto_Tracing_Parameters(1).Filter_Box = 2/Scale_Factor; %
-	% Auto_Tracing_Parameters.Rect_Width_Filter_Raduis_Ratio = 2;
-	% Auto_Tracing_Parameters.Skel_Overlap_Treshold = 0.25;
+	
 	Auto_Tracing_Parameters.Trace_Skel_Max_Distance = .5/Scale_Factor; % In pixels (converted to micrometers).
 	Auto_Tracing_Parameters.Normalization_Width_Factor = 3; % Multiplication factor of the width of the BG sampling rectnangles.
 	% Auto_Tracing_Parameters(1).Filter_Rect_Width = 3/Scale_Factor;
@@ -89,28 +91,11 @@ function P = Parameters_Func(Scale_Factor,P)
 	Auto_Tracing_Parameters.Step_Normalization_Min_Peak_Height = 0.07; % 0.8; % 1,1.5,1.7,2.
 	Auto_Tracing_Parameters.Step_Normalization_Min_Peak_Distance = 30; % 20.
 	
-	% Auto_Tracing_Parameters.OverLap_Min_Distance = .7/Scale_Factor; % Used in 'Locations_Mat'.
-	% Auto_Tracing_Parameters.OverLap_Ignore_Last_Steps_Distance = .5/Scale_Factor; % Used in 'Locations_Mat'.
-	% Auto_Tracing_Parameters.OverLap_Num_Of_Steps = 1; % max(round(.4/Scale_Factor),3); % Used in 'Locations_Mat'. 'max' so that this value is always >0 pixels.
-	
-	% Auto_Tracing_Parameters.Tip_Scores_Ratio = 2; % 1.8,1.9,1.41; % Main route.
-	% Auto_Tracing_Parameters.Tip_Scores_Ratio_Minor = 1.66; % Minor Route. TODO: Currently not in use.
-	% Auto_Tracing_Parameters.Tip_Step_Probing_Length = 0.3/Scale_Factor; % Length to sum up scores of previous steps for one step.
-	% Auto_Tracing_Parameters.Tip_Steps_Probing_Length = 1.5/Scale_Factor; % Length for comparing sums.
-	% Auto_Tracing_Parameters.Trial_Steps_Num = 3; % TODO: Add Explaination.
-	% Auto_Tracing_Parameters.Min_Branch_Length = 1;
-	% Auto_Tracing_Parameters.Min_Branch_Steps = 5;
-	
 	Auto_Tracing_Parameters.Tracing_Scores_Weights = [0;0;1];
-	
-	% Auto_Tracing_Parameters.Self_Collision_Overlap_Ratio = 0.6;
 	
 	Analysis.Curvature.SmoothingParameter = 0.01;
 	Analysis.Curvature.Sample_Length = 1.8; % Micrometers. Sample length from each side of the point. ~5 pixels for Scale_Factor=50/40.
-	% Analysis.Curvature.Distance_From_Tips = 0;
 	Analysis.Curvature.Min_Points_Num = 3;
-	% Analysis.Persistence_Length.BinSize = .4;
-	%
 	
 	% Angle Correction:
 	Angle_Correction.Worm_Radius_um = 40;

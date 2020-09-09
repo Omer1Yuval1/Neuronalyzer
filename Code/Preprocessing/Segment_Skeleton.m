@@ -3,7 +3,7 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 	Messages = 0;
 	
 	[Ly,Lx] = size(Im1_branchpoints);
-	BP_Min_Dis = 4;
+	% BP_Min_Dis = 4;
 	
 	if(Messages)
 		assignin('base','Im1_NoiseReduction',Im1_NoiseReduction);

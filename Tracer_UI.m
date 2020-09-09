@@ -183,10 +183,10 @@ function Tracer_UI()
 					uimenu(H_Menu311,'Label','Midline Distance of Tips','UserData',2,'Callback',@Menu1_Plots_Func);
 					uimenu(H_Menu311,'Label','Histogram of Symmetry Indices','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','on');
 					uimenu(H_Menu311,'Label','Histogram of the Largest Angle','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','on');
+					uimenu(H_Menu311,'Label','Signed Midline Orientation of Junction Rectangles','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','on');
 					uimenu(H_Menu311,'Label','Distribution of Vertices Angles Relative To The Medial Axis','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
 					uimenu(H_Menu311,'Label','Distribution of Vertices Angles Relative To The Medial Axis - Corrected','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
 					uimenu(H_Menu311,'Label','Histogram of Smallest, Mid & Largest Angles','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','on');
-					uimenu(H_Menu311,'Label','Distribution of Min Medial Angle Diff','UserData',2,'Callback',@Menu1_Plots_Func,'Enable','off');
 					uimenu(H_Menu31_Angles,'Label','Distribution of the Difference between Vertex and End2End Angles','UserData',1,'Callback',@Menu1_Plots_Func,'Enable','off');
 				H_Menu312 = uimenu(H_Menu31_Angles,'Label','Two Angles Plots','Callback','');
 					H_Menu3120 = uimenu(H_Menu312,'Label','Menorah Orders of 3-Way Junctions','UserData',2,'Callback',@Menu1_Plots_Func);
@@ -226,6 +226,8 @@ function Tracer_UI()
 			
 		H_Menu8_Angular = uimenu(Graphs_Menu_Handle,'Label','Angular Coordinate','Callback','');
 			uimenu(H_Menu8_Angular,'Label','Angular Coordinate of All Points','Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu8_Angular,'Label','Angular Coordinate of Junctions','Callback',@Menu1_Plots_Func);
+			uimenu(H_Menu8_Angular,'Label','Angular Coordinate of Tips','Callback',@Menu1_Plots_Func);
 			uimenu(H_Menu8_Angular,'Label','Angular Coordinate of All Points - Second Moment','Callback',@Menu1_Plots_Func);
 		
 		H_Menu7_Midline_Density = uimenu(Graphs_Menu_Handle,'Label','Menorah Orders','Callback','');
