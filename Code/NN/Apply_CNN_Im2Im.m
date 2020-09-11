@@ -7,13 +7,12 @@ function ImP = Apply_CNN_Im2Im(My_CNN,Im0)
 	% Each pixel in the output matrix contains the probability of the corresponding pixel in the grayscale image of being
 	% a neuron pixel or a non-neuron pixel.
 	
-	% profile on;
-	
 	STD_Threshold = 0; % 0.05; % 0.1.
 	Save_Patches = 0;
 	
 	FS = My_CNN.Layers(1).InputSize(1); % Frame Size.
 	FHS = (FS - 1) ./ 2; % Frame Half Size.
+	dF = FS; % 1.
 	
 	% Im0 = rescale(Im0(:,:,1),0,1,'InputMin',0,'InputMax',255);
 	Im0 = rescale(im2double(Im0(:,:,1)));
@@ -24,28 +23,24 @@ function ImP = Apply_CNN_Im2Im(My_CNN,Im0)
 	
 	if(Save_Patches)
 		figure('WindowState','maximized');
-		Path1 = 'D:\Dropbox (Technion Dropbox)\Omer Yuval\Neuronalizer\Neuronalizer Paper\Figures\Figure 2\CNN\Sample_Denoised_Windows';
+		Path1 = './';
 		ii = 0;
 	end
 	
 	% % % Make sure the FHS is smaller than half the image min(dimensions).
-	% for r=1+FHS:FS:Rows1-FHS % For each row (without the margins).
-		% for c=1+FHS:FS:Cols1-FHS % For each col (without the margins).
-	for r=1+FHS:1:Rows1-FHS % For each row (without the margins).
-		for c=1+FHS:1:Cols1-FHS % For each col (without the margins).
+	for r=1+FHS:dF:Rows1-FHS % For each row (without the margins).
+		for c=1+FHS:dF:Cols1-FHS % For each col (without the margins).
 			dx = c-FHS:c+FHS;
 			dy = r-FHS:r+FHS;
 			Frame_In = Im0(dy,dx);
 			
-			% if(std(Frame_In(:))) % If the std of all pixels in the frame > 0.
-			if(std(Frame_In(:)) > STD_Threshold)
+			if(std(Frame_In(:)) > STD_Threshold) % if(std(Frame_In(:))) % If the std of all pixels in the frame > 0.
 				Frame_Out = predict(My_CNN,Frame_In);
 				
 				ImP(dy,dx) = ImP(dy,dx) + Frame_Out;
 				
 				ImD(dy,dx) = ImD(dy,dx) + 1;
 				
-				%{
 				if(Save_Patches)
 					ii = ii + 1;
 					hold on;
@@ -53,12 +48,11 @@ function ImP = Apply_CNN_Im2Im(My_CNN,Im0)
 					waitforbuttonpress;
 					% export_fig([Path1,filesep,num2str(ii),'.tif'],'-tif',gca);
 				end
-				%}
 			end
 		end
-		% if(Save_Patches && ii == 100)
-		% 	break;
-		% end
+		if(Save_Patches && ii == 100)
+			break;
+		end
 	end
 	
 	ImP = ImP ./ ImD;
