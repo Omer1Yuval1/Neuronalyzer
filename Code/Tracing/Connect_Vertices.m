@@ -5,7 +5,7 @@ function Workspace = Connect_Vertices(Workspace,Ax)
 	Plot0 = 1;
 	Plot1 = 0;
 	Plot2 = 0;
-	Messages = 1;
+	Messages = 0;
 	
 	if(Messages)
 		assignin('base','Workspace_Trace_0',Workspace);
@@ -108,7 +108,7 @@ function Workspace = Connect_Vertices(Workspace,Ax)
 	Segments_Array = ones(1,numel(Workspace.Segments));
 	Segments_Array(Traced_Segments) = 0; % Ignore short segments for which the skeleton is used instead.
 	
-	Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array(193) = 1; % Use row number (not segment index).
+	% Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array(193) = 1; % Use row number (not segment index).
 	%%% Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array([139]) = 1;
 	%%% Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array([129]) = 1;
 	
