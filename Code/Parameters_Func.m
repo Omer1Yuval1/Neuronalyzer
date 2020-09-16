@@ -40,6 +40,7 @@ function P = Parameters_Func(Scale_Factor,P)
 	m = (L_Max - L_Min) ./ (W_Max - W_Min);
 	Tracing(1).Rect_Length_Width_Func = @(w) (w<=W_Min).*(L_Min) + (w>W_Max).*L_Max + (w>W_Min).*(w<=W_Max).*(m .* (w-W_Min)+L_Min);
 	
+	% Skeleton
 	Tracing(1).Skel_Angle_Min_Length = 1.7857 ./ Scale_Factor; % In particular used with the skeleton since the segment width is 1 (=W_Min).	
 	
 	Auto_Tracing_Parameters(1).Global_Step_Length = 1; % In pixels.
@@ -78,12 +79,12 @@ function P = Parameters_Func(Scale_Factor,P)
 	Auto_Tracing_Parameters(1).Rect_Rotation_Origin = 14; % Center: 0 ; Between corners 1&4: 14.
 	Auto_Tracing_Parameters(1).Rect_Rotation_Range = 70; % Rotation angle (to one side, in degrees).
 	Auto_Tracing_Parameters(1).Rotation_Res = 5; % 5,10; % Rotation resolution (in degrees).
-	% Auto_Tracing_Parameters(1).Max_Angle_Diff = 150; % Max angle diff between succesive steps.
+	% Auto_Tracing_Parameters(1).Max_Angle_Diff = 150; % Max angle diff between successive steps.
 	Auto_Tracing_Parameters(1).Step_Min_Peak_Distance = 15; % [degrees]. Used in 'findpeaks' to merge peaks with distance smaller than this value (using the smallest x-value as the resolution).
 	Auto_Tracing_Parameters(1).Step_Min_Peak_Prominence = 0.4; % 0.5, 0.3, 0.1, 60, 400, 1000, 0.02; % Definition: the vertical distance between a peak and it's heighest minima.
 	
-	Auto_Tracing_Parameters.Trace_Skel_Max_Distance = .5/Scale_Factor; % In pixels (converted to micrometers).
-	Auto_Tracing_Parameters.Normalization_Width_Factor = 3; % Multiplication factor of the width of the BG sampling rectnangles.
+	Auto_Tracing_Parameters.Trace_Skel_Max_Distance = 1.5; % .5/Scale_Factor; % In pixels (converted to micrometers).
+	Auto_Tracing_Parameters.Normalization_Width_Factor = 3; % Multiplication factor of the width of the BG sampling rectangles.
 	% Auto_Tracing_Parameters(1).Filter_Rect_Width = 3/Scale_Factor;
 	Auto_Tracing_Parameters.Hist_Bins_Res = 5;
 	Auto_Tracing_Parameters.Step_Scores_Smoothing_Parameter = 0.05;

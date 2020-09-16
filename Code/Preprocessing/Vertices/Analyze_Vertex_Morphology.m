@@ -44,7 +44,7 @@ function Workspace = Analyze_Vertex_Morphology(Workspace,Im_branchpoints)
 			New_Cxy = Workspace.Vertices(i).Coordinate; % Do not correct the center of end-point.
 			Rc = 0; % Vertex center radius. Tips are assigned with a 0 radius.
 		end
-		Rectangles = Find_Vertex_Angles(Workspace,New_Cxy,Rc,Scale_Factor,Workspace.Vertices(i).Order,Im_Rows,Im_Cols);
+		Rectangles = Find_Vertex_Angles(Workspace,i,New_Cxy,Rc,Scale_Factor,Im_Rows,Im_Cols);
 		% [Workspace,Rectangles] = Match_Vertex_Rects_To_Segments(Workspace,i,Rectangles,Segments_Vertices);
 		
 		Workspace.Vertices(i).Coordinate = New_Cxy;

@@ -21,10 +21,11 @@ function Workspace = Vertices_Analysis_Index(Workspace)
 	% [CBy,CBx] = ind2sub(size(Im1),CB_Pixels);
 	% return;
 	
-	[Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints,Im_Skel_Rad] = Pixel_Trace_Post_Proccessing(Workspace.Im_BW,Scale_Factor);
+	[Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints,Im_Skel_Rad] = Pixel_Trace_Post_Proccessing(Workspace.Im_BW,Scale_Factor); % Skeletonization.
 	[Workspace.Vertices,Workspace.Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints,Im_Skel_Rad);
-	% Workspace.Vertices = Analyze_Vertex_Morphology(Workspace.Vertices,Workspace.Segments,Workspace.Im_BW,Im1_branchpoints,Scale_Factor);
 	
+    Workspace = Match_Vertex_Rects_To_Segments_Skel(Workspace);	
+    
 	% assignin('base','Wi_1_5',Workspace);
 	
 	Workspace = Analyze_Vertex_Morphology(Workspace,Im1_branchpoints);
@@ -33,4 +34,14 @@ function Workspace = Vertices_Analysis_Index(Workspace)
 	
 	% assignin('base','Workspace_Pre_1',Workspace);
 	% assignin('base','CB_Vertices',CB_Vertices);
+	
+	% To test the skeleton:
+	%{
+	figure; imshow(Im1_NoiseReduction);
+	for s=1:numel(Workspace.Segments)
+		[y,x] = ind2sub(size(Im1_NoiseReduction),Workspace.Segments(s).Skeleton_Linear_Coordinates);
+		hold on; plot(x,y,'.','MarkerSize',30,'Color',rand(1,3));
+	end
+	[Y,X] = find(Im1_branchpoints); hold on; plot(X,Y,'.k','MarkerSize',30);
+	%}
 end

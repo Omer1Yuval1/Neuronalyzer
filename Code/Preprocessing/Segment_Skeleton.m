@@ -39,14 +39,15 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 		Vertices(Vi).Order = sum(sum(Im1_NoiseReduction(By(b)-1:By(b)+1,Bx(b)-1:Bx(b)+1))) - 1; % # of "1" pixels connected to the vertex (tip or branch-point).
 	end
 	
-	Fv = find([Vertices.Order] >= 3);
+	Fv = find([Vertices.Order] >= 3); % Find junctions (3+ pixels around the branch-point).
 	% for v=Fv % For each branch-point.
 	for v=1:numel(Vertices) % For each vertex (a branch-point or a tip).
-		[Vy,Vx] = ind2sub([Ly,Lx],Vertices(v).Coordinate);
+		
+		[Vy,Vx] = ind2sub([Ly,Lx],Vertices(v).Coordinate); % Vertex origin coordinate [x,y].
 		Im1_NoiseReduction(Vy,Vx) = 0; % Delete the branch-point.
 		[Ry,Rx] = find(Im1_NoiseReduction(Vy-1:Vy+1,Vx-1:Vx+1) > 0); % Find the 1st pixel of each route connected to this branch-point.
 		Ry = Ry + Vy - 2; % Convert back to the full image coordinates.
-		Rx = Rx + Vx - 2; %
+		Rx = Rx + Vx - 2; % ".
 		
 		Im1_NoiseReduction(Ly.*(Rx-1)+Ry) = -1; % Mark the 1st pixels (using linear indices).
 		
@@ -54,11 +55,10 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 		
 		for r=1:length(Ry) % For each route connected to this branch-point.
 
-			% If a pixel is connected to a branchpoint and no longer connected to anything else,
-			% (it was traced from the opposite side), ignore it.
+			% If a pixel is connected to a branch-point and no longer connected to anything else (it was traced from the opposite side), ignore it.
 			if( length(find(Im1_NoiseReduction(Ry(r)-1:Ry(r)+1,Rx(r)-1:Rx(r)+1) > 0)) == 0)
 				if(Messages)
-					disp(['I detected a pixel which is connected to a branchpoint but not to anything else. I am ignoring this pixel. Coordinate: [',num2str([Rx(r),Ry(r)]),'].']);
+					disp(['I detected a pixel connected to a branch-point but not to anything else. I am ignoring this pixel. Coordinate: [',num2str([Rx(r),Ry(r)]),'].']);
 				end
 				continue;
 			end
@@ -72,7 +72,7 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 			Ry0 = Ry(r);
 			Rx0 = Rx(r);
 			Fr1 = Ly*(Rx0-1)+Ry0;
-			Segments(Si).Skeleton_Linear_Coordinates = Fr1; % Log the 1st point of the segment.
+			Segments(Si).Skeleton_Linear_Coordinates = [Vertices(v).Coordinate,Fr1]; % Log the 1st two point of the segment (the vertex pixel and the one next to it).
 			
 			while(1) % Collect segment coordinates (pixels).
 				% Im1_NoiseReduction(Fr1) = 0; % Delete the current pixel.
@@ -82,8 +82,11 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 				Fr1 = Ly*(Rx2-1)+Ry2; % Conversion of the frame coordinates (in the full image) to linear indices.
 				
 				if(length(Fr1) == 1) % Only one new point in the neighborhood (a segment point, a junction or a tip).
-					if(length(find([Vertices.Coordinate] == Fr1))) % If it's vertex.
-						Segments(Si).Vertices(2) = Vertices(find([Vertices.Coordinate] == Fr1)).Vertex_Index; % Find the vertex with the same coordinate.
+					
+					f2 = find([Vertices.Coordinate] == Fr1); % Find a vertex coordinate that matches the current segment pixel.
+					if(~isempty(f2)) % If it's vertex.
+						Segments(Si).Vertices(2) = Vertices(f2).Vertex_Index; % Find the vertex with the same coordinate.
+						Segments(Si).Skeleton_Linear_Coordinates(end+1) = Vertices(f2).Coordinate; % Add the 2nd vertex coordinate as the last segment pixel.
 						break;
 					else
 						Segments(Si).Skeleton_Linear_Coordinates(end+1) = Fr1; % Taking 1st just in case there's more than one option (should not occur).
@@ -101,15 +104,20 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 					
 					F1 = find(D10(2,:) == 1); % Find which of the potential next-points are branch-points.
 					if(length(F1)) % If there is at least 1 branch-point. Take the first value (there should be only one).
-						Segments(Si).Vertices(2) = Vertices(find([Vertices.Coordinate] == Fr1(F1(1)))).Vertex_Index; % Find the vertex with the same coordinate.
+						f2 = find([Vertices.Coordinate] == Fr1(F1(1))); % Find the vertex with the same coordinate.
+						Segments(Si).Vertices(2) = Vertices(f2).Vertex_Index; % Assign it as the 2nd vertex.
+						Segments(Si).Skeleton_Linear_Coordinates(end+1) = Vertices(f2).Coordinate;
+						
 						if(Messages)	
-							disp('Let me know if you detect more than one branch-point in one neighborhood');
+							disp('Detected multiple branch-points in a single neighborhood');
 						end
+						
 						break;
 					else % If the array does not contain any branch-point.
 						F2 = find(D10(1,:) == min(D10(1,:)));
 						Fr1 = Fr1(F2(1)); % Taking F2(*1*) just in case there's more than one option (should not occur).
 						Segments(Si).Skeleton_Linear_Coordinates(end+1) = Fr1;
+						
 						Im1_NoiseReduction(Fr1) = 0; % Delete the current pixel.
 						if(Messages && length(F2) > 1)
 							disp('F2 should always have a single value. Let me know if it does not');
@@ -130,10 +138,15 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 						Cy2 = Cy1 + Ry0 - 2; % Conversion of the small frame to the coordinates of the full image.
 						Cx2 = Cx1 + Rx0 - 2; % ".
 						Fr1 = Ly*(Cx2-1)+Cy2; % Conversion to linear indices.
-						Segments(Si).Vertices(2) = Vertices(find([Vertices.Coordinate] == Fr1)).Vertex_Index; % Find the vertex with the same coordinate.
+						
+						f2 = find([Vertices.Coordinate] == Fr1);
+						Segments(Si).Vertices(2) = Vertices(f2).Vertex_Index; % Find the vertex with the same coordinate.
+						Segments(Si).Skeleton_Linear_Coordinates(end+1) = Vertices(f2).Coordinate;
+						
 						if(Messages)
 							disp('It is a Loop!');
 						end
+						
 						break;
 					elseif(length(Ry1)) % This must come after looking for a branch-point (1st if, same level). Because a point might be connected to both a branch-point and a -1 point which belongs to a different segment.
 						Ry2 = Ry1 + Ry0 - 2; % Conversion of the small frame to the coordinates of the full image.
@@ -150,7 +163,7 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 					else
 						Segments(Si).Vertices(2) = -1;
 						if(Messages)
-							disp(['The array of neighborhood pixels was empty. Segment ',num2str(Si)]);
+							disp(['The array of neighborhood pixels is empty. A Second vertex is not assigned to Segment ',num2str(Si)]);
 						end
 						break;
 					end

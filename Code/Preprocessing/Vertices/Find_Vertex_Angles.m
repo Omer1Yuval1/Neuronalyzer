@@ -1,8 +1,10 @@
-function Rectangles = Find_Vertex_Angles(Workspace,Cxy,Rc,Scale_Factor,Peaks_Max_Num,Im_Rows,Im_Cols)
+function Rectangles = Find_Vertex_Angles(Workspace,v,Cxy,Rc,Scale_Factor,Im_Rows,Im_Cols)
 	
 	Plot1 = 0;
 	Plot2 = 0;
 	Plot3 = 0;
+	
+	Peaks_Max_Num = Workspace.Vertices(v).Order;
 	
 	SmoothingParameter = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_SmoothingParameter;
 	MinWidth = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Rect_Width_Min_Max(1);
@@ -107,23 +109,24 @@ function Rectangles = Find_Vertex_Angles(Workspace,Cxy,Rc,Scale_Factor,Peaks_Max
 	end
 	[~,Ip] = sort(Scores,'descend'); % Sort the normalized scores.
 	
-	% % assignin('base','Locs',Locs);
-	% Overlaps = zeros(1,length(Peaks));
-	% if(Vertex_Type == 1) % If it's a tip.
-		% for p=1:length(Peaks) % Assign a score to each peak based on it's pixel overlap with the corresponding segment.
-			% W = max([1,Adjust_Rect_Width_Rot_Generalized(Workspace.Im_BW,Cxy,Locs(p)*180/pi,Rect_Length,[MinWidth,MaxWidth],14,Width_SmoothingParameter,Width_Ratio)]);
-			% [XV,YV] = Get_Rect_Vector(Cxy,Locs(p)*180/pi,W,Rect_Length,14);
-			% InRect1 = InRect_Coordinates(Workspace.Im_BW,[XV',YV']);
-			% Overlaps(p) = length(intersect(Segment_Coordinates,InRect1)) / length(InRect1);
-			% hold on;
-			% plot(XV,YV,'r','LineWidth',3);
-			% disp(length(InRect1));
-		% end
-		% % disp(Overlaps);
-		% [~,Ip] = sort(Overlaps,'descend'); % Sort the filtered peaks by pixel overlap with the corresponding segment.
-	% else % Not a tip.
-		% [~,Ip] = sort(Proms,'descend'); % Sort the filtered peaks by prominence.
-	% end
+	%{
+	Overlaps = zeros(1,length(Peaks));
+	if(Vertex_Type == 1) % If it's a tip.
+		for p=1:length(Peaks) % Assign a score to each peak based on it's pixel overlap with the corresponding segment.
+			W = max([1,Adjust_Rect_Width_Rot_Generalized(Workspace.Im_BW,Cxy,Locs(p)*180/pi,Rect_Length,[MinWidth,MaxWidth],14,Width_SmoothingParameter,Width_Ratio)]);
+			[XV,YV] = Get_Rect_Vector(Cxy,Locs(p)*180/pi,W,Rect_Length,14);
+			InRect1 = InRect_Coordinates(Workspace.Im_BW,[XV',YV']);
+			Overlaps(p) = length(intersect(Segment_Coordinates,InRect1)) / length(InRect1);
+			hold on;
+			plot(XV,YV,'r','LineWidth',3);
+			disp(length(InRect1));
+		end
+		% disp(Overlaps);
+		[~,Ip] = sort(Overlaps,'descend'); % Sort the filtered peaks by pixel overlap with the corresponding segment.
+	else % Not a tip.
+		[~,Ip] = sort(Proms,'descend'); % Sort the filtered peaks by prominence.
+	end
+	%}
 	
 	Peaks = Peaks(Ip);
 	Locs = Locs(Ip);
@@ -159,30 +162,53 @@ function Rectangles = Find_Vertex_Angles(Workspace,Cxy,Rc,Scale_Factor,Peaks_Max
 		set(gca,'unit','normalize');
 		set(gca,'position',[0.07,0.16,0.91,0.8]);
 	end
-	% disp(Widths);
-	Rectangles = struct('Origin',{},'Angle',{},'Width',{},'Length',{});
-	for p=1:length(Peaks)
+	
+	Ap = nan(1,length(Peaks));
+	dA = nan(1,length(Peaks));
+	Cxy = nan(length(Peaks),2);
+	for p=1:length(Peaks) % List angles.
 		F1 = find(Theta == Locs(p)); % Find the central angle that corresponds to this peak.		
-		Rectangles(p).Angle = Filtered_Scores(2,F1);
-		% Rectangles(p).Width = Adjust_Rect_Width_Rot_Generalized(Workspace.Im_BW,Pxy(F1,:),Theta(F1)*180/pi,Rect_Length,[1,6],14,0.5,0.8);
-		Rectangles(p).Width = Widths(p) * Scale_Factor; % Conversion to micrometers.
-		% Rectangles(p).Width = max([1,Widths(p)]);
-		% Rectangles(p).Width = Filtered_Scores(3,F1);
-		Rectangles(p).Length = Rect_Length * Scale_Factor; % Conversion from pixels to micrometers.
-		Rectangles(p).Origin = Pxy(F1,:);
+		Ap(p) = Filtered_Scores(2,F1);
+		Cxy(p,:) = Pxy(F1,:);
+	end
+	
+	Rectangles = Workspace.Vertices(v).Rectangles;
+	for r=1:numel(Workspace.Vertices(v).Rectangles) % For each pre-defined skeleton direction (= segment connected to this vertex).
+		As = mod(Workspace.Vertices(v).Rectangles(r).Angle,2*pi); % Skeleton angle r.
 		
-		if(Plot1)
+		dA = nan(1,length(Peaks));
+		for p=1:length(Peaks) % Find angle diff for each peak.
+			if(~isnan(Ap(p)))
+				dA(p) = max([As,Ap(p)]) - min([As,Ap(p)]); % Positive angle different (bigger minus smaller).
+			else
+				dA(p) = nan;
+			end
+		end
+		
+		Fmin = find(dA == min(dA),1); % Find minimum angle difference between the skeleton and peaks.
 			
-			D = 8;
-			axis([Cxy(1)+[-D,+D],Cxy(2)+[-D,+D]]);
+		if(~isempty(Fmin)) % Update the parameters of this vertex direction.
+			Rectangles(r).Origin = Cxy(Fmin,:);
+			Rectangles(r).Width = Widths(Fmin) * Scale_Factor; % Conversion from pixels to micrometers.
+			Rectangles(r).Length = Rect_Length * Scale_Factor; % Conversion from pixels to micrometers.
+			Rectangles(r).Angle = Ap(Fmin);
 			
-			[XV,YV] = Get_Rect_Vector(Pxy(F1,:),Rectangles(p).Angle*180/pi,Widths(p),Rect_Length,14);
-			% plot([XV,XV(1)],[YV,YV(1)],'Color',[0,0.7,0],'LineWidth',3);
-			plot([XV,XV(1)],[YV,YV(1)],'LineWidth',4);
-			drawnow;
-			% plot(Pxy(F1,1),Pxy(F1,2),'.b','MarkerSize',15);
+			Ap(Fmin) = nan; % Remove the chosen angle value from the list.
+			
+			if(Plot1)
+				D = 8;
+				axis([Cxy(1)+[-D,+D],Cxy(2)+[-D,+D]]);
+				
+				[XV,YV] = Get_Rect_Vector(Pxy(F1,:),Rectangles(p).Angle*180/pi,Widths(p),Rect_Length,14);
+				
+				plot([XV,XV(1)],[YV,YV(1)],'LineWidth',4); % plot([XV,XV(1)],[YV,YV(1)],'Color',[0,0.7,0],'LineWidth',3);
+				drawnow;
+				waitforbuttonpress;
+				% plot(Pxy(F1,1),Pxy(F1,2),'.b','MarkerSize',15);
+			end
 		end
 	end
+	
 	if(Plot1 || Plot3)
 		figure(1);
 		hold on;

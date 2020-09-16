@@ -10,7 +10,7 @@ function Segment = Connect_Using_Skeleton(Segment,Im_Rows,Im_Cols,Scale_Factor)
 
 	X2 = Segment.Rectangles2(end).X;
 	Y2 = Segment.Rectangles2(end).Y;
-
+    
 	D2 = ( (Xs-X2).^2 + (Ys-Y2).^2 ) .^ 0.5; % The distances of all skeleton coordinates from the current step's origin.
 	F2 = find(D2 == min(D2)); % Find the closest skeleton coordinate.
 	
@@ -20,7 +20,5 @@ function Segment = Connect_Using_Skeleton(Segment,Im_Rows,Im_Cols,Scale_Factor)
 			Segment.Rectangles1(end).Y = Ys(r);
 			Segment.Rectangles1(end).Width = 1 .* Scale_Factor;
 		end
-		Segment.Rectangles = [Segment.Rectangles1,flip(Segment.Rectangles2)]; % Flipping only the order of points and ***not the angle***.
-		Segment.Rectangles = rmfield(Segment.Rectangles,{'Length','Angle','BG_Intensity','BG_Peak_Width'}); % Delete uncessary fields.
 	end
 end
