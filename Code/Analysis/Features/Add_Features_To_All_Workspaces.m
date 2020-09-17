@@ -10,11 +10,13 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 		
 		Scale_Factor = W(i).Workspace.User_Input.Scale_Factor;
 		
+		%{
 		if(isfield(W(i).Workspace,'Parameters'))
 			W(i).Workspace.Parameters = Parameters_Func(Scale_Factor,W(i).Workspace.Parameters);
 		else
 			W(i).Workspace.Parameters = Parameters_Func(Scale_Factor);
 		end
+		%}
 		W(i).Workspace.Parameters = Parameters_Func(Scale_Factor);
 		
 		if(~isfield(W(i).Workspace,'Im_BW') || isempty(W(i).Workspace.Im_BW))

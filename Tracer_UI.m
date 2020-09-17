@@ -308,11 +308,9 @@ function Tracer_UI()
 		end
 		
 		set(All_Enabled_Objects_0,'Enable','on');
-		set(H_Recon_Original_Image,'Enable','on');
-		set(H_Recon_Original_Image_RGB,'Enable','on');
-		set(H_Recon_Probability_Image,'Enable','on');
-		set(H_Recon_Probability_Image_RGB,'Enable','on');
-		set(H_Recon_Binary_Image,'Enable','on');
+		set(H_Raw_Image,'Enable','on');
+		set(H_CNN,'Enable','on');
+		set(H_Binary,'Enable','on');
 		set(H_Recon_Skeleton_Image,'Enable','on');
 		
 		GUI_Parameters.General.Active_Plot = 'Binary Image';
@@ -1205,7 +1203,7 @@ function Tracer_UI()
 		
 		Th.Data = [A,B];
 		
-        function Continue_Func(source1,callbackdata1)
+		function Continue_Func(source1,callbackdata1)
 			delete(H1);
 		end
 	end

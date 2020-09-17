@@ -108,7 +108,7 @@ function Workspace = Connect_Vertices(Workspace,Ax)
 	Segments_Array = ones(1,numel(Workspace.Segments));
 	Segments_Array(Traced_Segments) = 0; % Ignore short segments for which the skeleton is used instead.
 	
-    % Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array(200) = 1; % Use row number (not segment index).
+	% Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array(334) = 1; % Use row number (not segment index).
 	%%% Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array([139]) = 1;
 	%%% Segments_Array = zeros(1,numel(Workspace.Segments)); Segments_Array([129]) = 1;
 	
@@ -179,15 +179,6 @@ function Workspace = Connect_Vertices(Workspace,Ax)
 				
 				[Locs1] = Trace_Peak_Analysis(Workspace,Step_Params,s,v,Scores_Fit,[Im_Rows,Im_Cols]);
 				
-				% if(round(Step_Params.Rotation_Origin(1)) == 146 && round(Step_Params.Rotation_Origin(2)) == 414)
-					% assignin('base','Step_Params',Step_Params);
-					% assignin('base','Im_Rows',Im_Rows);
-					% assignin('base','Im_Cols',Im_Cols);
-					% assignin('base','Step_Scores_Smoothing_Parameter',Step_Scores_Smoothing_Parameter);
-					% assignin('base','s',s);
-					% assignin('base','v',v);
-				% end
-				
 				if(v == Plot2) % && Step_Num < 2)
 					figure(2);
 					clf(2);
@@ -218,10 +209,13 @@ function Workspace = Connect_Vertices(Workspace,Ax)
 				
 				if(~isempty(F1) && ~isempty(Locs1)) % If there's a collision with another segment.
 					Workspace.Segments(s) = Connect_Using_Skeleton(Workspace.Segments(s),Im_Rows,Im_Cols,Scale_Factor);
+					
+					Workspace.Segments(s).Rectangles = [Workspace.Segments(s).Rectangles1,flip(Workspace.Segments(s).Rectangles2)]; % Flipping only the order of points and ***not the angle***.
+					Workspace.Segments(s).Rectangles = rmfield(Workspace.Segments(s).Rectangles,{'Length','Angle','BG_Intensity','BG_Peak_Width'}); % Delete unnecessary fields.
+					
 					Segments_Array(s) = -1;
 					if(Messages)
-						% disp(f1);
-						disp(['Oh No, I(',num2str(s),') Lost My Segment.']);
+						disp(['Oh No, I(',num2str(s),') Lost My Segment. Using skeleton to complete the missing part.']);
 					end
 					break;
 				else % If we're still on the current path (according to the skeleton), OR if there's no peak.
@@ -235,7 +229,7 @@ function Workspace = Connect_Vertices(Workspace,Ax)
 							
 							Segments_Array(s) = -1;
 							if(Messages)
-								disp(['I could not find any peaks for both directions. Using skeleton to complete the missing part. Segment ',num2str(s),' tracing is terminated.']);
+								disp(['I could not find any peaks for both directions. Using skeleton to complete the missing part. Segment ',num2str(s)]);
 							end
 							break; % If both vertices have no peaks, do not continue, break (to avoid inf).
 						else
@@ -311,7 +305,7 @@ function Workspace = Connect_Vertices(Workspace,Ax)
 						plot(XV,YV,'LineWidth',3);
 						hold on;
 						[SkelY,SkelX] = ind2sub([Im_Rows,Im_Cols],Workspace.Segments(s).Skeleton_Linear_Coordinates);
-						plot(SkelX,SkelY,'r');
+						% plot(SkelX,SkelY,'r');
 						plot(SkelX,SkelY,'.r');
 						% disp(Step_Length);
 						% disp(Workspace.Segments(s).(Field0)(end).Angle);
@@ -338,7 +332,7 @@ function Workspace = Connect_Vertices(Workspace,Ax)
 	if(Messages)
 		assignin('base','Workspace_Trace_1',Workspace);
 	end
-	assignin('base','Segments_Array',Segments_Array);
+	% assignin('base','Segments_Array',Segments_Array);
 	% figure; imshow(Locations_Map);
 	% set(gca,'YDir','normal');
 	% assignin('base','Workspace',Workspace);

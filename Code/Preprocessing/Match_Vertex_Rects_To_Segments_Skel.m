@@ -15,7 +15,7 @@ function Workspace = Match_Vertex_Rects_To_Segments_Skel(Workspace)
 	Segments_Vertices = [Segments_Vertices(1:2:end-1)' , Segments_Vertices(2:2:end)'];
 	
 	for v=1:numel(Workspace.Vertices)
-		
+        
 		Workspace.Vertices(v).Rectangles = struct('Origin',{},'Angle',{},'Width',{},'Length',{},'Segment_Index',{},'Segment_Row',{});
 		
 		% Find all the segments that are connected to Vertex_Index v:
@@ -48,6 +48,8 @@ function Workspace = Match_Vertex_Rects_To_Segments_Skel(Workspace)
 				
 				Workspace.Vertices(v).Rectangles(s).Segment_Index = Workspace.Segments(F1(s)).Segment_Index;
 				Workspace.Vertices(v).Rectangles(s).Segment_Row = F1(s);
+                
+                % O1 = [O(1)+3*cos(a),O(2)+3*sin(a)]; hold on; plot([O(1),O1(1)],[O(2),O1(2)],'LineWidth',3);
 			end
 		% end
 	end

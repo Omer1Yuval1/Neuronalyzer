@@ -2,6 +2,7 @@ function Workspace = Analyze_Vertex_Morphology(Workspace,Im_branchpoints)
 	
 	Plot1 = 0;
 	Scale_Factor = Workspace.User_Input.Scale_Factor;
+	Rect_Length = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Scan_Rect_Length; % Scaled and given in pixels.
 	
 	% assignin('base','Workspace',Workspace);
 	% assignin('base','Im_branchpoints',Im_branchpoints);
@@ -39,11 +40,24 @@ function Workspace = Analyze_Vertex_Morphology(Workspace,Im_branchpoints)
 	
 	for i=1:numel(Workspace.Vertices) % For each approximate center.
 		if(Workspace.Vertices(i).Order >= 3) % If it's a junction.
-			[New_Cxy,Rc] = Find_Vertex_Center(Workspace.Im_BW,Workspace.Vertices(i).Coordinate,Vr,Circles_X,Circles_Y,Potential_Centers_XY,Im_Rows,Im_Cols,Min_Center_Radius);
+			
+			Ls = nan(1,numel(Workspace.Vertices(i).Rectangles));
+			for r=1:numel(Workspace.Vertices(i).Rectangles) % For each pre-defined skeleton direction (= segment connected to this vertex).
+				seg_row = Workspace.Vertices(i).Rectangles(r).Segment_Row;
+				Ls(r) = length(Workspace.Segments(seg_row).Skeleton_Linear_Coordinates); % Number of skeleton pixels (approximate segment length).
+			end
+			
+			if(all(Ls >= Rect_Length)) % If all segments are above a length threshold.
+				[New_Cxy,Rc] = Find_Vertex_Center(Workspace.Im_BW,Workspace.Vertices(i).Coordinate,Vr,Circles_X,Circles_Y,Potential_Centers_XY,Im_Rows,Im_Cols,Min_Center_Radius);
+			else % Otherwise, use the original skeleton center and a radius of 0.
+				New_Cxy = Workspace.Vertices(i).Coordinate; % Do not correct the center of end-point.
+				Rc = 0; % Vertex center radius. Tips are assigned with a 0 radius.
+			end
 		elseif(Workspace.Vertices(i).Order == 1) % If it's a tip.
 			New_Cxy = Workspace.Vertices(i).Coordinate; % Do not correct the center of end-point.
 			Rc = 0; % Vertex center radius. Tips are assigned with a 0 radius.
-		end
+        end
+        
 		Rectangles = Find_Vertex_Angles(Workspace,i,New_Cxy,Rc,Scale_Factor,Im_Rows,Im_Cols);
 		% [Workspace,Rectangles] = Match_Vertex_Rects_To_Segments(Workspace,i,Rectangles,Segments_Vertices);
 		

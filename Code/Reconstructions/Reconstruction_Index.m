@@ -63,6 +63,17 @@ function Reconstruction_Index(GP,ii)
 			[Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints] = Pixel_Trace_Post_Proccessing(GP.Workspace(ii).Workspace.Im_BW,Scale_Factor);
 			imshow(Im1_NoiseReduction);
 			
+			for s=1:numel(GP.Workspace(ii).Workspace.Segments)
+				if(numel(GP.Workspace(ii).Workspace.Segments(s).Rectangles))
+					x = [GP.Workspace(ii).Workspace.Segments(s).Rectangles.X];
+					y = [GP.Workspace(ii).Workspace.Segments(s).Rectangles.Y];
+					hold on;
+					plot(x,y,'LineWidth',LineWidth_1); % plot(x,y,'.','MarkerSize',30,'Color',rand(1,3));
+				end
+			end
+			[Y,X] = find(Im1_branchpoints); hold on; plot(X,Y,'.k','MarkerSize',30);
+			[Y,X] = find(Im1_endpoints); hold on; plot(X,Y,'.r','MarkerSize',30);
+			
 			%{
 			% Color connected components:
 			CC = bwconncomp(Im1_NoiseReduction);
