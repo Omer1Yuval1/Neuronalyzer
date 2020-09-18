@@ -16,7 +16,9 @@ function Reconstruction_Index(GP,ii)
 		hold on;
 	else
 		H = figure;
-		set(H,'Position',[19,561,1786,526]);
+		
+		% [R,C] = size(GP.Workspace(ii).Workspace.Image0);
+		% set(H,'Position',[50,50,C,R]);
 		%{
 		GP.Handles.Axes = axes;
 		XY = [1140,1250,550,660];
@@ -347,12 +349,12 @@ function Reconstruction_Index(GP,ii)
 			end
 			
 			% Plot the vertices:
-			%
+			%{
 			X = [GP.Workspace(ii).Workspace.All_Vertices.X];
 			Y = [GP.Workspace(ii).Workspace.All_Vertices.Y];
 			
 			hold on;
-			scatter(X,Y,10,'k','filled'); % Use 100 when zooming in. Otherwise 10.
+			scatter(X,Y,5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
 			%}
 			
 			% Use when zooming in:

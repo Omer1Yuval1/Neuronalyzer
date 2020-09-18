@@ -14,22 +14,12 @@ function Workspace = Connect_Vertices(Workspace,Ax)
 	if(Plot0)
 		imshow(Workspace.Image0,'Parent',Ax);
 		set(Ax,'YDir','normal');
-		h = animatedline('LineStyle','none','Marker','.','MarkerEdgeColor',[0,.8,0],'MarkerSize',12);
-		% h = animatedline('Color','r','LineWidth',3);
+		h = animatedline('LineStyle','none','Marker','.','MarkerEdgeColor',[0,.8,0],'MarkerSize',12); % h = animatedline('Color','r','LineWidth',3);
 	end
 	
-	% Workspace = Match_Vertex_Rects_To_Segments(Workspace);
-	
-	% assignin('base','Workspace_SSS',Workspace);
-	% return;
-	
-	% Workspace = Match_Segments_And_Vertices_Rectangles(Workspace,Messages);
 	Workspace = Add_Starting_Tracing_Steps(Workspace);
 	
-	% TODO: choose the threshold to be the length of the scanning rectangle (based on the width):
 	[Workspace,Traced_Segments] = Trace_Short_Segments(Workspace); % TODO: detect width. Currently using 1pixel.
-	% disp(Traced_Segments);
-	% return;
 	
 	if(Messages)
 		assignin('base','Workspace_Pre',Workspace);
@@ -239,16 +229,7 @@ function Workspace = Connect_Vertices(Workspace,Ax)
 						W = Adjust_Rect_Width_Rot_Generalized(Workspace.Image0,Step_Params.Rotation_Origin,Step_Params.Angle,...
 										Step_Params.Scan_Length,[Wmin,Max_Rect_Width_Ratio*Workspace.Segments(s).(Field0)(end).Width/Scale_Factor], ...
 																	Origin_Type,Width_Smoothing_Parameter,Width_Ratio,Im_Rows,Im_Cols); % Input width in pixels.
-						if(0 && Step_Num == 4) % Used to test the width calculation at a specific step.
-							assignin('base','Workspace',Workspace);
-							assignin('base','Step_Params.Rotation_Origin',Step_Params.Rotation_Origin);
-							assignin('base','Angle',Step_Params.Angle);
-							assignin('base','Scan_Length',Step_Params.Scan_Length);
-							assignin('base','Wmin',Wmin);
-							assignin('base','Origin_Type',Origin_Type);
-							assignin('base','Width_Smoothing_Parameter',Width_Smoothing_Parameter);
-							assignin('base','Width_Ratio',Width_Ratio);
-						end
+						
 						if(W < 0) % If width detection failed.
 							% TODO: in the n 1st steps, use also the vertex rectangle in the average.
 							W = mean([Workspace.Segments(s).(Field0)(max(1,end-Rect_Width_Num_Of_Last_Steps):end).Width]); % Value is in micrometers.

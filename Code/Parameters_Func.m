@@ -39,13 +39,14 @@ function P = Parameters_Func(Scale_Factor,P)
 	L_Max = 3.5714 ./ Scale_Factor; % 10 pixels for Scale_Factor = 50/140.
 	m = (L_Max - L_Min) ./ (W_Max - W_Min);
 	Tracing(1).Rect_Length_Width_Func = @(w) (w<=W_Min).*(L_Min) + (w>W_Max).*L_Max + (w>W_Min).*(w<=W_Max).*(m .* (w-W_Min)+L_Min);
+	% Tracing(1).Rect_Length_Width_Func = @(w) 2.*w;
 	
 	% Skeleton
 	Tracing(1).Skel_Angle_Min_Length = 1.7857 ./ Scale_Factor; % In particular used with the skeleton since the segment width is 1 (=W_Min).	
 	
 	Auto_Tracing_Parameters(1).Global_Step_Length = 1; % In pixels.
 	Auto_Tracing_Parameters(1).Min_Rect_Width = .35/Scale_Factor; % Micrometers converted to pixels.
-	Auto_Tracing_Parameters(1).Max_Rect_Width_Ratio = 2; % Uppoer bound for width scanning (2 rects on both sides of the signal rect). Multiplication factor with the previous step width. Micrometers converted to pixels.
+	Auto_Tracing_Parameters(1).Max_Rect_Width_Ratio = 2; % Upper bound for width scanning (2 rects on both sides of the signal rect). Multiplication factor with the previous step width. Micrometers converted to pixels.
 	Auto_Tracing_Parameters(1).MaxMin_Rect_Width_Ratio = 8; % Global upper bound ratio (in Micrometers).
 	Auto_Tracing_Parameters(1).Width_Ratio = 0.95; % Ratio of the calculated width.
 	% TODO: This value may too big - bigger than the pixel resolution:

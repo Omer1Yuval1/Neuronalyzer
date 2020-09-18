@@ -9,7 +9,7 @@ function [All_Points,All_Vertices] = Collect_All_Neuron_Points(W)
 	ii = 0;
 	for s=1:numel(W.Segments)
 		
-		if(~isempty(W.Segments(s).Rectangles))
+		if(~isempty(W.Segments(s).Rectangles) && all(W.Segments(s).Vertices > 0))
 			f_v1 = find([W.Vertices.Vertex_Index] == W.Segments(s).Vertices(1));
 			f_v2 = find([W.Vertices.Vertex_Index] == W.Segments(s).Vertices(2));
 			
@@ -17,10 +17,10 @@ function [All_Points,All_Vertices] = Collect_All_Neuron_Points(W)
 			% a_v1 = find([W.Vertices(f_v1).Rectangles.Segment_Index] == W.Segments(s).Segment_Index);
 			% a_v2 = find([W.Vertices(f_v2).Rectangles.Segment_Index] == W.Segments(s).Segment_Index);
 			
-			% Add the end-points of the segments (junctions or tips):
-			Sx = [ W.Vertices(f_v1).Coordinate(1) , [W.Segments(s).Rectangles.X] , W.Vertices(f_v2).Coordinate(1)];
-			Sy = [ W.Vertices(f_v1).Coordinate(2) , [W.Segments(s).Rectangles.Y] , W.Vertices(f_v2).Coordinate(2)];
-			
+            % Add the end-points of the segments (junctions or tips):
+            Sx = [ W.Vertices(f_v1).Coordinate(1) , [W.Segments(s).Rectangles.X] , W.Vertices(f_v2).Coordinate(1)];
+            Sy = [ W.Vertices(f_v1).Coordinate(2) , [W.Segments(s).Rectangles.Y] , W.Vertices(f_v2).Coordinate(2)];
+            
 			Vertices_Orders = 2.*ones(1,length(Sx)-1); % All points that are not tips of junctions are vertices of order 2.
 			Vertices_Orders(1) = W.Vertices(f_v1).Order;
 			Vertices_Orders(end) = W.Vertices(f_v2).Order;
