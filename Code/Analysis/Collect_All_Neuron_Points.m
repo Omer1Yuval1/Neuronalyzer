@@ -39,7 +39,7 @@ function [All_Points,All_Vertices] = Collect_All_Neuron_Points(W)
 			Angles = atan2(dsy , dsx);
 			ds = (dsx.^2 + dsy.^2).^(.5);
 			
-			[~,~,~,~,Cxy] = Get_Segment_Curvature(Sx,Sy);
+			[~,~,~,~,Cxy] = Get_Segment_Curvature(Sx,Sy,W.Parameters.Analysis.Curvature.Min_Points_Num_Smoothing);
 			
 			for p=1:length(Sx)-1
 				ii = ii + 1;

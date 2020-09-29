@@ -144,7 +144,7 @@ function Tracer_UI()
 		uimenu(Reconstructions_Menu_Handle,'Label','Midline Orientation','UserData',0,'Callback',@Reconstruction_Func);
 		uimenu(Reconstructions_Menu_Handle,'Label','Longitudinal Gradient','UserData',0,'Callback',@Reconstruction_Func,'Enable','off');
 		uimenu(Reconstructions_Menu_Handle,'Label','Curvature','UserData',0,'Callback',@Reconstruction_Func);
-		uimenu(Reconstructions_Menu_Handle,'Label','Dorsal-Vental','UserData',0,'Callback',@Reconstruction_Func);
+		uimenu(Reconstructions_Menu_Handle,'Label','Dorsal-Ventral','UserData',0,'Callback',@Reconstruction_Func);
 		H0_1_7 = uimenu(Reconstructions_Menu_Handle,'Label','PVD Orders');
 			uimenu(H0_1_7,'Label','PVD Orders - Points','UserData',0,'Callback',@Reconstruction_Func);
 			uimenu(H0_1_7,'Label','PVD Orders - Segments','UserData',0,'Callback',@Reconstruction_Func);

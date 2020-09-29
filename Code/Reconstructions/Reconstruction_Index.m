@@ -5,27 +5,21 @@ function Reconstruction_Index(GP,ii)
 	% TODO:
 		% Move out: Worm_Radius_um.
 	
+	Undock = 0;
+	
 	Worm_Radius_um = 45;
 	LineWidth_1 = 2; % [2,6].
 	DotSize_1 = 10; % 80;
 	DotSize_2 = 15; % 80;
 	Scale_Factor = GP.Workspace(ii).Workspace.User_Input.Scale_Factor;
 	
-	if(1)
+	if(~Undock)
 		figure(1);
 		hold on;
 	else
 		H = figure;
 		
-		% [R,C] = size(GP.Workspace(ii).Workspace.Image0);
-		% set(H,'Position',[50,50,C,R]);
-		%{
-		GP.Handles.Axes = axes;
-		XY = [1140,1250,550,660];
-		% GP.Workspace(ii).Workspace.Image0 = GP.Workspace(ii).Workspace.Image0(XY(3):XY(4),XY(1):XY(2));
-		GP.Workspace(ii).Workspace.NN_Probabilities = GP.Workspace(ii).Workspace.NN_Probabilities(XY(3):XY(4),XY(1):XY(2));
-		GP.Workspace(ii).Workspace.Im_BW = GP.Workspace(ii).Workspace.Im_BW(XY(3):XY(4),XY(1):XY(2));
-		%}
+		[ImRows,ImCols] = size(GP.Workspace(ii).Workspace.Image0);
 		hold on;
 	end
 	
@@ -65,16 +59,18 @@ function Reconstruction_Index(GP,ii)
 			[Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints] = Pixel_Trace_Post_Proccessing(GP.Workspace(ii).Workspace.Im_BW,Scale_Factor);
 			imshow(Im1_NoiseReduction);
 			
+			%
 			for s=1:numel(GP.Workspace(ii).Workspace.Segments)
 				if(numel(GP.Workspace(ii).Workspace.Segments(s).Rectangles))
 					x = [GP.Workspace(ii).Workspace.Segments(s).Rectangles.X];
 					y = [GP.Workspace(ii).Workspace.Segments(s).Rectangles.Y];
 					hold on;
-					plot(x,y,'LineWidth',LineWidth_1); % plot(x,y,'.','MarkerSize',30,'Color',rand(1,3));
+					plot(x,y,'LineWidth',1); % plot(x,y,'.','MarkerSize',30,'Color',rand(1,3));
 				end
 			end
-			[Y,X] = find(Im1_branchpoints); hold on; plot(X,Y,'.k','MarkerSize',30);
-			[Y,X] = find(Im1_endpoints); hold on; plot(X,Y,'.r','MarkerSize',30);
+			%}
+			% [Y,X] = find(Im1_branchpoints); hold on; plot(X,Y,'.k','MarkerSize',30);
+			% [Y,X] = find(Im1_endpoints); hold on; plot(X,Y,'.r','MarkerSize',30);
 			
 			%{
 			% Color connected components:
@@ -87,28 +83,37 @@ function Reconstruction_Index(GP,ii)
 			%}
 		case 'Blob'
 			Find_Worm_Longitudinal_Axis(GP.Workspace(ii).Workspace,1); % GP.Handles.Axes
-		case 'Trace'
+		case {'Trace','Segmentation'}
 			imshow(GP.Workspace(ii).Workspace.Image0); % ,'Parent',GP.Handles.Axes);
 			hold on;
-			plot([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],'.','Color',[0.12,0.56,1],'MarkerSize',DotSize_1);
-			plot([GP.Workspace(ii).Workspace.All_Vertices.X],[GP.Workspace(ii).Workspace.All_Vertices.Y],'.k','MarkerSize',DotSize_2); % [0.6,0,0].
-		case 'Segmentation'
-			imshow(GP.Workspace(ii).Workspace.Image0); % ,'Parent',GP.Handles.Axes);
-			hold on;
-			
-			Class_Indices = [1,2,3,4];
-			Class_Colors = [0.6,0,0 ; 0,0.6,0 ; 0.12,0.56,1 ; 0.8,0.8,0];
 			
 			if(isfield(GP.Workspace(ii).Workspace,'Segments'))
 				for s=1:numel(GP.Workspace(ii).Workspace.Segments)
 					if(numel(GP.Workspace(ii).Workspace.Segments(s).Rectangles))
 						x = [GP.Workspace(ii).Workspace.Segments(s).Rectangles.X];
 						y = [GP.Workspace(ii).Workspace.Segments(s).Rectangles.Y];
-						plot(x,y,'LineWidth',LineWidth_1);
+						if(length(x) > 1)
+							[x,y] = Smooth_Points(x,y,100);
+						end
+						
+						switch GP.General.Active_Plot
+							case 'Trace'
+								plot(x,y,'LineWidth',LineWidth_1,'Color',[0.12,0.56,1]);
+							case 'Segmentation'
+								plot(x,y,'LineWidth',LineWidth_1);
+						end
 					end
 				end
-				% Reconstruct_Segmented_Trace(GP.Workspace(ii).Workspace,GP.Handles.Analysis); % Reconstruct_Segments(GP.Workspace(1).Workspace);
 			end
+			
+			% Plot the vertices:
+			%
+			X = [GP.Workspace(ii).Workspace.All_Vertices.X];
+			Y = [GP.Workspace(ii).Workspace.All_Vertices.Y];
+			
+			hold on;
+			scatter(X,Y,5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
+			%}
 		case 'Segments by Length'
 			
 			Max_Length = 50; % [um].
@@ -163,8 +168,9 @@ function Reconstruction_Index(GP,ii)
 			Map_Worm_Axes(GP.Workspace(ii).Workspace,GP.Workspace(ii).Workspace.Neuron_Axes,1,0,GP.Handles.Axes);
 		case {'Radial Distance','Angular Coordinate'}
 			
-			X = [GP.Workspace(ii).Workspace.All_Points.X];
-			Y = [GP.Workspace(ii).Workspace.All_Points.Y];
+			Min_Max = [0,pi./2];
+			CM_Lims = [1,1000];
+			CM = hsv(CM_Lims(2));
 			
 			switch GP.General.Active_Plot
 				case 'Radial Distance'
@@ -172,53 +178,85 @@ function Reconstruction_Index(GP,ii)
 				case 'Angular Coordinate'
 					Field_1 = 'Angular_Coordinate';
 			end
-			D = abs([GP.Workspace(ii).Workspace.All_Points.(Field_1)]);
-			
-			[~,~,Ic] = histcounts(D,1000);
-			F = find(Ic ~=0);
-			Ic = Ic(F);
-			X = X(F);
-			Y = Y(F);
-			
-			CM = hsv(1000);
-			
-			% CM = [O,.5.*O,1-O];
-			
-			imshow(GP.Workspace(ii).Workspace.Image0); % ,'Parent',GP.Handles.Axes);
-			hold on;
-			scatter(X,Y,DotSize_1,CM(Ic,:),'filled');
-			% scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],5,CM,'filled');
-		case 'Midline Orientation'
-			
-			O = rescale([GP.Workspace(ii).Workspace.All_Points.Midline_Orientation])';
-			CM = [1-O,O,0.*O+0.1];
-			
-			% O = round(rescale([GP.Workspace(ii).Workspace.All_Points.Midline_Orientation],1,100)');
-			% CM = jet(100);
 			
 			imshow(GP.Workspace(ii).Workspace.Image0); % ,'Parent',GP.Handles.Axes
 			hold on;
-			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],DotSize_1,CM,'filled'); % [5,100]
-			% scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],5,CM(O,:),'filled');
 			
-			% C = CM(round(rescale(C,CM_Lims(1),CM_Lims(2),'InputMin',Curvature_Min_Max(1),'InputMax',Curvature_Min_Max(2))),:);
-			% CM = jet(1000);
-			% h = patch(X',Y',1,'FaceVertexCData',C,'EdgeColor','interp','MarkerFaceColor','flat','LineWidth',3);
+			for s=1:numel(GP.Workspace(ii).Workspace.Segments)
+				
+				Fs = find([[GP.Workspace(ii).Workspace.All_Points.Segment_Index]] == GP.Workspace(ii).Workspace.Segments(s).Segment_Index & ~isnan([GP.Workspace(ii).Workspace.All_Points.(Field_1)]) );
+				
+				X = [GP.Workspace(ii).Workspace.All_Points(Fs).X];
+				Y = [GP.Workspace(ii).Workspace.All_Points(Fs).Y];
+				if(length(X) > 1)
+					[X,Y] = Smooth_Points(X,Y,100);
+				end
+				
+				C = abs([GP.Workspace(ii).Workspace.All_Points(Fs).(Field_1)]);
+				C = CM(round(rescale(C,CM_Lims(1),CM_Lims(2),'InputMin',Min_Max(1),'InputMax',Min_Max(2))),:);
+				
+				X(end+1) = nan;
+				Y(end+1) = nan;
+				C(end+1,:) = nan(1,3);
+				h = patch(X',Y',1,'FaceVertexCData',C,'EdgeColor','interp','MarkerFaceColor','flat','LineWidth',2); % 8.
+			end
+		case 'Midline Orientation'
 			
+			Min_Max = [0,pi./2];
+			CM_Lims = [1,1000];
+			c = linspace(0,1,CM_Lims(2))';
+			CM = [1-c,c,0.*c+0.1]; % CM = jet(CM_Lims(2));
+			
+			imshow(GP.Workspace(ii).Workspace.Image0); % ,'Parent',GP.Handles.Axes
+			hold on;
+			
+			for s=1:numel(GP.Workspace(ii).Workspace.Segments)
+
+				Fs = find([[GP.Workspace(ii).Workspace.All_Points.Segment_Index]] == GP.Workspace(ii).Workspace.Segments(s).Segment_Index);
+			
+				X = [GP.Workspace(ii).Workspace.All_Points(Fs).X];
+				Y = [GP.Workspace(ii).Workspace.All_Points(Fs).Y];
+				if(length(X) > 1)
+					[X,Y] = Smooth_Points(X,Y,100);
+				end
+				
+				C = [GP.Workspace(ii).Workspace.All_Points(Fs).Midline_Orientation];
+				C = CM(round(rescale(C,CM_Lims(1),CM_Lims(2),'InputMin',Min_Max(1),'InputMax',Min_Max(2))),:);
+				
+				X(end+1) = nan;
+				Y(end+1) = nan;
+				C(end+1,:) = nan(1,3);
+				h = patch(X',Y',1,'FaceVertexCData',C,'EdgeColor','interp','MarkerFaceColor','flat','LineWidth',2); % 8.
+			end
 		case 'Longitudinal Gradient'
 			
 			imshow(GP.Workspace(ii).Workspace.Image0); % ,'Parent',GP.Handles.Axes
 			hold on;
 			
-			O = round(rescale([GP.Workspace(ii).Workspace.All_Points.Axis_0_Position],1,100)');
-			CM = jet(100);
-			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],5,CM(O,:),'filled');
+			Min_Max = [0,800]; % um.
+			CM_Lims = [1,1000];
+			CM = jet(CM_Lims(2));			
+			imshow(GP.Workspace(ii).Workspace.Image0); % ,'Parent',GP.Handles.Axes
+			hold on;
 			
-			%{
-			scatter([GP.Workspace(ii).Workspace.All_Points.X],[GP.Workspace(ii).Workspace.All_Points.Y],5,CM,'filled');
-			O = rescale([GP.Workspace(ii).Workspace.All_Points.Axis_0_Position])';
-			CM = [O,0.*O,1-O];
-			%}
+			for s=1:numel(GP.Workspace(ii).Workspace.Segments)
+
+				Fs = find([[GP.Workspace(ii).Workspace.All_Points.Segment_Index]] == GP.Workspace(ii).Workspace.Segments(s).Segment_Index);
+			
+				X = [GP.Workspace(ii).Workspace.All_Points(Fs).X];
+				Y = [GP.Workspace(ii).Workspace.All_Points(Fs).Y];
+				if(length(X) > 1)
+					[X,Y] = Smooth_Points(X,Y,100);
+				end
+				
+				C = [GP.Workspace(ii).Workspace.All_Points(Fs).Axis_0_Position];
+				C = CM(round(rescale(C,CM_Lims(1),CM_Lims(2),'InputMin',Min_Max(1),'InputMax',Min_Max(2))),:);
+				
+				X(end+1) = nan;
+				Y(end+1) = nan;
+				C(end+1,:) = nan(1,3);
+				h = patch(X',Y',1,'FaceVertexCData',C,'EdgeColor','interp','MarkerFaceColor','flat','LineWidth',2); % 8.
+			end
 		case 'Dorsal-Vental'
 			
 			Field_1 = 'Radial_Distance_Corrected';
@@ -298,16 +336,20 @@ function Reconstruction_Index(GP,ii)
 					
 					X = [GP.Workspace(ii).Workspace.Segments(s).Rectangles(f).X];
 					Y = [GP.Workspace(ii).Workspace.Segments(s).Rectangles(f).Y];
-					C = C(f);
+					if(length(X) > 1)
+						[X,Y] = Smooth_Points(X,Y,100);
+					end
 					
+					C = C(f);
 					C = CM(round(rescale(C,CM_Lims(1),CM_Lims(2),'InputMin',Curvature_Min_Max(1),'InputMax',Curvature_Min_Max(2))),:);
 					% C = rescale(C,0,1,'InputMin',Curvature_Min_Max(1),'InputMax',Curvature_Min_Max(2))';
 					
-					Y(end) = nan;
+					X(end+1) = nan;
+					Y(end+1) = nan;
+					C(end+1,:) = nan(1,3);
 					h = patch(X',Y',1,'FaceVertexCData',C,'EdgeColor','interp','MarkerFaceColor','flat','LineWidth',2); % 8.
 				end
 			end
-			% Reconstruct_Curvature(GP.Workspace(ii).Workspace,Curvature_Min_Max(1),Curvature_Min_Max(2),Medial_Dist_Range(1),Medial_Dist_Range(2),1);
 		case 'PVD Orders - Points'
 			
 			Class_Num = max([GP.Workspace(ii).Workspace.All_Points.Class]);
@@ -339,6 +381,11 @@ function Reconstruction_Index(GP,ii)
 				if(numel(GP.Workspace(ii).Workspace.Segments(s).Rectangles))
 					x = [GP.Workspace(ii).Workspace.Segments(s).Rectangles.X];
 					y = [GP.Workspace(ii).Workspace.Segments(s).Rectangles.Y];
+					
+					if(length(x) > 1)
+						[x,y] = Smooth_Points(x,y,100);
+					end
+					
 					c = find(Class_Indices == GP.Workspace(ii).Workspace.Segments(s).Class);
 					if(isempty(c)) % isnan(c)
 						plot(x,y,'Color',Class_Colors(end,:),'LineWidth',LineWidth_1);
@@ -349,7 +396,7 @@ function Reconstruction_Index(GP,ii)
 			end
 			
 			% Plot the vertices:
-			%{
+			%
 			X = [GP.Workspace(ii).Workspace.All_Vertices.X];
 			Y = [GP.Workspace(ii).Workspace.All_Vertices.Y];
 			
@@ -365,12 +412,17 @@ function Reconstruction_Index(GP,ii)
 			imshow(GP.Workspace(ii).Workspace.Image0,'Parent',GP.Handles.Axes);
 			Reconstruct_Trace(GP.Workspace(ii).Workspace);
 	end
-	set(gca,'position',[0,0,1,1]);
-	axis tight;
 	
+	if(Undock)
+		set(gca,'position',[0,0,1,1]);
+		axis tight;
+		H.InnerPosition = [50,50,ImCols./2.5,ImRows./2.5];
+	end
 	% set(gca,'YDir','normal');
 	%{
 	H.Position = [114,469,1692,498]; % [10,50,900,900];
+	
+	
 	set(GP.Handles.Axes,'unit','normalize');
 	set(GP.Handles.Axes,'position',[0,0,1,1]);
 	axis tight;
@@ -404,6 +456,15 @@ function Reconstruction_Index(GP,ii)
 			Handles.Dynamic_Slider_Text_Min.String = [num2str(Handles.Dynamic_Slider_Min.Value),char(181),'m']; % Update sliders text.
 			Handles.Dynamic_Slider_Text_Max.String = [num2str(Handles.Dynamic_Slider_Max.Value),char(181),'m']; % ".
 		end
+	end
+	
+	function [X,Y] = Smooth_Points(X,Y,Smoothing_Parameter) % X=[1,n]. Y=[1,n].
+		% Eval_Points_Num = length(X); % TODO: normalize to the original number of points.
+		
+		u = smoothn(num2cell([X',Y'],1),Smoothing_Parameter);
+		Suxy = horzcat(u{:});
+		X = Suxy(:,1)'; % Smoothed x-coordinates.
+		Y = Suxy(:,2)'; % Smoothed y-coordinates.
 	end
 	
 end

@@ -42,9 +42,9 @@ function [W,Features] = Add_Features_To_All_Workspaces(W)
 						(W(i).Workspace.Segments(s).Rectangles(1).Y - W(i).Workspace.Segments(s).Rectangles(end).Y)^2)^.5; % end2end length.
 					W(i).Workspace.Segments(s).End2End_Length = D.*Scale_Factor;
 					
-					if(length(X) > 3)
-						[~,~,~,~,Cxy] = Get_Segment_Curvature(X,Y);
-						Cxy = Cxy .* (1./Scale_Factor); % Pixels to micrometers.			
+					if(length(X) > W(i).Workspace.Parameters.Analysis.Curvature.Min_Points_Num)
+						[~,~,~,~,Cxy] = Get_Segment_Curvature(X,Y,W(i).Workspace.Parameters.Analysis.Curvature.Min_Points_Num_Smoothing);
+						Cxy = Cxy .* (1./Scale_Factor); % Pixels to micrometers.
 						
 						W(i).Workspace.Segments(s).Curvature = dot(Step_Lengths,Cxy)./sum(Step_Lengths); % Integral of squared curvature.
 						% W(i).Workspace.Segments(s).Curvature = dot(Step_Lengths,Cxy); % Integral of squared curvature, normalized to arc-length.

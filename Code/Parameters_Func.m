@@ -95,11 +95,13 @@ function P = Parameters_Func(Scale_Factor,P)
 	
 	Auto_Tracing_Parameters.Tracing_Scores_Weights = [0;0;1];
 	
-	Analysis.Curvature.SmoothingParameter = 0.01;
-	Analysis.Curvature.Sample_Length = 1.8; % Micrometers. Sample length from each side of the point. ~5 pixels for Scale_Factor=50/40.
+	% Curvature
+	Analysis.Curvature.Sample_Length = 1.8; % Micrometers. Sampling length from each side of the point. ~5 pixels for Scale_Factor=50/40.
 	Analysis.Curvature.Min_Points_Num = 3;
+	Analysis.Curvature.SmoothingParameter = 0.01;
+	Analysis.Curvature.Min_Points_Num_Smoothing = 5;
 	
-	% Angle Correction:
+	% Projection correction:
 	Angle_Correction.Worm_Radius_um = 40;
 	Angle_Correction.Corrected_Plane_Angle_Func = @(d) asin(d./Angle_Correction.Worm_Radius_um); % Input (d): distance (in um) from the medial axis. The resulting angle is in radians.
 	

@@ -1,8 +1,6 @@
-function [Mean_Curvature,SxS,SyS,xx,Cxy] = Get_Segment_Curvature(X,Y,Im)
+function [Mean_Curvature,SxS,SyS,xx,Cxy] = Get_Segment_Curvature(X,Y,Min_Points_Num_Smoothing,Im)
 	
-    Min_Points_Num = 5;
-	
-	if(nargin == 3) % If an image if provided.
+	if(nargin == 4) % If an image if provided.
 		Plot = 1;
 	else
 		Plot = 0;
@@ -18,21 +16,10 @@ function [Mean_Curvature,SxS,SyS,xx,Cxy] = Get_Segment_Curvature(X,Y,Im)
 	% Y = linspace(Y0(1),Y0(end),2*L0);
 	%}
 	
-	%
-	if(length(X0) >= Min_Points_Num)
-		SP1 = 0.1;
-		try
-			[X,Y,Success_Flag] = Fit_And_Smooth(X0,Y0,SP1);
-		catch
-			disp(1);
-		end
-
-		if(~Success_Flag)
-			SP2 = 100; % 50 ./ (L0);
-			[X,Y] = Smooth_Points(X0,Y0,SP2);
-		end
+	if(length(X0) >= Min_Points_Num_Smoothing)
+		SP2 = 100; % 50 ./ (L0);
+		[X,Y] = Smooth_Points(X0,Y0,SP2);
 	end
-	%}
 	
 	Ri = nan(1,length(X));
 	% Cxy = nan(1,length(X));
@@ -76,26 +63,26 @@ function [Mean_Curvature,SxS,SyS,xx,Cxy] = Get_Segment_Curvature(X,Y,Im)
 	end
 	
 	if(Plot)
-		D = 20;
+		d = 20;
 		Colors = Cxy ./ max(Cxy);
 		figure(1); clf(1);
 		
 		subplot(2,2,1);
 			imshow(Im);
-			axis([mean(X0)+[-D,D],mean(Y0)+[-D,D]]); % axis equal;
+			axis([mean(X0)+[-d,d],mean(Y0)+[-d,d]]); % axis equal;
 			title('Raw Curve');
 		subplot(2,2,2);
 			imshow(Im);
 			hold on;
 			plot(X0,Y0,'r','LineWidth',2);
-			axis([mean(X0)+[-D,D],mean(Y0)+[-D,D]]); % axis equal;
+			axis([mean(X0)+[-d,d],mean(Y0)+[-d,d]]); % axis equal;
 			title('Original Trace');
 		subplot(2,2,3);
 			imshow(Im);
 			hold on;
 			plot(X,Y,'r','LineWidth',2);
 			scatter(X,Y,[],[Colors',zeros(length(Colors),1),1-Colors'],'filled');
-			axis([mean(X0)+[-D,D],mean(Y0)+[-D,D]]); % axis equal;
+			axis([mean(X0)+[-d,d],mean(Y0)+[-d,d]]); % axis equal;
 			title('Smoothing Spline');
 		subplot(2,2,4);
 			
