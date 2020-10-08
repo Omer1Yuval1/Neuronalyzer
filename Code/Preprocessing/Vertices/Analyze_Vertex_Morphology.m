@@ -1,19 +1,19 @@
-function Workspace = Analyze_Vertex_Morphology(Workspace,Im_branchpoints)
+function Data = Analyze_Vertex_Morphology(Data,Im_branchpoints)
 	
 	Plot1 = 0;
-	Scale_Factor = Workspace.User_Input.Scale_Factor;
-	Rect_Length = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Scan_Rect_Length; % Scaled and given in pixels.
+	Scale_Factor = Data.Info.Experiment(1).Scale_Factor;
+	Rect_Length = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Scan_Rect_Length; % Scaled and given in pixels.
 	
-	% assignin('base','Workspace',Workspace);
+	% assignin('base','Data',Data);
 	% assignin('base','Im_branchpoints',Im_branchpoints);
 	
-	[Im_Rows,Im_Cols] = size(Workspace.Im_BW);
+	[Im_Rows,Im_Cols] = size(Data.Info.Files.Binary_Image{1});
 	
-	Vr = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Center_Radius_Vector;
-	N = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Center_Cirle_Res;
-	Min_Center_Radius = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Center_Min_Radius;
-	Center_Frame_Size = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Center_Frame_Size;
-	Centers_Scan_Res = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Center_Scan_Res;
+	Vr = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Center_Radius_Vector;
+	N = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Center_Cirle_Res;
+	Min_Center_Radius = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Center_Min_Radius;
+	Center_Frame_Size = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Center_Frame_Size;
+	Centers_Scan_Res = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Center_Scan_Res;
 	
 	Theta = linspace(0,2*pi,N);
 	
@@ -30,7 +30,7 @@ function Workspace = Analyze_Vertex_Morphology(Workspace,Im_branchpoints)
 		[Yb,Xb] = find(Im_branchpoints);
 		% close all;
 		figure(1);
-		imshow(Workspace.Im_BW);
+		imshow(Data.Info.Files.Binary_Image{1});
 		set(gca,'YDir','normal');
 		hold on;
 		% imshow(Input);
@@ -38,36 +38,36 @@ function Workspace = Analyze_Vertex_Morphology(Workspace,Im_branchpoints)
 		% plot(Xb,Yb,'.b','MarkerSize',10); % The approximate center.
 	end
 	
-	for i=1:numel(Workspace.Vertices) % For each approximate center.
-		if(Workspace.Vertices(i).Order >= 3) % If it's a junction.
+	for i=1:numel(Data.Vertices) % For each approximate center.
+		if(Data.Vertices(i).Order >= 3) % If it's a junction.
 			
-			Ls = nan(1,numel(Workspace.Vertices(i).Rectangles));
-			for r=1:numel(Workspace.Vertices(i).Rectangles) % For each pre-defined skeleton direction (= segment connected to this vertex).
-				seg_row = Workspace.Vertices(i).Rectangles(r).Segment_Row;
-				Ls(r) = length(Workspace.Segments(seg_row).Skeleton_Linear_Coordinates); % Number of skeleton pixels (approximate segment length).
+			Ls = nan(1,numel(Data.Vertices(i).Rectangles));
+			for r=1:numel(Data.Vertices(i).Rectangles) % For each pre-defined skeleton direction (= segment connected to this vertex).
+				seg_row = Data.Vertices(i).Rectangles(r).Segment_Row;
+				Ls(r) = length(Data.Segments(seg_row).Skeleton_Linear_Coordinates); % Number of skeleton pixels (approximate segment length).
 			end
 			
 			if(all(Ls >= Rect_Length)) % If all segments are above a length threshold.
-				[New_Cxy,Rc] = Find_Vertex_Center(Workspace.Im_BW,Workspace.Vertices(i).Coordinate,Vr,Circles_X,Circles_Y,Potential_Centers_XY,Im_Rows,Im_Cols,Min_Center_Radius);
+				[New_Cxy,Rc] = Find_Vertex_Center(Data.Info.Files.Binary_Image{1},Data.Vertices(i).Coordinate,Vr,Circles_X,Circles_Y,Potential_Centers_XY,Im_Rows,Im_Cols,Min_Center_Radius);
 			else % Otherwise, use the original skeleton center and a radius of 0.
-				New_Cxy = Workspace.Vertices(i).Coordinate; % Do not correct the center of end-point.
+				New_Cxy = Data.Vertices(i).Coordinate; % Do not correct the center of end-point.
 				Rc = 0; % Vertex center radius. Tips are assigned with a 0 radius.
 			end
-		elseif(Workspace.Vertices(i).Order == 1) % If it's a tip.
-			New_Cxy = Workspace.Vertices(i).Coordinate; % Do not correct the center of end-point.
+		elseif(Data.Vertices(i).Order == 1) % If it's a tip.
+			New_Cxy = Data.Vertices(i).Coordinate; % Do not correct the center of end-point.
 			Rc = 0; % Vertex center radius. Tips are assigned with a 0 radius.
         end
         
-		Rectangles = Find_Vertex_Angles(Workspace,i,New_Cxy,Rc,Scale_Factor,Im_Rows,Im_Cols);
-		% [Workspace,Rectangles] = Match_Vertex_Rects_To_Segments(Workspace,i,Rectangles,Segments_Vertices);
+		Rectangles = Find_Vertex_Angles(Data,i,New_Cxy,Rc,Scale_Factor,Im_Rows,Im_Cols);
+		% [Data,Rectangles] = Match_Vertex_Rects_To_Segments(Data,i,Rectangles,Segments_Vertices);
 		
-		Workspace.Vertices(i).Coordinate = New_Cxy;
-		Workspace.Vertices(i).Rectangles = Rectangles;
-		Workspace.Vertices(i).Center_Radius = Rc;
+		Data.Vertices(i).Coordinate = New_Cxy;
+		Data.Vertices(i).Rectangles = Rectangles;
+		Data.Vertices(i).Center_Radius = Rc;
 		
 		% assignin('base','Rectangles',Rectangles);		
 		if(Plot1 && numel(Rectangles) == 0)
-			disp(['No peaks found for vertex ',num2str(Workspace.Vertices(i).Vertex_Index)]);
+			disp(['No peaks found for vertex ',num2str(Data.Vertices(i).Vertex_Index)]);
 		end
 	end
 	

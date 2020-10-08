@@ -1,25 +1,25 @@
-function Rectangles = Find_Vertex_Angles(Workspace,v,Cxy,Rc,Scale_Factor,Im_Rows,Im_Cols)
+function Rectangles = Find_Vertex_Angles(Data,v,Cxy,Rc,Scale_Factor,Im_Rows,Im_Cols)
 	
 	Plot1 = 0;
 	Plot2 = 0;
 	Plot3 = 0;
 	
-	Peaks_Max_Num = Workspace.Vertices(v).Order;
+	Peaks_Max_Num = Data.Vertices(v).Order;
 	
-	SmoothingParameter = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_SmoothingParameter;
-	MinWidth = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Rect_Width_Min_Max(1);
-	MaxWidth = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Rect_Width_Min_Max(2);
-	Width_Ratio = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Rect_Width_Ratio;
-	Width_SmoothingParameter = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Width_SmoothingParameter;
-	Min_Final_Width = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Min_Width;
-	Extension_Length = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Extension_Length;	
-	W = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Scan_Rect_Width;	
-	Rect_Length = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Scan_Rect_Length;
+	SmoothingParameter = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_SmoothingParameter;
+	MinWidth = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Rect_Width_Min_Max(1);
+	MaxWidth = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Rect_Width_Min_Max(2);
+	Width_Ratio = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Rect_Width_Ratio;
+	Width_SmoothingParameter = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Width_SmoothingParameter;
+	Min_Final_Width = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Min_Width;
+	Extension_Length = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Extension_Length;	
+	W = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Scan_Rect_Width;	
+	Rect_Length = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Scan_Rect_Length;
 	
-	Min_Score_Ratio = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Min_Score_Ratio;	
-	MinPeakDis = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_MinPeakDis;	
-	MinPeakWidth = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_MinPeakWidth;	
-	MinPeakProm = Workspace.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_MinPeakProm;
+	Min_Score_Ratio = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Min_Score_Ratio;	
+	MinPeakDis = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_MinPeakDis;	
+	MinPeakWidth = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_MinPeakWidth;	
+	MinPeakProm = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_MinPeakProm;
 	
 	Angle_Res = 1*(pi/180); % 1 degree. old version: round(60 * Rc); % 360*
 	N = round(2*pi/Angle_Res);
@@ -44,10 +44,10 @@ function Rectangles = Find_Vertex_Angles(Workspace,v,Cxy,Rc,Scale_Factor,Im_Rows
 		
 		Coordinates1 = [];
 		if(min(XV) >= 1 && max(XV) <= Im_Cols && min(YV) >= 1 && max(YV) <= Im_Rows)
-			Coordinates1 = InRect_Coordinates(Workspace.Im_BW,[XV',YV']);
+			Coordinates1 = InRect_Coordinates(Data.Info.Files.Binary_Image{1},[XV',YV']);
 		end
 		
-		Filtered_Scores(1,t) = sum(Workspace.Im_BW(Coordinates1)); %  / (Rect_Length*W); % Count 1-pixels and normalize to the area of the rectangle.
+		Filtered_Scores(1,t) = sum(Data.Info.Files.Binary_Image{1}(Coordinates1)); %  / (Rect_Length*W); % Count 1-pixels and normalize to the area of the rectangle.
 		Filtered_Scores(2,t) = Theta(t); % Take the average of all the angles values that got the best score (for a specific width value).				
 		
 		if(Plot3 && ismember(t,Vt)) % Draw the convolving rectangles and the peak analysis.
@@ -124,12 +124,12 @@ function Rectangles = Find_Vertex_Angles(Workspace,v,Cxy,Rc,Scale_Factor,Im_Rows
 	
 	% Replace skeleton angles with the detected peaks, using skeleton angles for pair-wise matching
 		% (additional peaks are ignored, only best matches are used, based on the predefined number of skeleton rectangles).
-	Rectangles = Workspace.Vertices(v).Rectangles;
-	for r=1:numel(Workspace.Vertices(v).Rectangles) % For each pre-defined skeleton direction (= segment connected to this vertex).
-		As = mod(Workspace.Vertices(v).Rectangles(r).Angle,2*pi); % Skeleton angle r.
+	Rectangles = Data.Vertices(v).Rectangles;
+	for r=1:numel(Data.Vertices(v).Rectangles) % For each pre-defined skeleton direction (= segment connected to this vertex).
+		As = mod(Data.Vertices(v).Rectangles(r).Angle,2*pi); % Skeleton angle r.
 		
-		seg_row = Workspace.Vertices(v).Rectangles(r).Segment_Row;
-		Ls = length(Workspace.Segments(seg_row).Skeleton_Linear_Coordinates); % Number of skeleton pixels (approximate segment length).
+		seg_row = Data.Vertices(v).Rectangles(r).Segment_Row;
+		Ls = length(Data.Segments(seg_row).Skeleton_Linear_Coordinates); % Number of skeleton pixels (approximate segment length).
 		
 		if(Ls >= Rect_Length) % If the segment is long enough for convolution scanning.
 			dA = nan(1,length(Peaks));
@@ -148,17 +148,17 @@ function Rectangles = Find_Vertex_Angles(Workspace,v,Cxy,Rc,Scale_Factor,Im_Rows
 				Angle_Final =  Ap(Fmin); % Replace the most similar angle and set to the nan (to avoid using it for other rects).
 				Ap(Fmin) = nan; % Remove the chosen angle value from the list.
 			else
-				Cxy_r = Workspace.Vertices(v).Coordinate;
+				Cxy_r = Data.Vertices(v).Coordinate;
 				Angle_Final = Rectangles(r).Angle; % Angle is unchanged.
 			end
 		else % Use the skeleton angle.
 			Fmin = [];
 			Lr = Ls;
-			Cxy_r = Workspace.Vertices(v).Coordinate;
+			Cxy_r = Data.Vertices(v).Coordinate;
 			Angle_Final = Rectangles(r).Angle; % Angle is unchanged.
         end
 		
-        Wp = Adjust_Rect_Width_Rot_Generalized(Workspace.Im_BW,Cxy_r,Angle_Final*180/pi,Lr,[MinWidth,MaxWidth],14,Width_SmoothingParameter,Width_Ratio,Im_Rows,Im_Cols);
+        Wp = Adjust_Rect_Width_Rot_Generalized(Data.Info.Files.Binary_Image{1},Cxy_r,Angle_Final*180/pi,Lr,[MinWidth,MaxWidth],14,Width_SmoothingParameter,Width_Ratio,Im_Rows,Im_Cols);
         Widths(r) = max([Min_Final_Width,Wp]); % Rectangle width.
 		
 		Rectangles(r).Origin = Cxy_r;

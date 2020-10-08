@@ -22,7 +22,6 @@ function Display_Reconstruction(P,Data,Label)
 	p = P.GUI_Handles.Current_Project;
 	Scale_Factor = Data.Info.Experiment(1).Scale_Factor;
 	
-	
 	switch(Label)
 		case 'Raw Image - Grayscale'
 			imshow(Data.Info.Files.Raw_Image{1},'Parent',Ax);
@@ -60,8 +59,8 @@ function Display_Reconstruction(P,Data,Label)
 				if(numel(Data.Segments(s).Rectangles))
 					x = [Data.Segments(s).Rectangles.X];
 					y = [Data.Segments(s).Rectangles.Y];
-					hold on;
-					plot(x,y,'LineWidth',1); % plot(x,y,'.','MarkerSize',30,'Color',rand(1,3));
+					hold(Ax,'on');
+					plot(Ax,x,y,'LineWidth',1); % plot(x,y,'.','MarkerSize',30,'Color',rand(1,3));
 				end
 			end
 			%}
@@ -100,7 +99,7 @@ function Display_Reconstruction(P,Data,Label)
 								plot(Ax,x,y,'LineWidth',LineWidth_1);
 						end
 					end
-					P.GUI_Handles.Waitbar.Value = s ./ Ns;
+					% P.GUI_Handles.Waitbar.Value = s ./ Ns;
 				end
 			end
 			
@@ -343,7 +342,7 @@ function Display_Reconstruction(P,Data,Label)
 					C(end+1,:) = nan(1,3);
 					h = patch(Ax,X',Y',1,'FaceVertexCData',C,'EdgeColor','interp','MarkerFaceColor','flat','LineWidth',2); % 8.
 				end
-				P.GUI_Handles.Waitbar.Value = s ./ Ns;
+				% P.GUI_Handles.Waitbar.Value = s ./ Ns;
 				
 				XY = [Data.Vertices.Coordinate];
 				scatter(Ax,XY(1:2:end-1),XY(2:2:end),5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
@@ -392,7 +391,7 @@ function Display_Reconstruction(P,Data,Label)
 						plot(Ax,x,y,'Color',Class_Colors(c,:),'LineWidth',2); % Use 5 when zooming in. Otherwise 2.
 					end
 				end
-				P.GUI_Handles.Waitbar.Value = s ./ Ns;
+				% P.GUI_Handles.Waitbar.Value = s ./ Ns;
 			end
 			
 			% Plot the vertices:

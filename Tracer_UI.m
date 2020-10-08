@@ -246,11 +246,11 @@ function Tracer_UI()
 	
 	function Apply_NN_Func(source,callbackdata)
 		
-        if(nargin == 2)
-            File1 = load('My_CNN_13.mat'); % My_CNN_8
-            NN1 = File1.My_CNN; % TODO: choose the only variable from the file without specifying the name.
-            clear File1;
-            % GUI_Parameters(1).Neural_Network(1).Directory = strcat(PathName,FileName);
+		if(nargin == 2)
+			File1 = load('My_CNN_13.mat'); % My_CNN_8
+			NN1 = File1.My_CNN; % TODO: choose the only variable from the file without specifying the name.
+			clear File1;
+			% GUI_Parameters(1).Neural_Network(1).Directory = strcat(PathName,FileName);
 		end
 		
 		NN_Threshold_0 = GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Parameters.Neural_Network.Threshold;

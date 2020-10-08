@@ -8,7 +8,6 @@ function index()
 	
 	folder = fileparts(which(mfilename)); % Determine where the m-file's folder is.
 	cd(folder);
-	cd ..;
 	addpath(genpath(pwd)); % Add to path.
 	
 	Project_H = Project_Class; % This creates an object of the Project_Class class.
@@ -199,7 +198,6 @@ function index()
 		if(P.GUI_Handles.Current_Step == 0)
 			P.GUI_Handles.Current_Step = 1;
 			set(P.GUI_Handles.Step_Buttons(P.GUI_Handles.Current_Step+1),'Backgroundcolor',P.GUI_Handles.Step_BG_Active);
-			Screen_1(P);
 		end
 		
 		close(P.GUI_Handles.Waitbar);
@@ -250,10 +248,11 @@ function index()
 		set(allchild(P.GUI_Handles.Menus(1)),'Enable','on');
 	end
 	
-	function Step_Buttons_Func(source,~,P)
+	function Step_Buttons_Func(source,event,P)
 		
-		All_Enabled_Objects = findobj(P.GUI_Handles(1).Main_Figure,'Enable','on');
-		set(All_Enabled_Objects,'Enable','off');
+		if(~isempty(event))
+			P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Loading...','Indeterminate','on');
+		end
 		
 		if(~isempty(source)) % If source is [], then the function is called from somewhere else (such as "Switch_Project_Func").
 			if(source.UserData > 0 && source.UserData < 7) % If not the "Back" (0) or "Next" (7) button.
@@ -274,28 +273,29 @@ function index()
 		end
 		
 		switch P.GUI_Handles.Current_Step % Load step.
-			case 1
-				Screen_1(P);
+			case 1 % Start.
 			case 2
-				Screen_1(P);
+				GUI_1_Denoise(P);
 			case 3
-				Screen_1(P);
+				% Screen_3(P);
 			case 4
-				Screen_1(P);
+				% Screen_4(P);
 			case 5
-				Screen_1(P);
+				% Screen_5(P);
 		end
 		
-		set(All_Enabled_Objects,'Enable','on');
+		if(~isempty(event))
+			close(P.GUI_Handles.Waitbar);
+		end
 	end
 	
-	function Switch_Project_Func(source,~,P)
+	function Switch_Project_Func(source,event,P)
 		
-		All_Enabled_Objects = findobj(P.GUI_Handles(1).Main_Figure,'Enable','on');
-		set(All_Enabled_Objects,'Enable','off');
+		if(~isempty(event))
+			P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Loading...','Indeterminate','on');
+		end
 		
-		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Loading...'); % P.GUI_Handles.Waitbar = waitbar(0,'Loading...');
-		
+		% profile on;
 		if(~isempty(source))
 			P.GUI_Handles.Current_Project = source.UserData;
 			pp = P.GUI_Handles.Current_Project;
@@ -305,23 +305,27 @@ function index()
 			set(source,'Checked','on');
 			
 			% Display project data:
-			if(~P.GUI_Handles.Multi_View) % single-view project. Create a project for each loaded file.
-                delete(allchild(P.GUI_Handles.View_Axes(1)));
+			if(~P.GUI_Handles.Multi_View) % single-view project.
+				delete(allchild(P.GUI_Handles.View_Axes(1)));
 				set(P.GUI_Handles.View_Axes(1),'Position',[1,1,P.GUI_Handles.Main_Panel_1.InnerPosition(3:4)]);
-				imshow(P.Data(pp).Info.Files.Raw_Image{1},'Parent',P.GUI_Handles.View_Axes(1));
-                
-                % TODO: just get rid of the grid and make the panel the parent.
-                %{
-                dx = P.GUI_Handles.Main_Panel_1.InnerPosition(3) ./ P.GUI_Handles.View_Axes.OuterPosition(3);
-                dy = P.GUI_Handles.Main_Panel_1.InnerPosition(4) ./ P.GUI_Handles.View_Axes.OuterPosition(4);
-                
-                P.GUI_Handles.View_Axes.OuterPosition(1:2) = [1,1];
-                
-                if(dx < dy)
-                    P.GUI_Handles.View_Axes.OuterPosition(3) = dx .* P.GUI_Handles.View_Axes.OuterPosition(3);
-                else
-                    P.GUI_Handles.View_Axes.OuterPosition(4) = dy .* P.GUI_Handles.View_Axes.OuterPosition(4);
-                end
+				
+				% Update the image display (for the selected project):
+				ff = find([P.GUI_Handles.Reconstruction_Menu_Handles(:).Checked] == 1,1); % Find the selected menu entry.
+				Menus_Func(P.GUI_Handles.Reconstruction_Menu_Handles(ff),[],P); % Send the menu entry handle to Menus_Func, to display it again.
+				% imshow(P.Data(pp).Info.Files.Raw_Image{1},'Parent',P.GUI_Handles.View_Axes(1));
+				
+				% TODO: just get rid of the grid and make the panel the parent.
+				%{
+				dx = P.GUI_Handles.Main_Panel_1.InnerPosition(3) ./ P.GUI_Handles.View_Axes.OuterPosition(3);
+				dy = P.GUI_Handles.Main_Panel_1.InnerPosition(4) ./ P.GUI_Handles.View_Axes.OuterPosition(4);
+				
+				P.GUI_Handles.View_Axes.OuterPosition(1:2) = [1,1];
+				
+				if(dx < dy)
+					P.GUI_Handles.View_Axes.OuterPosition(3) = dx .* P.GUI_Handles.View_Axes.OuterPosition(3);
+				else
+					P.GUI_Handles.View_Axes.OuterPosition(4) = dy .* P.GUI_Handles.View_Axes.OuterPosition(4);
+				end
                 %}
 			else % Multi-view project.
 				for vv=1:length(File1) % For each view.
@@ -332,30 +336,39 @@ function index()
 			Display_Project_Info(P);
 		end
 		
-		set(All_Enabled_Objects,'Enable','on');
-		
-		close(P.GUI_Handles.Waitbar);
-		
 		Step_Buttons_Func([],[],P);
+		
+		drawnow;
+		
+		if(~isempty(event))
+			close(P.GUI_Handles.Waitbar);
+		end
+		
+		% profile off; profile viewer;
 	end
 	
 	function Display_Project_Info(P)
 		
-		All_Enabled_Objects = findobj(P.GUI_Handles(1).Main_Figure,'Enable','on');
-		set(All_Enabled_Objects,'Enable','off');
+		% temporary fix: Data is copied and than copied back to the handle class to avoid repetitive reading of the class.
 		
 		pp = P.GUI_Handles.Current_Project;
 		
-		for tt=1:length(P.GUI_Handles.Info_Fields_List)
+		for tt=1:length(P.GUI_Handles.Info_Fields_List) % For each menu.
 			FF = fields(P.Data(pp).Info.(P.GUI_Handles.Info_Fields_List{tt}));
+			Data = P.GUI_Handles.Info_Tables(tt).Data;
+			Info_tt = P.Data(pp).Info.(P.GUI_Handles.Info_Fields_List{tt});
 			for ii=1:length(FF) % For each field in the experiment struct.
-				P.GUI_Handles.Info_Tables(tt).Data{ii,1} = FF{ii}; % Field name.
-				P.GUI_Handles.Info_Tables(tt).Data{ii,2} = P.Data(pp).Info.(P.GUI_Handles.Info_Fields_List{tt})(1).(FF{ii}); % Value.
-				P.GUI_Handles.Info_Tables(tt).Data{ii,3} = P.Data(pp).Info.(P.GUI_Handles.Info_Fields_List{tt})(2).(FF{ii}); % Unit.
+				Data{ii,1} = FF{ii}; % Field name.
+				Data{ii,2} = Info_tt(1).(FF{ii}); % Value.
+				Data{ii,3} = Info_tt(2).(FF{ii}); % Unit.
+				
+				% P.GUI_Handles.Info_Tables(tt).Data{ii,1} = FF{ii}; % Field name.
+				% P.GUI_Handles.Info_Tables(tt).Data{ii,2} = P.Data(pp).Info.(P.GUI_Handles.Info_Fields_List{tt})(1).(FF{ii}); % Value.
+				% P.GUI_Handles.Info_Tables(tt).Data{ii,3} = P.Data(pp).Info.(P.GUI_Handles.Info_Fields_List{tt})(2).(FF{ii}); % Unit.
 			end
+			P.GUI_Handles.Info_Tables(tt).Data = Data;
 		end
 		
-		set(All_Enabled_Objects,'Enable','on');
 	end
 	
 	function Update_Info_Func(source,event,P)
@@ -372,17 +385,105 @@ function index()
 	
 	function Menus_Func(source,event,P)
 		
-		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Loading...');
+		if(~isempty(event))
+			P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Loading...');
+		end
 		pp = P.GUI_Handles.Current_Project;
 		
 		% profile on;
 		switch(source.UserData)
 		case 2
+			set(P.GUI_Handles.Reconstruction_Menu_Handles(:),'Checked','off');
+			set(source,'Checked','on');
 			Display_Reconstruction(P,P.Data(pp),source.Label);
 		case 3
 		
 		end
 		% profile off; profile viewer;
+		if(~isempty(event))
+			close(P.GUI_Handles.Waitbar);
+		end
+	end
+	
+	function Denoise_Image_Func(source,event,P)
+		
+		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Denoising images...'); % ,'Indeterminate','on'
+		
+		CNN = load('My_CNN_13.mat');
+		CNN = CNN.My_CNN;
+		
+		selection = uiconfirm(P.GUI_Handles.Main_Figure,'Overwrite existing binary images?','Warning','Icon','question','Options',{'Overwrite','Keep existing binary images'});
+		switch(selection)
+		case 'Overwrite'
+			Overwrite = 1;
+		case 'Keep existing binary images'
+			Overwrite = 0;
+		end
+		
+		for pp=1:numel(P.Data)
+			
+			P.GUI_Handles.Waitbar.Value = pp ./ numel(P.Data);
+			
+			if(Overwrite || (~isfield(P.Data(pp).Info.Files,'Binary_Image') || isempty(P.Data(pp).Info.Files.Binary_Image{1})) ) % If a binary image is missing or if the user specified to overwrite existing images.
+				[Im_Rows,Im_Cols] = size(P.Data(pp).Info.Files.Raw_Image{1});
+				
+				CB_BW_Threshold = P.Data(pp).Parameters.Cell_Body.BW_Threshold;
+				Scale_Factor = P.Data(pp).Info.Experiment(1).Scale_Factor;
+				CNN_Threshold = P.Data(pp).Parameters.Neural_Network.Threshold;
+				BW_Min_Object_Size = P.Data(pp).Parameters.Neural_Network.Min_CC_Size;
+				
+				[CB_Pixels,~] = Detect_Cell_Body(P.Data(pp).Info.Files.Raw_Image{1},CB_BW_Threshold,Scale_Factor,0); % Detect cell-body.
+				Im_Input = P.Data(pp).Info.Files.Raw_Image{1};
+				Im_Input(CB_Pixels) = 0;
+				
+				P.Data(pp).Info.Files.Denoised_Image{1} = Apply_CNN_Im2Im(CNN,Im_Input); % Apply neural network to the raw image (after removing the cell-body).
+				
+				% Threshold the result to get a binary image:
+				P.Data(pp).Info.Files.Binary_Image{1} = zeros(Im_Rows,Im_Cols);
+				P.Data(pp).Info.Files.Binary_Image{1}(P.Data(pp).Info.Files.Denoised_Image{1} >= CNN_Threshold) = 1; % Set to 1 pixels that are above the preset threshold.
+				
+				% Delete sub-threshold objects from the binary image:
+				CC = bwconncomp(P.Data(pp).Info.Files.Binary_Image{1}); % Find connected components in the binary image.
+				Nc = cellfun(@length,CC.PixelIdxList); % Number of connected objects.
+				Fc = find(Nc <= BW_Min_Object_Size); % Find sub-threshold object sizes.
+				for c=Fc % For each sub-threshold object.
+					P.Data(pp).Info.Files.Binary_Image{1}(CC.PixelIdxList{1,c}) = 0; % Set the object's pixels to 0.
+				end
+			end
+		end
+		
+		% Update the image display (for the selected project):
+		ff = find([P.GUI_Handles.Reconstruction_Menu_Handles(:).Checked] == 1,1); % Find the selected menu entry.
+		Menus_Func(P.GUI_Handles.Reconstruction_Menu_Handles(ff),[],P); % Send the menu entry handle to Menus_Func, to display it again.
+		
+		close(P.GUI_Handles.Waitbar);
+	end
+	
+	function Trace_Neuron_Func(source,event,P)
+		
+		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message',''); % ,'Indeterminate','on'
+		
+		Np = numel(P.Data);
+		for pp=1:Np
+			P.GUI_Handles.Waitbar.Value = pp ./ Np;
+			
+			set(P.GUI_Handles.Reconstruction_Menu_Handles(:),'Checked','off');
+			set(P.GUI_Handles.Reconstruction_Menu_Handles(1),'Checked','on'); % Select the raw image in the reconstruction menu. It will be displayed through Switch_Project_Func -> Menus_Func.
+			
+			Switch_Project_Func(P.GUI_Handles.Menus(1).Children(Np - pp + 1),[],P); % Switch to project #pp.
+			
+			P.GUI_Handles.Waitbar.Message = 'Analyzing vertices...';
+			Data_pp = Vertices_Analysis_Index(P.Data(pp));
+			
+			P.GUI_Handles.Waitbar.Message = 'Tracing neuron...';
+			Data_pp = Connect_Vertices(Data_pp,P.GUI_Handles.View_Axes(1));
+			
+			P.Data(pp).Segments = Data_pp.Segments;
+			P.Data(pp).Vertices = Data_pp.Vertices;
+			P.Data(pp).Info.Files.Binary_Image{1} = Data_pp.Info.Files.Binary_Image{1};
+		end
+		Menus_Func(P.GUI_Handles.Reconstruction_Menu_Handles(10),[],P); % Display the trace.
+		
 		close(P.GUI_Handles.Waitbar);
 	end
 	
@@ -432,8 +533,7 @@ function index()
 	
 	function Set_Callbacks(P)
 		
-		All_Enabled_Objects = findobj(P.GUI_Handles(1).Main_Figure,'Enable','on');
-		set(All_Enabled_Objects,'Enable','off');
+		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Loading...','Indeterminate','on');
 		
 		switch(P.GUI_Handles.UI)
 		case 0
@@ -446,6 +546,8 @@ function index()
 		
 		set(P.GUI_Handles.Buttons(1,1),Func_Button,{@Load_Data_Func,P}); % UI: ButtonPushedFcn
 		set(P.GUI_Handles.Buttons(1,2),Func_Button,{@Load_Project_Func,P});
+		set(P.GUI_Handles.Buttons(2,1),Func_Button,{@Denoise_Image_Func,P}); % Denoising.
+		set(P.GUI_Handles.Buttons(2,2),Func_Button,{@Trace_Neuron_Func,P}); % Tracing.
 		set(P.GUI_Handles.Buttons(3,1),Func_Button,{@Save_Image_Func,P});
 		set(P.GUI_Handles.Buttons(3,2),Func_Button,@Save_Figure_Func);
 		set(P.GUI_Handles.Buttons(3,3),Func_Button,{@Save_Project_Func,P});
@@ -462,6 +564,6 @@ function index()
 		set(P.GUI_Handles.Reconstruction_Menu_Handles(:),'UserData',2,'Callback',{@Menus_Func,P}); % P.GUI_Handles.Menus(2)
 		set(P.GUI_Handles.Plots_Menu_Handles(:),'UserData',3,'Callback',{@Menus_Func,P}); % P.GUI_Handles.Menus(3)
 		
-		set(All_Enabled_Objects,'Enable','on');
+		close(P.GUI_Handles.Waitbar);
 	end
 end
