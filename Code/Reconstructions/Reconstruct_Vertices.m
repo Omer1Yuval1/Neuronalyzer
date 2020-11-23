@@ -82,8 +82,8 @@ function Reconstruct_Vertices(W,Display_Image)
 				set(gcf,'Position',[50,50,700,700]);
 				set(gca,'position',[0,0,1,1]);
 				
-				% axis([O(1)+[-Dxy,+Dxy] , O(2)+[-Dxy,+Dxy]]);
-				% waitforbuttonpress;
+				axis([O(1)+[-Dxy,+Dxy] , O(2)+[-Dxy,+Dxy]]);
+				waitforbuttonpress;
 			else
 				if(O(1) > D && O(1) < Cols-D && O(2) > D && O(2) < Rows-D)
 					if(ismember(W.Vertices(v).Class,[112,233,334,344]))
@@ -105,7 +105,6 @@ function Reconstruct_Vertices(W,Display_Image)
 				end
 			end
 		end
-		
 		% H = polarhistogram(theta,3);
 		%{
 		C = lines(numel(W.Vertices(v).Rectangles));
@@ -130,6 +129,7 @@ function Reconstruct_Vertices(W,Display_Image)
 		end
 		%}
 	end
+	set(gcf,'WindowState','maximized');
 	disp('Done');
 	% hold on;
 	% for s=1:numel(W.Segments)

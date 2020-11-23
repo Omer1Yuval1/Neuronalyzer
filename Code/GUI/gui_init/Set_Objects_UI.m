@@ -1,15 +1,15 @@
 function Set_Objects_UI(P)
 	
-	P.GUI_Handles.Main_Figure = uifigure('Name',[P.GUI_Handles.Software_Name,' ',P.GUI_Handles.Software_Version]);
+	P.GUI_Handles.Main_Figure = uifigure('Name',[P.GUI_Handles.Software_Name,' ',P.GUI_Handles.Software_Version],'AutoResizeChildren','off');
 	clf(P.GUI_Handles.Main_Figure);
-	set(P.GUI_Handles.Main_Figure,'WindowState','maximized','Color',[.2,.2,.2]);
+	set(P.GUI_Handles.Main_Figure,'WindowState','maximized','Color',P.GUI_Handles.BG_Color_1);
 	drawnow;
 	
 	P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Loading...','Indeterminate','on');
 	
-	Main_Grid = uigridlayout(P.GUI_Handles.Main_Figure,[25,10],'RowHeight',repmat({'1x'},1,25),'ColumnWidth',repmat({'1x'},1,10));
+	Main_Grid = uigridlayout(P.GUI_Handles.Main_Figure,[25,10],'RowHeight',repmat({'1x'},1,25),'ColumnWidth',repmat({'1x'},1,10),'BackgroundColor',P.GUI_Handles.BG_Color_1);
 	
-	P.GUI_Handles.Main_Panel_1 = uipanel(Main_Grid,'BackgroundColor',P.GUI_Handles.BG_Color_1);
+	P.GUI_Handles.Main_Panel_1 = uipanel(Main_Grid,'BackgroundColor',P.GUI_Handles.BG_Color_1,'AutoResizeChildren','off');
 	P.GUI_Handles.Main_Panel_1.Layout.Row = [1,18];
 	P.GUI_Handles.Main_Panel_1.Layout.Column = [1,10];
 	
@@ -29,6 +29,7 @@ function Set_Objects_UI(P)
 	P.GUI_Handles.Steps_Panel.Layout.Row = [24,25];
 	P.GUI_Handles.Steps_Panel.Layout.Column = [1,10];
 	
+	% Menus
 	P.GUI_Handles.Menus = gobjects(1,length(P.GUI_Handles.Menu_Names));
 	for m=1:length(P.GUI_Handles.Menu_Names)
 		P.GUI_Handles.Menus(m) = uimenu(P.GUI_Handles.Main_Figure,'Text',P.GUI_Handles.Menu_Names{m});
@@ -36,10 +37,12 @@ function Set_Objects_UI(P)
 	Set_Reconstructions_Menu(P);
 	Set_Plots_Menu(P);
 	
+	% P.GUI_Handles.Menu_Button = uipushtool(P.GUI_Handles.Main_Figure,'Separator','on','Icon',fullfile(matlabroot,'toolbox','matlab','icons','greencircleicon.gif'));
+	
 	% Control panel:
 	N = 3;
 	P.GUI_Handles.Buttons = gobjects(N,N);
-    Buttons_Grid = uigridlayout(P.GUI_Handles.Buttons_Panel,[N,N],'RowHeight',repmat({'1x'},1,3),'ColumnWidth',repmat({'1x'},1,3));
+    Buttons_Grid = uigridlayout(P.GUI_Handles.Buttons_Panel,[N,N],'RowHeight',repmat({'1x'},1,3),'ColumnWidth',repmat({'1x'},1,3),'BackgroundColor',P.GUI_Handles.BG_Color_1);
     for i=1:N
 		for j=1:N
 			P.GUI_Handles.Buttons(i,j) = uibutton(Buttons_Grid,'Text',P.GUI_Handles.Buttons_Names{i,j},'FontSize',P.GUI_Handles.Buttons_FontSize);
@@ -52,20 +55,23 @@ function Set_Objects_UI(P)
 	set(P.GUI_Handles.Buttons(3,3),'Backgroundcolor',P.GUI_Handles.Button_BG_Neurtral,'FontColor',[1,1,1]);
     
 	P.GUI_Handles.Control_Panel_Objects = gobjects(4,5);
-	Control_Panel_Grid = uigridlayout(P.GUI_Handles.Control_Panel,[4,9],'RowHeight',repmat({'1x'},1,4),'ColumnWidth',{'1.2x','0x','1x','0.05x','.7x','0x','0.8x','0x','0.8x'});
+	Control_Panel_Grid = uigridlayout(P.GUI_Handles.Control_Panel,[4,9],'RowHeight',repmat({'1x'},1,4),'ColumnWidth',{'1.2x','0x','1x','0.05x','.7x','0x','0.8x','0x','0.8x'},'BackgroundColor',P.GUI_Handles.BG_Color_1);
 	P.GUI_Handles.Radio_Group_1 = uibuttongroup(Control_Panel_Grid,'BackgroundColor',P.GUI_Handles.BG_Color_1,'BorderType','none');
 	P.GUI_Handles.Radio_Group_1.Layout.Row = [1,4];
 	P.GUI_Handles.Radio_Group_1.Layout.Column = 3;
 	for i=1:4 % For each row.
 		
 		P.GUI_Handles.Control_Panel_Objects(i,1) = uicheckbox(Control_Panel_Grid,'Text',['checkbox ',num2str(i)],'FontColor','w','UserData',[i,1],'FontSize',P.GUI_Handles.Buttons_FontSize);
-		P.GUI_Handles.Control_Panel_Objects(5-i,2) = uiradiobutton(P.GUI_Handles.Radio_Group_1,'Text',['radiobutton ',num2str(5-i)],'UserData',[5-i,2],'FontSize',P.GUI_Handles.Buttons_FontSize,'FontColor','w');
+		
+		% P.GUI_Handles.Control_Panel_Objects(i,2) = uicheckbox(Control_Panel_Grid,'Text',['checkbox ',num2str(i)],'FontColor','w','UserData',[i,2],'FontSize',P.GUI_Handles.Buttons_FontSize);
+		P.GUI_Handles.Control_Panel_Objects(5-i,2) = uiradiobutton(P.GUI_Handles.Radio_Group_1,'Text',['radiobutton ',num2str(5-i)],'UserData',[5-i,2],'FontSize',P.GUI_Handles.Buttons_FontSize,'FontColor','w','Enable','off');
+		
 		P.GUI_Handles.Control_Panel_Objects(i,3) = uilabel(Control_Panel_Grid,'Text',['label placeholder ',num2str(i),':'],'FontColor','w','UserData',[i,3],'FontSize',P.GUI_Handles.Buttons_FontSize);
 		
 		switch(i)
 		case 1
-			P.GUI_Handles.Control_Panel_Objects(i,4) = uislider(Control_Panel_Grid,'UserData',[i,4]);
-			P.GUI_Handles.Control_Panel_Objects(i,5) = uispinner(Control_Panel_Grid,'UserData',[i,5],'HorizontalAlignment','center');
+			P.GUI_Handles.Control_Panel_Objects(i,4) = uispinner(Control_Panel_Grid,'UserData',[i,4],'HorizontalAlignment','center','Value',1); % uislider(Control_Panel_Grid,'UserData',[i,4]);
+			P.GUI_Handles.Control_Panel_Objects(i,5) = uispinner(Control_Panel_Grid,'UserData',[i,5],'HorizontalAlignment','center','Value',1);
 		case {2,3,4}
 			P.GUI_Handles.Control_Panel_Objects(i,4) = uidropdown(Control_Panel_Grid,'UserData',[i,4]);
 			P.GUI_Handles.Control_Panel_Objects(i,5) = uidropdown(Control_Panel_Grid,'UserData',[i,5]);
@@ -80,19 +86,36 @@ function Set_Objects_UI(P)
         P.GUI_Handles.Control_Panel_Objects(5-i,2).Position(2) = (i-1) .* P.GUI_Handles.Control_Panel_Objects(5-i,2).Position(4) .* 1.59;
 		P.GUI_Handles.Control_Panel_Objects(5-i,2).Position(3) = P.GUI_Handles.Radio_Group_1.Position(3);
 	end
-	set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Bin size:');
-	set(P.GUI_Handles.Control_Panel_Objects(2,3),'Text','Statistics:');
-	set(P.GUI_Handles.Control_Panel_Objects(3,3),'Text','Normalization:');
-	set(P.GUI_Handles.Control_Panel_Objects(4,3),'Text','Plot type:');
 	
 	set(P.GUI_Handles.Control_Panel_Objects(1,1),'Text','Selected project only');
 	set(P.GUI_Handles.Control_Panel_Objects(2,1),'Text','Projection correction');
 	set(P.GUI_Handles.Control_Panel_Objects(3,1),'Text','Display scale-bar');
 	set(P.GUI_Handles.Control_Panel_Objects(4,1),'Text','Undock');
 	
+	P.GUI_Handles.Radio_Group_1.Children(1).Value = 1;
+	
+	set(P.GUI_Handles.Control_Panel_Objects(1,2),'Text','Default Mode');
+	set(P.GUI_Handles.Control_Panel_Objects(2,2),'Text','Selection Mode');
+	set(P.GUI_Handles.Control_Panel_Objects(3,2),'Text','Annotation Mode');
+	set(P.GUI_Handles.Control_Panel_Objects(4,2),'Text','Remove Objects');
+	
+	set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Bin size:');
+	set(P.GUI_Handles.Control_Panel_Objects(2,3),'Text','Normalization:');
+	set(P.GUI_Handles.Control_Panel_Objects(3,3),'Text','Statistics:');
+	set(P.GUI_Handles.Control_Panel_Objects(4,3),'Text','Plot type:');
+	
+	set(P.GUI_Handles.Control_Panel_Objects(2,4),'Items',{'Not Normalized'},'ItemsData',1);
+	set(P.GUI_Handles.Control_Panel_Objects(2,5),'Items',{'Total Length','Midline Length'},'ItemsData',1:2);
+	
+	set(P.GUI_Handles.Control_Panel_Objects(3,4),'Items',{'U-Test','T-Test','ANOVA'},'ItemsData',1:3);
+	set(P.GUI_Handles.Control_Panel_Objects(3,5),'Items',{'Standard Deviation','Standard Error'},'ItemsData',1:2);
+	
+	set(P.GUI_Handles.Control_Panel_Objects(4,4),'Items',{'Default'},'ItemsData',1);
+	set(P.GUI_Handles.Control_Panel_Objects(4,5),'Items',{'Histogram','Bar Plot','Pie Chart','Box Plot'},'ItemsData',1:4);
+	
 	% Step buttons
 	P.GUI_Handles.Step_Buttons = gobjects(1,length(P.GUI_Handles.Step_Buttons_Names));
-	Step_Buttons_Grid = uigridlayout(P.GUI_Handles.Steps_Panel,[1,length(P.GUI_Handles.Step_Buttons_Names)]);
+	Step_Buttons_Grid = uigridlayout(P.GUI_Handles.Steps_Panel,[1,length(P.GUI_Handles.Step_Buttons_Names)],'BackgroundColor',P.GUI_Handles.BG_Color_1);
 	for i=1:length(P.GUI_Handles.Step_Buttons_Names)
 		P.GUI_Handles.Step_Buttons(i) = uibutton(Step_Buttons_Grid,'Text',P.GUI_Handles.Step_Buttons_Names{i},'UserData',i-1,'FontSize',P.GUI_Handles.Step_Buttons_FontSize);
 	end

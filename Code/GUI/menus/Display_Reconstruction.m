@@ -1,4 +1,4 @@
-function Display_Reconstruction(P,Data,Label)
+function Display_Reconstruction(P,Data,p,Label)
 	
 	% P is the handle class containing all project and gui data.
 	% Data = P.Data(p), where p is the current selected project. It is passed separately as a struct for faster reading (reading a handle class property in a loop is very slow).
@@ -24,12 +24,12 @@ function Display_Reconstruction(P,Data,Label)
 	
 	switch(Label)
 		case 'Raw Image - Grayscale'
-			imshow(Data.Info.Files.Raw_Image{1},'Parent',Ax);
+			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 		case 'Raw Image - RGB'
-			imshow(Data.Info.Files.Raw_Image{1},'Parent',Ax);
+			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			colormap(Ax,'hot');
 		case 'Cell Body' % Detect and display CB and the outsets of the branches connected to it:
-			imshow(Data.Info.Files.Raw_Image{1},'Parent',Ax);
+			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			hold on;
 			CB_BW_Threshold = Data.Parameters.Cell_Body.BW_Threshold;
 			
@@ -39,19 +39,54 @@ function Display_Reconstruction(P,Data,Label)
 			
 			% plot(CB_Perimeter(:,1),CB_Perimeter(:,2),'LineWidth',4);
 		case 'CNN Image - Grayscale'
-			imshow(Data.Info.Files.Denoised_Image{1},'Parent',Ax);
+			imshow(Data.Info.Files(1).Denoised_Image,'Parent',Ax);
+			
+			set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Threshold:');
+			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,0.99],'Step',0.01,'Value',Data(p).Parameters.Neural_Network.Threshold,'Tooltip','Threshold for the binarization of the denoised image.'); % CNN threshold.
+			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',Data(p).Parameters.Neural_Network.Min_CC_Size); % Minimum object size.
+			
+			set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,p,1});
 		case 'CNN Image - RGB'
-			imshow(Data.Info.Files.Denoised_Image{1},'Parent',Ax);
-			colormap(Ax,'hot');
+			imshow(Data.Info.Files(1).Denoised_Image,'Parent',Ax);
+			colormap(Ax,'turbo');
+			
+			set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Threshold:');
+			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,0.99],'Step',0.01,'Value',Data(p).Parameters.Neural_Network.Threshold,'Tooltip','Threshold for the binarization of the denoised image.'); % CNN threshold.
+			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',Data(p).Parameters.Neural_Network.Min_CC_Size,'Tooltip','Minimum object size (in pixels) in the binarized image.'); % Minimum object size.
+			
+			set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,p,1});
 		case 'Binary Image'
-			imshow(Data.Info.Files.Binary_Image{1},'Parent',Ax);
-		case 'Raw + Binary Image - RGB'
-			Im_RGB = repmat(Data.Info.Files.Raw_Image{1}(:,:,1),[1,1,3]);
-			Im_RGB(:,:,1) = Im_RGB(:,:,1) .* uint8(~Data.Info.Files.Binary_Image{1});
-			Im_RGB(:,:,2) = Im_RGB(:,:,2) .* uint8(Data.Info.Files.Binary_Image{1});
+			imshow(Data.Info.Files(1).Binary_Image,'Parent',Ax);
+			
+			set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Marker size:');
+			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,20],'Step',1,'Value',5,'Tooltip','Marker size (in pixels) for adding (left mouse click) and removing (left mouse click) pixels.'); % Set the spinner.
+			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',P.Data(p).Parameters.Neural_Network.Min_CC_Size,'Tooltip','Minimum object size (in pixels) in the binarized image.'); % Minimum object size.
+			
+			set(P.GUI_Handles.Control_Panel_Objects([1,3],2),'Enable','on'); % Enable the radio buttons.
+			
+			set(allchild(Ax),'HitTest','off');
+			set(Ax,'PickableParts','all','ButtonDownFcn',{@Annotate_Image,P,p,0});
+			
+			set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,p,2});
+		case 'Binary Image - RGB'
+			Im_RGB = repmat(Data.Info.Files(1).Raw_Image(:,:,1),[1,1,3]);
+			Im_RGB(:,:,1) = Im_RGB(:,:,1) .* uint8(~Data.Info.Files(1).Binary_Image);
+			Im_RGB(:,:,2) = Im_RGB(:,:,2) .* uint8(Data.Info.Files(1).Binary_Image);
 			imshow(Im_RGB,'Parent',Ax);
+			
+			set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Marker size:');
+			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,20],'Step',1,'Value',5,'Tooltip','Marker size (in pixels) for adding (left mouse click) and removing (left mouse click) pixels.'); % Set the spinner.
+			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',Data(p).Parameters.Neural_Network.Min_CC_Size,'Tooltip','Minimum object size (in pixels) in the binarized image.'); % Minimum object size.
+			
+			set(P.GUI_Handles.Control_Panel_Objects([1,3],2),'Enable','on'); % Enable the radio buttons.
+			
+			set(allchild(Ax),'HitTest','off');
+			set(Ax,'PickableParts','all','ButtonDownFcn',{@Annotate_Image,P,p,1});
+			
+			set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,p,2});
+			
 		case 'Skeleton'
-			[Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints] = Pixel_Trace_Post_Proccessing(Data.Info.Files.Binary_Image{1},Scale_Factor);
+			[Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints] = Pixel_Trace_Post_Proccessing(Data.Info.Files(1).Binary_Image,Scale_Factor);
 			imshow(Im1_NoiseReduction,'Parent',Ax);
 			
 			%
@@ -79,7 +114,7 @@ function Display_Reconstruction(P,Data,Label)
 		case 'Blob'
 			% Find_Worm_Longitudinal_Axis(Data,1); % GP.Handles.Axes
 		case {'Trace','Segmentation'}
-			imshow(Data.Info.Files.Raw_Image{1},'Parent',Ax);
+			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			hold(Ax,'on');
 			
 			Ns =  numel(Data.Segments);
@@ -113,7 +148,7 @@ function Display_Reconstruction(P,Data,Label)
 			Max_Length = 50; % [um].
 			CM = jet(1000);
 			
-			imshow(Data.Info.Files.Raw_Image{1},'Parent',Ax);
+			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			hold on;
 			for s=1:numel(Data.Segments)
 				if(numel(Data.Segments(s).Rectangles))
@@ -131,7 +166,7 @@ function Display_Reconstruction(P,Data,Label)
 			XY = [Data.Vertices.Coordinate];
 			scatter(Ax,XY(1:2:end-1),XY(2:2:end),5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
 		case 'Axes'
-			imshow(Data.Info.Files.Raw_Image{1},'Parent',Ax);
+			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			
 			%{
 			Np = str2num(GP.Handles.Tracing.Midline_Points_Num.String);
@@ -155,42 +190,42 @@ function Display_Reconstruction(P,Data,Label)
 			end
 			%}
 		case 'Axes Mapping Process'
-			imshow(Data.Info.Files.Raw_Image{1},'Parent',Ax);
-			hold on;
-			Map_Worm_Axes(Data,Data.Neuron_Axes,1,0,GP.Handles.Axes);
+			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+			hold(Ax,'on');
+			Map_Worm_Axes(Data,Data.Neuron_Axes,1,0,Ax);
 		case {'Radial Distance','Angular Coordinate'}
 			
 			Min_Max = [0,pi./2];
 			CM_Lims = [1,1000];
 			CM = hsv(CM_Lims(2));
 			
-			switch GP.General.Active_Plot
+			switch(Label)
 				case 'Radial Distance'
 					Field_1 = 'Radial_Distance_Corrected';
 				case 'Angular Coordinate'
 					Field_1 = 'Angular_Coordinate';
 			end
 			
-			imshow(Data.Info.Files.Raw_Image{1},'Parent',Ax);
-			hold on;
+			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+			hold(Ax,'on');
 			
 			for s=1:numel(Data.Segments)
 				
-				Fs = find([[Data.All_Points.Segment_Index]] == Data.Segments(s).Segment_Index & ~isnan([Data.All_Points.(Field_1)]) );
+				Fs = find([[Data.Points.Segment_Index]] == Data.Segments(s).Segment_Index & ~isnan([Data.Points.(Field_1)]) );
 				
-				X = [Data.All_Points(Fs).X];
-				Y = [Data.All_Points(Fs).Y];
+				X = [Data.Points(Fs).X];
+				Y = [Data.Points(Fs).Y];
 				if(length(X) > 1)
 					[X,Y] = Smooth_Points(X,Y,100);
 				end
 				
-				C = abs([Data.All_Points(Fs).(Field_1)]);
+				C = abs([Data.Points(Fs).(Field_1)]);
 				C = CM(round(rescale(C,CM_Lims(1),CM_Lims(2),'InputMin',Min_Max(1),'InputMax',Min_Max(2))),:);
 				
 				X(end+1) = nan;
 				Y(end+1) = nan;
 				C(end+1,:) = nan(1,3);
-				h = patch(X',Y',1,'FaceVertexCData',C,'EdgeColor','interp','MarkerFaceColor','flat','LineWidth',2); % 8.
+				h = patch(Ax,X',Y',1,'FaceVertexCData',C,'EdgeColor','interp','MarkerFaceColor','flat','LineWidth',2); % 8.
 			end
 		case 'Midline Orientation'
 			
@@ -199,8 +234,8 @@ function Display_Reconstruction(P,Data,Label)
 			c = linspace(0,1,CM_Lims(2))';
 			CM = [1-c,c,0.*c+0.1]; % CM = jet(CM_Lims(2));
 			
-			imshow(Data.Info.Files.Raw_Image{1},'Parent',Ax);
-			hold on;
+			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+			hold(Ax,'on');
 			
 			for s=1:numel(Data.Segments)
 
@@ -222,14 +257,12 @@ function Display_Reconstruction(P,Data,Label)
 			end
 		case 'Longitudinal Gradient'
 			
-			imshow(Data.Info.Files.Raw_Image{1},'Parent',Ax);
-			hold on;
+			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+			hold(Ax,'on');
 			
 			Min_Max = [0,800]; % um.
 			CM_Lims = [1,1000];
-			CM = jet(CM_Lims(2));			
-			imshow(Data.Image0); % ,'Parent',GP.Handles.Axes
-			hold on;
+			CM = jet(CM_Lims(2));
 			
 			for s=1:numel(Data.Segments)
 
@@ -249,7 +282,7 @@ function Display_Reconstruction(P,Data,Label)
 				C(end+1,:) = nan(1,3);
 				h = patch(X',Y',1,'FaceVertexCData',C,'EdgeColor','interp','MarkerFaceColor','flat','LineWidth',2); % 8.
 			end
-		case 'Dorsal-Vental'
+		case 'Dorsal-Ventral'
 			
 			Field_1 = 'Radial_Distance_Corrected';
 			
@@ -260,7 +293,7 @@ function Display_Reconstruction(P,Data,Label)
 			D = find(Dist <= 0);
 			V = find(Dist > 0);
 			
-			imshow(Data.Info.Files.Raw_Image{1},'Parent',Ax);
+			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			hold(Ax,'on');
 			scatter(X(D),Y(D),DotSize_1,'b','filled');
 			scatter(X(V),Y(V),DotSize_1,'r','filled');
@@ -269,7 +302,7 @@ function Display_Reconstruction(P,Data,Label)
 			
 			a = 5;
 			
-			imshow(Data.Info.Files.Raw_Image{1},'Parent',Ax);
+			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			Reconstruct_Vertices(Data);
 			
 			%{
@@ -285,7 +318,7 @@ function Display_Reconstruction(P,Data,Label)
 			plot(Vx,Vy,'LineWidth',3);
 			%}
 		case {'3-Way Junctions - Position','Tips - Position'}
-			imshow(Data.Info.Files.Raw_Image{1},'Parent',Ax);
+			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			
 			switch GP.General.Active_Plot
 				case '3-Way Junctions - Position'
@@ -317,7 +350,7 @@ function Display_Reconstruction(P,Data,Label)
 			CM_Lims = [1,1000];
 			CM = jet(CM_Lims(2));
 			
-			imshow(Data.Info.Files.Raw_Image{1},'Parent',Ax);
+			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			hold(Ax,'on');
 			
 			Ns =  numel(Data.Segments);
@@ -354,7 +387,7 @@ function Display_Reconstruction(P,Data,Label)
 			C = [0.6,0,0 ; 0,0.6,0 ; 0.12,0.56,1 ; 0.8,0.8,0 ; .5,.5,.5];
 			
 			% figure;
-			imshow(Data.Info.Files.Raw_Image{1},'Parent',Ax);
+			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			hold on;
 			Midline_Distance = [Data.All_Points.X];
 			Midline_Orientation = [Data.All_Points.Y];
@@ -372,7 +405,7 @@ function Display_Reconstruction(P,Data,Label)
 			Class_Indices = [1,2,3,4]; %  [1,2,3,3.5,4,5];
 			Class_Colors = [0.6,0,0 ; 0,0.6,0 ; 0.12,0.56,1 ; 0.8,0.8,0]; % 3=0,0.8,0.8 ; 3.5=0,0,1 ; 5=0.5,0.5,0.5
 			
-			imshow(Data.Info.Files.Raw_Image{1},'Parent',Ax);
+			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			hold(Ax,'on');
 			Ns = numel(Data.Segments);
 			for s=1:Ns
@@ -405,52 +438,13 @@ function Display_Reconstruction(P,Data,Label)
 			% R = [Data.All_Vertices.Radius] .* GP.Workspace(1).Workspace.User_Input.Scale_Factor ./ 10;
 			% viscircles([X(F)',Y(F)'],R(F),'Color','k','LineWidth',5); % [0.6350 0.0780 0.1840]
 		otherwise
-			imshow(Data.Info.Files.Raw_Image{1},'Parent',Ax);
+			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 	end
 	
 	if(Undock)
 		set(gca,'position',[0,0,1,1]);
 		axis tight;
 		H.InnerPosition = [50,50,ImCols./2.5,ImRows./2.5];
-	end
-	% set(gca,'YDir','normal');
-	%{
-	H.Position = [114,469,1692,498]; % [10,50,900,900];
-	
-	
-	set(GP.Handles.Axes,'unit','normalize');
-	set(GP.Handles.Axes,'position',[0,0,1,1]);
-	axis tight;
-	%}
-	
-	% axis(XY);
-	
-	%{
-	hold on;
-	Scale_Factor = GP.Workspace(1).Workspace.User_Input.Scale_Factor;
-	plot([20,20+50*(1/Scale_Factor)],[20,20],'w','LineWidth',3);
-	text(15+25,25,['50 \mum'],'FontSize',20,'Color','w');
-	%}
-	
-	% hold on;
-	% Compass1 = imread('Compass.tif');
-	% imshow(Compass1);
-	% imshow(imresize(Compass1,1)); % 0.1*GP.Workspace(1).Workspace.Parameters.General_Parameters.Im_Rows));
-	
-	function Set_Dynamic_Sliders_Values(Handles,Min_Value,Max_Value)
-		set(Handles.Dynamic_Slider_Min,'Enable','on');
-		set(Handles.Dynamic_Slider_Max,'Enable','on');
-		if(Handles.Dynamic_Slider_Min.Min ~= Min_Value || Handles.Dynamic_Slider_Min.Max ~= Max_Value || ...
-			Handles.Dynamic_Slider_Max.Min ~= Min_Value || Handles.Dynamic_Slider_Max.Max ~= Max_Value) % Update the slider only if the max or min have changed. Otherwise, keep the last chosen values.
-			Handles.Dynamic_Slider_Min.Min = Min_Value; % Scale dynamic sliders.
-			Handles.Dynamic_Slider_Min.Max = Max_Value; % ".
-			Handles.Dynamic_Slider_Max.Min = Min_Value;% ".
-			Handles.Dynamic_Slider_Max.Max = Max_Value; % ".
-			Handles.Dynamic_Slider_Min.Value = Min_Value;
-			Handles.Dynamic_Slider_Max.Value = Max_Value;
-			Handles.Dynamic_Slider_Text_Min.String = [num2str(Handles.Dynamic_Slider_Min.Value),char(181),'m']; % Update sliders text.
-			Handles.Dynamic_Slider_Text_Max.String = [num2str(Handles.Dynamic_Slider_Max.Value),char(181),'m']; % ".
-		end
 	end
 	
 	function [X,Y] = Smooth_Points(X,Y,Smoothing_Parameter) % X=[1,n]. Y=[1,n].
@@ -460,6 +454,70 @@ function Display_Reconstruction(P,Data,Label)
 		Suxy = horzcat(u{:});
 		X = Suxy(:,1)'; % Smoothed x-coordinates.
 		Y = Suxy(:,2)'; % Smoothed y-coordinates.
+	end
+	
+	function Apply_Changes_Func(source,event,P,pp,Option_Flag)
+		switch(Option_Flag)
+			case 1 % CNN.
+				P.Data(pp).Parameters.Neural_Network.Threshold = P.GUI_Handles.Control_Panel_Objects(1,4).Value;
+				disp(['Denoised image threshold changed to: ',num2str(P.Data(pp).Parameters.Neural_Network.Threshold)]);
+			case 2 % BW.
+				% Marker size currently not saved.
+		end
+		
+		P.Data(pp).Parameters.Neural_Network.Min_CC_Size = P.GUI_Handles.Control_Panel_Objects(1,5).Value;
+		disp(['Minimum object size changed to: ',num2str(P.Data(pp).Parameters.Neural_Network.Min_CC_Size)]);
+	end
+	
+	function Annotate_Image(source,event,P,pp,RGB_Flag)
+		
+		switch(find([P.GUI_Handles.Radio_Group_1.Children.Value] == 1))
+			case 1 % Default.
+				disp('Default mode. User interaction is ignored.');
+			case 2 % Selection.
+			case 3 % Annotation.
+				
+				D = round((P.GUI_Handles.Control_Panel_Objects(1,4).Value-1)/2);
+				C = event.IntersectionPoint;
+				C = [round(C(1)),round(C(2))];
+				Cxy = combvec(C(1)-D:C(1)+D , C(2)-D:C(2)+D);
+				
+				Ci = (size(P.Data(pp).Info.Files(1).Binary_Image,1) .* (Cxy(1,:) - 1) + Cxy(2,:)); % Linear indices.
+				
+				switch(event.Button)
+					case 1 % Left mouse click - add pixels.
+						P.Data(pp).Info.Files(1).Binary_Image(Ci) = 1;
+						disp('Pixels added.');
+					case 3 % Right mouse click - delete pixels.
+						P.Data(pp).Info.Files(1).Binary_Image(Ci) = 0;
+						disp('Pixels removed.');
+				end
+				
+				if(RGB_Flag)
+					Im_RGB_i = repmat(P.Data(pp).Info.Files(1).Raw_Image(:,:,1),[1,1,3]); % Replicate the full image in all channels.
+					Im_RGB_i(:,:,1) = Im_RGB_i(:,:,1) .* uint8(~P.Data(pp).Info.Files(1).Binary_Image); % BG of BW is red.
+					Im_RGB_i(:,:,2) = Im_RGB_i(:,:,2) .* uint8(P.Data(pp).Info.Files(1).Binary_Image); % Signal of BW is green.
+					delete(allchild(Ax));
+					imshow(Im_RGB_i,'Parent',Ax);
+				else
+					delete(allchild(Ax));
+					imshow(P.Data(pp).Info.Files(1).Binary_Image,'Parent',Ax);
+				end
+				
+				set(allchild(Ax),'HitTest','off'); % set(Ax,'PickableParts','all');
+				
+			case 4 % Deletion.
+				%{
+				xy0 = event.IntersectionPoint; % Clicked point.
+				CC = bwconncomp(GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Im_BW);
+				Vc = nan(1,length(CC.PixelIdxList)); % Vector of minimal distance from the connected objects.
+				for ii=1:length(CC.PixelIdxList)
+					[y,x] = ind2sub([Im_Rows,Im_Cols],CC.PixelIdxList{ii});
+					Vc(ii) = min( ((xy0(1) - x).^2 + (xy0(2) - y).^2).^(0.5) );
+				end
+				GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Im_BW(CC.PixelIdxList{find(Vc == min(Vc),1)}) = 0;
+				%}
+		end
 	end
 	
 end

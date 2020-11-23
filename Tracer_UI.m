@@ -7,7 +7,7 @@ function Tracer_UI()
 	GUI_Parameters = Load_GUI_Parameters;
 		close all;
 		GUI_Parameters(1).Handles(1).Figure = figure('WindowState','maximized');
-		set(GUI_Parameters(1).Handles.Figure,'Name',['Neuronalizer ',GUI_Parameters.General.Version],'NumberTitle','off')
+		set(GUI_Parameters(1).Handles.Figure,'Name',['Neuronalyzer ',GUI_Parameters.General.Version],'NumberTitle','off')
 		Screen_Size = get(groot,'Screensize');
 		% Screen_Size(2) = 0.03*Screen_Size(4);
 		% Screen_Size(4) = Screen_Size(4) - Screen_Size(2)
@@ -841,7 +841,7 @@ function Tracer_UI()
 				XY_All(:,:,source.UserData.Curve_Index) = fnval(pp,Vb);
 				
 				if(strcmp(source.UserData.Axis_Field_Name,'Axis_0'))
-					% Find arc-lengths and tengents:
+					% Find arc-lengths and tangents:
 					dxy = sum((XY_All(:,2:end,1) - XY_All(:,1:end-1,1)).^2,1).^(0.5); % sum([2 x Np],1). Summing up Xi+Yi and then taking the sqrt.
 					Arc_Length = cumsum([0 , dxy]) .* GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.User_Input.Scale_Factor; % pixels to real length units (um).
 					

@@ -1,55 +1,65 @@
 function Set_Reconstructions_Menu(P)
 	
-	P.GUI_Handles.Reconstruction_Menu_Handles = gobjects(1,27);
+	H = gobjects(1,27);
 	
 	H_Raw_Image = uimenu(P.GUI_Handles.Menus(2),'Label','Raw Image');
-		P.GUI_Handles.Reconstruction_Menu_Handles(1) = uimenu(H_Raw_Image,'Label','Raw Image - Grayscale');
-		P.GUI_Handles.Reconstruction_Menu_Handles(2) = uimenu(H_Raw_Image,'Label','Raw Image - RGB');
+		H(1) = uimenu(H_Raw_Image,'Label','Raw Image - Grayscale','Checked','on');
+		H(2) = uimenu(H_Raw_Image,'Label','Raw Image - RGB');
 	
 	H_CNN = uimenu(P.GUI_Handles.Menus(2),'Label','CNN');
-		P.GUI_Handles.Reconstruction_Menu_Handles(3) = uimenu(H_CNN,'Label','CNN Image - Grayscale');
-		P.GUI_Handles.Reconstruction_Menu_Handles(4) = uimenu(H_CNN,'Label','CNN Image - RGB');
+		H(3) = uimenu(H_CNN,'Label','CNN Image - Grayscale');
+		H(4) = uimenu(H_CNN,'Label','CNN Image - RGB');
 	
 	H_Binary = uimenu(P.GUI_Handles.Menus(2),'Label','Binary Image');
-		P.GUI_Handles.Reconstruction_Menu_Handles(5) = uimenu(H_Binary,'Label','Binary Image');
-		P.GUI_Handles.Reconstruction_Menu_Handles(6) = uimenu(H_Binary,'Label','Raw + Binary Image - RGB');
+		H(5) = uimenu(H_Binary,'Label','Binary Image');
+		H(6) = uimenu(H_Binary,'Label','Binary Image - RGB');
 	
-	P.GUI_Handles.Reconstruction_Menu_Handles(7) = uimenu(P.GUI_Handles.Menus(2),'Label','Skeleton');
+	H(7) = uimenu(P.GUI_Handles.Menus(2),'Label','Skeleton');
 	
-	P.GUI_Handles.Reconstruction_Menu_Handles(8) = uimenu(P.GUI_Handles.Menus(2),'Label','Cell Body');
-	P.GUI_Handles.Reconstruction_Menu_Handles(9) = uimenu(P.GUI_Handles.Menus(2),'Label','Blob');
+	H(8) = uimenu(P.GUI_Handles.Menus(2),'Label','Cell Body');
+	H(9) = uimenu(P.GUI_Handles.Menus(2),'Label','Blob');
 	
-	P.GUI_Handles.Reconstruction_Menu_Handles(10) = uimenu(P.GUI_Handles.Menus(2),'Label','Trace');
+	H(10) = uimenu(P.GUI_Handles.Menus(2),'Label','Trace');
 	
 	H_Segments = uimenu(P.GUI_Handles.Menus(2),'Label','Segments');
-		P.GUI_Handles.Reconstruction_Menu_Handles(11) = uimenu(H_Segments,'Label','Segmentation');
-		P.GUI_Handles.Reconstruction_Menu_Handles(12) = uimenu(H_Segments,'Label','Segments by Length');
+		H(11) = uimenu(H_Segments,'Label','Segmentation');
+		H(12) = uimenu(H_Segments,'Label','Segments by Length');
 	
-	P.GUI_Handles.Reconstruction_Menu_Handles(13) = uimenu(P.GUI_Handles.Menus(2),'Label','Menorahs','Enable','off');
+	H(13) = uimenu(P.GUI_Handles.Menus(2),'Label','Menorahs','Enable','off');
 	
 	H_Vertices = uimenu(P.GUI_Handles.Menus(2),'Label','Vertices');
 		H1_Vertices_Angles = uimenu(H_Vertices,'Label','Angles');
-			P.GUI_Handles.Reconstruction_Menu_Handles(14) = uimenu(H1_Vertices_Angles,'Label','Vertices Angles');
-			P.GUI_Handles.Reconstruction_Menu_Handles(15) = uimenu(H1_Vertices_Angles,'Label','Vertices Angles - Corrected');
+			H(14) = uimenu(H1_Vertices_Angles,'Label','Vertices Angles');
+			H(15) = uimenu(H1_Vertices_Angles,'Label','Vertices Angles - Corrected');
 		H2_Vertices_Positions = uimenu(H_Vertices,'Label','Positions');
-			P.GUI_Handles.Reconstruction_Menu_Handles(16) = uimenu(H2_Vertices_Positions,'Label','3-Way Junctions - Position');
-			P.GUI_Handles.Reconstruction_Menu_Handles(17) = uimenu(H2_Vertices_Positions,'Label','Tips - Position');
+			H(16) = uimenu(H2_Vertices_Positions,'Label','3-Way Junctions - Position');
+			H(17) = uimenu(H2_Vertices_Positions,'Label','Tips - Position');
 	
-	P.GUI_Handles.Reconstruction_Menu_Handles(18) = uimenu(P.GUI_Handles.Menus(2),'Label','Curvature');
+	H(18) = uimenu(P.GUI_Handles.Menus(2),'Label','Curvature');
 	
 	H0_1_8 = uimenu(P.GUI_Handles.Menus(2),'Label','Axes');
-		P.GUI_Handles.Reconstruction_Menu_Handles(19) = uimenu(H0_1_8,'Label','Axes');
-		P.GUI_Handles.Reconstruction_Menu_Handles(20) = uimenu(H0_1_8,'Label','Axes Mapping Process');
+		H(19) = uimenu(H0_1_8,'Label','Axes');
+		H(20) = uimenu(H0_1_8,'Label','Axes Mapping Process');
 		
-	P.GUI_Handles.Reconstruction_Menu_Handles(21) = uimenu(P.GUI_Handles.Menus(2),'Label','Radial Distance');
-	P.GUI_Handles.Reconstruction_Menu_Handles(22) = uimenu(P.GUI_Handles.Menus(2),'Label','Azimuthal Angle');
-	P.GUI_Handles.Reconstruction_Menu_Handles(23) = uimenu(P.GUI_Handles.Menus(2),'Label','Midline Orientation');
-	P.GUI_Handles.Reconstruction_Menu_Handles(24) = uimenu(P.GUI_Handles.Menus(2),'Label','Longitudinal Gradient');
-	P.GUI_Handles.Reconstruction_Menu_Handles(25) = uimenu(P.GUI_Handles.Menus(2),'Label','Dorsal-Ventral');
+	H(21) = uimenu(P.GUI_Handles.Menus(2),'Label','Radial Distance');
+	H(22) = uimenu(P.GUI_Handles.Menus(2),'Label','Azimuthal Angle');
+	H(23) = uimenu(P.GUI_Handles.Menus(2),'Label','Midline Orientation');
+	H(24) = uimenu(P.GUI_Handles.Menus(2),'Label','Longitudinal Gradient');
+	H(25) = uimenu(P.GUI_Handles.Menus(2),'Label','Dorsal-Ventral');
 	
 	H0_1_7 = uimenu(P.GUI_Handles.Menus(2),'Label','PVD Orders');
-		P.GUI_Handles.Reconstruction_Menu_Handles(26) = uimenu(H0_1_7,'Label','PVD Orders - Points');
-		P.GUI_Handles.Reconstruction_Menu_Handles(27) = uimenu(H0_1_7,'Label','PVD Orders - Segments');
+		H(26) = uimenu(H0_1_7,'Label','PVD Orders - Points');
+		H(27) = uimenu(H0_1_7,'Label','PVD Orders - Segments');
+		
+	
+	for i=1:length(H)
+		if(~isempty(properties(H(i))))
+			set(H(i),'UserData',2);
+		end
+	end
+	
+	% set(H(:),'UserData',0);
+	% P.GUI_Handles.Reconstruction_Menu_Handles = H;
 	
 	return;
 	
@@ -66,7 +76,7 @@ function Set_Reconstructions_Menu(P)
 	
 	S = cell2struct(C,{'id','name','parent'},2)
 	H = gobjects(1,length(F));
-	P.GUI_Handles.Reconstruction_Menu_Handles = gobjects(1,0);
+	H = gobjects(1,0);
 	
 	F = find([S.parent] == 0);
 	while(~isempty(F))
@@ -78,7 +88,7 @@ function Set_Reconstructions_Menu(P)
 			f = find([S.parent] == S(F(i)).id); % Find all children of entry (F(i)).
 			if(isempty(f)) % If no children, save the graphic handle.
 				ii = ii + 1;
-				P.GUI_Handles.Reconstruction_Menu_Handles(ii) = H(i);
+				H(ii) = H(i);
 			else % Continue recursively.
 				
 			end

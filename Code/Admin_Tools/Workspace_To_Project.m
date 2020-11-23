@@ -40,8 +40,8 @@ function Project = Workspace_To_Project(Workspace)
 		Project(w).Info.Analysis(2).Date = 'YYYYMMDD';
 		
 		Project(w).Info.Files = struct('Raw_Image',{},'Denoised_Image',{},'Binary_Image',{});
-		Project(w).Info.Files(1).Raw_Image{1} = Workspace(w).Workspace.Image0;
-		Project(w).Info.Files(1).Denoised_Image{1} = Workspace(w).Workspace.NN_Probabilities;
-		Project(w).Info.Files(1).Binary_Image{1} = Workspace(w).Workspace.Im_BW;
+		Project(w).Info.Files(1).Raw_Image = Workspace(w).Workspace.Image0;
+		Project(w).Info.Files(1).Denoised_Image = Workspace(w).Workspace.NN_Probabilities;
+		Project(w).Info.Files(1).Binary_Image = Workspace(w).Workspace.Im_BW;
 	end
 end
