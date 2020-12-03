@@ -94,24 +94,24 @@ function Set_Objects_UI(P)
 	
 	P.GUI_Handles.Radio_Group_1.Children(1).Value = 1;
 	
-	set(P.GUI_Handles.Control_Panel_Objects(1,2),'Text','Default Mode');
-	set(P.GUI_Handles.Control_Panel_Objects(2,2),'Text','Selection Mode');
-	set(P.GUI_Handles.Control_Panel_Objects(3,2),'Text','Annotation Mode');
-	set(P.GUI_Handles.Control_Panel_Objects(4,2),'Text','Remove Objects');
+	set(P.GUI_Handles.Control_Panel_Objects(1,2),'Text','Default mode');
+	set(P.GUI_Handles.Control_Panel_Objects(2,2),'Text','Selection mode');
+	set(P.GUI_Handles.Control_Panel_Objects(3,2),'Text','Annotation mode');
+	set(P.GUI_Handles.Control_Panel_Objects(4,2),'Text','Remove objects');
 	
 	set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Bin size:');
 	set(P.GUI_Handles.Control_Panel_Objects(2,3),'Text','Normalization:');
 	set(P.GUI_Handles.Control_Panel_Objects(3,3),'Text','Statistics:');
 	set(P.GUI_Handles.Control_Panel_Objects(4,3),'Text','Plot type:');
 	
-	set(P.GUI_Handles.Control_Panel_Objects(2,4),'Items',{'Not Normalized'},'ItemsData',1);
-	set(P.GUI_Handles.Control_Panel_Objects(2,5),'Items',{'Total Length','Midline Length'},'ItemsData',1:2);
+	set(P.GUI_Handles.Control_Panel_Objects(2,4),'Items',{'Not normalized'},'ItemsData',1);
+	set(P.GUI_Handles.Control_Panel_Objects(2,5),'Items',{'Total length','Midline length'},'ItemsData',1:2);
 	
 	set(P.GUI_Handles.Control_Panel_Objects(3,4),'Items',{'U-Test','T-Test','ANOVA'},'ItemsData',1:3);
-	set(P.GUI_Handles.Control_Panel_Objects(3,5),'Items',{'Standard Deviation','Standard Error'},'ItemsData',1:2);
+	set(P.GUI_Handles.Control_Panel_Objects(3,5),'Items',{'Standard deviation','Standard error'},'ItemsData',1:2);
 	
 	set(P.GUI_Handles.Control_Panel_Objects(4,4),'Items',{'Default'},'ItemsData',1);
-	set(P.GUI_Handles.Control_Panel_Objects(4,5),'Items',{'Histogram','Bar Plot','Pie Chart','Box Plot'},'ItemsData',1:4);
+	set(P.GUI_Handles.Control_Panel_Objects(4,5),'Items',{'Histogram','Bar plot','Pie chart','Box plot'},'ItemsData',1:4);
 	
 	% Step buttons
 	P.GUI_Handles.Step_Buttons = gobjects(1,length(P.GUI_Handles.Step_Buttons_Names));

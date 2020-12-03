@@ -16,8 +16,8 @@ function Set_Reconstructions_Menu(P)
 	
 	H(7) = uimenu(P.GUI_Handles.Menus(2),'Label','Skeleton');
 	
-	H(8) = uimenu(P.GUI_Handles.Menus(2),'Label','Cell Body');
-	H(9) = uimenu(P.GUI_Handles.Menus(2),'Label','Blob');
+	H(8) = uimenu(P.GUI_Handles.Menus(2),'Label','Cell Body','Enable','off');
+	H(9) = uimenu(P.GUI_Handles.Menus(2),'Label','Blob','Enable','off');
 	
 	H(10) = uimenu(P.GUI_Handles.Menus(2),'Label','Trace');
 	
@@ -39,7 +39,7 @@ function Set_Reconstructions_Menu(P)
 	
 	H0_1_8 = uimenu(P.GUI_Handles.Menus(2),'Label','Axes');
 		H(19) = uimenu(H0_1_8,'Label','Axes');
-		H(20) = uimenu(H0_1_8,'Label','Axes Mapping Process');
+		H(20) = uimenu(H0_1_8,'Label','Axes Mapping Process','Enable','off');
 		
 	H(21) = uimenu(P.GUI_Handles.Menus(2),'Label','Radial Distance');
 	H(22) = uimenu(P.GUI_Handles.Menus(2),'Label','Azimuthal Angle');

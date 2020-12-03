@@ -378,6 +378,9 @@ function index()
 		% profile on;
 		switch(source.UserData)
 		case 2
+			set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,2}); % Here it is set before running the function, because some options overwrite it.
+			
+			
 			set(findall(P.GUI_Handles.Menus(2)),'Checked','off'); % set(P.GUI_Handles.Reconstruction_Menu_Handles(:),'Checked','off');
 			set(source,'Checked','on');
 			Display_Reconstruction(P,P.Data(pp),pp,source.Label);
@@ -385,7 +388,7 @@ function index()
 			P.GUI_Handles.View_Axes.XLim = findall(P.GUI_Handles.View_Axes.Children,'Type','image').XData; % P.GUI_Handles.View_Axes.Children(1).XData;
 			P.GUI_Handles.View_Axes.YLim = findall(P.GUI_Handles.View_Axes.Children,'Type','image').YData; % P.GUI_Handles.View_Axes.Children(1).YData;
 			
-			set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn','');
+			% set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn','');
 		case 3
 			set(findall(P.GUI_Handles.Menus(3)),'Checked','off'); % set(P.GUI_Handles.Reconstruction_Menu_Handles(:),'Checked','off');
 			set(source,'Checked','on');
@@ -402,6 +405,8 @@ function index()
 	function Apply_Changes_Func(source,event,P,Option_Flag)
 		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Loading...');
 		switch(Option_Flag)
+			case 2 % Reconstructions.
+				Menus_Func(findall(P.GUI_Handles.Menus(2),'Checked','on'),[],P);
 			case 3 % Plots.
 				Menus_Func(findall(P.GUI_Handles.Menus(3),'Checked','on'),[],P);
 		end
@@ -548,6 +553,7 @@ function index()
 		set(P.GUI_Handles.Buttons(1,2),Func_Button,{@Load_Project_Func,P});
 		set(P.GUI_Handles.Buttons(2,1),Func_Button,{@Denoise_Image_Func,P}); % Denoising.
 		set(P.GUI_Handles.Buttons(2,2),Func_Button,{@Trace_Neuron_Func,P}); % Tracing.
+		set(P.GUI_Handles.Buttons(3,1),Func_Button,{@Apply_Changes_Func,P});
 		set(P.GUI_Handles.Buttons(3,2),Func_Button,@Save_Image_Func);
 		set(P.GUI_Handles.Buttons(3,3),Func_Button,{@Save_Project_Func,P});
 		

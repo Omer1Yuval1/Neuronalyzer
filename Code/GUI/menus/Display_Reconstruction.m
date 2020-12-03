@@ -44,6 +44,7 @@ function Display_Reconstruction(P,Data,p,Label)
 			set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Threshold:');
 			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,0.99],'Step',0.01,'Value',Data(p).Parameters.Neural_Network.Threshold,'Tooltip','Threshold for the binarization of the denoised image.'); % CNN threshold.
 			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',Data(p).Parameters.Neural_Network.Min_CC_Size); % Minimum object size.
+			set(P.GUI_Handles.Control_Panel_Objects(1,[4,5]),'Enable','on'); % Enable the spinners.
 			
 			set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,p,1});
 		case 'CNN Image - RGB'
@@ -53,6 +54,7 @@ function Display_Reconstruction(P,Data,p,Label)
 			set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Threshold:');
 			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,0.99],'Step',0.01,'Value',Data(p).Parameters.Neural_Network.Threshold,'Tooltip','Threshold for the binarization of the denoised image.'); % CNN threshold.
 			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',Data(p).Parameters.Neural_Network.Min_CC_Size,'Tooltip','Minimum object size (in pixels) in the binarized image.'); % Minimum object size.
+			set(P.GUI_Handles.Control_Panel_Objects(1,[4,5]),'Enable','on'); % Enable the spinners.
 			
 			set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,p,1});
 		case 'Binary Image'
@@ -63,6 +65,7 @@ function Display_Reconstruction(P,Data,p,Label)
 			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',P.Data(p).Parameters.Neural_Network.Min_CC_Size,'Tooltip','Minimum object size (in pixels) in the binarized image.'); % Minimum object size.
 			
 			set(P.GUI_Handles.Control_Panel_Objects([1,3],2),'Enable','on'); % Enable the radio buttons.
+			set(P.GUI_Handles.Control_Panel_Objects(1,[4,5]),'Enable','on'); % Enable the spinners.
 			
 			set(allchild(Ax),'HitTest','off');
 			set(Ax,'PickableParts','all','ButtonDownFcn',{@Annotate_Image,P,p,0});
@@ -79,6 +82,7 @@ function Display_Reconstruction(P,Data,p,Label)
 			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',Data(p).Parameters.Neural_Network.Min_CC_Size,'Tooltip','Minimum object size (in pixels) in the binarized image.'); % Minimum object size.
 			
 			set(P.GUI_Handles.Control_Panel_Objects([1,3],2),'Enable','on'); % Enable the radio buttons.
+			set(P.GUI_Handles.Control_Panel_Objects(1,[4,5]),'Enable','on'); % Enable the spinners.
 			
 			set(allchild(Ax),'HitTest','off');
 			set(Ax,'PickableParts','all','ButtonDownFcn',{@Annotate_Image,P,p,1});
@@ -167,28 +171,61 @@ function Display_Reconstruction(P,Data,p,Label)
 			scatter(Ax,XY(1:2:end-1),XY(2:2:end),5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
 		case 'Axes'
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+			hold(Ax,'on');
 			
-			%{
-			Np = str2num(GP.Handles.Tracing.Midline_Points_Num.String);
+			set(P.GUI_Handles.Control_Panel_Objects([1,3],2),'Enable','on'); % Enable the radio buttons.
+			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Enable','off');
+			set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Points:');
+			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[20,100],'Step',1,'Enable','on','Tooltip','Number of interactive points.'); % Set the spinner.
 			
-			XY = [Data.Neuron_Axes.Axis_0.X ; Data.Neuron_Axes.Axis_0.Y];
+			CM1 = lines(7);
+			CM1 = CM1([7,1,1,3,3],:);
 			
-			pp = cscvn(XY); % Fit a cubic spline.
-			Vb = linspace(pp.breaks(1),pp.breaks(end),Np);
-			XY = fnval(pp,Vb);
+			F = fields(Data.Neuron_Axes);
 			
-			hold on;
-			plot(XY(1,:),XY(2,:),'LineWidth',3);
-			plot(XY(1,:),XY(2,:),'.','MarkerSize',20);
-			
-			for p=1:numel(Data.Neuron_Axes.Axis_0)
-				x = Data.Neuron_Axes.Axis_0(p).X;
-				y = Data.Neuron_Axes.Axis_0(p).Y;
-				a = Data.Neuron_Axes.Axis_0(p).Tangent_Angle + (pi/2);
+			if(P.GUI_Handles.Control_Panel_Objects(3,2).Value == 1) % Annotation mode.
+				Np = P.GUI_Handles.Control_Panel_Objects(1,4).Value; % Number of interactive points.
+				DPoint_Handles = gobjects(length(F),Np);
+				Curve_Handles = gobjects(1,length(F));
 				
-				plot(x + 40.*[0,cos(a)] , y + 40.*[0,sin(a)]);
+				% disableDefaultInteractivity(Ax);
+				set(allchild(Ax),'HitTest','off');
+				% set(Ax,'HitTest','off');
+				set(Ax,'PickableParts','all');
+				% set(allchild(Ax),'PickableParts','none');
 			end
-			%}
+			
+			
+			for f=1:length(F)
+				XY = [Data.Neuron_Axes.(F{f}).X ; Data.Neuron_Axes.(F{f}).Y]; % Midline coordinates.
+				
+				if(P.GUI_Handles.Control_Panel_Objects(3,2).Value == 1) % Annotation mode.
+					Fit_Object = cscvn(XY); % Fit a cubic spline.
+					Vb = linspace(Fit_Object.breaks(1),Fit_Object.breaks(end),Np);
+					XY_Fit = fnval(Fit_Object,Vb);
+					Curve_Handles(f) = plot(Ax,XY_Fit(1,:),XY_Fit(2,:),'Color',CM1(f,:),'LineWidth',3);
+					
+					CM2 = jet(Np);
+					
+					for i=1:Np
+						DPoint_Handles(1,i) = drawpoint(Ax,'Position',[XY_Fit(1,i),XY_Fit(2,i)],'Color',CM2(i,:),'UserData',{P,p,F,f,i,XY,Curve_Handles},'InteractionsAllowed','translate','StripeColor','w','LineWidth',10); % ,'SelectedColor','r'
+						addlistener(DPoint_Handles(1,i),'ROIMoved',@Draggable_Point_Func);
+						% addlistener(DPoint_Handles(1,i),'ROIMoved',{@Draggable_Point_Func,P,p,F,f,i,XY,Curve_Handles});
+					end
+				else
+					plot(Ax,XY(1,:),XY(2,:),'Color',CM1(f,:),'LineWidth',3);
+				end
+			end
+			% hold(Ax,'off');
+			
+			if(0)
+				for p=1:numel(Data.Neuron_Axes.Axis_0)
+					x = Data.Neuron_Axes.Axis_0(p).X;
+					y = Data.Neuron_Axes.Axis_0(p).Y;
+					a = Data.Neuron_Axes.Axis_0(p).Tangent_Angle + (pi/2);
+					plot(x + 40.*[0,cos(a)] , y + 40.*[0,sin(a)]);
+				end
+			end
 		case 'Axes Mapping Process'
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			hold(Ax,'on');
@@ -348,7 +385,7 @@ function Display_Reconstruction(P,Data,p,Label)
 		case 'Curvature'
 			Curvature_Min_Max = [0,0.3]; % 0.2
 			CM_Lims = [1,1000];
-			CM = jet(CM_Lims(2));
+			CM = turbo(CM_Lims(2));
 			
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			hold(Ax,'on');
@@ -518,6 +555,56 @@ function Display_Reconstruction(P,Data,p,Label)
 				GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Im_BW(CC.PixelIdxList{find(Vc == min(Vc),1)}) = 0;
 				%}
 		end
+	end
+	
+	function Draggable_Point_Func(source,~) % Update the position of annotated points.
+		
+		% P,p,F,f,i,XY,Curve_Handles
+		
+		PP = source.UserData{1};
+		pp = source.UserData{2};
+		FF = source.UserData{3};
+		ff = source.UserData{4};
+		ii = source.UserData{5};
+		XY_i = source.UserData{6};
+		Curve_Handles_i = source.UserData{7};
+		
+		PP.GUI_Handles.Waitbar = uiprogressdlg(PP.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Loading...');
+		
+		Np0 = size(XY_i,2); % Original number of points.
+		Np1 = length(Curve_Handles_i(ff).XData); % Number of interactive points.
+		
+		Curve_Handles_i(ff).XData(ii) = source.Position(1); % Update the edited point.
+		Curve_Handles_i(ff).YData(ii) = source.Position(2); % ".
+		
+		pp_i = cscvn([Curve_Handles_i(ff).XData ; Curve_Handles_i(ff).YData]); % Fit a cubic spline.
+		
+		% Update the final coordinates in the database:
+		XY0 = num2cell(fnval(pp_i,linspace(pp_i.breaks(1),pp_i.breaks(end),Np0)));
+		[PP.Data(pp).Neuron_Axes.(FF{ff}).X] = XY0{1,:};
+		[PP.Data(pp).Neuron_Axes.(FF{ff}).Y] = XY0{2,:};
+		
+		% Update the fitted curve:
+		XY1 = fnval(pp_i,linspace(pp_i.breaks(1),pp_i.breaks(end),Np1));
+		Curve_Handles_i(ff).XData = XY1(1,:);
+		Curve_Handles_i(ff).YData = XY1(2,:);
+		
+		if(ff == 1) % If it's the midline, also update arc-lengths and tangents.
+			dxy = sum((XY_i(:,2:end,1) - XY_i(:,1:end-1,1)).^2,1).^(0.5); % sum([2 x Np],1). Summing up Xi+Yi and then taking the sqrt.
+			Arc_Length = cumsum([0 , dxy]) .* PP.Data(pp).Info.Experiment(1).Scale_Factor; % Convert pixels to real length units (um).
+			
+			pp_Der1 = fnder(pp_i,1); % 1st derivative.
+			XY_Der = fnval(pp_Der1,linspace(pp_i.breaks(1),pp_i.breaks(end),Np0)); % [2 x Np].
+			Tangent_Angles = atan2(XY_Der(2,:),XY_Der(1,:));
+			
+			Arc_Length = num2cell(Arc_Length);
+			Tangent_Angles = num2cell(Tangent_Angles);
+			
+			[PP.Data(pp).Neuron_Axes.(FF{ff}).Arc_Length] = Arc_Length{:};
+			[PP.Data(pp).Neuron_Axes.(FF{ff}).Tangent_Angles] = Tangent_Angles{:};
+		end
+		
+		close(PP.GUI_Handles.Waitbar);
 	end
 	
 end
