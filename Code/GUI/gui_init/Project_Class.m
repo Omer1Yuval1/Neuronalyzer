@@ -16,11 +16,15 @@ classdef Project_Class < handle
 			ff{2,1} = {};
 			S = struct(ff{:}); % Create an empty struct with the same fields as in obj.Data.
 			
+			S(1).Parameters = Parameters_Func(1);
 			S(1).Info = struct('Experiment',{},'Analysis',{},'Files',{});
 			
 			S(1).Info(1).Experiment = struct('Identifier',{},'Username',{},'Neuron_Name',{},'Strain_Name',{},'Scale_Factor',{},'Age',{},'Strain',{},'Sex',{},'Genotype',{},'Phenotype',{},'Anesthetics',{},'Fixation',{},'Camera',{},'Magnification',{},'Date',{},'Temperature',{},'Time',{});
 			S.Info.Analysis = struct('Commit',{},'Date',{},'Username',{});
 			S.Info.Files = struct('Raw_Image',{},'Denoised_Image',{},'Binary_Image',{});
+			
+			
+			S.Info.Experiment(1).Scale_Factor = 1;
 			
 			% The second row is used for units:
 			S.Info.Experiment(2).Date = 'YYYYMMDD';

@@ -355,6 +355,9 @@ function index()
 	end
 	
 	function Update_Info_Func(source,event,P)
+		
+		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Denoising images...','Indeterminate','on');
+		
 		pp = P.GUI_Handles.Current_Project;
 		
 		tt = source.UserData; % Table index.
@@ -364,6 +367,12 @@ function index()
 		FF = fields(P.Data(pp).Info.(ff));
 		
 		P.Data(pp).Info.(ff)(cc-1).(FF{rr}) = event.NewData;
+		
+		if(isequal(FF{rr},'Scale_Factor'))
+			P.Data(pp).Parameters = Parameters_Func(event.NewData);
+		end
+		
+		close(P.GUI_Handles.Waitbar);
 	end
 	
 	function Menus_Func(source,event,P)
