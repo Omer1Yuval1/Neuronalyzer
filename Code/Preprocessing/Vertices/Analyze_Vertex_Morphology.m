@@ -7,7 +7,7 @@ function Data = Analyze_Vertex_Morphology(Data,Im_branchpoints)
 	% assignin('base','Data',Data);
 	% assignin('base','Im_branchpoints',Im_branchpoints);
 	
-	[Im_Rows,Im_Cols] = size(Data.Info.Files.Binary_Image{1});
+	[Im_Rows,Im_Cols] = size(Data.Info.Files(1).Binary_Image);
 	
 	Vr = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Center_Radius_Vector;
 	N = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Center_Cirle_Res;
@@ -30,7 +30,7 @@ function Data = Analyze_Vertex_Morphology(Data,Im_branchpoints)
 		[Yb,Xb] = find(Im_branchpoints);
 		% close all;
 		figure(1);
-		imshow(Data.Info.Files.Binary_Image{1});
+		imshow(Data.Info.Files(1).Binary_Image);
 		set(gca,'YDir','normal');
 		hold on;
 		% imshow(Input);
@@ -48,7 +48,7 @@ function Data = Analyze_Vertex_Morphology(Data,Im_branchpoints)
 			end
 			
 			if(all(Ls >= Rect_Length)) % If all segments are above a length threshold.
-				[New_Cxy,Rc] = Find_Vertex_Center(Data.Info.Files.Binary_Image{1},Data.Vertices(i).Coordinate,Vr,Circles_X,Circles_Y,Potential_Centers_XY,Im_Rows,Im_Cols,Min_Center_Radius);
+				[New_Cxy,Rc] = Find_Vertex_Center(Data.Info.Files(1).Binary_Image,Data.Vertices(i).Coordinate,Vr,Circles_X,Circles_Y,Potential_Centers_XY,Im_Rows,Im_Cols,Min_Center_Radius);
 			else % Otherwise, use the original skeleton center and a radius of 0.
 				New_Cxy = Data.Vertices(i).Coordinate; % Do not correct the center of end-point.
 				Rc = 0; % Vertex center radius. Tips are assigned with a 0 radius.

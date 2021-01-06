@@ -65,6 +65,7 @@ function index()
 					else % Save input data explicitly.
 						P.Data(ff).Info.Files(1).Raw_Image = imread([Path1,filesep,File1{ff}]);
 					end
+					P.Data(ff).Info.Files(1).Raw_Image = P.Data(ff).Info.Files(1).Raw_Image(:,:,1);
 					
 					Label_ff = ['Project_',num2str(ff),'_',P.Data(ff).Info.Experiment(1).Identifier];
 					uimenu(P.GUI_Handles.Menus(1),'Text',Label_ff,'UserData',ff,'Callback',{@Switch_Project_Func,P});
@@ -126,6 +127,7 @@ function index()
 					else % Save input data explicitly.
 						P.Data(1).Info.Files(vv).Raw_Image = imread([Path1,filesep,File1{vv}]);
 					end
+					P.Data(1).Info.Files(vv).Raw_Image = P.Data(1).Info.Files(vv).Raw_Image(:,:,1);
 					
 					P.GUI_Handles.View_Axes(vv) = uiaxes(P.GUI_Handles.Axes_Grid,'BackgroundColor',P.GUI_Handles.BG_Color_1);
 					% P.GUI_Handles.View_Axes(vv) = uiimage(P.GUI_Handles.Axes_Grid);
@@ -495,7 +497,7 @@ function index()
 			
 			P.Data(pp).Segments = Data_pp.Segments;
 			P.Data(pp).Vertices = Data_pp.Vertices;
-			P.Data(pp).Info.Files.Binary_Image{1} = Data_pp.Info.Files.Binary_Image{1};
+			P.Data(pp).Info.Files(1).Binary_Image = Data_pp.Info.Files(1).Binary_Image;
 		end
 		Menus_Func(findall(P.GUI_Handles.Menus(2),'Label','Trace'),[],P); % Menus_Func(P.GUI_Handles.Reconstruction_Menu_Handles(10),[],P); % Display the trace.
 		

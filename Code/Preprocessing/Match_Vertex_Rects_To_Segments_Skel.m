@@ -5,7 +5,7 @@ function Data = Match_Vertex_Rects_To_Segments_Skel(Data)
 	% For each vertex it tries to match each angle to a segment (that is known to be connected to this vertex).
 	% It then updates the vertices and segments DBs with the matching information.
 	
-	[Im_Rows,Im_Cols] = size(Data.Info.Files.Raw_Image{1});
+	[Im_Rows,Im_Cols] = size(Data.Info.Files(1).Raw_Image);
 	Scale_Factor = Data.Info.Experiment(1).Scale_Factor; % Data.User_Input.Scale_Factor;
 	
 	Skel_Angle_Min_Length = round(Data.Parameters.Tracing.Skel_Angle_Min_Length); % In pixels.

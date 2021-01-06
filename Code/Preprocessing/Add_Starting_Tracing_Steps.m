@@ -1,12 +1,12 @@
 function Data = Add_Starting_Tracing_Steps(Data)
 	
-	[Im_Rows,Im_Cols] = size(Data.Info.Files.Raw_Image{1});
+	[Im_Rows,Im_Cols] = size(Data.Info.Files(1).Raw_Image);
 	Scale_Factor = Data.Info.Experiment(1).Scale_Factor;
 	
 	Step_Length = Data.Parameters.Auto_Tracing_Parameters.Global_Step_Length;
 	Skel_Vertex_Overlap_Factor = Data.Parameters.Auto_Tracing_Parameters.Skel_Vertex_Overlap_Factor;
 	Hist_Bins_Res = Data.Parameters(1).Auto_Tracing_Parameters(1).Hist_Bins_Res;
-	[Counts0,Intensities0] = histcounts([Data.Info.Files.Raw_Image{1}(:)],[-Hist_Bins_Res:Hist_Bins_Res:260],'Normalization','probability');	
+	[Counts0,Intensities0] = histcounts([Data.Info.Files(1).Raw_Image(:)],(-Hist_Bins_Res:Hist_Bins_Res:260),'Normalization','probability');	
 	Intensities0 = (Intensities0(1:end-1) + Intensities0(2:end)) / 2; % Convert bins to bins centers.	
 	% Find peaks in the fitted data (the peaks are ordered from largest to smallest):
 	BG_MinPeakHeight = Data.Parameters(1).Auto_Tracing_Parameters(1).Step_Normalization_Min_Peak_Height;

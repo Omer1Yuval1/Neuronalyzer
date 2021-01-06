@@ -44,10 +44,10 @@ function Rectangles = Find_Vertex_Angles(Data,v,Cxy,Rc,Scale_Factor,Im_Rows,Im_C
 		
 		Coordinates1 = [];
 		if(min(XV) >= 1 && max(XV) <= Im_Cols && min(YV) >= 1 && max(YV) <= Im_Rows)
-			Coordinates1 = InRect_Coordinates(Data.Info.Files.Binary_Image{1},[XV',YV']);
+			Coordinates1 = InRect_Coordinates(Data.Info.Files(1).Binary_Image,[XV',YV']);
 		end
 		
-		Filtered_Scores(1,t) = sum(Data.Info.Files.Binary_Image{1}(Coordinates1)); %  / (Rect_Length*W); % Count 1-pixels and normalize to the area of the rectangle.
+		Filtered_Scores(1,t) = sum(Data.Info.Files(1).Binary_Image(Coordinates1)); %  / (Rect_Length*W); % Count 1-pixels and normalize to the area of the rectangle.
 		Filtered_Scores(2,t) = Theta(t); % Take the average of all the angles values that got the best score (for a specific width value).				
 		
 		if(Plot3 && ismember(t,Vt)) % Draw the convolving rectangles and the peak analysis.
@@ -158,7 +158,7 @@ function Rectangles = Find_Vertex_Angles(Data,v,Cxy,Rc,Scale_Factor,Im_Rows,Im_C
 			Angle_Final = Rectangles(r).Angle; % Angle is unchanged.
         end
 		
-        Wp = Adjust_Rect_Width_Rot_Generalized(Data.Info.Files.Binary_Image{1},Cxy_r,Angle_Final*180/pi,Lr,[MinWidth,MaxWidth],14,Width_SmoothingParameter,Width_Ratio,Im_Rows,Im_Cols);
+        Wp = Adjust_Rect_Width_Rot_Generalized(Data.Info.Files(1).Binary_Image,Cxy_r,Angle_Final*180/pi,Lr,[MinWidth,MaxWidth],14,Width_SmoothingParameter,Width_Ratio,Im_Rows,Im_Cols);
         Widths(r) = max([Min_Final_Width,Wp]); % Rectangle width.
 		
 		Rectangles(r).Origin = Cxy_r;

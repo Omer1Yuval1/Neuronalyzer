@@ -1,7 +1,7 @@
 function [Segments,Traced_Segments] = Trace_Short_Segments(Data)
 	
 	Min_Segment_Length = Data.Parameters.Tracing.Min_Segment_Length;
-	[Im_Rows,Im_Cols] = size(Data.Info.Files.Raw_Image{1}); % TODO: this is already computed in the parent function.
+	[Im_Rows,Im_Cols] = size(Data.Info.Files(1).Raw_Image); % TODO: this is already computed in the parent function.
 	
     Segments = Data.Segments;
 	Traced_Segments = zeros(1,numel(Segments)+1);

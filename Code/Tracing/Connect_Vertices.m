@@ -12,7 +12,7 @@ function Data = Connect_Vertices(Data,Ax)
 	end
 	
 	if(Plot0)
-		% imshow(Data.Info.Files.Raw_Image{1},'Parent',Ax);
+		% imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 		% set(Ax,'YDir','normal');
 		h = animatedline(Ax,'LineStyle','none','Marker','.','MarkerEdgeColor',[0,.8,0],'MarkerSize',5); % h = animatedline('Color','r','LineWidth',3);
 	end
@@ -25,7 +25,7 @@ function Data = Connect_Vertices(Data,Ax)
 		assignin('base','Workspace_Pre',Data);
 	end
 	
-	[Im_Rows,Im_Cols] = size(Data.Info.Files.Raw_Image{1});
+	[Im_Rows,Im_Cols] = size(Data.Info.Files(1).Raw_Image);
 	
 	Scale_Factor = Data.Info.Experiment(1).Scale_Factor; % Data.User_Input.Scale_Factor;
 	% Set Initial Background Normalization Values (used in case local normalization fails):
@@ -157,10 +157,10 @@ function Data = Connect_Vertices(Data,Ax)
 					assignin('base','Origin_Type',Origin_Type);
 				end
 				
-				Scores = Rect_Scan_Generalized(Data.Info.Files.Raw_Image{1},Step_Params.Rotation_Origin,Step_Params.Angle,max(Min_Scan_Width,Step_Params.Scan_Width),Step_Params.Scan_Length,Rotation_Range, ...
+				Scores = Rect_Scan_Generalized(Data.Info.Files(1).Raw_Image,Step_Params.Rotation_Origin,Step_Params.Angle,max(Min_Scan_Width,Step_Params.Scan_Width),Step_Params.Scan_Length,Rotation_Range, ...
 												Rotation_Res,Origin_Type,Im_Rows,Im_Cols,0);
 				
-				[Scores,Step_Params.BG_Intensity,Step_Params.BG_Peak_Width] = Normalize_Rects_Values_Generalized(Data.Info.Files.Raw_Image{1},Scores,Step_Params.Rotation_Origin,Step_Params.Angle,Step_Params.Width,Step_Params.Scan_Length, ...
+				[Scores,Step_Params.BG_Intensity,Step_Params.BG_Peak_Width] = Normalize_Rects_Values_Generalized(Data.Info.Files(1).Raw_Image,Scores,Step_Params.Rotation_Origin,Step_Params.Angle,Step_Params.Width,Step_Params.Scan_Length, ...
 													Step_Params.BG_Intensity,Step_Params.BG_Peak_Width,Data.Parameters,Im_Rows,Im_Cols);
 				
 				FitObject = fit(Scores(:,1),Scores(:,2),'smoothingspline','SmoothingParam',Step_Scores_Smoothing_Parameter);
@@ -189,7 +189,7 @@ function Data = Connect_Vertices(Data,Ax)
 					% Note: using the Scan_Width to detect overlaps with other segments:
 					[XV,YV] = Get_Rect_Vector(Step_Params.Rotation_Origin,Locs1,Step_Params.Scan_Width,Step_Params.Scan_Length,Data.Parameters.Auto_Tracing_Parameters.Rect_Rotation_Origin);
 					if(min(XV) > 0 && min(YV) > 0 && max(XV) <= Im_Cols && max(YV) <= Im_Rows)
-						InRect1 = InRect_Coordinates(Data.Info.Files.Raw_Image{1},[XV',YV']); % Get the linear indices of the pixels within the rectangle.
+						InRect1 = InRect_Coordinates(Data.Info.Files(1).Raw_Image,[XV',YV']); % Get the linear indices of the pixels within the rectangle.
 						f1 = Segments_Map(InRect1);
 						F1 = find(f1 ~= Data.Segments(s).Segment_Index & f1 > 0); % Detect collisions with other segments.
 						% F2 = find(f1 == Segment_Index); % Detect "BG tracing".
@@ -227,7 +227,7 @@ function Data = Connect_Vertices(Data,Ax)
 							continue;
 						end
 					else % If a peak was detected.
-						W = Adjust_Rect_Width_Rot_Generalized(Data.Info.Files.Raw_Image{1},Step_Params.Rotation_Origin,Step_Params.Angle,...
+						W = Adjust_Rect_Width_Rot_Generalized(Data.Info.Files(1).Raw_Image,Step_Params.Rotation_Origin,Step_Params.Angle,...
 										Step_Params.Scan_Length,[Wmin,Max_Rect_Width_Ratio*Data.Segments(s).(Field0)(end).Width/Scale_Factor], ...
 																	Origin_Type,Width_Smoothing_Parameter,Width_Ratio,Im_Rows,Im_Cols); % Input width in pixels.
 						
