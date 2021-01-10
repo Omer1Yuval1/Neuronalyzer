@@ -43,6 +43,7 @@ function Set_Objects_UI(P)
 	N = 3;
 	P.GUI_Handles.Buttons = gobjects(N,N);
     Buttons_Grid = uigridlayout(P.GUI_Handles.Buttons_Panel,[N,N],'RowHeight',repmat({'1x'},1,3),'ColumnWidth',repmat({'1x'},1,3),'BackgroundColor',P.GUI_Handles.BG_Color_1);
+	set(Buttons_Grid,'Padding',(P.GUI_Handles.Buttons_Panel.Position(4)/25) + [1,1,1,1]);
     for i=1:N
 		for j=1:N
 			P.GUI_Handles.Buttons(i,j) = uibutton(Buttons_Grid,'Text',P.GUI_Handles.Buttons_Names{i,j},'FontSize',P.GUI_Handles.Buttons_FontSize);
