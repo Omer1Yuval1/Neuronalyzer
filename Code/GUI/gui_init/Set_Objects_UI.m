@@ -77,13 +77,17 @@ function Set_Objects_UI(P)
 			P.GUI_Handles.Control_Panel_Objects(i,5) = uidropdown(Control_Panel_Grid,'UserData',[i,5]);
 		end
 		
-        for j=[1,3:5] % Set grid positions (except for radio button).
-            P.GUI_Handles.Control_Panel_Objects(i,j).Layout.Row = i;
+		for j=[1,3:5] % Set grid positions (except for radio button).
+			P.GUI_Handles.Control_Panel_Objects(i,j).Layout.Row = i;
 			P.GUI_Handles.Control_Panel_Objects(i,j).Layout.Column = 1 + (2*(j-1));
-        end
-        
-		% Set radio button positions:
-        P.GUI_Handles.Control_Panel_Objects(5-i,2).Position(2) = (i-1) .* P.GUI_Handles.Control_Panel_Objects(5-i,2).Position(4) .* 1.59;
+		end
+	end
+	
+	drawnow; drawnow;
+	
+	for i=1:4 % % Set radio button positions.
+		% P.GUI_Handles.Control_Panel_Objects(5-i,2).Position(2) = (i-1) .* P.GUI_Handles.Control_Panel_Objects(5-i,2).Position(4) .* 1.59;
+		P.GUI_Handles.Control_Panel_Objects(5-i,2).Position(2) = P.GUI_Handles.Control_Panel_Objects(5-i,1).Position(2) - P.GUI_Handles.Radio_Group_1.Position(2);
 		P.GUI_Handles.Control_Panel_Objects(5-i,2).Position(3) = P.GUI_Handles.Radio_Group_1.Position(3);
 	end
 	
@@ -142,5 +146,12 @@ function Set_Objects_UI(P)
 		addStyle(P.GUI_Handles.Info_Tables(t),s);
 	end
     
-	drawnow;
+	fig_pos = get(P.GUI_Handles.Main_Figure,'Position');
+    fig_pos(4) = fig_pos(3) ./ P.GUI_Handles.Figure_Dims_Ratio;
+    P.GUI_Handles.Main_Figure.Position = fig_pos;
+	set(P.GUI_Handles.Main_Figure,'Resize',0);
+    
+    drawnow;
+	
+	close(P.GUI_Handles.Waitbar);
 end

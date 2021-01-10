@@ -21,7 +21,7 @@ function index()
 	Project_H.GUI_Handles.Current_Step = 0;
 	Project_H.GUI_Handles.Current_Project = 1;
 	assignin('base','Project',Project_H);
-	close(Project_H.GUI_Handles.Waitbar);
+	% close(Project_H.GUI_Handles.Waitbar);
 	
 	function Load_Data_Func(source,event,P)
 		

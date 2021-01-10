@@ -16,7 +16,9 @@ function GUI_Params(P)
 	
 	P.GUI_Handles.Reconstruction_Menu_Entries = {'Project','Reconstruction','Plot'};
 	
-
+	
+	P.GUI_Handles.Figure_Dims_Ratio = 2;
+	
 	P.GUI_Handles.Buttons_FontSize = 16;
 	P.GUI_Handles.Step_Buttons_FontSize = 16;
 	
