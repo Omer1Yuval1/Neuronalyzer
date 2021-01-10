@@ -5,9 +5,9 @@ function Set_Plots_Menu(P)
 	
 	H_Menu1_Length = uimenu(P.GUI_Handles.Menus(3),'Label','Length');
 		P.GUI_Handles.Plots_Menu_Handles(1) = uimenu(H_Menu1_Length,'Label','Neuronal Length per Menorah Order','Checked','on');
-		P.GUI_Handles.Plots_Menu_Handles(2) = uimenu(H_Menu1_Length,'Label','Mean Segment Length','Enable','on');
+		P.GUI_Handles.Plots_Menu_Handles(2) = uimenu(H_Menu1_Length,'Label','Mean Segment Length','Enable','off');
 		P.GUI_Handles.Plots_Menu_Handles(3) = uimenu(H_Menu1_Length,'Label','Distribution of Segment Lengths Per Order','Enable','on');
-		P.GUI_Handles.Plots_Menu_Handles(4) = uimenu(H_Menu1_Length,'Label','Segment Linearity','Enable','on');
+		P.GUI_Handles.Plots_Menu_Handles(4) = uimenu(H_Menu1_Length,'Label','Segment Linearity','Enable','off');
 		P.GUI_Handles.Plots_Menu_Handles(5) = uimenu(H_Menu1_Length,'Label','End2End Length Of Segments','Enable','off');
 	
 	H_Menu2_Counts = uimenu(P.GUI_Handles.Menus(3),'Label','Count / Density');
@@ -18,8 +18,8 @@ function Set_Plots_Menu(P)
 		
 	H_Menu3_Curvature = uimenu(P.GUI_Handles.Menus(3),'Label','Curvature');
 		P.GUI_Handles.Plots_Menu_Handles(10) = uimenu(H_Menu3_Curvature,'Label','Mean Curvature','Enable','on');
-		P.GUI_Handles.Plots_Menu_Handles(11) = uimenu(H_Menu3_Curvature,'Label','Curvature Distribution','Enable','on');
-		P.GUI_Handles.Plots_Menu_Handles(12) = uimenu(H_Menu3_Curvature,'Label','Max Segment Curvature per Menorah Order','Enable','on');
+		P.GUI_Handles.Plots_Menu_Handles(11) = uimenu(H_Menu3_Curvature,'Label','Curvature Distribution','Enable','off');
+		P.GUI_Handles.Plots_Menu_Handles(12) = uimenu(H_Menu3_Curvature,'Label','Max Segment Curvature per Menorah Order','Enable','off');
 	
 	H_Menu2_CB = uimenu(P.GUI_Handles.Menus(3),'Label','Cell Body','Callback','');
 		P.GUI_Handles.Plots_Menu_Handles(13) = uimenu(H_Menu2_CB,'Label','CB Intensity','Enable','off');

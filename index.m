@@ -101,13 +101,7 @@ function index()
 				end
 			end
 			
-			% Create axes and display the image of the first project:
-			P.GUI_Handles.View_Axes(1) = uiaxes(P.GUI_Handles.Main_Panel_1,'Position',[1,1,P.GUI_Handles.Main_Panel_1.InnerPosition(3:4)],'BackgroundColor',P.GUI_Handles.BG_Color_1);
-			title(P.GUI_Handles.View_Axes(1),[]);
-			xlabel(P.GUI_Handles.View_Axes(1),[]);
-			ylabel(P.GUI_Handles.View_Axes(1),[]);
-			P.GUI_Handles.View_Axes(1).XAxis.TickLabels = {};
-			P.GUI_Handles.View_Axes(1).YAxis.TickLabels = {};
+			Reset_Main_Axes(P);
 			
 			imshow(P.Data(1).Info.Files(1).Raw_Image,'Parent',P.GUI_Handles.View_Axes(1));
 			P.GUI_Handles.View_Axes.XLim = findall(P.GUI_Handles.View_Axes.Children,'Type','image').XData; % P.GUI_Handles.View_Axes.Children(1).XData;
@@ -305,8 +299,8 @@ function index()
 			
 			% Display project data:
 			if(~P.GUI_Handles.Multi_View) % single-view project.
-				delete(allchild(P.GUI_Handles.View_Axes(1)));
-				set(P.GUI_Handles.View_Axes(1),'Position',[1,1,P.GUI_Handles.Main_Panel_1.InnerPosition(3:4)]);
+				% delete(allchild(P.GUI_Handles.View_Axes(1)));
+				% set(P.GUI_Handles.View_Axes(1),'Position',[1,1,P.GUI_Handles.Main_Panel_1.InnerPosition(3:4)]);
 				
 				% Update the image display (for the selected project):
 				Menus_Func(findall(P.GUI_Handles.Menus(2),'Checked','on'),[],P);
@@ -394,6 +388,11 @@ function index()
 			
 			set(findall(P.GUI_Handles.Menus(2)),'Checked','off'); % set(P.GUI_Handles.Reconstruction_Menu_Handles(:),'Checked','off');
 			set(source,'Checked','on');
+			
+			if(~ishandle(P.GUI_Handles.View_Axes))
+				Reset_Main_Axes(P);
+			end
+			
 			Display_Reconstruction(P,P.Data(pp),pp,source.Label);
 			
 			P.GUI_Handles.View_Axes.XLim = findall(P.GUI_Handles.View_Axes.Children,'Type','image').XData; % P.GUI_Handles.View_Axes.Children(1).XData;
@@ -545,6 +544,20 @@ function index()
 		uisave('Project',A);
 		
 		set(All_Enabled_Objects,'Enable','on');
+	end
+	
+	function Reset_Main_Axes(P)
+		
+		delete(allchild(P.GUI_Handles.Main_Panel_1));
+		set(P.GUI_Handles.Main_Panel_1,'BackgroundColor',P.GUI_Handles.BG_Color_1);
+		
+		% Create axes and display the image of the first project:
+		P.GUI_Handles.View_Axes(1) = uiaxes(P.GUI_Handles.Main_Panel_1,'Position',[1,1,P.GUI_Handles.Main_Panel_1.InnerPosition(3:4)],'BackgroundColor',P.GUI_Handles.BG_Color_1);
+		title(P.GUI_Handles.View_Axes(1),[]);
+		xlabel(P.GUI_Handles.View_Axes(1),[]);
+		ylabel(P.GUI_Handles.View_Axes(1),[]);
+		P.GUI_Handles.View_Axes(1).XAxis.TickLabels = {};
+		P.GUI_Handles.View_Axes(1).YAxis.TickLabels = {};
 	end
 	
 	function Set_Callbacks(P)

@@ -48,8 +48,10 @@ function Display_Plot(P,Data,Label)
 	
 	switch(Label)
 		case 'Number of Segments'
-			set(GP.Handles.Normalization_List,'String',{'Not Normalized'});
-			set(GP.Handles.Plot_Type_List,'String',{'Default','Terminal Segments'});
+			
+			
+			set(P.GUI_Handles.Control_Panel_Objects(3,4),'Items',{'Not Normalized'},'ItemsData',1);
+			set(P.GUI_Handles.Control_Panel_Objects(4,4),'Items',{'Default','Terminal Segments'},'ItemsData',2);
 			
 			Name = '$$Segments \; Number$$';
 			Menorah_Classes = 1:4;
@@ -410,8 +412,8 @@ function Display_Plot(P,Data,Label)
 			
 		case 'Curvature Distribution'
 			
-			set(GP.Handles.Normalization_List,'String',{'Not Normalized'});
-			set(GP.Handles.Plot_Type_List,'String',{'Default'});
+			set(P.GUI_Handles.Control_Panel_Objects(3,4),'Items',{'Not Normalized'},'ItemsData',1);
+			set(P.GUI_Handles.Control_Panel_Objects(4,4),'Items',{'Default'},'ItemsData',1);
 			
 			Curvature_Min_Max = [0,0.5]; % [0,0.5], [0,500]
 			dx = 0.005; % 0.005, 2.
