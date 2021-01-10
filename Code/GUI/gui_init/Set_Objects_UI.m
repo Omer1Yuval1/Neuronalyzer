@@ -120,6 +120,7 @@ function Set_Objects_UI(P)
 	% Step buttons
 	P.GUI_Handles.Step_Buttons = gobjects(1,length(P.GUI_Handles.Step_Buttons_Names));
 	Step_Buttons_Grid = uigridlayout(P.GUI_Handles.Steps_Panel,[1,length(P.GUI_Handles.Step_Buttons_Names)],'BackgroundColor',P.GUI_Handles.BG_Color_1);
+	set(Step_Buttons_Grid,'Padding',[10,P.GUI_Handles.Steps_Panel.Position(4)/6,10,P.GUI_Handles.Steps_Panel.Position(4)/6]);
 	for i=1:length(P.GUI_Handles.Step_Buttons_Names)
 		P.GUI_Handles.Step_Buttons(i) = uibutton(Step_Buttons_Grid,'Text',P.GUI_Handles.Step_Buttons_Names{i},'UserData',i-1,'FontSize',P.GUI_Handles.Step_Buttons_FontSize);
 	end
