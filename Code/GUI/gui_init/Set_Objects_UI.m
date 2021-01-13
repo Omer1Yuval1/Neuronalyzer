@@ -89,6 +89,7 @@ function Set_Objects_UI(P)
 	for i=1:4 % % Set radio button positions.
 		% P.GUI_Handles.Control_Panel_Objects(5-i,2).Position(2) = (i-1) .* P.GUI_Handles.Control_Panel_Objects(5-i,2).Position(4) .* 1.59;
 		P.GUI_Handles.Control_Panel_Objects(5-i,2).Position(2) = P.GUI_Handles.Control_Panel_Objects(5-i,1).Position(2) - P.GUI_Handles.Radio_Group_1.Position(2);
+		P.GUI_Handles.Control_Panel_Objects(5-i,2).Position(4) = P.GUI_Handles.Control_Panel_Objects(5-i,1).Position(4);
 		P.GUI_Handles.Control_Panel_Objects(5-i,2).Position(3) = P.GUI_Handles.Radio_Group_1.Position(3);
 	end
 	
@@ -143,16 +144,22 @@ function Set_Objects_UI(P)
 	for t=1:length(Info_Tabs)
 		Info_Tabs(t) = uitab(Info_Tab_Group,'Title',P.GUI_Handles.Info_Fields_List{t});
 		Info_Grids(t) = uigridlayout(Info_Tabs(t),[1,1],'Padding',[0,0,0,0]);
+		
+		drawnow; drawnow;
+		
 		W = Info_Tabs(t).InnerPosition(3);
+		
 		P.GUI_Handles.Info_Tables(t) = uitable(Info_Grids(t),'Data',cell(10,3),'UserData',t,'ColumnWidth',{W.*0.35,W.*0.35,'auto'},'ColumnEditable',[false,true,true],'RowName',[],'ColumnName',[],'ForegroundColor','w','BackgroundColor',P.GUI_Handles.BG_Color_1); % {'1x','1x','0.2x'}
 		addStyle(P.GUI_Handles.Info_Tables(t),s);
 	end
     
+	%{
 	fig_pos = get(P.GUI_Handles.Main_Figure,'Position');
     fig_pos(4) = fig_pos(3) ./ P.GUI_Handles.Figure_Dims_Ratio;
     P.GUI_Handles.Main_Figure.Position = fig_pos;
 	set(P.GUI_Handles.Main_Figure,'Resize',0);
-    
+    %}
+	
     drawnow;
 	
 	close(P.GUI_Handles.Waitbar);
