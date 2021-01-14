@@ -22,6 +22,9 @@ function Display_Reconstruction(P,Data,p,Label)
 	p = P.GUI_Handles.Current_Project;
 	Scale_Factor = Data.Info.Experiment(1).Scale_Factor;
 	
+	set(P.GUI_Handles.Radio_Group_1,'SelectionChangedFcn',{@Radio_Buttons_BW_Func,P});
+	Radio_Buttons_BW_Func([],[],P);
+	
 	switch(Label)
 		case 'Raw Image - Grayscale'
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
@@ -61,14 +64,14 @@ function Display_Reconstruction(P,Data,p,Label)
 			imshow(Data.Info.Files(1).Binary_Image,'Parent',Ax);
 			
 			set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Marker size:');
-			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,20],'Step',1,'Value',5,'Tooltip','Marker size (in pixels) for adding (left mouse click) and removing (left mouse click) pixels.'); % Set the spinner.
+			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,20],'Step',1,'Value',2,'Tooltip','Marker size (in pixels) for adding (left mouse click) and removing (left mouse click) pixels.'); % Set the spinner.
 			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',P.Data(p).Parameters.Neural_Network.Min_CC_Size,'Tooltip','Minimum object size (in pixels) in the binarized image.'); % Minimum object size.
 			
-			set(P.GUI_Handles.Control_Panel_Objects([1,3],2),'Enable','on'); % Enable the radio buttons.
+			set(P.GUI_Handles.Control_Panel_Objects([1,2,3],2),'Enable','on'); % Enable the radio buttons.
 			set(P.GUI_Handles.Control_Panel_Objects(1,[4,5]),'Enable','on'); % Enable the spinners.
 			
 			set(allchild(Ax),'HitTest','off');
-			set(Ax,'PickableParts','all','ButtonDownFcn',{@Annotate_Image,P,p,0});
+			set(Ax,'PickableParts','all');
 			
 			set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,p,2});
 		case 'Binary Image - RGB'
@@ -78,14 +81,14 @@ function Display_Reconstruction(P,Data,p,Label)
 			imshow(Im_RGB,'Parent',Ax);
 			
 			set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Marker size:');
-			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,20],'Step',1,'Value',5,'Tooltip','Marker size (in pixels) for adding (left mouse click) and removing (left mouse click) pixels.'); % Set the spinner.
+			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,20],'Step',1,'Value',2,'Tooltip','Marker size (in pixels) for adding (left mouse click) and removing (left mouse click) pixels.'); % Set the spinner.
 			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',Data(p).Parameters.Neural_Network.Min_CC_Size,'Tooltip','Minimum object size (in pixels) in the binarized image.'); % Minimum object size.
 			
-			set(P.GUI_Handles.Control_Panel_Objects([1,3],2),'Enable','on'); % Enable the radio buttons.
+			set(P.GUI_Handles.Control_Panel_Objects([1,2,3],2),'Enable','on'); % Enable the radio buttons.
 			set(P.GUI_Handles.Control_Panel_Objects(1,[4,5]),'Enable','on'); % Enable the spinners.
 			
 			set(allchild(Ax),'HitTest','off');
-			set(Ax,'PickableParts','all','ButtonDownFcn',{@Annotate_Image,P,p,1});
+			set(Ax,'PickableParts','all');
 			
 			set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,p,2});
 			
@@ -184,46 +187,38 @@ function Display_Reconstruction(P,Data,p,Label)
 			F = fields(Data.Neuron_Axes);
 			
 			if(P.GUI_Handles.Control_Panel_Objects(3,2).Value == 1) % Annotation mode.
-				Np = P.GUI_Handles.Control_Panel_Objects(1,4).Value; % Number of interactive points.
-				DPoint_Handles = gobjects(length(F),Np);
-				Curve_Handles = gobjects(1,length(F));
+				Np_Waypoints = P.GUI_Handles.Control_Panel_Objects(1,4).Value; % Number of interactive points.
 				
 				% disableDefaultInteractivity(Ax);
-				set(allchild(Ax),'HitTest','off');
-				% set(Ax,'HitTest','off');
-				set(Ax,'PickableParts','all');
-				% set(allchild(Ax),'PickableParts','none');
+				set(allchild(Ax),'HitTest','off'); set(Ax,'HitTest','off');
+				set(Ax,'PickableParts','all'); % set(allchild(Ax),'PickableParts','none');
 			end
-			
 			
 			for f=1:length(F)
 				XY = [Data.Neuron_Axes.(F{f}).X ; Data.Neuron_Axes.(F{f}).Y]; % Midline coordinates.
 				
+				Np_Total = size(XY,2);
+				Np_Waypoints = P.GUI_Handles.Control_Panel_Objects(1,4).Value; % Number of interactive points.
+				
 				if(P.GUI_Handles.Control_Panel_Objects(3,2).Value == 1) % Annotation mode.
-					Fit_Object = cscvn(XY); % Fit a cubic spline.
-					Vb = linspace(Fit_Object.breaks(1),Fit_Object.breaks(end),Np);
-					XY_Fit = fnval(Fit_Object,Vb);
-					Curve_Handles(f) = plot(Ax,XY_Fit(1,:),XY_Fit(2,:),'Color',CM1(f,:),'LineWidth',3);
 					
-					CM2 = jet(Np);
+					Waypoints = false(Np_Total,1);
+					Waypoints(1:round(Np_Total / Np_Waypoints):Np_Total) = true;
 					
-					for i=1:Np
-						DPoint_Handles(1,i) = drawpoint(Ax,'Position',[XY_Fit(1,i),XY_Fit(2,i)],'Color',CM2(i,:),'UserData',{P,p,F,f,i,XY,Curve_Handles},'InteractionsAllowed','translate','StripeColor','w','LineWidth',10); % ,'SelectedColor','r'
-						addlistener(DPoint_Handles(1,i),'ROIMoved',@Draggable_Point_Func);
-						% addlistener(DPoint_Handles(1,i),'ROIMoved',{@Draggable_Point_Func,P,p,F,f,i,XY,Curve_Handles});
-					end
+					roi = images.roi.Freehand(Ax,'Position',[XY(1,:)',XY(2,:)'],'Waypoints',Waypoints,'UserData',{p,F{f}},'Closed',false,'Color',CM1(f,:),'FaceAlpha',0,'FaceSelectable',false); % roi = images.roi.Polyline(Ax,'Position',[XY(1,:)',XY(2,:)'],'UserData',{p,F{f}});
+					addlistener(roi,'ROIMoved',@(src,evnt) Draggable_Point_Func(src,evnt,P));
 				else
 					plot(Ax,XY(1,:),XY(2,:),'Color',CM1(f,:),'LineWidth',3);
 				end
 			end
 			% hold(Ax,'off');
 			
-			if(0)
-				for p=1:numel(Data.Neuron_Axes.Axis_0)
-					x = Data.Neuron_Axes.Axis_0(p).X;
-					y = Data.Neuron_Axes.Axis_0(p).Y;
-					a = Data.Neuron_Axes.Axis_0(p).Tangent_Angle + (pi/2);
-					plot(x + 40.*[0,cos(a)] , y + 40.*[0,sin(a)]);
+			if(0) % Plot the normals to the midline.
+				for i=1:numel(P.Data(p).Neuron_Axes.Axis_0)
+					x = P.Data(p).Neuron_Axes.Axis_0(i).X;
+					y = P.Data(p).Neuron_Axes.Axis_0(i).Y;
+					a = P.Data(p).Neuron_Axes.Axis_0(i).Tangent_Angle + (pi/2);
+					plot(Ax,x + 40.*[0,cos(a)] , y + 40.*[0,sin(a)]);
 				end
 			end
 		case 'Axes Mapping Process'
@@ -508,20 +503,54 @@ function Display_Reconstruction(P,Data,p,Label)
 	
 	function Annotate_Image(source,event,P,pp,RGB_Flag)
 		
-		switch(find([P.GUI_Handles.Radio_Group_1.Children.Value] == 1))
+		Mode = find([P.GUI_Handles.Radio_Group_1.Children.Value] == 1);
+		switch(Mode)
 			case 1 % Default.
 				disp('Default mode. User interaction is ignored.');
-			case 2 % Selection.
-			case 3 % Annotation.
+				set(allchild(P.GUI_Handles.View_Axes),'HitTest','on');
+			case {2,3} % Annotation & Drawing modes.
 				
-				D = round((P.GUI_Handles.Control_Panel_Objects(1,4).Value-1)/2);
-				C = event.IntersectionPoint;
-				C = [round(C(1)),round(C(2))];
-				Cxy = combvec(C(1)-D:C(1)+D , C(2)-D:C(2)+D);
+				set(allchild(P.GUI_Handles.View_Axes),'HitTest','off');
+				
+				Mouse_Button = event.Button;
+				Marker_Size = P.GUI_Handles.Control_Panel_Objects(1,4).Value;
+				
+				dd = round((Marker_Size-1)/2);
+				
+				switch(Mode)
+					case 2 % Drawing mode.
+						hold(P.GUI_Handles.View_Axes,'on');
+						roi = drawfreehand(P.GUI_Handles.View_Axes,'Closed',0,'LineWidth',Marker_Size,'FaceAlpha',0,'FaceSelectable',0);
+						% roi = images.roi.AssistedFreehand(P.GUI_Handles.View_Axes.Children(end)); draw(roi);
+						
+						roi.Position = unique(roi.Position,'rows'); % Remove duplicated points.
+						Npp = size(roi.Position,1);
+						Cxy = zeros(2,0);
+						
+						if(Npp > 1)
+							% Upsample:
+							xx = interp1(1:Npp,roi.Position(:,1)',linspace(1,Npp,Npp*100)); % First, upsample the x-coordinates.
+							yy = spline(roi.Position(:,1),roi.Position(:,2),xx);
+							
+							Cx = round(xx(:)) + (-dd:dd);
+							Cy = round(yy(:)) + (-dd:dd);
+							% Cxy = combvec(Cx',Cy');
+							% Cxy = [reshape(Cxy(1:5,:),1,[]) ; reshape(Cxy(6:10,:),1,[])];
+							
+							for ii=1:length(xx) % For each point.
+								Cxy = [Cxy , combvec(Cx(ii,:) , Cy(ii,:))]; % [2 x Np].
+							end
+							delete(roi); % delete(findobj(P.GUI_Handles.View_Axes,'-not','Type','image','-and','-not','Type','axes'));
+						end
+					case 3 % Annotation mode.
+						C = event.IntersectionPoint;
+						C = [round(C(1)),round(C(2))];
+						Cxy = combvec(C(1)-dd:C(1)+dd , C(2)-dd:C(2)+dd); % [2 x Np].
+				end
 				
 				Ci = (size(P.Data(pp).Info.Files(1).Binary_Image,1) .* (Cxy(1,:) - 1) + Cxy(2,:)); % Linear indices.
 				
-				switch(event.Button)
+				switch(Mouse_Button)
 					case 1 % Left mouse click - add pixels.
 						P.Data(pp).Info.Files(1).Binary_Image(Ci) = 1;
 						disp('Pixels added.');
@@ -557,54 +586,49 @@ function Display_Reconstruction(P,Data,p,Label)
 		end
 	end
 	
-	function Draggable_Point_Func(source,~) % Update the position of annotated points.
+	function Draggable_Point_Func(source,~,P) % Update the position of annotated points.
 		
-		% P,p,F,f,i,XY,Curve_Handles
+		ppp = source.UserData{1}; % Project number.
+		FF = source.UserData{2}; % Field name.
 		
-		PP = source.UserData{1};
-		pp = source.UserData{2};
-		FF = source.UserData{3};
-		ff = source.UserData{4};
-		ii = source.UserData{5};
-		XY_i = source.UserData{6};
-		Curve_Handles_i = source.UserData{7};
+		xx = source.Position(:,1)';
+		yy = source.Position(:,2)';
 		
-		PP.GUI_Handles.Waitbar = uiprogressdlg(PP.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Loading...');
+		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Loading...');
 		
-		Np0 = size(XY_i,2); % Original number of points.
-		Np1 = length(Curve_Handles_i(ff).XData); % Number of interactive points.
+		xxc = num2cell(xx);
+		yyc = num2cell(yy);
+		[P.Data(ppp).Neuron_Axes.(FF).X] = xxc{:};
+		[P.Data(ppp).Neuron_Axes.(FF).Y] = yyc{:};
 		
-		Curve_Handles_i(ff).XData(ii) = source.Position(1); % Update the edited point.
-		Curve_Handles_i(ff).YData(ii) = source.Position(2); % ".
-		
-		pp_i = cscvn([Curve_Handles_i(ff).XData ; Curve_Handles_i(ff).YData]); % Fit a cubic spline.
-		
-		% Update the final coordinates in the database:
-		XY0 = num2cell(fnval(pp_i,linspace(pp_i.breaks(1),pp_i.breaks(end),Np0)));
-		[PP.Data(pp).Neuron_Axes.(FF{ff}).X] = XY0{1,:};
-		[PP.Data(pp).Neuron_Axes.(FF{ff}).Y] = XY0{2,:};
-		
-		% Update the fitted curve:
-		XY1 = fnval(pp_i,linspace(pp_i.breaks(1),pp_i.breaks(end),Np1));
-		Curve_Handles_i(ff).XData = XY1(1,:);
-		Curve_Handles_i(ff).YData = XY1(2,:);
-		
-		if(ff == 1) % If it's the midline, also update arc-lengths and tangents.
-			dxy = sum((XY_i(:,2:end,1) - XY_i(:,1:end-1,1)).^2,1).^(0.5); % sum([2 x Np],1). Summing up Xi+Yi and then taking the sqrt.
-			Arc_Length = cumsum([0 , dxy]) .* PP.Data(pp).Info.Experiment(1).Scale_Factor; % Convert pixels to real length units (um).
+		if(isequal(FF,'Axis_0')) % If it's the midline, also update arc-lengths and tangents.
+			dxy = sum(([xx(2:end) ; yy(2:end)] - [xx(1:end-1) ; yy(1:end-1)]).^2,1).^(0.5); % sum([2 x Np],1). Summing up Xi+Yi and then taking the sqrt.
+			Arc_Length = num2cell(cumsum([0 , dxy]) .* P.Data(ppp).Info.Experiment(1).Scale_Factor); % Convert pixels to real length units (um).
 			
-			pp_Der1 = fnder(pp_i,1); % 1st derivative.
-			XY_Der = fnval(pp_Der1,linspace(pp_i.breaks(1),pp_i.breaks(end),Np0)); % [2 x Np].
-			Tangent_Angles = atan2(XY_Der(2,:),XY_Der(1,:));
-			
-			Arc_Length = num2cell(Arc_Length);
+			dr = [gradient(xx(:)) , gradient(yy(:))]; % First derivative.
+			ddr = [gradient(dr(:,1)) , gradient(dr(:,2))];
+			Tangent_Angles = atan2(ddr(:,2),ddr(:,1));
 			Tangent_Angles = num2cell(Tangent_Angles);
 			
-			[PP.Data(pp).Neuron_Axes.(FF{ff}).Arc_Length] = Arc_Length{:};
-			[PP.Data(pp).Neuron_Axes.(FF{ff}).Tangent_Angles] = Tangent_Angles{:};
+			[P.Data(ppp).Neuron_Axes.(FF).Arc_Length] = Arc_Length{:};
+			[P.Data(ppp).Neuron_Axes.(FF).Tangent_Angles] = Tangent_Angles{:};
 		end
 		
-		close(PP.GUI_Handles.Waitbar);
+		close(P.GUI_Handles.Waitbar);
+	end
+	
+	function Radio_Buttons_BW_Func(~,~,P)
+		switch(find([P.GUI_Handles.Radio_Group_1.Children.Value] == 1)) % Mode.
+			case {2,3} % Annotation & Drawing modes.
+				switch(Label)
+					case 'Binary Image'
+						set(P.GUI_Handles.View_Axes,'ButtonDownFcn',{@Annotate_Image,P,P.GUI_Handles.Current_Project,0});
+					case 'Binary Image - RGB'
+						set(P.GUI_Handles.View_Axes,'ButtonDownFcn',{@Annotate_Image,P,P.GUI_Handles.Current_Project,1});
+				end
+			otherwise
+				set(P.GUI_Handles.View_Axes,'ButtonDownFcn','');
+		end
 	end
 	
 end

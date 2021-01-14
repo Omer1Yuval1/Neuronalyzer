@@ -101,7 +101,7 @@ function Set_Objects_UI(P)
 	P.GUI_Handles.Radio_Group_1.Children(1).Value = 1;
 	
 	set(P.GUI_Handles.Control_Panel_Objects(1,2),'Text','Default mode');
-	set(P.GUI_Handles.Control_Panel_Objects(2,2),'Text','Selection mode');
+	set(P.GUI_Handles.Control_Panel_Objects(2,2),'Text','Drawing mode');
 	set(P.GUI_Handles.Control_Panel_Objects(3,2),'Text','Annotation mode');
 	set(P.GUI_Handles.Control_Panel_Objects(4,2),'Text','Remove objects');
 	
