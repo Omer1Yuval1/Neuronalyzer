@@ -23,6 +23,7 @@ function Display_Reconstruction(P,Data,p,Label)
 	Scale_Factor = Data.Info.Experiment(1).Scale_Factor;
 	
 	set(P.GUI_Handles.Radio_Group_1,'SelectionChangedFcn',{@Radio_Buttons_BW_Func,P});
+	set(P.GUI_Handles.View_Axes,'ButtonDownFcn','');
 	Radio_Buttons_BW_Func([],[],P);
 	
 	switch(Label)
@@ -192,6 +193,7 @@ function Display_Reconstruction(P,Data,p,Label)
 				% disableDefaultInteractivity(Ax);
 				set(allchild(Ax),'HitTest','off'); set(Ax,'HitTest','off');
 				set(Ax,'PickableParts','all'); % set(allchild(Ax),'PickableParts','none');
+				set(P.GUI_Handles.View_Axes.Children(end),'ButtonDownFcn',{@Lock_Image_Func,P}); % Used to fix the image.
 			end
 			
 			for f=1:length(F)
@@ -629,6 +631,10 @@ function Display_Reconstruction(P,Data,p,Label)
 			otherwise
 				set(P.GUI_Handles.View_Axes,'ButtonDownFcn','');
 		end
-	end
+    end
+
+    function Lock_Image_Func(P)
+        
+    end
 	
 end
