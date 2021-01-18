@@ -525,14 +525,22 @@ function Display_Reconstruction(P,Data,p,Label)
 						roi = drawfreehand(P.GUI_Handles.View_Axes,'Closed',0,'LineWidth',Marker_Size,'FaceAlpha',0,'FaceSelectable',0);
 						% roi = images.roi.AssistedFreehand(P.GUI_Handles.View_Axes.Children(end)); draw(roi);
 						
-						roi.Position = unique(roi.Position,'rows'); % Remove duplicated points.
+						% [~,ia,~] = unique(roi.Position,'rows'); % Remove duplicated points.
+						% roi.Position = roi.Position(sort(ia),:);
+						
 						Npp = size(roi.Position,1);
 						Cxy = zeros(2,0);
 						
 						if(Npp > 1)
 							% Upsample:
-							xx = interp1(1:Npp,roi.Position(:,1)',linspace(1,Npp,Npp*100)); % First, upsample the x-coordinates.
-							yy = spline(roi.Position(:,1),roi.Position(:,2),xx);
+							tt = 1:Npp;
+							fit_ppform = spline(tt,[roi.Position']); % Alternative: use cscvn(roi.Position');
+							xy = ppval(fit_ppform,linspace(tt(1),tt(end),Npp*100));
+							xx = xy(1,:);
+							yy = xy(2,:);
+							
+							% xx = roi.Position(:,1);
+							% yy = roi.Position(:,2);
 							
 							Cx = round(xx(:)) + (-dd:dd);
 							Cy = round(yy(:)) + (-dd:dd);
@@ -622,6 +630,7 @@ function Display_Reconstruction(P,Data,p,Label)
 	function Radio_Buttons_BW_Func(~,~,P)
 		switch(find([P.GUI_Handles.Radio_Group_1.Children.Value] == 1)) % Mode.
 			case {2,3} % Annotation & Drawing modes.
+				zoom(P.GUI_Handles.View_Axes,'off'); % Switch off the zoom function.
 				switch(Label)
 					case 'Binary Image'
 						set(P.GUI_Handles.View_Axes,'ButtonDownFcn',{@Annotate_Image,P,P.GUI_Handles.Current_Project,0});
