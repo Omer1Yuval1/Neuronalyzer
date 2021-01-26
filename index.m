@@ -398,6 +398,8 @@ function index()
 			P.GUI_Handles.View_Axes.XLim = findall(P.GUI_Handles.View_Axes.Children,'Type','image').XData; % P.GUI_Handles.View_Axes.Children(1).XData;
 			P.GUI_Handles.View_Axes.YLim = findall(P.GUI_Handles.View_Axes.Children,'Type','image').YData; % P.GUI_Handles.View_Axes.Children(1).YData;
 			
+			% drawnow; drawnow;
+			
 			% set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn','');
 		case 3
 			set(findall(P.GUI_Handles.Menus(3)),'Checked','off'); % set(P.GUI_Handles.Reconstruction_Menu_Handles(:),'Checked','off');

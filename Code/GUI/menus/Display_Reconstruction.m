@@ -517,7 +517,12 @@ function Display_Reconstruction(P,Data,p,Label)
 				Mouse_Button = event.Button;
 				Marker_Size = P.GUI_Handles.Control_Panel_Objects(1,4).Value;
 				
-				dd = round((Marker_Size-1)/2);
+				if(mod(Marker_Size,2) == 1) % If odd number.
+					dd = [-round((Marker_Size-1)/2) : round((Marker_Size-1)/2)]; % dd = round((Marker_Size-1)/2);
+				else % If even number.
+					dd = [(-round((Marker_Size-1)/2)+1) : round((Marker_Size-1)/2)];
+				end
+				% disp(dd);
 				
 				switch(Mode)
 					case 2 % Drawing mode.
@@ -542,8 +547,8 @@ function Display_Reconstruction(P,Data,p,Label)
 							% xx = roi.Position(:,1);
 							% yy = roi.Position(:,2);
 							
-							Cx = round(xx(:)) + (-dd:dd);
-							Cy = round(yy(:)) + (-dd:dd);
+							Cx = round(xx(:)) + dd; % (-dd:dd)
+							Cy = round(yy(:)) + dd;
 							% Cxy = combvec(Cx',Cy');
 							% Cxy = [reshape(Cxy(1:5,:),1,[]) ; reshape(Cxy(6:10,:),1,[])];
 							
@@ -555,7 +560,7 @@ function Display_Reconstruction(P,Data,p,Label)
 					case 3 % Annotation mode.
 						C = event.IntersectionPoint;
 						C = [round(C(1)),round(C(2))];
-						Cxy = combvec(C(1)-dd:C(1)+dd , C(2)-dd:C(2)+dd); % [2 x Np].
+						Cxy = combvec(C(1) + dd , C(2) + dd); % [2 x Np].
 				end
 				
 				Ci = (size(P.Data(pp).Info.Files(1).Binary_Image,1) .* (Cxy(1,:) - 1) + Cxy(2,:)); % Linear indices.
@@ -641,7 +646,7 @@ function Display_Reconstruction(P,Data,p,Label)
 				set(P.GUI_Handles.View_Axes,'ButtonDownFcn','');
 		end
     end
-
+    
     function Lock_Image_Func(P)
         
     end
