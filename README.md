@@ -56,8 +56,8 @@ Then open the file index.m in MATLAB and run it.
 <br/>
 
 Use the skeleton view (Reconstructions → Skeleton) to check for gaps in the binary image. In this view, each connected component appears in a different color.
-It is absolutely fine to have separated components, but if you see components that should be connected but are not, then you should go back to the binary image to fix this.
-In the image below, the red and orange should remain separated, while the blue and yellow should be connected.
+It is absolutely fine to have separated components, but if you see components that should be connected but are not, then you should go back to the binary image and fix this.
+In the image below, the blue and orange components should remain separated, while the blue and yellow should be connected.
 
 ![Screenshot_Skeleton](https://user-images.githubusercontent.com/35100851/106172064-4111d180-618a-11eb-9a2c-1d773b5944af.png)
 
