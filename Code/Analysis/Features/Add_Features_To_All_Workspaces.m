@@ -76,8 +76,9 @@ function Data = Add_Features_To_All_Workspaces(Data)
 	
 	% Map the neuron's axes:
 	if(isfield(Data,'Segments'))
+		
 		% If the main and tertiary axes already exist, do not compute them and only get the neuron points.
-		if(isfield(Data,'Axes') && isfield(Data.Axes,'Axis_0') && ~isempty(Data.Axes.Axis_1_Ventral))
+		if(isfield(Data,'Axes') && isfield(Data.Axes,'Axis_0') && ~isempty(Data.Axes.Axis_0) && ~isempty(Data.Axes.Axis_1_Ventral))
 			
 			Data = Collect_All_Neuron_Points(Data); % [X, Y, Length, Angle, Curvature].
 			Data.Points = Find_Distance_From_Midline(Data.Points,Data.Axes,Scale_Factor,1);

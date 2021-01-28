@@ -274,15 +274,15 @@ function Display_Reconstruction(P,Data,p,Label)
 			
 			for s=1:numel(Data.Segments)
 
-				Fs = find([[Data.All_Points.Segment_Index]] == Data.Segments(s).Segment_Index);
+				Fs = find([[Data.Points.Segment_Index]] == Data.Segments(s).Segment_Index);
 			
-				X = [Data.All_Points(Fs).X];
-				Y = [Data.All_Points(Fs).Y];
+				X = [Data.Points(Fs).X];
+				Y = [Data.Points(Fs).Y];
 				if(length(X) > 1)
 					[X,Y] = Smooth_Points(X,Y,100);
 				end
 				
-				C = [Data.All_Points(Fs).Midline_Orientation];
+				C = [Data.Points(Fs).Midline_Orientation];
 				C = CM(round(rescale(C,CM_Lims(1),CM_Lims(2),'InputMin',Min_Max(1),'InputMax',Min_Max(2))),:);
 				
 				X(end+1) = nan;
@@ -301,15 +301,15 @@ function Display_Reconstruction(P,Data,p,Label)
 			
 			for s=1:numel(Data.Segments)
 
-				Fs = find([[Data.All_Points.Segment_Index]] == Data.Segments(s).Segment_Index);
+				Fs = find([[Data.Points.Segment_Index]] == Data.Segments(s).Segment_Index);
 			
-				X = [Data.All_Points(Fs).X];
-				Y = [Data.All_Points(Fs).Y];
+				X = [Data.Points(Fs).X];
+				Y = [Data.Points(Fs).Y];
 				if(length(X) > 1)
 					[X,Y] = Smooth_Points(X,Y,100);
 				end
 				
-				C = [Data.All_Points(Fs).Axis_0_Position];
+				C = [Data.Points(Fs).Axis_0_Position];
 				C = CM(round(rescale(C,CM_Lims(1),CM_Lims(2),'InputMin',Min_Max(1),'InputMax',Min_Max(2))),:);
 				
 				X(end+1) = nan;
@@ -321,17 +321,19 @@ function Display_Reconstruction(P,Data,p,Label)
 			
 			Field_1 = 'Radial_Distance_Corrected';
 			
-			X = [Data.All_Points.X];
-			Y = [Data.All_Points.Y];
-			Dist = [Data.All_Points.(Field_1)];
+			CM = lines(2);
+			
+			X = [Data.Points.X];
+			Y = [Data.Points.Y];
+			Dist = [Data.Points.(Field_1)];
 			
 			D = find(Dist <= 0);
 			V = find(Dist > 0);
 			
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			hold(Ax,'on');
-			scatter(X(D),Y(D),DotSize_1,'b','filled');
-			scatter(X(V),Y(V),DotSize_1,'r','filled');
+			scatter(Ax,X(D),Y(D),DotSize_1,CM(1,:),'filled');
+			scatter(Ax,X(V),Y(V),DotSize_1,CM(end,:),'filled');
 		
 		case {'Vertices Angles','Vertices Angles - Corrected'}
 			
@@ -341,10 +343,10 @@ function Display_Reconstruction(P,Data,p,Label)
 			Reconstruct_Vertices(Data);
 			
 			%{
-			F1 = find([Data.All_Points.Vertex_Order] >= 3); % Find rectangles of junctions.
-			X = [Data.All_Points(F1).X];
-			Y = [Data.All_Points(F1).Y];
-			A = [Data.All_Points(F1).Angle];
+			F1 = find([Data.Points.Vertex_Order] >= 3); % Find rectangles of junctions.
+			X = [Data.Points(F1).X];
+			Y = [Data.Points(F1).Y];
+			A = [Data.Points(F1).Angle];
 			Vx = [X ; X + a.*cos(A)];
 			Vy = [Y ; Y + a.*sin(A)];
 			
@@ -416,21 +418,21 @@ function Display_Reconstruction(P,Data,p,Label)
 			end
 		case 'PVD Orders - Points'
 			
-			Class_Num = max([Data.All_Points.Class]);
+			Class_Num = max([Data.Points.Class]);
 			
 			C = [0.6,0,0 ; 0,0.6,0 ; 0.12,0.56,1 ; 0.8,0.8,0 ; .5,.5,.5];
 			
 			% figure;
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			hold on;
-			Midline_Distance = [Data.All_Points.X];
-			Midline_Orientation = [Data.All_Points.Y];
-			Classes = [Data.All_Points.Class]; % Classes = [Data.All_Points.Segment_Class];
+			Midline_Distance = [Data.Points.X];
+			Midline_Orientation = [Data.Points.Y];
+			Classes = [Data.Points.Class]; % Classes = [Data.Points.Segment_Class];
 			Classes(isnan(Classes)) = Class_Num + 1;
 			
 			scatter(Midline_Distance,Midline_Orientation,10,C(Classes,:),'filled');
 			
-			% assignin('base','All_Points',Data.All_Points);
+			% assignin('base','Points',Data.Points);
 			
 		case 'PVD Orders - Segments'
 			Class_Num = max([Data.Segments.Class]);
