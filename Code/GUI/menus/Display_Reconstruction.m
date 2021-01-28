@@ -22,9 +22,10 @@ function Display_Reconstruction(P,Data,p,Label)
 	p = P.GUI_Handles.Current_Project;
 	Scale_Factor = Data.Info.Experiment(1).Scale_Factor;
 	
-	set(P.GUI_Handles.Radio_Group_1,'SelectionChangedFcn',{@Radio_Buttons_BW_Func,P});
 	set(P.GUI_Handles.View_Axes,'ButtonDownFcn','');
-	Radio_Buttons_BW_Func([],[],P);
+	
+	set(P.GUI_Handles.Radio_Group_1,'SelectionChangedFcn',{@Radio_Buttons_Func,P});
+	Radio_Buttons_Func([],[],P);
 	
 	switch(Label)
 		case 'Raw Image - Grayscale'
@@ -630,7 +631,7 @@ function Display_Reconstruction(P,Data,p,Label)
 		close(P.GUI_Handles.Waitbar);
 	end
 	
-	function Radio_Buttons_BW_Func(~,~,P)
+	function Radio_Buttons_Func(~,~,P)
 		switch(find([P.GUI_Handles.Radio_Group_1.Children.Value] == 1)) % Mode.
 			case {2,3} % Annotation & Drawing modes.
 				zoom(P.GUI_Handles.View_Axes,'off'); % Switch off the zoom function.

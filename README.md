@@ -70,10 +70,10 @@ It is absolutely fine to have separated components, but if you see components th
 
 <br/>
 
-**5. Neuron axes** <br/>
-    You can use the annotation mode to display interactive points that can be moved around to tweak
-    the axes positions (Reconstructions ​ **→** ​ Axes). Use the spinner to specify the number of interactive
-    points (here set to 25 points), then click the “Apply Changes” button.
+**5. Feature extraction and neuron axes** <br/>
+    Once the tracing is done, click the "Extract Features" button to extract various morphological features from the trace.
+	In particular, the neuron axes are mapped (Reconstructions ​ **→** ​ Axes). To tweak the axes positions manually, change to annotation mode and click the “Apply Changes button.
+	You can use the spinner to specify the number of interactive points (here set to 25 points), then click the “Apply Changes” button.
 
 ![Screenshot_Axes](https://user-images.githubusercontent.com/35100851/104650208-c044d700-56ad-11eb-9e6a-b57ea7d164ad.png)
 
