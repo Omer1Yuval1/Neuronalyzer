@@ -148,13 +148,13 @@ function Rectangles = Find_Vertex_Angles(Data,v,Cxy,Rc,Scale_Factor,Im_Rows,Im_C
 				Angle_Final =  Ap(Fmin); % Replace the most similar angle and set to the nan (to avoid using it for other rects).
 				Ap(Fmin) = nan; % Remove the chosen angle value from the list.
 			else
-				Cxy_r = Data.Vertices(v).Coordinate;
+				Cxy_r = [Data.Vertices(v).X,Data.Vertices(v).Y];
 				Angle_Final = Rectangles(r).Angle; % Angle is unchanged.
 			end
 		else % Use the skeleton angle.
 			Fmin = [];
 			Lr = Ls;
-			Cxy_r = Data.Vertices(v).Coordinate;
+			Cxy_r = [Data.Vertices(v).X,Data.Vertices(v).Y];
 			Angle_Final = Rectangles(r).Angle; % Angle is unchanged.
         end
 		

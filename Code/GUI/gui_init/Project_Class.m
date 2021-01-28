@@ -7,7 +7,7 @@ classdef Project_Class < handle
     
     methods
         function obj = Project_Class() % Constructor.
-			obj.Data = struct('Segments',{},'Vertices',{},'Points',{},'Neuron_Axes',{},'Parameters',{},'Info',{});
+			obj.Data = struct('Segments',{},'Vertices',{},'Points',{},'Axes',{},'Parameters',{},'Info',{});
 			obj.GUI_Handles = struct();
         end
 		

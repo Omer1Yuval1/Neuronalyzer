@@ -1,7 +1,7 @@
-function Worm_Axes = Find_Worm_Longitudinal_Axis(Workspace,Plot1,Ax)
+function Worm_Axes = Find_Worm_Longitudinal_Axis(Data,Plot1,Ax)
 	
 	% TODO: use scale-bar:
-	Scale_Factor = Workspace.User_Input.Scale_Factor;
+	Scale_Factor = Data.Info.Experiment(1).Scale_Factor;
 	Initial_Radius = 120; % 60 ./ Scale_Factor;
 	Min_Branch_Length = 300;
 	Mask_Size = 100;
@@ -21,7 +21,7 @@ function Worm_Axes = Find_Worm_Longitudinal_Axis(Workspace,Plot1,Ax)
 	Worm_Axes(1).Axis_2_Dorsal = struct('X',{},'Y',{});
 	Worm_Axes(1).Axis_2_Ventral = struct('X',{},'Y',{});
 	
-	[ImB,XYper] = Neuron_To_Blob(Workspace.Im_BW); % Workspace.Image0, NN_Probabilities
+	[ImB,XYper] = Neuron_To_Blob(Data.Info.Files(1).Binary_Image); % Data.Info.Files(1).Raw_Image.
 	S(1).Boundary_Pixels = XYper;
     
 	Im_Skel = bwmorph(imclose(ImB,strel('disk',Mask_Size)),'skel',inf); % The skeleton of the blob. % Im_Axis = bwmorph(imclose(ImB,strel('disk',100)),'thin',inf);
@@ -89,8 +89,8 @@ function Worm_Axes = Find_Worm_Longitudinal_Axis(Workspace,Plot1,Ax)
 			% set(gca,'YDir','normal');
 			% drawnow;
 			hold on;
-			% HI = imshow(Workspace.Image0);
-			set(HI,'AlphaData',Workspace.Image0);
+			% HI = imshow(Data.Info.Files(1).Raw_Image);
+			set(HI,'AlphaData',Data.Info.Files(1).Raw_Image);
 			
 			% Plot dorsal arrows:
 			%{
@@ -105,7 +105,7 @@ function Worm_Axes = Find_Worm_Longitudinal_Axis(Workspace,Plot1,Ax)
 			
 		case 2
 			[Y,X] = find(Im_Skel_Pruned);
-			imshow(Workspace.Image0,'Parent',Ax); % imshow(ImB);
+			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax); % imshow(ImB);
 			set(gca,'YDir','normal');
 			hold on;
 			
@@ -124,13 +124,13 @@ function Worm_Axes = Find_Worm_Longitudinal_Axis(Workspace,Plot1,Ax)
 			% plot(XY(:,1),XY(:,2),'.y','LineWidth',2);
 	end
 	
-	% Vertices = Workspace.Vertices;
+	% Vertices = Data.Vertices;
 	% Junctions = Vertices(find([Vertices.Vertex_Index] > 0));
 	% J = [Junctions.Coordinate];
 	% Junctions = [J(1:2:end)' , J(2:2:end)'];
 	% Tips = Vertices(find([Vertices.Vertex_Index] < 0));
 	% T = [Tips.Coordinate];
 	% Tips = [T(1:2:end)' , T(2:2:end)'];
-	% Im = Workspace.Image0;
+	% Im = Data.Info.Files(1).Raw_Image;
 	
 end

@@ -8,18 +8,18 @@ function Data = Vertices_Analysis_Index(Data)
     % Scale_Factor = Data.User_Input.Scale_Factor;
 	
 	[CB_Pixels,CB_Perimeter] = Detect_Cell_Body(Data.Info.Files(1).Raw_Image,CB_BW_Threshold,Scale_Factor,0); % Detect cell-body. Data.Image0
-	[CB_Vertices,Pixels0,Pixels1] = Find_CB_Vertices(Data.Info.Files(1).Raw_Image,CB_Perimeter,CB_Pixels,Scale_Factor,CB_BW_Threshold,0);
+	% [CB_Vertices,Pixels0,Pixels1] = Find_CB_Vertices(Data.Info.Files(1).Raw_Image,CB_Perimeter,CB_Pixels,Scale_Factor,CB_BW_Threshold,0);
 	
 	% assignin('base','CB_Vertices',CB_Vertices);
 	
 	Data.Info.Files(1).Binary_Image(CB_Pixels) = 0; % Delete cell-body pixels. TODO: use the CB to find the outsets of the branches connected to it.
-	Data.Info.Files(1).Binary_Image(Pixels0) = 0;
-	Data.Info.Files(1).Binary_Image(Pixels1) = 1;
+	% Data.Info.Files(1).Binary_Image(Pixels0) = 0;
+	% Data.Info.Files(1).Binary_Image(Pixels1) = 1;
 	[Y,X] = ind2sub(size(Data.Info.Files(1).Raw_Image),CB_Pixels);
 	Data.CB(1).Center = [mean(X),mean(Y)];
 	Data.CB.Area = length(CB_Pixels)*Scale_Factor;
 	Data.CB.Mean_Intensity = mean(Data.Info.Files(1).Raw_Image(CB_Pixels));
-	Data.CB.Vertices = CB_Vertices;
+	% Data.CB.Vertices = CB_Vertices;
 	% [CBy,CBx] = ind2sub(size(Im1),CB_Pixels);
 	% return;
 	
@@ -32,7 +32,7 @@ function Data = Vertices_Analysis_Index(Data)
 	
 	Data = Analyze_Vertex_Morphology(Data,Im1_branchpoints);
 	
-	Data.Vertices = Match_CB_Vertices(Data.Vertices,CB_Vertices);
+	% Data.Vertices = Match_CB_Vertices(Data.Vertices,CB_Vertices);
 	
 	% assignin('base','Workspace_Pre_1',Data);
 	% assignin('base','CB_Vertices',CB_Vertices);

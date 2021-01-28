@@ -1,176 +1,124 @@
-function [W,Features] = Add_Features_To_All_Workspaces(W)
+function Data = Add_Features_To_All_Workspaces(Data)
 	
-	% TODO: the step length in the Rectangles struct is currently in ***pixels***
-	% This affects many things (e.g. curvature).
+	Scale_Factor = Data.Info.Experiment(1).Scale_Factor;
 	
-	Features = struct('Feature_Name',{},'Values',{},'Num_Of_Options',{});
-	N = numel(W);
+	Data.Parameters = Parameters_Func(Scale_Factor);
 	
-	for i=1:N % For each workspace.
-		
-		Scale_Factor = W(i).Workspace.User_Input.Scale_Factor;
-		
-		%{
-		if(isfield(W(i).Workspace,'Parameters'))
-			W(i).Workspace.Parameters = Parameters_Func(Scale_Factor,W(i).Workspace.Parameters);
-		else
-			W(i).Workspace.Parameters = Parameters_Func(Scale_Factor);
-		end
-		%}
-		W(i).Workspace.Parameters = Parameters_Func(Scale_Factor);
-		
-		if(~isfield(W(i).Workspace,'Im_BW') || isempty(W(i).Workspace.Im_BW))
-			W(i).Workspace.Im_BW = zeros(size(W(i).Workspace.Image0));
-			W(i).Workspace.Im_BW(find(W(i).Workspace.NN_Probabilities >= W(i).Workspace.Parameters.Neural_Network.Threshold)) = 1;
-		end
-		
-		if(isfield(W(i).Workspace,'Vertices') && isfield(W(i).Workspace,'Segments'))
-			for s=1:numel(W(i).Workspace.Segments) % For each segment.
+	if(~isempty(Data.Vertices) && ~isempty(Data.Segments))
+		for s=1:numel(Data.Segments) % For each segment.
+			
+			if(~isempty(Data.Segments(s).Rectangles))
+				Data.Segments(s).Width = mean([Data.Segments(s).Rectangles.Width]);
 				
-				if(~isempty(W(i).Workspace.Segments(s).Rectangles))
-					W(i).Workspace.Segments(s).Width = mean([W(i).Workspace.Segments(s).Rectangles.Width]);
+				X = [Data.Segments(s).Rectangles.X];
+				Y = [Data.Segments(s).Rectangles.Y];
+				Step_Lengths = Scale_Factor .* Data.Parameters.Tracing.Rect_Length_Width_Func([Data.Segments(s).Rectangles.Width]);
+				
+				Li = (sum( [(X(2:end) - X(1:end-1)).^2 ; (Y(2:end) - Y(1:end-1)).^2] )).^0.5; % Arc length between successive points.
+				L = sum(Li); % Arc length.
+				Data.Segments(s).Length = L; % sum([Data.Segments(s).Rectangles.Length]);
+				
+				D = ((Data.Segments(s).Rectangles(1).X - Data.Segments(s).Rectangles(end).X)^2 + (Data.Segments(s).Rectangles(1).Y - Data.Segments(s).Rectangles(end).Y)^2)^.5; % end2end length.
+				Data.Segments(s).End2End_Length = D.*Scale_Factor;
+				
+				if(length(X) > Data.Parameters.Analysis.Curvature.Min_Points_Num)
+					[~,~,~,~,Cxy] = Get_Segment_Curvature(X,Y,Data.Parameters.Analysis.Curvature.Min_Points_Num_Smoothing);
+					Cxy = Cxy .* (1./Scale_Factor); % Pixels to micrometers.
 					
-					X = [W(i).Workspace.Segments(s).Rectangles.X];
-					Y = [W(i).Workspace.Segments(s).Rectangles.Y];
-					Step_Lengths = Scale_Factor.*W(i).Workspace.Parameters.Tracing.Rect_Length_Width_Func([W(i).Workspace.Segments(s).Rectangles.Width]);
+					Data.Segments(s).Curvature = dot(Step_Lengths,Cxy)./sum(Step_Lengths); % Integral of squared curvature.
+					% Data.Segments(s).Curvature = dot(Step_Lengths,Cxy); % Integral of squared curvature, normalized to arc-length.
+					Data.Segments(s).Max_Curvature = max(Cxy);
 					
-					Li = (sum( [(X(2:end) - X(1:end-1)).^2 ; (Y(2:end) - Y(1:end-1)).^2] )).^0.5; % Arc length between successive points.
-					L = sum(Li); % Arc length.
-					W(i).Workspace.Segments(s).Length = L; % sum([W(i).Workspace.Segments(s).Rectangles.Length]);
-					
-					D = ((W(i).Workspace.Segments(s).Rectangles(1).X - W(i).Workspace.Segments(s).Rectangles(end).X)^2 + ...
-						(W(i).Workspace.Segments(s).Rectangles(1).Y - W(i).Workspace.Segments(s).Rectangles(end).Y)^2)^.5; % end2end length.
-					W(i).Workspace.Segments(s).End2End_Length = D.*Scale_Factor;
-					
-					if(length(X) > W(i).Workspace.Parameters.Analysis.Curvature.Min_Points_Num)
-						[~,~,~,~,Cxy] = Get_Segment_Curvature(X,Y,W(i).Workspace.Parameters.Analysis.Curvature.Min_Points_Num_Smoothing);
-						Cxy = Cxy .* (1./Scale_Factor); % Pixels to micrometers.
-						
-						W(i).Workspace.Segments(s).Curvature = dot(Step_Lengths,Cxy)./sum(Step_Lengths); % Integral of squared curvature.
-						% W(i).Workspace.Segments(s).Curvature = dot(Step_Lengths,Cxy); % Integral of squared curvature, normalized to arc-length.
-						W(i).Workspace.Segments(s).Max_Curvature = max(Cxy);
-						
-						% if(N == 1) % If only one workspace, add the curvature values for individual coordinates.
-						if(~isempty(Cxy))
-							for j=1:numel(W(i).Workspace.Segments(s).Rectangles) % For each coordinate. TODO: find a way to do this without a for loop.
-								W(i).Workspace.Segments(s).Rectangles(j).Curvature = Cxy(j);
-							end
-						else
-							[W(i).Workspace.Segments(s).Rectangles.Curvature] = deal(-1);
-						end
-						% end
-					else
-						[W(i).Workspace.Segments(s).Rectangles.Curvature] = deal(-1);
-						W(i).Workspace.Segments(s).Curvature = -1;
-						W(i).Workspace.Segments(s).Max_Curvature = -1;
-					end
-					
-					% Find vertices:
-					F1 = find([W(i).Workspace.Vertices.Vertex_Index] == W(i).Workspace.Segments(s).Vertices(1)); % Find the 1st vertex.
-					F2 = find([W(i).Workspace.Vertices.Vertex_Index] == W(i).Workspace.Segments(s).Vertices(2)); % Find the 2nd vertex.
-					
-					if(length(F1) == 1 && length(F2) == 1)
-						if(W(i).Workspace.Vertices(F1).Order == 1 || W(i).Workspace.Vertices(F2).Order == 1)
-							W(i).Workspace.Segments(s).Terminal = 1;
-						else
-							W(i).Workspace.Segments(s).Terminal = 0;
+					% if(N == 1) % If only one workspace, add the curvature values for individual coordinates.
+					if(~isempty(Cxy))
+						for j=1:numel(Data.Segments(s).Rectangles) % For each coordinate. TODO: find a way to do this without a for loop.
+							Data.Segments(s).Rectangles(j).Curvature = Cxy(j);
 						end
 					else
-						W(i).Workspace.Segments(s).Terminal = nan;
-						disp(['Something is wrong with the vertices of segment index ',num2str(W(i).Workspace.Segments(s).Segment_Index)]);
+						[Data.Segments(s).Rectangles.Curvature] = deal(-1);
+					end
+					% end
+				else
+					[Data.Segments(s).Rectangles.Curvature] = deal(-1);
+					Data.Segments(s).Curvature = -1;
+					Data.Segments(s).Max_Curvature = -1;
+				end
+				
+				% Find vertices:
+				F1 = find([Data.Vertices.Vertex_Index] == Data.Segments(s).Vertices(1)); % Find the 1st vertex.
+				F2 = find([Data.Vertices.Vertex_Index] == Data.Segments(s).Vertices(2)); % Find the 2nd vertex.
+				
+				if(length(F1) == 1 && length(F2) == 1)
+					if(Data.Vertices(F1).Order == 1 || Data.Vertices(F2).Order == 1)
+						Data.Segments(s).Terminal = 1;
+					else
+						Data.Segments(s).Terminal = 0;
 					end
 				else
-					W(i).Workspace.Segments(s).Width = -1;
-					W(i).Workspace.Segments(s).Length = -1;
-					W(i).Workspace.Segments(s).Curvature = -1;
-					W(i).Workspace.Segments(s).Terminal = nan;
+					Data.Segments(s).Terminal = nan;
+					disp(['Something is wrong with the vertices of segment index ',num2str(Data.Segments(s).Segment_Index)]);
 				end
+			else
+				Data.Segments(s).Width = -1;
+				Data.Segments(s).Length = -1;
+				Data.Segments(s).Curvature = -1;
+				Data.Segments(s).Terminal = nan;
 			end
-		end
-		
-		% Compute vertices angles (angles between neighboring rectangles):
-		if(isfield(W(i).Workspace,'Vertices'))
-			for v=1:numel(W(i).Workspace.Vertices) % For each vertex.
-				W(i).Workspace.Vertices(v).Angles = Calc_Junction_Angles([W(i).Workspace.Vertices(v).Rectangles.Angle]);
-			end
-		end
-		
-		% Map the neuron's axes:
-        if(isfield(W(i).Workspace,'Segments'))
-			% If the main and tertiary axes already exist, do not compute them and only get the neuron points.
-			if(isfield(W(i).Workspace,'Neuron_Axes') && isfield(W(i).Workspace.Neuron_Axes,'Axis_0') && ~isempty(W(i).Workspace.Neuron_Axes.Axis_1_Ventral))
-				
-				[W(i).Workspace.All_Points,W(i).Workspace.All_Vertices] = Collect_All_Neuron_Points(W(i).Workspace); % [X, Y, Length, Angle, Curvature].
-				W(i).Workspace.All_Points = Find_Distance_From_Midline(W(i).Workspace,W(i).Workspace.All_Points,W(i).Workspace.Neuron_Axes,Scale_Factor,1);
-				W(i).Workspace.All_Vertices = Find_Distance_From_Midline(W(i).Workspace,W(i).Workspace.All_Vertices,W(i).Workspace.Neuron_Axes,Scale_Factor,1);
-				
-			else % Compute the neuron axes only if they do not exist yet, to avoid overwriting user corrections.
-				W(i).Workspace.Neuron_Axes = Find_Worm_Longitudinal_Axis(W(i).Workspace,0);
-				[W(i).Workspace.All_Points,W(i).Workspace.All_Vertices,W(i).Workspace.Neuron_Axes] = Map_Worm_Axes(W(i).Workspace,W(i).Workspace.Neuron_Axes,0,0);
-			end
-			% disp(i);
-			[D,A,L,phi,out] = Get_Corrected_Cylinder_Params([W(i).Workspace.All_Points.Midline_Distance],[W(i).Workspace.All_Points.Midline_Orientation],[W(i).Workspace.All_Points.Length],[W(i).Workspace.All_Points.Radius]);
-			
-			D = num2cell(D);
-			A = num2cell(A);
-			L = num2cell(L);
-			phi = num2cell(phi);
-			
-			[W(i).Workspace.All_Points.Radial_Distance_Corrected] = D{:};
-			[W(i).Workspace.All_Points.Midline_Orientation_Corrected] = A{:};
-			[W(i).Workspace.All_Points.Length_Corrected] = L{:};
-			[W(i).Workspace.All_Points.Angular_Coordinate] = phi{:};
-			
-			Clusters_Struct = load('Menorah_Class_Clusters.mat');
-			Clusters_Struct = Clusters_Struct.Clusters_Struct;
-			W(i).Workspace = Classify_PVD_Points(W(i).Workspace,Clusters_Struct);
-		end
-		% W(i).Workspace.Vertices = Find_Distance_From_Midline(W(i).Workspace,W(i).Workspace.Vertices,W(i).Workspace.Neuron_Axes,Scale_Factor); % Add midline distance and orientation to the vertices struct.
-		
-		if(isfield(W(i).Workspace,'Vertices'))
-			for v=1:numel(W(i).Workspace.Vertices) % For each vertex.
-				if(numel(W(i).Workspace.Vertices(v).Rectangles) && abs(W(i).Workspace.All_Vertices(v).Midline_Distance) <= W(i).Workspace.Parameters.Angle_Correction.Worm_Radius_um && isfield(W(i).Workspace,'Neuron_Axes') && isfield(W(i).Workspace.Neuron_Axes,'Axis_0')) % Find the corrected angles only if the vertex is <= the length of the radius from the medial axis.
-					
-					W(i).Workspace.Vertices(v).Rectangles = Projection_Correction(W(i).Workspace,v);
-					
-					% Compute the corrected angles diffs:
-					W(i).Workspace.Vertices(v).Corrected_Angles = Calc_Junction_Angles([W(i).Workspace.Vertices(v).Rectangles.Corrected_Angle]); % W(i).Workspace.Vertices(v).Corrected_Angles = Calc_Junction_Angles([W(i).Workspace.Vertices(v).Rectangles.Angle_Corrected]);
-				else
-					W(i).Workspace.Vertices(v).Corrected_Angles = -1;
-				end
-				%}
-			end
-		end
-		
-		% Generate the Features struct.
-		FN = fieldnames(W(i).Workspace.User_Input.Features);
-		if(i == 1) % Use the 1st workspace to build the features struct.
-			for j=1:length(FN)
-				Features(end+1).Feature_Name = FN{j};
-				Features(end).Values = struct('Name',{},'ON_OFF',{});
-			end
-		end
-		disp(i);
-		% Go over each feature *value* and add it if it doesn't exist yet (but the feature *names* cannot change anymore):
-		for j=1:length(FN) % For each feature field.
-			c = 0;
-			for k=1:length(Features(j).Values) % For each existing value assigned to the j-feature field.
-				if(strcmp(lower(Features(j).Values(k).Name),lower(W(i).Workspace.User_Input.Features.(FN{j}))))
-					c = k; % The value already exists.
-					break;
-				end
-			end
-			if(~c) % The value does not exist yet, add it.
-				Features(j).Values(end+1).Name = lower(W(i).Workspace.User_Input.Features.(FN{j}));
-				Features(j).Values(end).ON_OFF = 1;
-				c = numel(Features(j).Values);
-			end
-			W(i).(FN{j}) = c;
 		end
 	end
 	
-	for f=1:numel(Features) % Add number of values to each feature.
-		Features(f).Num_Of_Options = length(Features(f).Values);
+	% Compute vertices angles (angles between neighboring rectangles):
+	if(isfield(Data,'Vertices'))
+		for v=1:numel(Data.Vertices) % For each vertex.
+			Data.Vertices(v).Angles = Calc_Junction_Angles([Data.Vertices(v).Rectangles.Angle]);
+		end
+	end
+	
+	% Map the neuron's axes:
+	if(isfield(Data,'Segments'))
+		% If the main and tertiary axes already exist, do not compute them and only get the neuron points.
+		if(isfield(Data,'Axes') && isfield(Data.Axes,'Axis_0') && ~isempty(Data.Axes.Axis_1_Ventral))
+			
+			Data = Collect_All_Neuron_Points(Data); % [X, Y, Length, Angle, Curvature].
+			Data.Points = Find_Distance_From_Midline(Data.Points,Data.Axes,Scale_Factor,1);
+			Data.Vertices = Find_Distance_From_Midline(Data.Vertices,Data.Axes,Scale_Factor,1);
+			
+		else % Compute the neuron axes only if they do not exist yet, to avoid overwriting user corrections.
+			Data.Axes = Find_Worm_Longitudinal_Axis(Data,0);
+			Data = Map_Worm_Axes(Data,0,0);
+		end
+		
+		[D,A,L,phi,out] = Get_Corrected_Cylinder_Params([Data.Points.Midline_Distance],[Data.Points.Midline_Orientation],[Data.Points.Length],[Data.Points.Radius]);
+		
+		D = num2cell(D);
+		A = num2cell(A);
+		L = num2cell(L);
+		phi = num2cell(phi);
+		
+		[Data.Points.Radial_Distance_Corrected] = D{:};
+		[Data.Points.Midline_Orientation_Corrected] = A{:};
+		[Data.Points.Length_Corrected] = L{:};
+		[Data.Points.Angular_Coordinate] = phi{:};
+		
+		Clusters_Struct = load('Menorah_Class_Clusters.mat');
+		Clusters_Struct = Clusters_Struct.Clusters_Struct;
+		Data = Classify_PVD_Points(Data,Clusters_Struct);
+	end
+	% Data.Vertices = Find_Distance_From_Midline(Data,Data.Vertices,Data.Axes,Scale_Factor); % Add midline distance and orientation to the vertices struct.
+	
+	if(isfield(Data,'Vertices'))
+		for v=1:numel(Data.Vertices) % For each vertex.
+			if(numel(Data.Vertices(v).Rectangles) && abs(Data.Vertices(v).Midline_Distance) <= Data.Parameters.Angle_Correction.Worm_Radius_um && isfield(Data,'Axes') && isfield(Data.Axes,'Axis_0')) % Find the corrected angles only if the vertex is <= the length of the radius from the medial axis.
+				
+				Data.Vertices(v).Rectangles = Projection_Correction(Data,v);
+				
+				% Compute the corrected angles diffs:
+				Data.Vertices(v).Corrected_Angles = Calc_Junction_Angles([Data.Vertices(v).Rectangles.Corrected_Angle]); % Data.Vertices(v).Corrected_Angles = Calc_Junction_Angles([Data.Vertices(v).Rectangles.Angle_Corrected]);
+			else
+				Data.Vertices(v).Corrected_Angles = -1;
+			end
+			%}
+		end
 	end
 	
 end

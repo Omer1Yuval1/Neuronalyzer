@@ -1,11 +1,12 @@
-function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes,Plot,Record,Ax)
+function Data = Map_Worm_Axes(Data,Plot,Record,Ax)
 	
 	% This function uses an estimated midline to run a sliding window and find the worm axes.
 	% It first corrects the estimated midline and then uses it to find the other axes by detecting peaks within each window.
 	
 	% TODO:
 		% Add the orientation of rectangles relative to the primary branch.
-		% Preallocate memory for the other axes in Worm_Axes.
+		% Preallocate memory for the other axes in Data.Axes.
+		% Move parameters to parameter file.
 	
 	Smoothing_Parameter = 100000;
 	
@@ -13,7 +14,7 @@ function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes,Plot,Re
 		Vid1 = VideoWriter('Sliding Window','MPEG-4');
 		open(Vid1);
 		figure('WindowState','maximized');
-		imshow(W.Image0);
+		imshow(Data.Info.Files(1).Raw_Image);
 		set(gca,'YDir','normal');
 		hold on;
 	end
@@ -23,15 +24,15 @@ function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes,Plot,Re
 	Axis_2_Dist = 40; % um;
 	Axes_Max_Error = 5; % um;
 	
-	Scale_Factor = W.User_Input.Scale_Factor;
+	Scale_Factor = Data.Info.Experiment(1).Scale_Factor;
 	Win_Size = 40; % *20*. Size of sliding window in um.
 	BinSize = 10;
-	Np_Midline = numel(Worm_Axes.Axis_0);
+	Np_Midline = numel(Data.Axes.Axis_0);
 	
 	Sliding_Win = struct('Index',{},'Dorsal_Length',{},'Ventral_Length',{},'Dorsal_Radius',{},'Ventral_Radius',{});
 	
-	[All_Points,All_Vertices] = Collect_All_Neuron_Points(W); % [X, Y, Length, Angle, Curvature].
-	All_Points = Find_Distance_From_Midline(W,All_Points,Worm_Axes,Scale_Factor,0);
+	Data = Collect_All_Neuron_Points(Data); % [X, Y, Length, Angle, Curvature].
+	Data.Points = Find_Distance_From_Midline(Data.Points,Data.Axes,Scale_Factor,0);
 	
 	Sliding_Window_Vector = Win_Size+1:Np_Midline - Win_Size;
 	Np_Win = length(Sliding_Window_Vector);
@@ -45,35 +46,35 @@ function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes,Plot,Re
 	for w=1:Np_Midline % For each (fitted) midline point. % [round(Np_Midline./2):-1:1,round(Np_Midline./2)+1:Np_Midline]
 		
 		Sliding_Win(w).Index = w;
-		Sliding_Win(w).Arc_Length = Worm_Axes.Axis_0(w).Arc_Length;
+		Sliding_Win(w).Arc_Length = Data.Axes.Axis_0(w).Arc_Length;
 		
-		d1 = abs([Worm_Axes.Axis_0.Arc_Length] - max(0,Worm_Axes.Axis_0(w).Arc_Length - Win_Size));
-		d2 = abs([Worm_Axes.Axis_0.Arc_Length] - min(Worm_Axes.Axis_0(end).Arc_Length,Worm_Axes.Axis_0(w).Arc_Length + Win_Size));
+		d1 = abs([Data.Axes.Axis_0.Arc_Length] - max(0,Data.Axes.Axis_0(w).Arc_Length - Win_Size));
+		d2 = abs([Data.Axes.Axis_0.Arc_Length] - min(Data.Axes.Axis_0(end).Arc_Length,Data.Axes.Axis_0(w).Arc_Length + Win_Size));
 		
 		f1 = find(d1 == min(d1)); % Lower bound of current sliding window.
 		f2 = find(d2 == min(d2)); % Upper bound of current sliding window.
 		
-		XY_0 = [ [Worm_Axes.Axis_0(f1:f2).X]' , [Worm_Axes.Axis_0(f1:f2).Y]' ]; % Window Midline Points.
-		XY_D = [ [Worm_Axes.Axis_2_Dorsal(f1:f2).X]' , [Worm_Axes.Axis_2_Dorsal(f1:f2).Y]' ]; % Window Dorsal Points.
-		XY_V = [ [Worm_Axes.Axis_2_Ventral(f1:f2).X]' , [Worm_Axes.Axis_2_Ventral(f1:f2).Y]' ]; % Window Ventral Points.
+		XY_0 = [ [Data.Axes.Axis_0(f1:f2).X]' , [Data.Axes.Axis_0(f1:f2).Y]' ]; % Window Midline Data.Points.
+		XY_D = [ [Data.Axes.Axis_2_Dorsal(f1:f2).X]' , [Data.Axes.Axis_2_Dorsal(f1:f2).Y]' ]; % Window Dorsal Data.Points.
+		XY_V = [ [Data.Axes.Axis_2_Ventral(f1:f2).X]' , [Data.Axes.Axis_2_Ventral(f1:f2).Y]' ]; % Window Ventral Data.Points.
 		
 		% Find pixels within the current window:
-		In_DV = inpolygon([All_Points.X],[All_Points.Y],[XY_D(:,1) ; flipud(XY_V(:,1))],[XY_D(:,2) ; flipud(XY_V(:,2))]); % Entire window.
-		In_D = inpolygon([All_Points.X],[All_Points.Y],[XY_D(:,1) ; flipud(XY_0(:,1))],[XY_D(:,2) ; flipud(XY_0(:,2))]); % Dorsal Side Only.
-		In_V = inpolygon([All_Points.X],[All_Points.Y],[XY_V(:,1) ; flipud(XY_0(:,1))],[XY_V(:,2) ; flipud(XY_0(:,2))]); % Ventral Side Only.
+		In_DV = inpolygon([Data.Points.X],[Data.Points.Y],[XY_D(:,1) ; flipud(XY_V(:,1))],[XY_D(:,2) ; flipud(XY_V(:,2))]); % Entire window.
+		In_D = inpolygon([Data.Points.X],[Data.Points.Y],[XY_D(:,1) ; flipud(XY_0(:,1))],[XY_D(:,2) ; flipud(XY_0(:,2))]); % Dorsal Side Only.
+		In_V = inpolygon([Data.Points.X],[Data.Points.Y],[XY_V(:,1) ; flipud(XY_0(:,1))],[XY_V(:,2) ; flipud(XY_0(:,2))]); % Ventral Side Only.
 		
 		Sliding_Win(w).Dorsal_Length = sum(In_D)*Scale_Factor;
 		Sliding_Win(w).Ventral_Length = sum(In_V)*Scale_Factor;
 		
-		Sliding_Win(w).Dorsal_Radius = max([All_Points(In_D).Midline_Distance]);
-		Sliding_Win(w).Ventral_Radius = abs(min([All_Points(In_V).Midline_Distance]));
+		Sliding_Win(w).Dorsal_Radius = max([Data.Points(In_D).Midline_Distance]);
+		Sliding_Win(w).Ventral_Radius = abs(min([Data.Points(In_V).Midline_Distance]));
 		
-		Sliding_Win(w).InDV = find(In_DV); % Row numbers in All_Points of tracing coordingates.
+		Sliding_Win(w).InDV = find(In_DV); % Row numbers in Data.Points of tracing coordingates.
 		Sliding_Win(w).InD = find(In_D);
 		Sliding_Win(w).InV = find(In_V);
 		
 		Bins_1 = -50:2:50;
-		[yy,edges] = histcounts([All_Points(In_DV).Midline_Distance],Bins_1,'Normalization','Probability'); % +Dynamic_Midline_Error
+		[yy,edges] = histcounts([Data.Points(In_DV).Midline_Distance],Bins_1,'Normalization','Probability'); % +Dynamic_Midline_Error
 		xx = (edges(1:end-1) + edges(2:end)) ./ 2;
 		[Hp,Lp,Wp,Pp] = findpeaks(yy,xx,'NPeaks',5,'SortStr','descend','MinPeakHeight',MinPeakHeight);
 		
@@ -88,33 +89,33 @@ function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes,Plot,Re
 		if(~isempty(f0)) % If a peak was found and if it is within the predefined midline error limit.
 			Dynamic_Midline_Error = Lp(f0(1)); % Dynamic_Midline_Error + Lp(f0(1));
 		end
-		Worm_Axes.Axis_0(w).X1 = Worm_Axes.Axis_0(w).X + (Dynamic_Midline_Error./Scale_Factor).*cos(Worm_Axes.Axis_0(w).Tangent_Angle + (pi/2));
-		Worm_Axes.Axis_0(w).Y1 = Worm_Axes.Axis_0(w).Y + (Dynamic_Midline_Error./Scale_Factor).*sin(Worm_Axes.Axis_0(w).Tangent_Angle + (pi/2));
+		Data.Axes.Axis_0(w).X1 = Data.Axes.Axis_0(w).X + (Dynamic_Midline_Error./Scale_Factor).*cos(Data.Axes.Axis_0(w).Tangent_Angle + (pi/2));
+		Data.Axes.Axis_0(w).Y1 = Data.Axes.Axis_0(w).Y + (Dynamic_Midline_Error./Scale_Factor).*sin(Data.Axes.Axis_0(w).Tangent_Angle + (pi/2));
 		
 		% Find the peaks for the other axes, using the dynamic correction for the midline:
 		if(~isempty(f1_V))
 			Dynamic_Position_Axis_1_Ventral = Lp(f1_V(1));
 		end
-		Worm_Axes.Axis_1_Ventral(w).X = Worm_Axes.Axis_0(w).X + (Dynamic_Position_Axis_1_Ventral./Scale_Factor).*cos(Worm_Axes.Axis_0(w).Tangent_Angle + (pi/2));
-		Worm_Axes.Axis_1_Ventral(w).Y = Worm_Axes.Axis_0(w).Y + (Dynamic_Position_Axis_1_Ventral./Scale_Factor).*sin(Worm_Axes.Axis_0(w).Tangent_Angle + (pi/2));
+		Data.Axes.Axis_1_Ventral(w).X = Data.Axes.Axis_0(w).X + (Dynamic_Position_Axis_1_Ventral./Scale_Factor).*cos(Data.Axes.Axis_0(w).Tangent_Angle + (pi/2));
+		Data.Axes.Axis_1_Ventral(w).Y = Data.Axes.Axis_0(w).Y + (Dynamic_Position_Axis_1_Ventral./Scale_Factor).*sin(Data.Axes.Axis_0(w).Tangent_Angle + (pi/2));
 		
 		if(~isempty(f1_D))
 			Dynamic_Position_Axis_1_Dorsal = Lp(f1_D(1));
 		end
-		Worm_Axes.Axis_1_Dorsal(w).X = Worm_Axes.Axis_0(w).X + (Dynamic_Position_Axis_1_Dorsal./Scale_Factor).*cos(Worm_Axes.Axis_0(w).Tangent_Angle + (pi/2));
-		Worm_Axes.Axis_1_Dorsal(w).Y = Worm_Axes.Axis_0(w).Y + (Dynamic_Position_Axis_1_Dorsal./Scale_Factor).*sin(Worm_Axes.Axis_0(w).Tangent_Angle + (pi/2));
+		Data.Axes.Axis_1_Dorsal(w).X = Data.Axes.Axis_0(w).X + (Dynamic_Position_Axis_1_Dorsal./Scale_Factor).*cos(Data.Axes.Axis_0(w).Tangent_Angle + (pi/2));
+		Data.Axes.Axis_1_Dorsal(w).Y = Data.Axes.Axis_0(w).Y + (Dynamic_Position_Axis_1_Dorsal./Scale_Factor).*sin(Data.Axes.Axis_0(w).Tangent_Angle + (pi/2));
 		
 		if(~isempty(f2_V))
 			Dynamic_Position_Axis_2_Ventral = Lp(f2_V(1));
 		end
-		Worm_Axes.Axis_2_Ventral(w).X = Worm_Axes.Axis_0(w).X + (Dynamic_Position_Axis_2_Ventral./Scale_Factor).*cos(Worm_Axes.Axis_0(w).Tangent_Angle + (pi/2));
-		Worm_Axes.Axis_2_Ventral(w).Y = Worm_Axes.Axis_0(w).Y + (Dynamic_Position_Axis_2_Ventral./Scale_Factor).*sin(Worm_Axes.Axis_0(w).Tangent_Angle + (pi/2));
+		Data.Axes.Axis_2_Ventral(w).X = Data.Axes.Axis_0(w).X + (Dynamic_Position_Axis_2_Ventral./Scale_Factor).*cos(Data.Axes.Axis_0(w).Tangent_Angle + (pi/2));
+		Data.Axes.Axis_2_Ventral(w).Y = Data.Axes.Axis_0(w).Y + (Dynamic_Position_Axis_2_Ventral./Scale_Factor).*sin(Data.Axes.Axis_0(w).Tangent_Angle + (pi/2));
 		
 		if(~isempty(f2_D))
 			Dynamic_Position_Axis_2_Dorsal = Lp(f2_D(1));
 		end
-		Worm_Axes.Axis_2_Dorsal(w).X = Worm_Axes.Axis_0(w).X + (Dynamic_Position_Axis_2_Dorsal./Scale_Factor).*cos(Worm_Axes.Axis_0(w).Tangent_Angle + (pi/2));
-		Worm_Axes.Axis_2_Dorsal(w).Y = Worm_Axes.Axis_0(w).Y + (Dynamic_Position_Axis_2_Dorsal./Scale_Factor).*sin(Worm_Axes.Axis_0(w).Tangent_Angle + (pi/2));
+		Data.Axes.Axis_2_Dorsal(w).X = Data.Axes.Axis_0(w).X + (Dynamic_Position_Axis_2_Dorsal./Scale_Factor).*cos(Data.Axes.Axis_0(w).Tangent_Angle + (pi/2));
+		Data.Axes.Axis_2_Dorsal(w).Y = Data.Axes.Axis_0(w).Y + (Dynamic_Position_Axis_2_Dorsal./Scale_Factor).*sin(Data.Axes.Axis_0(w).Tangent_Angle + (pi/2));
 		
 		if(Plot)
 			
@@ -125,7 +126,7 @@ function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes,Plot,Re
 			clf;
 			% Bins_2 = 0:5:60;
 			subplot(2,1,1);
-				histogram([All_Points(In_DV).Midline_Distance],Bins_1,'Normalization','Probability'); % +Dynamic_Midline_Error
+				histogram([Data.Points(In_DV).Midline_Distance],Bins_1,'Normalization','Probability'); % +Dynamic_Midline_Error
 				hold on;
 				findpeaks(yy,xx,'NPeaks',5,'SortStr','descend','MinPeakHeight',MinPeakHeight);
 				
@@ -136,21 +137,21 @@ function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes,Plot,Re
 				
 			subplot(2,1,2); % subplot(2,3,[4,5,6]);
 			%}
-				% imshow(W.Image0);
+				% imshow(Data.Info.Files(1).Raw_Image);
 				% set(gca,'YDir','normal');
 				% hold on;
 				x0 = max(1,f1-60);
 				
-				% plot([Worm_Axes.Axis_0(x0:f1).X1],[Worm_Axes.Axis_0(x0:f1).Y1],'Color',[0.6,0,0],'LineWidth',3);
-				% plot([Worm_Axes.Axis_1_Dorsal(x0:f1).X],[Worm_Axes.Axis_1_Dorsal(x0:f1).Y],'Color',[0,0.8,0.8],'LineWidth',3);
-				% plot([Worm_Axes.Axis_1_Ventral(x0:f1).X],[Worm_Axes.Axis_1_Ventral(x0:f1).Y],'Color',[0,0.8,0.8],'LineWidth',3);
+				% plot([Data.Axes.Axis_0(x0:f1).X1],[Data.Axes.Axis_0(x0:f1).Y1],'Color',[0.6,0,0],'LineWidth',3);
+				% plot([Data.Axes.Axis_1_Dorsal(x0:f1).X],[Data.Axes.Axis_1_Dorsal(x0:f1).Y],'Color',[0,0.8,0.8],'LineWidth',3);
+				% plot([Data.Axes.Axis_1_Ventral(x0:f1).X],[Data.Axes.Axis_1_Ventral(x0:f1).Y],'Color',[0,0.8,0.8],'LineWidth',3);
 				
 				% TODO: use the color to show the density of points at each distance. Or just the distance.
-				O_D = rescale(abs([All_Points(In_D).Midline_Distance]))';
-				O_V = rescale(abs([All_Points(In_V).Midline_Distance]))';
+				O_D = rescale(abs([Data.Points(In_D).Midline_Distance]))';
+				O_V = rescale(abs([Data.Points(In_V).Midline_Distance]))';
 				
-				scatter([All_Points(In_D).X],[All_Points(In_D).Y],20,[1-O_D,0.*O_D,O_D],'filled'); % plot([All_Points(In_D).X],[All_Points(In_D).Y],'.b');
-				scatter([All_Points(In_V).X],[All_Points(In_V).Y],20,[1-O_V,0.*O_V,O_V],'filled'); % plot([All_Points(In_V).X],[All_Points(In_V).Y],'.r');
+				scatter([Data.Points(In_D).X],[Data.Points(In_D).Y],20,[1-O_D,0.*O_D,O_D],'filled'); % plot([Data.Points(In_D).X],[Data.Points(In_D).Y],'.b');
+				scatter([Data.Points(In_V).X],[Data.Points(In_V).Y],20,[1-O_V,0.*O_V,O_V],'filled'); % plot([Data.Points(In_V).X],[Data.Points(In_V).Y],'.r');
 				
 				% Display the running window:
 				% plot([XY_D(:,1) ; flipud(XY_V(:,1)) ; XY_D(1,1)] , [XY_D(:,2) ; flipud(XY_V(:,2)) ; XY_D(1,1)],'Color',[0.8,0.4,0],'LineWidth',3);
@@ -160,11 +161,11 @@ function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes,Plot,Re
 				
 				%{
 				% Plot the center points of the window:
-				plot([Worm_Axes.Axis_0(w).X1],[Worm_Axes.Axis_0(w).Y1],'.g','MarkerSize',20);
-				plot([Worm_Axes.Axis_1_Dorsal(w).X],[Worm_Axes.Axis_1_Dorsal(w).Y],'.m','MarkerSize',20);
-				plot([Worm_Axes.Axis_1_Ventral(w).X],[Worm_Axes.Axis_1_Ventral(w).Y],'.m','MarkerSize',20);
-				plot([Worm_Axes.Axis_2_Dorsal(w).X],[Worm_Axes.Axis_2_Dorsal(w).Y],'.y','MarkerSize',20);
-				plot([Worm_Axes.Axis_2_Ventral(w).X],[Worm_Axes.Axis_2_Ventral(w).Y],'.y','MarkerSize',20);
+				plot([Data.Axes.Axis_0(w).X1],[Data.Axes.Axis_0(w).Y1],'.g','MarkerSize',20);
+				plot([Data.Axes.Axis_1_Dorsal(w).X],[Data.Axes.Axis_1_Dorsal(w).Y],'.m','MarkerSize',20);
+				plot([Data.Axes.Axis_1_Ventral(w).X],[Data.Axes.Axis_1_Ventral(w).Y],'.m','MarkerSize',20);
+				plot([Data.Axes.Axis_2_Dorsal(w).X],[Data.Axes.Axis_2_Dorsal(w).Y],'.y','MarkerSize',20);
+				plot([Data.Axes.Axis_2_Ventral(w).X],[Data.Axes.Axis_2_Ventral(w).Y],'.y','MarkerSize',20);
 				%}
 				
 			drawnow;
@@ -173,11 +174,11 @@ function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes,Plot,Re
 				Np = 1000;
 				XY_All = []; % zeros(2,Np0,5);
 				XY_All_Fit = zeros(2,Np,5);
-				XY_All(:,:,1) = [W.Neuron_Axes.Axis_0.X ; W.Neuron_Axes.Axis_0.Y];
-				XY_All(:,:,2) = [W.Neuron_Axes.Axis_1_Dorsal.X ; W.Neuron_Axes.Axis_1_Dorsal.Y];
-				XY_All(:,:,3) = [W.Neuron_Axes.Axis_1_Ventral.X ; W.Neuron_Axes.Axis_1_Ventral.Y];
-				XY_All(:,:,4) = [W.Neuron_Axes.Axis_2_Dorsal.X ; W.Neuron_Axes.Axis_2_Dorsal.Y];
-				XY_All(:,:,5) = [W.Neuron_Axes.Axis_2_Ventral.X ; W.Neuron_Axes.Axis_2_Ventral.Y];
+				XY_All(:,:,1) = [Data.Axes.Axis_0.X ; Data.Axes.Axis_0.Y];
+				XY_All(:,:,2) = [Data.Axes.Axis_1_Dorsal.X ; Data.Axes.Axis_1_Dorsal.Y];
+				XY_All(:,:,3) = [Data.Axes.Axis_1_Ventral.X ; Data.Axes.Axis_1_Ventral.Y];
+				XY_All(:,:,4) = [Data.Axes.Axis_2_Dorsal.X ; Data.Axes.Axis_2_Dorsal.Y];
+				XY_All(:,:,5) = [Data.Axes.Axis_2_Ventral.X ; Data.Axes.Axis_2_Ventral.Y];
 				
 				CM = lines(7);
 				CM = CM([7,1,1,3,3],:);
@@ -195,7 +196,7 @@ function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes,Plot,Re
 				
 				figure(5); clf(5);
 				Bins_1 = -40:4:40;
-				histogram([All_Points(In_DV).Midline_Distance],Bins_1,'Normalization','Probability');
+				histogram([Data.Points(In_DV).Midline_Distance],Bins_1,'Normalization','Probability');
 				% hold on;
 				% findpeaks(yy,xx,'NPeaks',5,'SortStr','descend','MinPeakHeight',MinPeakHeight);
 				
@@ -225,17 +226,17 @@ function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes,Plot,Re
 	end
 	
 	if(Plot == 2)
-		X0 = [Worm_Axes.Axis_0.X];
-		Y0 = [Worm_Axes.Axis_0.Y];
+		X0 = [Data.Axes.Axis_0.X];
+		Y0 = [Data.Axes.Axis_0.Y];
 	end
 	
 	% Update the corrected midline points (this is done in a separate loop to allow for fitting\smoothing after finding the correction factor for all points):
-	% X = [Worm_Axes.Axis_0.X] + ([Worm_Axes.Axis_0.Correction_Pix]./Scale_Factor).*cos([Worm_Axes.Axis_0.Tangent_Angle] + (pi/2));
-	% Y = [Worm_Axes.Axis_0.Y] + ([Worm_Axes.Axis_0.Correction_Pix]./Scale_Factor).*sin([Worm_Axes.Axis_0.Tangent_Angle] + (pi/2));
+	% X = [Data.Axes.Axis_0.X] + ([Data.Axes.Axis_0.Correction_Pix]./Scale_Factor).*cos([Data.Axes.Axis_0.Tangent_Angle] + (pi/2));
+	% Y = [Data.Axes.Axis_0.Y] + ([Data.Axes.Axis_0.Correction_Pix]./Scale_Factor).*sin([Data.Axes.Axis_0.Tangent_Angle] + (pi/2));
 	
 	% After the midline correction, find again the arc-lengths and tangents:
-	XY = cell2mat(smoothn(num2cell([[Worm_Axes.Axis_0.X1]' , [Worm_Axes.Axis_0.Y1]'],1),Smoothing_Parameter)); % Smoothing. % XY = cell2mat(smoothn(num2cell([X' , Y'],1),Smoothing_Parameter)); % Smoothing.
-	Worm_Axes.Axis_0 = rmfield(Worm_Axes.Axis_0,{'X1','Y1'});
+	XY = cell2mat(smoothn(num2cell([[Data.Axes.Axis_0.X1]' , [Data.Axes.Axis_0.Y1]'],1),Smoothing_Parameter)); % Smoothing. % XY = cell2mat(smoothn(num2cell([X' , Y'],1),Smoothing_Parameter)); % Smoothing.
+	Data.Axes.Axis_0 = rmfield(Data.Axes.Axis_0,{'X1','Y1'});
 	
 	pp = cscvn(transpose(XY)); % Fit a cubic spline.
 	Vb = linspace(pp.breaks(1),pp.breaks(end),Np_Midline);
@@ -249,22 +250,22 @@ function [All_Points,All_Vertices,Worm_Axes] = Map_Worm_Axes(W,Worm_Axes,Plot,Re
 	
 	% TODO: replace with a single assignment operation:
 	for w=1:Np_Midline
-		Worm_Axes.Axis_0(w).X = XY(w,1);
-		Worm_Axes.Axis_0(w).Y = XY(w,2);
-		Worm_Axes.Axis_0(w).Arc_Length = Midline_Arc_Length(w);
-		Worm_Axes.Axis_0(w).Tangent_Angle = Tangent_Angles(w);
+		Data.Axes.Axis_0(w).X = XY(w,1);
+		Data.Axes.Axis_0(w).Y = XY(w,2);
+		Data.Axes.Axis_0(w).Arc_Length = Midline_Arc_Length(w);
+		Data.Axes.Axis_0(w).Tangent_Angle = Tangent_Angles(w);
     end
 	
 	% Now update the signed midline distance for all points after correcting the midline:
-	All_Points = Find_Distance_From_Midline(W,All_Points,Worm_Axes,Scale_Factor,1);
-	All_Vertices = Find_Distance_From_Midline(W,All_Vertices,Worm_Axes,Scale_Factor,1);
+	Data.Points = Find_Distance_From_Midline(Data.Points,Data.Axes,Scale_Factor,1);
+	Data.Vertices = Find_Distance_From_Midline(Data.Vertices,Data.Axes,Scale_Factor,1);
 	
 	if(Plot == 2)
 		figure;
-		imshow(W.Image0);
+		imshow(Data.Info.Files(1).Raw_Image);
 		hold on;
 		plot(X0,Y0,'r','LineWidth',2);
-		plot([Worm_Axes.Axis_0.X],[Worm_Axes.Axis_0.Y],'g','LineWidth',2);
+		plot([Data.Axes.Axis_0.X],[Data.Axes.Axis_0.Y],'g','LineWidth',2);
 	end
 	
 	

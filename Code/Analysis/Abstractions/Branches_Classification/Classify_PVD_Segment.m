@@ -1,26 +1,29 @@
-function Segments = Classify_PVD_Segment(W)
+function Segments = Classify_PVD_Segment(Data)
 	% function c = Classify_PVD_Segment(Sx,Sy,Sc,Is_Terminal)
 	
 	% Sx and Sy are vectors of segment coordinates.
 	% Sc is a vector containing Menorah classes corresponding to segment coordinates.
 	
+	% TODO:
+		% move parameters to parameters file.
+	
 	Threshold_3 = 0.2;
 	Threshold_4 = 0.3;
 	Min_Segment_Length = 10; % um. 
 	
-	Segments = W.Segments;
+	Segments = Data.Segments;
 	V12 = reshape([Segments.Vertices],2,[]);
 	
 	% Step 1:
 	for s=1:numel(Segments)
-		f = find([W.All_Points.Segment_Index] == Segments(s).Segment_Index);
+		f = find([Data.Points.Segment_Index] == Segments(s).Segment_Index);
 		
 		if(~isempty(f))
-			% Sx = [W.All_Points(f).X];
-			% Sy = [W.All_Points(f).Y];
-			Sc = [W.All_Points(f).Class];
-			Segments(s).Class = mode(Sc); % Segments(s).Class = Step_1(Sc); % W.Segments(s).Terminal
-			% Segments(s).Class = mode([W.All_Points(f).Class]);
+			% Sx = [Data.Points(f).X];
+			% Sy = [Data.Points(f).Y];
+			Sc = [Data.Points(f).Class];
+			Segments(s).Class = mode(Sc); % Segments(s).Class = Step_1(Sc); % Data.Segments(s).Terminal
+			% Segments(s).Class = mode([Data.Points(f).Class]);
         else
             Segments(s).Class = nan;
         end
@@ -40,13 +43,13 @@ function Segments = Classify_PVD_Segment(W)
 	% Step 3:
 	%{
 	for s=1:numel(Segments)
-		f = find([W.All_Points.Segment_Index] == Segments(s).Segment_Index);
+		f = find([Data.Points.Segment_Index] == Segments(s).Segment_Index);
 		
 		if(~isempty(f)) %  && Segments(s).Class == 4)
-			if(W.All_Points(f(1)).Vertex_Order == 1 && W.All_Points(f(end)).Vertex_Order ~= 1)
-				Sc = fliplr([W.All_Points(f).Class]); % Flip so that the tip is at the end.
+			if(Data.Points(f(1)).Vertex_Order == 1 && Data.Points(f(end)).Vertex_Order ~= 1)
+				Sc = fliplr([Data.Points(f).Class]); % Flip so that the tip is at the end.
 			else
-				Sc = [W.All_Points(f).Class];
+				Sc = [Data.Points(f).Class];
 			end
 			Segments(s).Class = Step_3(Segments,s,Sc,Threshold_3,Threshold_4);
 		end

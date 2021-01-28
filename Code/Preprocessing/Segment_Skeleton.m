@@ -184,7 +184,9 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 	
 	for v=1:numel(Vertices) % Convert linear index to subscripts.
 		[I,J] = (ind2sub([Ly,Lx],Vertices(v).Coordinate));
-		Vertices(v).Coordinate = [J,I];
+		% Vertices(v).Coordinate = [J,I];
+		Vertices(v).X = J;
+		Vertices(v).Y = I;
 	end
 	
 	% ColorMap = jet(20);

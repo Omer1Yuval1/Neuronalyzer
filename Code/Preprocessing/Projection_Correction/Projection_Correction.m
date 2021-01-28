@@ -3,12 +3,12 @@ function Rects = Projection_Correction(W,v)
 	
 	% At is the 
 	
-	Cxy = W.Vertices(v).Coordinate; % Just for readability.
-	Midline_Distance = W.All_Vertices(v).Midline_Distance; % abs(W.All_Vertices(v).Midline_Distance);
+	Cxy = [W.Vertices(v).X , W.Vertices(v).Y]; % Just for readability.
+	Midline_Distance = W.Vertices(v).Midline_Distance; % abs(W.Vertices(v).Midline_Distance);
 	% Midline_Distance_px = Midline_Distance .* W.User_Input.Scale_Factor;
 	
-	Am = W.All_Vertices(v).Midline_Tangent_Angle; % Radians. % Taking the mod to obtain an angle within [0,180].
-	% Am = mod(W.All_Vertices(v).Midline_Tangent_Angle,pi); % Radians. % Taking the mod to obtain an angle within [0,180].
+	Am = W.Vertices(v).Midline_Tangent_Angle; % Radians. % Taking the mod to obtain an angle within [0,180].
+	% Am = mod(W.Vertices(v).Midline_Tangent_Angle,pi); % Radians. % Taking the mod to obtain an angle within [0,180].
 	
 	if(Midline_Distance > 0) % Dorsal.
 		At = W.Parameters.Angle_Correction.Corrected_Plane_Angle_Func(Midline_Distance); % Local tilting angle of the plane. The midline distance is given in um. The resulting angle is in radians.

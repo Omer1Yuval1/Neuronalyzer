@@ -223,6 +223,30 @@ function index()
 			
 			Loaded_File = load([Path,File{ii}]);
 			
+			% *************************************************************************************************************
+			% *************************************************************************************************************
+			% Temporary ("Neuron_Axes" changed to "Axes"):
+            if(isfield(Loaded_File.Project,'Neuron_Axes'))
+                for jj=1:numel(Loaded_File.Project)
+                    Loaded_File.Project(jj).Axes = Loaded_File.Project(jj).Neuron_Axes;
+
+                end
+                Loaded_File.Project = rmfield(Loaded_File.Project,'Neuron_Axes');
+            end
+            
+            % Temporary (replace the "coordinate" field with X & Y to be consistent with the "Points" struct):
+            for jj=1:numel(Loaded_File.Project)
+                if(~isempty(Loaded_File.Project(jj).Vertices) && isfield(Loaded_File.Project(jj).Vertices,'Coordinate'))
+					for vv=1:numel(Loaded_File.Project(jj).Vertices)
+						Loaded_File.Project(jj).Vertices(vv).X = Loaded_File.Project(jj).Vertices(vv).Coordinate(1);
+						Loaded_File.Project(jj).Vertices(vv).Y = Loaded_File.Project(jj).Vertices(vv).Coordinate(2);
+					end
+					Loaded_File.Project(jj).Vertices = rmfield(Loaded_File.Project(jj).Vertices,'Coordinate');
+                end
+            end
+			% *************************************************************************************************************
+			% *************************************************************************************************************
+			
 			if(isfield(Loaded_File,'Project')) % If a project struct exists for the first loaded project.
 				for jj=1:numel(Loaded_File.Project) % For each project within the ii project file.
 					pp = pp + 1;
@@ -505,6 +529,25 @@ function index()
 		close(P.GUI_Handles.Waitbar);
 	end
 	
+	function Extract_Features_Func(source,event,P)
+		
+		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Extracting Features');
+		
+		Np = numel(P.Data);
+		for pp=1:Np
+			
+			P.GUI_Handles.Waitbar.Value = pp ./ Np;
+			
+			if(~isempty(P.Data(pp).Segments) && ~isempty(P.Data(pp).Vertices))
+				P.Data(pp) = Add_Features_To_All_Workspaces(P.Data(pp));
+			else
+				disp('The neuron must be traced before feature extraction.');
+			end
+		end
+		
+		close(P.GUI_Handles.Waitbar);
+	end
+	
 	function Save_Image_Func(~,~,P)
 		
 		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Loading...','Indeterminate','on');
@@ -579,6 +622,7 @@ function index()
 		set(P.GUI_Handles.Buttons(1,2),Func_Button,{@Load_Project_Func,P});
 		set(P.GUI_Handles.Buttons(2,1),Func_Button,{@Denoise_Image_Func,P}); % Denoising.
 		set(P.GUI_Handles.Buttons(2,2),Func_Button,{@Trace_Neuron_Func,P}); % Tracing.
+		set(P.GUI_Handles.Buttons(2,3),Func_Button,{@Extract_Features_Func,P}); % Feature extraction.
 		set(P.GUI_Handles.Buttons(3,1),Func_Button,{@Apply_Changes_Func,P});
 		set(P.GUI_Handles.Buttons(3,2),Func_Button,@Save_Image_Func);
 		set(P.GUI_Handles.Buttons(3,3),Func_Button,{@Save_Project_Func,P});

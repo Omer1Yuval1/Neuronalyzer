@@ -64,8 +64,9 @@ function Data = Connect_Vertices(Data,Ax)
 	
 	if(0) % Plot rectangles of steps and vertices centers.
 		hold on;
-		XY = [Data.Vertices.Coordinate];
-		plot(Ax,[XY(1:2:end)],[XY(2:2:end)],'.m','MarkerSize',10);
+		Xv = [Data.Vertices.X];
+		Yv = [Data.Vertices.Y];
+		plot(Ax,Xv,Yv,'.m','MarkerSize',10);
 		
 		for v=1:numel(Data.Vertices)
 			for r=1:numel(Data.Vertices(v).Rectangles)
@@ -84,11 +85,11 @@ function Data = Connect_Vertices(Data,Ax)
 	end
 	% return;
 	if(Plot0)
-		Vi = [Data.Vertices.Coordinate];
-		Vi = [Vi(1:2:end-1)',Vi(2:2:end)'];
+		Xv = [Data.Vertices.X];
+		Yv = [Data.Vertices.Y];
 		
 		hold(Ax,'on');
-		% viscircles(Vi,[Data.Vertices.Center_Radius]');
+		% viscircles([Xv,Yv],[Data.Vertices.Center_Radius]');
 		
 		for s=Traced_Segments % Plot the short segment for which the skeleton is used.
 			plot(Ax,[Data.Segments(s).Rectangles.X],[Data.Segments(s).Rectangles.Y],'r','LineWidth',2);

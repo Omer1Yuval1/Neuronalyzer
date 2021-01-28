@@ -55,6 +55,14 @@ Then open the file index.m in MATLAB and run it.
 
 <br/>
 
+Use the skeleton view (Reconstructions → Skeleton) to check for gaps in the binary image. In this view, each connected component appears in a different color.
+It is absolutely fine to have separated components, but if you see components that should be connected but are not, then you should go back to the binary image to fix this.
+In the image below, the red and orange should remain separated, while the blue and yellow should be connected.
+
+![Screenshot_Skeleton](https://user-images.githubusercontent.com/35100851/106172064-4111d180-618a-11eb-9a2c-1d773b5944af.png)
+
+<br/>
+
 **4. Neuron tracing** <br/>
     To obtain the trace of the neurons, click the “Trace Neuron” button. Once finished, the resulting
     trace is displayed. You can use the “Project” menu to navigate between the different traced images.

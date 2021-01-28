@@ -97,28 +97,30 @@ function Display_Reconstruction(P,Data,p,Label)
 			[Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints] = Pixel_Trace_Post_Proccessing(Data.Info.Files(1).Binary_Image,Scale_Factor);
 			imshow(Im1_NoiseReduction,'Parent',Ax);
 			
-			%
-			for s=1:numel(Data.Segments)
-				if(numel(Data.Segments(s).Rectangles))
-					x = [Data.Segments(s).Rectangles.X];
-					y = [Data.Segments(s).Rectangles.Y];
-					hold(Ax,'on');
-					plot(Ax,x,y,'LineWidth',1); % plot(x,y,'.','MarkerSize',30,'Color',rand(1,3));
-				end
-			end
-			%}
-			% [Y,X] = find(Im1_branchpoints); hold on; plot(X,Y,'.k','MarkerSize',30);
-			% [Y,X] = find(Im1_endpoints); hold on; plot(X,Y,'.r','MarkerSize',30);
+			skel_method = 2;
 			
-			%{
-			% Color connected components:
-			CC = bwconncomp(Im1_NoiseReduction);
-			for c=1:length(CC.PixelIdxList)
-				[y,x] = ind2sub(size(Im1_NoiseReduction),CC.PixelIdxList{c});
-				hold on;
-				plot(x,y,'.','MarkerSize',7);
+			switch(skel_method)
+				case 1 % Display segments.
+					for s=1:numel(Data.Segments)
+						if(numel(Data.Segments(s).Rectangles))
+							x = [Data.Segments(s).Rectangles.X];
+							y = [Data.Segments(s).Rectangles.Y];
+							hold(Ax,'on');
+							plot(Ax,x,y,'LineWidth',1); % plot(x,y,'.','MarkerSize',30,'Color',rand(1,3));
+						end
+					end
+					% [Y,X] = find(Im1_branchpoints); hold on; plot(X,Y,'.k','MarkerSize',30);
+					% [Y,X] = find(Im1_endpoints); hold on; plot(X,Y,'.r','MarkerSize',30);
+				case 2 % Display connected components.
+					CM = lines(1000);
+					
+					CC = bwconncomp(Im1_NoiseReduction);
+					for c=1:length(CC.PixelIdxList)
+						[y,x] = ind2sub(size(Im1_NoiseReduction),CC.PixelIdxList{c});
+						hold(Ax,'on');
+						plot(Ax,x,y,'.','MarkerSize',7,'Color',CM(c,:));
+					end
 			end
-			%}
 		case 'Blob'
 			% Find_Worm_Longitudinal_Axis(Data,1); % GP.Handles.Axes
 		case {'Trace','Segmentation'}
@@ -148,8 +150,7 @@ function Display_Reconstruction(P,Data,p,Label)
 			
 			% Plot the vertices:
 			%
-			XY = [Data.Vertices.Coordinate];
-			scatter(Ax,XY(1:2:end-1),XY(2:2:end),5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
+			scatter(Ax,[Data.Vertices.X],[Data.Vertices.Y],5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
 			%}
 		case 'Segments by Length'
 			
@@ -171,8 +172,7 @@ function Display_Reconstruction(P,Data,p,Label)
 				end
 			end
 			
-			XY = [Data.Vertices.Coordinate];
-			scatter(Ax,XY(1:2:end-1),XY(2:2:end),5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
+			scatter(Ax,[Data.Vertices.X],[Data.Vertices.Y],5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
 		case 'Axes'
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			hold(Ax,'on');
@@ -185,7 +185,7 @@ function Display_Reconstruction(P,Data,p,Label)
 			CM1 = lines(7);
 			CM1 = CM1([7,1,1,3,3],:);
 			
-			F = fields(Data.Neuron_Axes);
+			F = fields(Data.Axes);
 			
 			if(P.GUI_Handles.Control_Panel_Objects(3,2).Value == 1) % Annotation mode.
 				Np_Waypoints = P.GUI_Handles.Control_Panel_Objects(1,4).Value; % Number of interactive points.
@@ -197,7 +197,7 @@ function Display_Reconstruction(P,Data,p,Label)
 			end
 			
 			for f=1:length(F)
-				XY = [Data.Neuron_Axes.(F{f}).X ; Data.Neuron_Axes.(F{f}).Y]; % Midline coordinates.
+				XY = [Data.Axes.(F{f}).X ; Data.Axes.(F{f}).Y]; % Midline coordinates.
 				
 				Np_Total = size(XY,2);
 				Np_Waypoints = P.GUI_Handles.Control_Panel_Objects(1,4).Value; % Number of interactive points.
@@ -216,17 +216,17 @@ function Display_Reconstruction(P,Data,p,Label)
 			% hold(Ax,'off');
 			
 			if(0) % Plot the normals to the midline.
-				for i=1:numel(P.Data(p).Neuron_Axes.Axis_0)
-					x = P.Data(p).Neuron_Axes.Axis_0(i).X;
-					y = P.Data(p).Neuron_Axes.Axis_0(i).Y;
-					a = P.Data(p).Neuron_Axes.Axis_0(i).Tangent_Angle + (pi/2);
+				for i=1:numel(P.Data(p).Axes.Axis_0)
+					x = P.Data(p).Axes.Axis_0(i).X;
+					y = P.Data(p).Axes.Axis_0(i).Y;
+					a = P.Data(p).Axes.Axis_0(i).Tangent_Angle + (pi/2);
 					plot(Ax,x + 40.*[0,cos(a)] , y + 40.*[0,sin(a)]);
 				end
 			end
 		case 'Axes Mapping Process'
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			hold(Ax,'on');
-			Map_Worm_Axes(Data,Data.Neuron_Axes,1,0,Ax);
+			Map_Worm_Axes(Data,Data.Axes,1,0,Ax);
 		case {'Radial Distance','Angular Coordinate'}
 			
 			Min_Max = [0,pi./2];
@@ -411,8 +411,7 @@ function Display_Reconstruction(P,Data,p,Label)
 				end
 				% P.GUI_Handles.Waitbar.Value = s ./ Ns;
 				
-				XY = [Data.Vertices.Coordinate];
-				scatter(Ax,XY(1:2:end-1),XY(2:2:end),5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
+				scatter(Ax,[Data.Vertices.X],[Data.Vertices.Y],5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
 			end
 		case 'PVD Orders - Points'
 			
@@ -463,8 +462,7 @@ function Display_Reconstruction(P,Data,p,Label)
 			
 			% Plot the vertices:
 			%
-			XY = [Data.Vertices.Coordinate];
-			scatter(Ax,XY(1:2:end-1),XY(2:2:end),5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
+			scatter(Ax,[Data.Vertices.X],[Data.Vertices.Y],5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
 			%}
 			
 			% Use when zooming in:
@@ -613,8 +611,8 @@ function Display_Reconstruction(P,Data,p,Label)
 		
 		xxc = num2cell(xx);
 		yyc = num2cell(yy);
-		[P.Data(ppp).Neuron_Axes.(FF).X] = xxc{:};
-		[P.Data(ppp).Neuron_Axes.(FF).Y] = yyc{:};
+		[P.Data(ppp).Axes.(FF).X] = xxc{:};
+		[P.Data(ppp).Axes.(FF).Y] = yyc{:};
 		
 		if(isequal(FF,'Axis_0')) % If it's the midline, also update arc-lengths and tangents.
 			dxy = sum(([xx(2:end) ; yy(2:end)] - [xx(1:end-1) ; yy(1:end-1)]).^2,1).^(0.5); % sum([2 x Np],1). Summing up Xi+Yi and then taking the sqrt.
@@ -625,8 +623,8 @@ function Display_Reconstruction(P,Data,p,Label)
 			Tangent_Angles = atan2(ddr(:,2),ddr(:,1));
 			Tangent_Angles = num2cell(Tangent_Angles);
 			
-			[P.Data(ppp).Neuron_Axes.(FF).Arc_Length] = Arc_Length{:};
-			[P.Data(ppp).Neuron_Axes.(FF).Tangent_Angles] = Tangent_Angles{:};
+			[P.Data(ppp).Axes.(FF).Arc_Length] = Arc_Length{:};
+			[P.Data(ppp).Axes.(FF).Tangent_Angles] = Tangent_Angles{:};
 		end
 		
 		close(P.GUI_Handles.Waitbar);

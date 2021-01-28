@@ -586,7 +586,7 @@ function Display_Plot(P,Data,Label)
 						case 2 % Total length.
 							Norm_Value = nansum([GP.Workspace(ww).Workspace.Points.(Field_2_Name)]);
 						case 3 % Midline length.
-							Norm_Value = GP.Workspace(ww).Workspace.Neuron_Axes.Axis_0(end).Arc_Length;
+							Norm_Value = GP.Workspace(ww).Workspace.Axes.Axis_0(end).Arc_Length;
 					end % TODO: For each point check if D/V and save both radii.
 					
 					Lw = Lw ./ Norm_Value; % Normalization to total length. This affects to weigh both the bins in Y{g}(w,:) and ksdensity.
@@ -857,7 +857,7 @@ function Display_Plot(P,Data,Label)
 							Normalization_Length = 1;
 							YLIM = [-1500,1500];
 						case 2 % Normalized to Midline Length.
-							Normalization_Length = Data(ww).Neuron_Axes.Axis_0(end).Arc_Length;
+							Normalization_Length = Data(ww).Axes.Axis_0(end).Arc_Length;
 							YLIM = [-2,2];
 						case 3 % Normalized to Total Length.
 							Normalization_Length = sum([Data(ww).Points.(Field_1_Name)]);
@@ -1046,13 +1046,13 @@ function Display_Plot(P,Data,Label)
 							Midline_Length = 1;
 							Total_Length = 1;
 						case 2 % Normalized to Midline Length.
-							Midline_Length = Data(ww).Neuron_Axes.Axis_0(end).Arc_Length;
+							Midline_Length = Data(ww).Axes.Axis_0(end).Arc_Length;
 							Total_Length = 1;
 						case 3 % Normalized to Total Length.
 							Midline_Length = 1;
 							Total_Length = sum([Data(ww).Points.(Field_1_Name)]);
 						case 4 % Normalized to both Midline and Total Length.
-							Midline_Length = Data(ww).Neuron_Axes.Axis_0(end).Arc_Length;
+							Midline_Length = Data(ww).Axes.Axis_0(end).Arc_Length;
 							Total_Length = sum([Data(ww).Points.(Field_1_Name)]);
 					end
 					
@@ -1197,7 +1197,7 @@ function Display_Plot(P,Data,Label)
 					case 1
 						Midline_Length = 1;
 					case 2 % Normalized to Midline Length.
-						Midline_Length = GP.Workspace(w).Workspace.Neuron_Axes.Axis_0(end).Arc_Length;
+						Midline_Length = GP.Workspace(w).Workspace.Axes.Axis_0(end).Arc_Length;
 				end
 				
 				% for o=1:Max_PVD_Orders
@@ -1381,7 +1381,7 @@ function Display_Plot(P,Data,Label)
 									case 1
 										Normalization_Factor = 1;
 									case 2 % Midline.
-										Normalization_Factor = Data(ww).Neuron_Axes.Axis_0(end).Arc_Length;
+										Normalization_Factor = Data(ww).Axes.Axis_0(end).Arc_Length;
 									case 3 % Total length of order Classes(o).
 										f0 = find([Data(ww).Points.Segment_Class] == Classes(o)); % Find all points of class Classes(o).
 										Normalization_Factor = nansum([Data(ww).Points(f0).(Field_1)]); % Total length of order o in workspace ww.
@@ -1398,7 +1398,7 @@ function Display_Plot(P,Data,Label)
 								case 1
 									Normalization_Factor = 1;
 								case 2 % Midline.
-									Normalization_Factor = Data(ww).Neuron_Axes.Axis_0(end).Arc_Length;
+									Normalization_Factor = Data(ww).Axes.Axis_0(end).Arc_Length;
 								case 3 % Total length of entire neuron.
 									Normalization_Factor = nansum([Data(ww).Points.(Field_1)]); % Total neuron length.
 							end
@@ -1412,7 +1412,7 @@ function Display_Plot(P,Data,Label)
 								case 1
 									Normalization_Factor = 1;
 								case 2 % Midline.
-									Normalization_Factor = Data(ww).Neuron_Axes.Axis_0(end).Arc_Length;
+									Normalization_Factor = Data(ww).Axes.Axis_0(end).Arc_Length;
 								case 3 % Total length of entire neuron.
 									f0 = find(ismember([Data(ww).Points.Segment_Class],Classes)); % Find all points of Classes (1-3).
 									Normalization_Factor = nansum([Data(ww).Points(f0).(Field_1)]); % Total length of Classes (1-3).
@@ -1969,7 +1969,7 @@ function Display_Plot(P,Data,Label)
 			r = 0;
 			for w=Workspace_Set
 				F3 = find([GP.Workspace(w).Workspace.All_Vertices.Order] == 3);
-				Lmax = GP.Workspace(w).Workspace.Neuron_Axes.Axis_0(end).Arc_Length;
+				Lmax = GP.Workspace(w).Workspace.Axes.Axis_0(end).Arc_Length;
 				
 				for v=1:numel(GP.Workspace(w).Workspace.All_Vertices)
 					if(GP.Workspace(w).Workspace.All_Vertices(v).Order == 3 && length(GP.Workspace(w).Workspace.All_Vertices(v).Angles) == 3)
@@ -2059,7 +2059,7 @@ function Display_Plot(P,Data,Label)
 					
 					ww = Workspace_Set(w);
 					
-					Midline_Length = GP.Workspace(ww).Workspace.Neuron_Axes.Axis_0(end).Arc_Length;
+					Midline_Length = GP.Workspace(ww).Workspace.Axes.Axis_0(end).Arc_Length;
 					for v=1:numel(GP.Workspace(ww).Workspace.All_Vertices)
 						% if(ismember(GP.Workspace(ww).Workspace.All_Vertices(v).Class,Junction_Classes))
 						if(GP.Workspace(ww).Workspace.All_Vertices(v).Order == 3 && length([GP.Workspace(ww).Workspace.All_Vertices(v).Angles]) == 3)

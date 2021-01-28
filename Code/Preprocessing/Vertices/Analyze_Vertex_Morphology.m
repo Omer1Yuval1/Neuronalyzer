@@ -48,20 +48,22 @@ function Data = Analyze_Vertex_Morphology(Data,Im_branchpoints)
 			end
 			
 			if(all(Ls >= Rect_Length)) % If all segments are above a length threshold.
-				[New_Cxy,Rc] = Find_Vertex_Center(Data.Info.Files(1).Binary_Image,Data.Vertices(i).Coordinate,Vr,Circles_X,Circles_Y,Potential_Centers_XY,Im_Rows,Im_Cols,Min_Center_Radius);
+				Cxy = [Data.Vertices(i).X,Data.Vertices(i).Y];
+				[New_Cxy,Rc] = Find_Vertex_Center(Data.Info.Files(1).Binary_Image,Cxy,Vr,Circles_X,Circles_Y,Potential_Centers_XY,Im_Rows,Im_Cols,Min_Center_Radius);
 			else % Otherwise, use the original skeleton center and a radius of 0.
-				New_Cxy = Data.Vertices(i).Coordinate; % Do not correct the center of end-point.
+				New_Cxy = [Data.Vertices(i).X,Data.Vertices(i).Y]; % Do not correct the center of end-point.
 				Rc = 0; % Vertex center radius. Tips are assigned with a 0 radius.
 			end
 		elseif(Data.Vertices(i).Order == 1) % If it's a tip.
-			New_Cxy = Data.Vertices(i).Coordinate; % Do not correct the center of end-point.
+			New_Cxy = [Data.Vertices(i).X,Data.Vertices(i).Y]; % Do not correct the center of end-point.
 			Rc = 0; % Vertex center radius. Tips are assigned with a 0 radius.
         end
         
 		Rectangles = Find_Vertex_Angles(Data,i,New_Cxy,Rc,Scale_Factor,Im_Rows,Im_Cols);
 		% [Data,Rectangles] = Match_Vertex_Rects_To_Segments(Data,i,Rectangles,Segments_Vertices);
 		
-		Data.Vertices(i).Coordinate = New_Cxy;
+		Data.Vertices(i).X = New_Cxy(1);
+		Data.Vertices(i).Y = New_Cxy(2);
 		Data.Vertices(i).Rectangles = Rectangles;
 		Data.Vertices(i).Center_Radius = Rc;
 		
