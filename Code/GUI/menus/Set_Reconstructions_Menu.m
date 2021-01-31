@@ -17,7 +17,7 @@ function Set_Reconstructions_Menu(P)
 	H(7) = uimenu(P.GUI_Handles.Menus(2),'Label','Skeleton');
 	
 	H(8) = uimenu(P.GUI_Handles.Menus(2),'Label','Cell Body','Enable','off');
-	H(9) = uimenu(P.GUI_Handles.Menus(2),'Label','Blob','Enable','off');
+	H(9) = uimenu(P.GUI_Handles.Menus(2),'Label','Blob','Enable','on');
 	
 	H(10) = uimenu(P.GUI_Handles.Menus(2),'Label','Trace');
 	

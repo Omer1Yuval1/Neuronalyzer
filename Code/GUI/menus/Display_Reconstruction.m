@@ -35,7 +35,7 @@ function Display_Reconstruction(P,Data,p,Label)
 			colormap(Ax,'hot');
 		case 'Cell Body' % Detect and display CB and the outsets of the branches connected to it:
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
-			hold on;
+			hold(Ax,'on');
 			CB_BW_Threshold = Data.Parameters.Cell_Body.BW_Threshold;
 			
 			[CB_Pixels,CB_Perimeter] = Detect_Cell_Body(Data.Image0,CB_BW_Threshold,Scale_Factor,0); % Detect cell-body.
@@ -123,7 +123,15 @@ function Display_Reconstruction(P,Data,p,Label)
 					end
 			end
 		case 'Blob'
-			% Find_Worm_Longitudinal_Axis(Data,1); % GP.Handles.Axes
+			[ImB,XYper] = Neuron_To_Blob(Data.Info.Files(1).Binary_Image);
+			
+			imshow(ImB,'Parent',Ax);
+			hold(Ax,'on');
+			
+			plot(Ax,XYper(:,1),XYper(:,2),'LineWidth',2);
+			
+			% look in "Find_Worm_Longitudinal_Axis" to check the midline finding process.
+			
 		case {'Trace','Segmentation'}
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			hold(Ax,'on');
@@ -177,6 +185,8 @@ function Display_Reconstruction(P,Data,p,Label)
 		case 'Axes'
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			hold(Ax,'on');
+			
+			% look in "Find_Worm_Longitudinal_Axis" to check the midline finding process.
 			
 			set(P.GUI_Handles.Control_Panel_Objects([1,3],2),'Enable','on'); % Enable the radio buttons.
 			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Enable','off');
