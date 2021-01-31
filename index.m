@@ -237,10 +237,12 @@ function index()
             % Temporary (replace the "coordinate" field with X & Y to be consistent with the "Points" struct):
             for jj=1:numel(Loaded_File.Project)
                 if(~isempty(Loaded_File.Project(jj).Vertices) && isfield(Loaded_File.Project(jj).Vertices,'Coordinate'))
-					for vv=1:numel(Loaded_File.Project(jj).Vertices)
-						Loaded_File.Project(jj).Vertices(vv).X = Loaded_File.Project(jj).Vertices(vv).Coordinate(1);
-						Loaded_File.Project(jj).Vertices(vv).Y = Loaded_File.Project(jj).Vertices(vv).Coordinate(2);
-					end
+                    if(~isfield(Loaded_File.Project(jj).Vertices,'X') && length(Loaded_File.Project(jj).Vertices(1).Coordinate) == 2)
+                        for vv=1:numel(Loaded_File.Project(jj).Vertices)
+                            Loaded_File.Project(jj).Vertices(vv).X = Loaded_File.Project(jj).Vertices(vv).Coordinate(1);
+                            Loaded_File.Project(jj).Vertices(vv).Y = Loaded_File.Project(jj).Vertices(vv).Coordinate(2);
+                        end
+                    end
 					Loaded_File.Project(jj).Vertices = rmfield(Loaded_File.Project(jj).Vertices,'Coordinate');
                 end
             end
@@ -419,6 +421,8 @@ function index()
 			
 			Display_Reconstruction(P,P.Data(pp),pp,source.Label);
 			
+			set(P.GUI_Handles.Buttons(3,1),'UserData',source.Label); % Last used plot. Must be set after running the plot.
+			
 			P.GUI_Handles.View_Axes.XLim = findall(P.GUI_Handles.View_Axes.Children,'Type','image').XData; % P.GUI_Handles.View_Axes.Children(1).XData;
 			P.GUI_Handles.View_Axes.YLim = findall(P.GUI_Handles.View_Axes.Children,'Type','image').YData; % P.GUI_Handles.View_Axes.Children(1).YData;
 			
@@ -428,9 +432,12 @@ function index()
 		case 3
 			set(findall(P.GUI_Handles.Menus(3)),'Checked','off'); % set(P.GUI_Handles.Reconstruction_Menu_Handles(:),'Checked','off');
 			set(source,'Checked','on');
-			Display_Plot(P,P.Data,source.Label);
 			
 			set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,3});
+			
+			Display_Plot(P,P.Data,source.Label);
+			
+			set(P.GUI_Handles.Buttons(3,1),'UserData',source.Label); % Last used plot. Must be set after running the plot.
 		end
 		% profile off; profile viewer;
 		if(~isempty(event))

@@ -3,9 +3,21 @@ function Display_Plot(P,Data,Label)
 	% This function is used to display different plots for quantitative analysis of the data.
 	
 	Group_By = 'Strain_Name';
+	FontSize_1 = 18;
+	
+	set(P.GUI_Handles.Control_Panel_Objects(2,5),'Enable','off');
+	set(P.GUI_Handles.Control_Panel_Objects(3,[4,5]),'Enable','off');
+	set(P.GUI_Handles.Control_Panel_Objects(4,5),'Enable','off');
+	
+	% Reset the normalization and plot type menus:
+	if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData)) % If the previous plot was different.
+		set(P.GUI_Handles.Control_Panel_Objects(2,4),'Value',1);
+		set(P.GUI_Handles.Control_Panel_Objects(4,4),'Value',1);
+	end
+	
 	
 	Groups = cell(1,0);
-	Workspace_Set = cell(1,0);
+	Workspace_Set = cell(1,0); % One cell for each group. The cells contain row numbers of the members (Data(p)).
 	
 	% List all groups (all existing values of "Group_By"):
 	if(~P.GUI_Handles.Control_Panel_Objects(1,1).Value) % Use all projects.
@@ -49,11 +61,10 @@ function Display_Plot(P,Data,Label)
 	switch(Label)
 		case 'Number of Segments'
 			
-			
 			set(P.GUI_Handles.Control_Panel_Objects(3,4),'Items',{'Not Normalized'},'ItemsData',1);
 			set(P.GUI_Handles.Control_Panel_Objects(4,4),'Items',{'Default','Terminal Segments'},'ItemsData',2);
 			
-			Name = '$$Segments \; Number$$';
+			Name = '$\mathrm{Segments Number}$';
 			Menorah_Classes = 1:4;
 			Field_1_Name = 'Length_Corrected';
 			Max_Segment_Length = 2; % um.
@@ -104,7 +115,7 @@ function Display_Plot(P,Data,Label)
 				errorbar(mean(H1(g).XData,1),B(:,g),std(X{g},0,2),'Color','k','LineWidth',2,'LineStyle','none');
 			end
 			
-			xlabel('$$Class$$','Interpreter','Latex');
+			xlabel('$\mathrm{Class}$','Interpreter','Latex');
 			ylabel(Name,'Interpreter','Latex'); % ylabel('$$\frac{\# \; of \; 3-Way \; Junctions}{Total \; Length \; (\mu m)}$$','Interpreter','Latex');
 			set(gca,'FontSize',FontSize_1,'TickLabelInterpreter','Latex','XTick',1:length(Menorah_Classes)+1,'xlim',[0.5,length(Menorah_Classes)+0.5]);
 			legend(Groups,'Interpreter','Latex');
@@ -494,10 +505,11 @@ function Display_Plot(P,Data,Label)
 		case {'Radial Distance of All Points','Radial Distance of 3-Way Junctions','Radial Distance of Tips','Radial Distance of All Points - Second Moment','Angular Coordinate of All Points','Angular Coordinate of All Points - Second Moment',...
 			'Angular Coordinate of Junctions','Angular Coordinate of Tips'}
 			
-			set(GP.Handles.Normalization_List,'String',{'Not Normalized','Total Length','Midline Length'});
-			set(GP.Handles.Plot_Type_List,'String',{'Default','Dorsal-Ventral Merged','Color Gradient'});
+			set(P.GUI_Handles.Control_Panel_Objects(2,4),'Items',{'Not Normalized','Total Length','Midline Length'},'ItemsData',1:3);
 			
-			if(GP.Handles.Projection_Correction_Checkbox.Value) % Apply projection correction.
+			set(P.GUI_Handles.Control_Panel_Objects(4,4),'Items',{'Default','Dorsal-Ventral Merged','Color Gradient'},'ItemsData',1:3);
+			
+			if(P.GUI_Handles.Control_Panel_Objects(2,1).Value) % Apply projection correction.
 				% Field_1_Name = 'Midline_Orientation_Corrected';
 				Field_2_Name = 'Length_Corrected';
 			else
@@ -505,61 +517,61 @@ function Display_Plot(P,Data,Label)
 				Field_2_Name = 'Length';
 			end
 			
-			switch GP.General.Active_Plot
+			switch(Label)
 				case {'Radial Distance of All Points','Radial Distance of All Points - Second Moment'}
-					if(~GP.Handles.Analysis.Slider.UserData)
-						set(GP.Handles.Analysis.Slider,'Min',0.01,'Max',.11,'Value',0.02,'SliderStep',[0.05,0.2]); % set(GP.Handles.Analysis.Slider,'Min',1,'Max',6,'Value',2,'SliderStep',[0.2,1]);
+					if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData)) % If the previous plot was different.
+						set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0.01,0.11],'Step',0.01,'Value',0.02,'Tooltip',''); % set(GP.Handles.Analysis.Slider,'Min',0.01,'Max',.11,'Value',0.02,'SliderStep',[0.05,0.2]); % set(GP.Handles.Analysis.Slider,'Min',1,'Max',6,'Value',2,'SliderStep',[0.2,1]);
 					end
 					Bin_Min = -1;
 					Bin_Max = 1;
 				case {'Angular Coordinate of All Points','Angular Coordinate of All Points - Second Moment','Angular Coordinate of Tips','Angular Coordinate of Junctions'}
-					if(~GP.Handles.Analysis.Slider.UserData)
-						set(GP.Handles.Analysis.Slider,'Min',pi/180,'Max',pi/30,'Value',pi/45,'SliderStep',[pi/180,1]); % [5,20] degrees.
+					if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData)) % If the previous plot was different.
+						
+						set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[pi/180,pi/30],'Step',pi/180,'Value',pi/45,'Tooltip',''); % set(GP.Handles.Analysis.Slider,'Min',pi/180,'Max',pi/30,'Value',pi/45,'SliderStep',[pi/180,1]); % [5,20] degrees.
 					end
 					Bin_Min = -pi/2; % Radians.
 					Bin_Max = pi/2; % Radians.
 			end
+			BinSize = P.GUI_Handles.Control_Panel_Objects(1,4).Value;
 			
-			BinSize = GP.Handles.Analysis.Slider.Value;
 			Edges = Bin_Min:BinSize:Bin_Max;
 			xx = (Edges(2:end) + Edges(1:end-1)) ./ 2;
-			set(GP.Handles.Analysis.Slider_Text,'String',num2str(GP.Handles.Analysis.Slider.Value));
 			
-			switch GP.General.Active_Plot
+			switch(Label)
 				case {'Radial Distance of All Points','Radial Distance of All Points - Second Moment'}
 					Field_1_Name = 'Radial_Distance_Corrected';
 					Vertex_Order_Func = @(X) find(X);
 					Weigh_by_Length = 1;
-					Y_Label = 'Neuronal \; Length';
+					Y_Label = '\mathrm{Neuronal \; Length}';
 				case {'Angular Coordinate of All Points','Angular Coordinate of All Points - Second Moment'}
 					Field_1_Name = 'Angular_Coordinate';
 					Vertex_Order_Func = @(X) find(X);
 					Weigh_by_Length = 1;
-					Y_Label = 'Neuronal \; Length';
+					Y_Label = '\mathrm{Neuronal \; Length}';
 				case 'Radial Distance of Tips'
 					Field_1_Name = 'Radial_Distance_Corrected';
 					Vertex_Order = 1;
 					Vertex_Order_Func = @(X) find(X == Vertex_Order);
 					Weigh_by_Length = 0;
-					Y_Label = 'Number \; of \; Tips';
+					Y_Label = '\mathrm{Number \; of \; Tips}';
 				case 'Angular Coordinate of Tips'
 					Field_1_Name = 'Angular_Coordinate';
 					Vertex_Order = 1;
 					Vertex_Order_Func = @(X) find(X == Vertex_Order);
 					Weigh_by_Length = 0;
-					Y_Label = 'Number \; of \; Tips';
+					Y_Label = '\mathrm{Number \; of \; Tips}';
 				case 'Radial Distance of 3-Way Junctions'
 					Field_1_Name = 'Radial_Distance_Corrected';
 					Vertex_Order = 3;
 					Vertex_Order_Func = @(X) find(X == Vertex_Order);
 					Weigh_by_Length = 0;
-					Y_Label = 'Number \; of \; Junctions';
+					Y_Label = '\mathrm{Number \; of \; Junctions}';
 				case 'Angular Coordinate of Junctions'
 					Field_1_Name = 'Angular_Coordinate';
 					Vertex_Order = 3;
 					Vertex_Order_Func = @(X) find(X == Vertex_Order);
 					Weigh_by_Length = 0;
-					Y_Label = 'Number \; of \; Junctions';
+					Y_Label = '\mathrm{Number \; of \; Junctions}';
 			end
 			
 			Ng = length(Workspace_Set);
@@ -569,24 +581,24 @@ function Display_Plot(P,Data,Label)
 				L{g} = [];
 				Y{g} = nan(length(Workspace_Set{g}),length(xx));
 				for w=1:length(Workspace_Set{g})
-					ww = Workspace_Set{g}(w);
+					pp = Workspace_Set{g}(w);
 					
-					Fx = Vertex_Order_Func([GP.Workspace(ww).Workspace.Points.Vertex_Order]);
-					Xw = -[GP.Workspace(ww).Workspace.Points(Fx).(Field_1_Name)]; % Multiplying by (-1) to make ventral positive.
+					Fx = Vertex_Order_Func([Data(pp).Points.Vertex_Order]);
+					Xw = -[Data(pp).Points(Fx).(Field_1_Name)]; % Multiplying by (-1) to make ventral positive.
 					
 					if(Weigh_by_Length)
-						Lw = [GP.Workspace(ww).Workspace.Points(Fx).(Field_2_Name)]; % Corresponding rectangle lengths. % Use this for weight = 1: ones(1,length(Xw)); % 
+						Lw = [Data(pp).Points(Fx).(Field_2_Name)]; % Corresponding rectangle lengths. % Use this for weight = 1: ones(1,length(Xw)); % 
 					else % Just count.
-						Lw = ones(1,length(Fx)) ./ [GP.Workspace(ww).Workspace.Points(Fx).Vertex_Order]; % The weight of each vertex rectangle is 1 divided by the number of rectangles (the vertex order).
+						Lw = ones(1,length(Fx)) ./ [Data(pp).Points(Fx).Vertex_Order]; % The weight of each vertex rectangle is 1 divided by the number of rectangles (the vertex order).
 					end
 					
-					switch GP.Handles.Normalization_List.Value
+					switch(P.GUI_Handles.Control_Panel_Objects(2,4).Value) % Normalization.
 						case 1
 							Norm_Value = 1;
 						case 2 % Total length.
-							Norm_Value = nansum([GP.Workspace(ww).Workspace.Points.(Field_2_Name)]);
+							Norm_Value = nansum([Data(pp).Points.(Field_2_Name)]);
 						case 3 % Midline length.
-							Norm_Value = GP.Workspace(ww).Workspace.Axes.Axis_0(end).Arc_Length;
+							Norm_Value = Data(pp).Axes.Axis_0(end).Arc_Length;
 					end % TODO: For each point check if D/V and save both radii.
 					
 					Lw = Lw ./ Norm_Value; % Normalization to total length. This affects to weigh both the bins in Y{g}(w,:) and ksdensity.
@@ -606,24 +618,24 @@ function Display_Plot(P,Data,Label)
 				end
 			end
 			
-			switch(GP.Handles.Plot_Type_List.Value)
+			switch(P.GUI_Handles.Control_Panel_Objects(4,4).Value)
 				case 2 % Merge dorsal ventral.
 					for g=1:Ng
 						Y{g} = abs(Y{g});
-						Edges = 0:GP.Handles.Analysis.Slider.Value:Edges(end);
+						Edges = 0:BinSize:Edges(end);
 					end
 			end
 			
-			if(contains(GP.General.Active_Plot,'Moment')) % Moment of inertia.
+			if(contains(Label,'Moment')) % Moment of inertia.
 				MoI = cell(1,Ng);
 				for g=1:Ng
 					MoI{g} = sum(Y{g} .* (xx.^2),2); % disp(['Moment of Inertia = ',num2str(sum(N .* (xx.^2)))]);
-					bar(g,mean(MoI{g}));
-					errorbar(g,mean(MoI{g}),std(MoI{g}),'Color','k','LineWidth',2,'LineStyle','none');
+					bar(Ax1,g,mean(MoI{g}));
+					errorbar(Ax1,g,mean(MoI{g}),std(MoI{g}),'Color','k','LineWidth',2,'LineStyle','none');
 				end
 				set(gca,'XTick',1:Ng,'XTickLabels',Groups);
 				ylabel('Moment of Inertia','Interpreter','Latex');
-				grid on;
+				grid(Ax1,'on');
 				
 				[PVal,Test_Name] = Stat_Test(MoI{1},MoI{2});
 				disp(['Moment of Inertia Test Result:']);
@@ -632,11 +644,11 @@ function Display_Plot(P,Data,Label)
 				set(gca,'FontSize',FontSize_1/2);
 			else % Histogram of midline distances.
 				
-				switch Ng
+				switch(Ng)
 					case 1 % If there is only one group, show as a histogram.
-						H{1} = bar(xx,nanmean(Y{1},1),1,'FaceColor','flat'); % ,'EdgeColor','none');
+						H{1} = bar(Ax1,xx,nanmean(Y{1},1),1,'FaceColor','flat'); % ,'EdgeColor','none');
 						
-						if(GP.Handles.Plot_Type_List.Value == 3) % Color gradient.
+						if(P.GUI_Handles.Control_Panel_Objects(4,4).Value == 3) % Color gradient.
 							L_D = find(xx >= 0); % # of bars.
 							L_V = find(xx < 0); % # of bars.
 							CM = hsv(max(length(L_D),length(L_V)));
@@ -646,9 +658,9 @@ function Display_Plot(P,Data,Label)
 					otherwise % If there are multiple groups, show as an area plot.
 						CM = lines(Ng);
 						for g=1:Ng
-							bar(xx,mean(Y{g},1),1,'FaceColor','flat'); % ,'EdgeColor','none');
-							hold on;
-							switch(GP.Handles.Normalization_List.Value)
+							bar(Ax1,xx,mean(Y{g},1),1,'FaceColor','flat'); % ,'EdgeColor','none');
+							hold(Ax1,'on');
+							switch(P.GUI_Handles.Control_Panel_Objects(2,4).Value) % Normalization.
 								% case {3,5} % PDF.
 									% TODO: this uses all values together, while other places average across animals.
 									% [fk{g},xk{g}] = ksdensity(X{g},linspace(Edges(1),Edges(end),1000),'Weights',L{g},'Bandwidth',0.05); % ,'NumPoints',10. [Edges(1),xx,Edges(end)]
@@ -656,44 +668,46 @@ function Display_Plot(P,Data,Label)
 									Fit_Object = fit(xx',nanmean(Y{g},1)','smoothingspline','smoothingparam',0.99999);
 									xk{g} = linspace(Edges(1),Edges(end),1000);
 									fk{g} = Fit_Object(xk{g});
-                            end
+							end
 							% H{g} = area(xk{g},fk{g},'FaceColor',CM(g,:),'FaceAlpha',0.5); % 1./(Ng-g+1)./1.5
-							% hold on;
+							% hold(Ax1,'on');
 						end
 						for g=1:Ng
-							plot(xk{g},fk{g},'LineWidth',2,'Color',CM(g,:));
+							plot(Ax1,xk{g},fk{g},'LineWidth',2,'Color',CM(g,:));
 						end
 						% legend(Groups,'Interpreter','Latex');
 				end
 				
-				set(gca,'FontSize',FontSize_1);
+				set(Ax1,'FontSize',FontSize_1);
 				
-				switch(GP.Handles.Normalization_List.Value)
+				switch(P.GUI_Handles.Control_Panel_Objects(2,4).Value) % Normalization.
 					case 1
-						xlabel('$$\phi \; (^{\circ})$$','Interpreter','Latex'); % xlabel(['$$Midline Distance $$'],'Interpreter','Latex');
+						xlabel(Ax1,'$\mathrm{\phi} \; [^{\circ}]$','Interpreter','Latex'); % xlabel(['$$Midline Distance $$'],'Interpreter','Latex');
 						if(Weigh_by_Length)
-							ylabel('$$Neuronal \; Length \; (\mu m)$$','Interpreter','Latex');
+							ylabel(Ax1,'$\mathrm{Neuronal \; Length \; [\mu m]}$','Interpreter','Latex');
 						else
-							ylabel(['$$',Y_Label,'$$'],'Interpreter','Latex');
+							ylabel(Ax1,['$',Y_Label,'$'],'Interpreter','Latex');
 						end
-						set(gca,'position',[0.09,0.1490,0.89,0.8],'XTick',-pi/2:pi/4:pi/2,'XTickLabels',{'$$-90$$','$$-45$$',0,'$$45$$','$$90$$'});
-					case 2
-						xlabel('$$\phi \; (^{\circ})$$','Interpreter','Latex');
-						ylabel(['$$\frac{',Y_Label,'}{Total Length}$$'],'Interpreter','Latex');
-						% set(gca,'position',[0.1,0.1490,0.87,0.7760],'XTick',-1:0.5:1,'XTickLabels',{'$$-\phi$$','$$-\frac{\phi}{2}$$',0,'$$\frac{\phi}{2}$$','$$\phi$$'});
+						set(Ax1,'position',[0.09,0.1490,0.89,0.8],'XTick',-pi/2:pi/4:pi/2,'XTickLabels',{'$$-90$$','$$-45$$',0,'$$45$$','$$90$$'});
+					case 2 % Total length.
+						xlabel(Ax1,'$\mathrm{\phi} \; [^{\circ}]$','Interpreter','Latex');
+						ylabel(Ax1,['$\frac{',Y_Label,'}{\mathrm{Total \; Length}}$'],'Interpreter','Latex');
+					case 3 % Midline length.
+						xlabel(Ax1,'$\mathrm{\phi} \; [^{\circ}]$','Interpreter','Latex');
+						ylabel(Ax1,['$\frac{',Y_Label,'}{\mathrm{Midline \; Length}}$'],'Interpreter','Latex');
 					case 5
-						xlabel('$$\phi \; (^{\circ})$$','Interpreter','Latex');
-						ylabel(['$$\frac{',Y_Label,'}$$'],'Interpreter','Latex');
-						% set(gca,'position',[0.13,0.1490,0.85,0.7760]); % set(gca,'position',[0.1,0.1490,0.87,0.7760]);
+						xlabel(Ax1,'$\phi \; [^{\circ}]$','Interpreter','Latex');
+						ylabel(Ax1,['$\frac{',Y_Label,'}$'],'Interpreter','Latex');
+						% set(Ax1,'position',[0.13,0.1490,0.85,0.7760]); % set(gca,'position',[0.1,0.1490,0.87,0.7760]);
 				end
-				set(gca,'position',[0.09,0.1490,0.89,0.8],'XTick',-pi/2:pi/4:pi/2,'XTickLabels',{'$$-90$$','$$-45$$',0,'$$45$$','$$90$$'});
-				xlim([Edges(1),Edges(end)]);
-				Py = get(gca,'ylim');
-				ylim([0,Py(2)]);
-				grid on;
+				set(Ax1,'position',[0.09,0.1490,0.89,0.8],'XTick',-pi/2:pi/4:pi/2,'XTickLabels',{'$$-90$$','$$-45$$',0,'$$45$$','$$90$$'});
+				xlim(Ax1,[Edges(1),Edges(end)]);
+				Py = get(Ax1,'ylim');
+				ylim(Ax1,[0,Py(2)]);
+				grid(Ax1,'on');
 			end
 			
-			set(gca,'TickLabelInterpreter','Latex');
+			set(Ax1,'TickLabelInterpreter','Latex');
 		
 		case 'Menorah Orders Classification'
 			Clusters_Struct = Map_Branches_Classes(GP.Workspace,1);
@@ -827,7 +841,7 @@ function Display_Plot(P,Data,Label)
 			Max_PVD_Orders = length(Class_Colors);
 			
 			% P.GUI_Handles.Control_Panel_Objects(4,1).Value
-			set(P.GUI_Handles.Control_Panel_Objects(3,4),'Items',{'Not Normalized','Normalized to Midline Length','Normalized to Total Length'},'ItemsData',1:3);
+			set(P.GUI_Handles.Control_Panel_Objects(2,4),'Items',{'Not Normalized','Normalized to Midline Length','Normalized to Total Length'},'ItemsData',1:3);
 			set(P.GUI_Handles.Control_Panel_Objects(4,4),'Items',{'Default','Dorsal-Ventral Merged','Total Length (Orders Merged)','Pie Chart'},'ItemsData',1:4); % ,'All Merged'});
 			
 			if(P.GUI_Handles.Control_Panel_Objects(2,1).Value) % Apply projection correction.
@@ -836,13 +850,13 @@ function Display_Plot(P,Data,Label)
 				Field_1_Name = 'Length';
 			end
 			
-			switch(P.GUI_Handles.Control_Panel_Objects(3,4).Value) % Normalization.
+			switch(P.GUI_Handles.Control_Panel_Objects(2,4).Value) % Normalization.
 				case 1
 					Y_Name = '$\mathrm{Neuronal \; Length}$';
 				case 2
-					Y_Name = '$mathrm{\frac{Neuronal \; Length}{Midline \; Length}}$';
+					Y_Name = '$\mathrm{\frac{Neuronal \; Length}{Midline \; Length}}$';
 				case 3
-					Y_Name = '$mathrm{\frac{Neuronal \; Length}{Total \; Length}}$';
+					Y_Name = '$\mathrm{\frac{Neuronal \; Length}{Total \; Length}}$';
 			end
 			
 			Ng = length(Workspace_Set);
@@ -852,7 +866,7 @@ function Display_Plot(P,Data,Label)
 				for w=1:length(Workspace_Set{g})
 					ww = Workspace_Set{g}(w);
 					
-					switch(P.GUI_Handles.Control_Panel_Objects(3,4).Value)
+					switch(P.GUI_Handles.Control_Panel_Objects(2,4).Value)
 						case 1
 							Normalization_Length = 1;
 							YLIM = [-1500,1500];
@@ -1008,7 +1022,7 @@ function Display_Plot(P,Data,Label)
 			Class_Colors = [0.6,0,0 ; 0,0.6,0 ; 0.12,0.56,1 ; 0.8,0.8,0]; % 3=0,0.8,0.8 ; 3.5=0,0,1 ; 5=0.5,0.5,0.5
 			Max_PVD_Orders = length(Class_Indices);
 			
-			set(P.GUI_Handles.Control_Panel_Objects(3,4),'Items',{'Not Normalized','Normalized to Midline Length (X)','Normalized to Total Length (Y)','Normalized to Midline and Total Length'},'ItemsData',1:4);
+			set(P.GUI_Handles.Control_Panel_Objects(2,4),'Items',{'Not Normalized','Normalized to Midline Length (X)','Normalized to Total Length (Y)','Normalized to Midline and Total Length'},'ItemsData',1:4);
 			set(P.GUI_Handles.Control_Panel_Objects(4,4),'Items',{'Default','Dorsal-Ventral Merged','Orders Merged','All Merged'},'ItemsData',1:4);
 			
 			if(P.GUI_Handles.Control_Panel_Objects(2,1).Value) % Apply projection correction.
@@ -1017,7 +1031,7 @@ function Display_Plot(P,Data,Label)
 				Field_1_Name = 'Length';
 			end
 			
-			switch(P.GUI_Handles.Control_Panel_Objects(3,4).Value)
+			switch(P.GUI_Handles.Control_Panel_Objects(2,4).Value)
 				case {1,3}
 					if(1) % ~GP.Handles.Analysis.Slider.UserData
 						set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[10,110],'Value',50);
@@ -1041,7 +1055,7 @@ function Display_Plot(P,Data,Label)
 				for w=1:length(Workspace_Set{g})
 					ww = Workspace_Set{g}(w);
 					
-					switch(P.GUI_Handles.Control_Panel_Objects(3,4).Value)
+					switch(P.GUI_Handles.Control_Panel_Objects(2,4).Value)
 						case 1
 							Midline_Length = 1;
 							Total_Length = 1;
@@ -1132,7 +1146,7 @@ function Display_Plot(P,Data,Label)
 			% xl = 0:pi/6:pi/2;
 			set(Ax1,'FontSize',P.GUI_Handles.Plots.Axis_Ticks,'xlim',[Edges([1,end])],'TickLabelInterpreter','Latex'); % ,'XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)));
 			
-			switch(P.GUI_Handles.Control_Panel_Objects(3,4).Value)
+			switch(P.GUI_Handles.Control_Panel_Objects(2,4).Value)
 				case 1
 					XLabel = '$\mathrm{Midline \; Position \; [{\mu}m]}$';
 					YLabel = '$\mathrm{Neuronal \; Length \; [{\mu}m]}$';
@@ -1330,7 +1344,7 @@ function Display_Plot(P,Data,Label)
 			
 			Field_1 = 'Length_Corrected'; % 'Length';
 			
-			set(P.GUI_Handles.Control_Panel_Objects(3,4),'Items',{'Not Normalized','Midline Length','Total Length'},'ItemsData',1:3);
+			set(P.GUI_Handles.Control_Panel_Objects(2,4),'Items',{'Not Normalized','Midline Length','Total Length'},'ItemsData',1:3);
 			set(P.GUI_Handles.Control_Panel_Objects(4,4),'Items',{'Default','Orders Merged','Orders 1-3'},'ItemsData',1:3); % ,'Dorsal-Ventral Merged',
 			
 			switch(Label)
@@ -1356,7 +1370,7 @@ function Display_Plot(P,Data,Label)
 					Nc = 1;
 			end
 			
-			switch(P.GUI_Handles.Control_Panel_Objects(3,4).Value) % Normalization.
+			switch(P.GUI_Handles.Control_Panel_Objects(2,4).Value) % Normalization.
 				case 1
 					Y_Name = ['$\mathrm{\# \; of \;',Name,'s}$'];
 				case 2
@@ -1377,7 +1391,7 @@ function Display_Plot(P,Data,Label)
 						case 1 % Per class.
 							for o=1:length(Classes)
 								
-								switch(P.GUI_Handles.Control_Panel_Objects(3,4).Value) % Normalization.
+								switch(P.GUI_Handles.Control_Panel_Objects(2,4).Value) % Normalization.
 									case 1
 										Normalization_Factor = 1;
 									case 2 % Midline.
@@ -1394,7 +1408,7 @@ function Display_Plot(P,Data,Label)
 								
 							end
 						case 2 % No classification
-							switch(P.GUI_Handles.Control_Panel_Objects(3,4).Value) % Normalization.
+							switch(P.GUI_Handles.Control_Panel_Objects(2,4).Value) % Normalization.
 								case 1
 									Normalization_Factor = 1;
 								case 2 % Midline.
@@ -1408,7 +1422,7 @@ function Display_Plot(P,Data,Label)
 							
 							N{g}(w) = length(I3) ./ Normalization_Factor; % Number of 3-way junctions (or tips).
 						case 3 % Classes 1-3.
-							switch(P.GUI_Handles.Control_Panel_Objects(3,4).Value) % Normalization.
+							switch(P.GUI_Handles.Control_Panel_Objects(2,4).Value) % Normalization.
 								case 1
 									Normalization_Factor = 1;
 								case 2 % Midline.
@@ -2496,7 +2510,7 @@ function Display_Plot(P,Data,Label)
 			BinSize = 3;
 			Edges = 0:BinSize:300;
 			
-			set(P.GUI_Handles.Control_Panel_Objects(3,4),'Items',{'Not Normalized'},'ItemsData',1);
+			set(P.GUI_Handles.Control_Panel_Objects(2,4),'Items',{'Not Normalized'},'ItemsData',1);
 			set(P.GUI_Handles.Control_Panel_Objects(4,4),'Items',{'Default','Sort by size'},'ItemsData',1:2);
 			
 			V = cell(1,length(Workspace_Set));

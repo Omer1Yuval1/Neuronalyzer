@@ -335,11 +335,12 @@ function Display_Reconstruction(P,Data,p,Label)
 			scatter(Ax,X(D),Y(D),DotSize_1,CM(1,:),'filled');
 			scatter(Ax,X(V),Y(V),DotSize_1,CM(end,:),'filled');
 		
-		case {'Vertices Angles','Vertices Angles - Corrected'}
+		case {'Junction Angles'}
 			
 			a = 5;
 			
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+			
 			Reconstruct_Vertices(Data);
 			
 			%{
@@ -354,10 +355,21 @@ function Display_Reconstruction(P,Data,p,Label)
 			hold on;
 			plot(Vx,Vy,'LineWidth',3);
 			%}
-		case {'3-Way Junctions - Position','Tips - Position'}
+		case 'Vertex Positions'
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			
-			switch GP.General.Active_Plot
+			Fv = find([Data.Vertices.Order] >= 3); % Junctions.
+			Ft = find([Data.Vertices.Order] == 1); % Tips.
+			
+			X = [Data.Vertices.X];
+			Y = [Data.Vertices.Y];
+			
+			hold(Ax,'on');
+			scatter(Ax,X(Fv),Y(Fv),20,[0.8,0,0],'filled');
+			scatter(Ax,X(Ft),Y(Ft),20,[0,0.8,0],'filled');
+			
+			%{
+			switch(Label)
 				case '3-Way Junctions - Position'
 					Vertex_Order = 3;
 					Junction_Classes = [1,1,2 ; 2,3,3 ; 3,3,4]; % 234,344
@@ -369,19 +381,19 @@ function Display_Reconstruction(P,Data,p,Label)
 			Max_PVD_Orders = length(Junction_Classes);
 			CM = lines(Max_PVD_Orders);
 			
-			for v=1:numel(Data.All_Vertices)
-				if(Data.All_Vertices(v).Order == Vertex_Order && length(Data.All_Vertices(v).Class) == Vertex_Order)
-					[I,i] = ismember(sort(Data.All_Vertices(v).Class),Junction_Classes,'rows');
+			for v=1:numel(Data.Vertices)
+				if(Data.Vertices(v).Order == Vertex_Order && length(Data.Vertices(v).Class) == Vertex_Order)
+					[I,i] = ismember(sort(Data.Vertices(v).Class),Junction_Classes,'rows');
 					if(I) % If the class is a member of the Junction_Classes matrix, plot it.
-						X = [Data.All_Vertices(v).X];
-						Y = [Data.All_Vertices(v).Y];
+						X = [Data.Vertices(v).X];
+						Y = [Data.Vertices(v).Y];
 						
 						hold on;
 						scatter(X,Y,40,CM(i,:),'filled');
 					end
 				end
 			end
-			
+			%}
 		case 'Curvature'
 			Curvature_Min_Max = [0,0.3]; % 0.2
 			CM_Lims = [1,1000];
@@ -424,13 +436,14 @@ function Display_Reconstruction(P,Data,p,Label)
 			
 			% figure;
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
-			hold on;
+			hold(Ax,'on');
+			
 			Midline_Distance = [Data.Points.X];
 			Midline_Orientation = [Data.Points.Y];
 			Classes = [Data.Points.Class]; % Classes = [Data.Points.Segment_Class];
 			Classes(isnan(Classes)) = Class_Num + 1;
 			
-			scatter(Midline_Distance,Midline_Orientation,10,C(Classes,:),'filled');
+			scatter(Ax,Midline_Distance,Midline_Orientation,5,C(Classes,:),'filled');
 			
 			% assignin('base','Points',Data.Points);
 			

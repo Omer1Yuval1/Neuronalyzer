@@ -15,7 +15,7 @@ Then open the file index.m in MATLAB and run it.
     for units). The second table allows you to enter analysis information for reproducibility. This includes
     the version and commit id of the code used for the analysis, as well as the date and the name of the
     person that performed the analysis. You can find the commit id on the GitHub repository (for
-    example: 357b6ac). **The scale-bar is set to 1 as default. Make sure to set it to the desired value**
+    example: 357b6ac). **The scale-bar is set to 1 as default. Make sure to set it to the correct value**
     **for each loaded image/project**.
 
 ![Screenshot_Start](https://user-images.githubusercontent.com/35100851/104649777-1ebd8580-56ad-11eb-8fc5-c170581d9762.png)

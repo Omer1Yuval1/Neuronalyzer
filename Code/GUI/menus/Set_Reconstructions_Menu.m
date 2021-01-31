@@ -28,12 +28,8 @@ function Set_Reconstructions_Menu(P)
 	H(13) = uimenu(P.GUI_Handles.Menus(2),'Label','Menorahs','Enable','off');
 	
 	H_Vertices = uimenu(P.GUI_Handles.Menus(2),'Label','Vertices');
-		H1_Vertices_Angles = uimenu(H_Vertices,'Label','Angles');
-			H(14) = uimenu(H1_Vertices_Angles,'Label','Vertices Angles');
-			H(15) = uimenu(H1_Vertices_Angles,'Label','Vertices Angles - Corrected');
-		H2_Vertices_Positions = uimenu(H_Vertices,'Label','Positions');
-			H(16) = uimenu(H2_Vertices_Positions,'Label','3-Way Junctions - Position');
-			H(17) = uimenu(H2_Vertices_Positions,'Label','Tips - Position');
+		H(14) = uimenu(H_Vertices,'Label','Vertex Positions');
+		H(15) = uimenu(H_Vertices,'Label','Junction Angles');
 	
 	H(18) = uimenu(P.GUI_Handles.Menus(2),'Label','Curvature');
 	
