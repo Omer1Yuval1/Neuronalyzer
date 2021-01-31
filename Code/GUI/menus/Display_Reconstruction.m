@@ -191,7 +191,7 @@ function Display_Reconstruction(P,Data,p,Label)
 			set(P.GUI_Handles.Control_Panel_Objects([1,3],2),'Enable','on'); % Enable the radio buttons.
 			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Enable','off');
 			set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Points:');
-			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[20,100],'Step',1,'Enable','on','Tooltip','Number of interactive points.'); % Set the spinner.
+			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[5,100],'Step',1,'Enable','on','Tooltip','Number of interactive points.'); % Set the spinner.
 			
 			CM1 = lines(7);
 			CM1 = CM1([7,1,1,3,3],:);
