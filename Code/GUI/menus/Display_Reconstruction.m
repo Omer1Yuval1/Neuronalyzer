@@ -47,8 +47,8 @@ function Display_Reconstruction(P,Data,p,Label)
 			imshow(Data.Info.Files(1).Denoised_Image,'Parent',Ax);
 			
 			set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Threshold:');
-			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,0.99],'Step',0.01,'Value',Data(p).Parameters.Neural_Network.Threshold,'Tooltip','Threshold for the binarization of the denoised image.'); % CNN threshold.
-			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',Data(p).Parameters.Neural_Network.Min_CC_Size); % Minimum object size.
+			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,0.99],'Step',0.01,'Value',Data.Parameters.Neural_Network.Threshold,'Tooltip','Threshold for the binarization of the denoised image.'); % CNN threshold.
+			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',Data.Parameters.Neural_Network.Min_CC_Size); % Minimum object size.
 			set(P.GUI_Handles.Control_Panel_Objects(1,[4,5]),'Enable','on'); % Enable the spinners.
 			
 			set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,p,1});
@@ -57,8 +57,8 @@ function Display_Reconstruction(P,Data,p,Label)
 			colormap(Ax,'turbo');
 			
 			set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Threshold:');
-			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,0.99],'Step',0.01,'Value',Data(p).Parameters.Neural_Network.Threshold,'Tooltip','Threshold for the binarization of the denoised image.'); % CNN threshold.
-			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',Data(p).Parameters.Neural_Network.Min_CC_Size,'Tooltip','Minimum object size (in pixels) in the binarized image.'); % Minimum object size.
+			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,0.99],'Step',0.01,'Value',Data.Parameters.Neural_Network.Threshold,'Tooltip','Threshold for the binarization of the denoised image.'); % CNN threshold.
+			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',Data.Parameters.Neural_Network.Min_CC_Size,'Tooltip','Minimum object size (in pixels) in the binarized image.'); % Minimum object size.
 			set(P.GUI_Handles.Control_Panel_Objects(1,[4,5]),'Enable','on'); % Enable the spinners.
 			
 			set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,p,1});
@@ -67,7 +67,7 @@ function Display_Reconstruction(P,Data,p,Label)
 			
 			set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Marker size:');
 			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,20],'Step',1,'Value',2,'Tooltip','Marker size (in pixels) for adding (left mouse click) and removing (left mouse click) pixels.'); % Set the spinner.
-			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',P.Data(p).Parameters.Neural_Network.Min_CC_Size,'Tooltip','Minimum object size (in pixels) in the binarized image.'); % Minimum object size.
+			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',P.Data.Parameters.Neural_Network.Min_CC_Size,'Tooltip','Minimum object size (in pixels) in the binarized image.'); % Minimum object size.
 			
 			set(P.GUI_Handles.Control_Panel_Objects([1,2,3],2),'Enable','on'); % Enable the radio buttons.
 			set(P.GUI_Handles.Control_Panel_Objects(1,[4,5]),'Enable','on'); % Enable the spinners.
@@ -84,7 +84,7 @@ function Display_Reconstruction(P,Data,p,Label)
 			
 			set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Marker size:');
 			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,20],'Step',1,'Value',2,'Tooltip','Marker size (in pixels) for adding (left mouse click) and removing (left mouse click) pixels.'); % Set the spinner.
-			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',Data(p).Parameters.Neural_Network.Min_CC_Size,'Tooltip','Minimum object size (in pixels) in the binarized image.'); % Minimum object size.
+			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',Data.Parameters.Neural_Network.Min_CC_Size,'Tooltip','Minimum object size (in pixels) in the binarized image.'); % Minimum object size.
 			
 			set(P.GUI_Handles.Control_Panel_Objects([1,2,3],2),'Enable','on'); % Enable the radio buttons.
 			set(P.GUI_Handles.Control_Panel_Objects(1,[4,5]),'Enable','on'); % Enable the spinners.
@@ -227,10 +227,10 @@ function Display_Reconstruction(P,Data,p,Label)
 			% hold(Ax,'off');
 			
 			if(0) % Plot the normals to the midline.
-				for i=1:numel(P.Data(p).Axes.Axis_0)
-					x = P.Data(p).Axes.Axis_0(i).X;
-					y = P.Data(p).Axes.Axis_0(i).Y;
-					a = P.Data(p).Axes.Axis_0(i).Tangent_Angle + (pi/2);
+				for i=1:numel(P.Data.Axes.Axis_0)
+					x = P.Data.Axes.Axis_0(i).X;
+					y = P.Data.Axes.Axis_0(i).Y;
+					a = P.Data.Axes.Axis_0(i).Tangent_Angle + (pi/2);
 					plot(Ax,x + 40.*[0,cos(a)] , y + 40.*[0,sin(a)]);
 				end
 			end

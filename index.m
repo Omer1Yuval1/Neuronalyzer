@@ -460,7 +460,8 @@ function index()
 		
 		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Denoising images...'); % ,'Indeterminate','on'
 		
-		CNN = load('My_CNN_13.mat');
+		% CNN = load('My_CNN_13.mat');
+		CNN = load('PVD_CNN_Segnet_1A.mat');
 		CNN = CNN.My_CNN;
 		
 		selection = uiconfirm(P.GUI_Handles.Main_Figure,'Overwrite existing binary images?','Warning','Icon','question','Options',{'Overwrite','Keep existing binary images'});
