@@ -3,12 +3,16 @@ function index()
 	% This is the root script for the GUI.
 	% Project_H is a pointer to structure Project, defined as a class handle in Project_Class.m.
 	
-	close all;
-	clear;
+	close(findall(0,'type','figure')); % Close all figures.
+	clear; % Clear workspace.
 	
-	folder = fileparts(which(mfilename)); % Determine where the m-file's folder is.
-	cd(folder);
-	addpath(genpath(pwd)); % Add to path.
+	cd(fileparts(which(mfilename))); % Change to the directory of this file.
+	
+	% Add all this directory (including all subdirectories) to the path, excluding the Resources directory:
+	path1 = string(split(genpath(pwd),';'));
+	path1(contains(path1,'Resources')) = [];
+	path1 = join(path1,';'); % Join back to get a path format.
+	addpath(path1); % Add to path.
 	
 	Project_H = Project_Class; % This creates an object of the Project_Class class.
 	
