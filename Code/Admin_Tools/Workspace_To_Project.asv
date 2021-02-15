@@ -11,11 +11,10 @@ function Project = Workspace_To_Project(Workspace)
 		
 		Project(w).Info(1).Experiment = struct('Identifier',{},'Username',{},'Neuron_Name',{},'Strain_Name',{},'Scale_Factor',{},'Age',{},'Strain',{},'Sex',{},'Genotype',{},'Phenotype',{},'Anesthetics',{},'Fixation',{},'Camera',{},'Magnification',{},'Date',{},'Temperature',{},'Time',{});
 		
-        if(isfield(Workspace(w).Workspace.User_Input,'File_Name'))
-            Project(w).Info.Experiment(1).Identifier = Workspace(w).Workspace.User_Input.File_Name(1:end-4);
-        end
+        if(isfield())
+        Project(w).Info.Experiment(1).Identifier = Workspace(w).Workspace.User_Input.File_Name(1:end-4);
 		
-        Project(w).Info.Experiment(1).Username = 'YI';
+        Project(w).Info.Experiment.Username = 'YI';
 		Project(w).Info.Experiment.Neuron_Name = 'PVD';
 		Project(w).Info.Experiment.Age = '1D';
 		Project(w).Info.Experiment.Scale_Factor = Workspace(w).Workspace.User_Input.Scale_Factor;
@@ -45,13 +44,7 @@ function Project = Workspace_To_Project(Workspace)
 		
 		Project(w).Info.Files = struct('Raw_Image',{},'Denoised_Image',{},'Binary_Image',{});
 		Project(w).Info.Files(1).Raw_Image = Workspace(w).Workspace.Image0;
-		
-        if(isfield(Workspace(w).Workspace,'NN_Probabilities'))
-            Project(w).Info.Files(1).Denoised_Image = Workspace(w).Workspace.NN_Probabilities;
-        end
-		
-        if(isfield(Workspace(w).Workspace,'Im_BW'))
-            Project(w).Info.Files(1).Binary_Image = Workspace(w).Workspace.Im_BW;
-        end
+		Project(w).Info.Files(1).Denoised_Image = Workspace(w).Workspace.NN_Probabilities;
+		Project(w).Info.Files(1).Binary_Image = Workspace(w).Workspace.Im_BW;
 	end
 end

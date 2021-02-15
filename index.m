@@ -229,6 +229,12 @@ function index()
 			
 			% *************************************************************************************************************
 			% *************************************************************************************************************
+			
+			% Temporary (convert old workspace format to project format):
+			if(isfield(Loaded_File,'Workspace'))
+				Loaded_File.Project = Workspace_To_Project(Loaded_File.Workspace);
+			end
+			
 			% Temporary ("Neuron_Axes" changed to "Axes"):
             if(isfield(Loaded_File.Project,'Neuron_Axes'))
                 for jj=1:numel(Loaded_File.Project)
@@ -256,7 +262,7 @@ function index()
 			if(isfield(Loaded_File,'Project')) % If a project struct exists for the first loaded project.
 				for jj=1:numel(Loaded_File.Project) % For each project within the ii project file.
 					pp = pp + 1;
-					P.Data(pp) = Loaded_File.Project(pp);
+					P.Data(pp) = Loaded_File.Project(jj);
 					P.GUI_Handles.Waitbar.Value = jj ./ numel(Loaded_File.Project);
 				end
 			end
