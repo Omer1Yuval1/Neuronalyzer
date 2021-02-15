@@ -25,7 +25,7 @@ function Display_Reconstruction(P,Data,p,Label)
 	set(P.GUI_Handles.View_Axes,'ButtonDownFcn','');
 	
 	set(P.GUI_Handles.Radio_Group_1,'SelectionChangedFcn',{@Radio_Buttons_Func,P});
-	Radio_Buttons_Func([],[],P);
+	% Radio_Buttons_Func([],[],P,Label);
 	
 	switch(Label)
 		case 'Raw Image - Grayscale'
@@ -503,6 +503,8 @@ function Display_Reconstruction(P,Data,p,Label)
 		set(gca,'position',[0,0,1,1]);
 		axis tight;
 		H.InnerPosition = [50,50,ImCols./2.5,ImRows./2.5];
+	else
+		set(P.GUI_Handles.View_Axes.Children(1),'Visible','off','Visible','on');
 	end
 	
 	function [X,Y] = Smooth_Points(X,Y,Smoothing_Parameter) % X=[1,n]. Y=[1,n].
@@ -514,7 +516,7 @@ function Display_Reconstruction(P,Data,p,Label)
 		Y = Suxy(:,2)'; % Smoothed y-coordinates.
 	end
 	
-	function Apply_Changes_Func(source,event,P,pp,Option_Flag)
+	function Apply_Changes_Func(~,~,P,pp,Option_Flag)
 		switch(Option_Flag)
 			case 1 % CNN.
 				P.Data(pp).Parameters.Neural_Network.Threshold = P.GUI_Handles.Control_Panel_Objects(1,4).Value;
@@ -527,16 +529,16 @@ function Display_Reconstruction(P,Data,p,Label)
 		disp(['Minimum object size changed to: ',num2str(P.Data(pp).Parameters.Neural_Network.Min_CC_Size)]);
 	end
 	
-	function Annotate_Image(source,event,P,pp,RGB_Flag)
+	function Annotate_Image(~,event,P,pp,RGB_Flag)
 		
 		Mode = find([P.GUI_Handles.Radio_Group_1.Children.Value] == 1);
 		switch(Mode)
 			case 1 % Default.
 				disp('Default mode. User interaction is ignored.');
-				set(allchild(P.GUI_Handles.View_Axes),'HitTest','on');
+				set(findall(P.GUI_Handles.View_Axes.Children,'Type','image'),'HitTest','on');
 			case {2,3} % Annotation & Drawing modes.
 				
-				set(allchild(P.GUI_Handles.View_Axes),'HitTest','off');
+				set(findall(P.GUI_Handles.View_Axes.Children,'Type','image'),'HitTest','off');
 				
 				Mouse_Button = event.Button;
 				Marker_Size = P.GUI_Handles.Control_Panel_Objects(1,4).Value;
@@ -551,25 +553,25 @@ function Display_Reconstruction(P,Data,p,Label)
 				switch(Mode)
 					case 2 % Drawing mode.
 						hold(P.GUI_Handles.View_Axes,'on');
-						roi = drawfreehand(P.GUI_Handles.View_Axes,'Closed',0,'LineWidth',Marker_Size,'FaceAlpha',0,'FaceSelectable',0);
-						% roi = images.roi.AssistedFreehand(P.GUI_Handles.View_Axes.Children(end)); draw(roi);
+						roi_i = drawfreehand(P.GUI_Handles.View_Axes,'Closed',0,'LineWidth',Marker_Size,'FaceAlpha',0,'FaceSelectable',0);
+						% roi_i = images.roi.AssistedFreehand(P.GUI_Handles.View_Axes.Children(end)); draw(roi_i);
 						
-						% [~,ia,~] = unique(roi.Position,'rows'); % Remove duplicated points.
-						% roi.Position = roi.Position(sort(ia),:);
+						% [~,ia,~] = unique(roi_i.Position,'rows'); % Remove duplicated points.
+						% roi_i.Position = roi_i.Position(sort(ia),:);
 						
-						Npp = size(roi.Position,1);
+						Npp = size(roi_i.Position,1);
 						Cxy = zeros(2,0);
 						
 						if(Npp > 1)
 							% Upsample:
 							tt = 1:Npp;
-							fit_ppform = spline(tt,[roi.Position']); % Alternative: use cscvn(roi.Position');
+							fit_ppform = spline(tt,[roi_i.Position']); % Alternative: use cscvn(roi_i.Position');
 							xy = ppval(fit_ppform,linspace(tt(1),tt(end),Npp*100));
 							xx = xy(1,:);
 							yy = xy(2,:);
 							
-							% xx = roi.Position(:,1);
-							% yy = roi.Position(:,2);
+							% xx = roi_i.Position(:,1);
+							% yy = roi_i.Position(:,2);
 							
 							Cx = round(xx(:)) + dd; % (-dd:dd)
 							Cy = round(yy(:)) + dd;
@@ -579,12 +581,12 @@ function Display_Reconstruction(P,Data,p,Label)
 							for ii=1:length(xx) % For each point.
 								Cxy = [Cxy , combvec(Cx(ii,:) , Cy(ii,:))]; % [2 x Np].
 							end
-							delete(roi); % delete(findobj(P.GUI_Handles.View_Axes,'-not','Type','image','-and','-not','Type','axes'));
+							delete(roi_i); % delete(findobj(P.GUI_Handles.View_Axes,'-not','Type','image','-and','-not','Type','axes'));
 						end
 					case 3 % Annotation mode.
-						C = event.IntersectionPoint;
-						C = [round(C(1)),round(C(2))];
-						Cxy = combvec(C(1) + dd , C(2) + dd); % [2 x Np].
+						CCi = event.IntersectionPoint;
+						CCi = [round(CCi(1)),round(CCi(2))];
+						Cxy = combvec(CCi(1) + dd , CCi(2) + dd); % [2 x Np].
 				end
 				
 				Ci = (size(P.Data(pp).Info.Files(1).Binary_Image,1) .* (Cxy(1,:) - 1) + Cxy(2,:)); % Linear indices.
@@ -598,29 +600,39 @@ function Display_Reconstruction(P,Data,p,Label)
 						disp('Pixels removed.');
 				end
 				
+				% delete(allchild(P.GUI_Handles.View_Axes));
+				
 				if(RGB_Flag)
 					Im_RGB_i = repmat(P.Data(pp).Info.Files(1).Raw_Image(:,:,1),[1,1,3]); % Replicate the full image in all channels.
 					Im_RGB_i(:,:,1) = Im_RGB_i(:,:,1) .* uint8(~P.Data(pp).Info.Files(1).Binary_Image); % BG of BW is red.
 					Im_RGB_i(:,:,2) = Im_RGB_i(:,:,2) .* uint8(P.Data(pp).Info.Files(1).Binary_Image); % Signal of BW is green.
-					delete(allchild(Ax));
-					imshow(Im_RGB_i,'Parent',Ax);
+					
+					% imshow(Im_RGB_i,'Parent',P.GUI_Handles.View_Axes);
+					set(P.GUI_Handles.View_Axes.Children(1),'CData',Im_RGB_i);
 				else
-					delete(allchild(Ax));
-					imshow(P.Data(pp).Info.Files(1).Binary_Image,'Parent',Ax);
+					set(P.GUI_Handles.View_Axes.Children(1),'CData',P.Data(pp).Info.Files(1).Binary_Image);
+					% imshow(P.Data(pp).Info.Files(1).Binary_Image,'Parent',P.GUI_Handles.View_Axes);
 				end
 				
-				set(allchild(Ax),'HitTest','off'); % set(Ax,'PickableParts','all');
+				%{
+				drawnow;
+				drawnow;
+				set(P.GUI_Handles.View_Axes,'Visible','on');
+				drawnow;
+				set(P.GUI_Handles.View_Axes.Children(1),'Visible','off','Visible','on');
+				%}
+				set(findall(P.GUI_Handles.View_Axes.Children,'Type','image'),'HitTest','off'); % set(P.GUI_Handles.View_Axes,'PickableParts','all');
 				
 			case 4 % Deletion.
 				%{
 				xy0 = event.IntersectionPoint; % Clicked point.
-				CC = bwconncomp(GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Im_BW);
-				Vc = nan(1,length(CC.PixelIdxList)); % Vector of minimal distance from the connected objects.
-				for ii=1:length(CC.PixelIdxList)
-					[y,x] = ind2sub([Im_Rows,Im_Cols],CC.PixelIdxList{ii});
+				CCi = bwconncomp(GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Im_BW);
+				Vc = nan(1,length(CCi.PixelIdxList)); % Vector of minimal distance from the connected objects.
+				for ii=1:length(CCi.PixelIdxList)
+					[y,x] = ind2sub([Im_Rows,Im_Cols],CCi.PixelIdxList{ii});
 					Vc(ii) = min( ((xy0(1) - x).^2 + (xy0(2) - y).^2).^(0.5) );
 				end
-				GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Im_BW(CC.PixelIdxList{find(Vc == min(Vc),1)}) = 0;
+				GUI_Parameters.Workspace(GUI_Parameters.Handles.Im_Menu.UserData).Workspace.Im_BW(CCi.PixelIdxList{find(Vc == min(Vc),1)}) = 0;
 				%}
 		end
 	end
@@ -660,12 +672,14 @@ function Display_Reconstruction(P,Data,p,Label)
 		switch(find([P.GUI_Handles.Radio_Group_1.Children.Value] == 1)) % Mode.
 			case {2,3} % Annotation & Drawing modes.
 				zoom(P.GUI_Handles.View_Axes,'off'); % Switch off the zoom function.
+				
 				switch(Label)
 					case 'Binary Image'
 						set(P.GUI_Handles.View_Axes,'ButtonDownFcn',{@Annotate_Image,P,P.GUI_Handles.Current_Project,0});
 					case 'Binary Image - RGB'
 						set(P.GUI_Handles.View_Axes,'ButtonDownFcn',{@Annotate_Image,P,P.GUI_Handles.Current_Project,1});
 				end
+				
 			otherwise
 				set(P.GUI_Handles.View_Axes,'ButtonDownFcn','');
 		end
