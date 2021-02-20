@@ -20,7 +20,11 @@ function Pixels_List = Order_Connected_Pixels(Im_BW,P0,P1)
 	else % If P1 (the 2nd point) is NOT given.
 		Im_Dis = bwdistgeodesic(Im_BW,P0(1),P0(2)); % Distances of all boundary pixels from the starting pixel.
 		
-        Im_BW(find(Im_Dis == 1,1)) = 0; % Delete one of the pixels next to the starting pixel.
+        Fd = find(Im_Dis == 1);
+        
+        if(length(Fd) > 1)
+            Im_BW(Fd(1)) = 0; % Delete one of the pixels next to the starting pixel.
+        end
         
         Im_Dis = bwdistgeodesic(Im_BW,P0(1),P0(2)); % Now compute the distances again.
         

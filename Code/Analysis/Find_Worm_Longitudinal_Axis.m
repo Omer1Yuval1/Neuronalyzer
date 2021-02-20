@@ -24,8 +24,10 @@ function Worm_Axes = Find_Worm_Longitudinal_Axis(Data,Plot1,Ax)
 	[ImB,XYper] = Neuron_To_Blob(Data.Info.Files(1).Binary_Image); % Data.Info.Files(1).Raw_Image.
 	S(1).Boundary_Pixels = XYper;
     
-	Im_Skel = bwmorph(imclose(ImB,strel('disk',Mask_Size)),'skel',inf); % The skeleton of the blob. % Im_Axis = bwmorph(imclose(ImB,strel('disk',100)),'thin',inf);
-	Im_Skel_Pruned = bwskel(Im_Skel,'MinBranchLength',Min_Branch_Length);
+    % Im_Skel = bwmorph(ImB,'skel',inf); % The skeleton of the blob.
+	% Im_Skel = bwmorph(imclose(ImB,strel('disk',Mask_Size)),'skel',inf); % The skeleton of the blob. % Im_Axis = bwmorph(imclose(ImB,strel('disk',100)),'thin',inf);
+	Im_Skel_Pruned = bwskel(ImB,'MinBranchLength',Min_Branch_Length);
+    % Im_Skel_Pruned = bwskel(Im_Skel,'MinBranchLength',Min_Branch_Length);
 	
 	% Save midline pixels ordered from head (left) to tail:
 	[Y,X] = find(bwmorph(Im_Skel_Pruned,'endpoints')); % End points of the midline.
