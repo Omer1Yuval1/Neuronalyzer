@@ -1,4 +1,4 @@
-function Data = Add_Features_To_All_Workspaces(Data)
+function Data = Add_Features_To_All_Workspaces(Data,P)
 	
 	Scale_Factor = Data.Info.Experiment(1).Scale_Factor;
 	
@@ -77,16 +77,24 @@ function Data = Add_Features_To_All_Workspaces(Data)
 	% Map the neuron's axes:
 	if(isfield(Data,'Segments'))
 		
+		if(~isfield(Data,'Axes') || ~isfield(Data.Axes,'Axis_0') || isempty(Data.Axes.Axis_0) || isempty(Data.Axes.Axis_1_Ventral)) % If the axes do not exist.
+			Data.Axes = Find_Worm_Longitudinal_Axis(Data,0);
+			Data = Map_Worm_Axes(Data,0,0);
+		else	
+			selection = uiconfirm(P.GUI_Handles.Main_Figure,'Overwrite axes?','Warning','Icon','question','Options',{'Overwrite','Keep existing axes'});
+			if(isequal(selection,'Overwrite'))
+				% Compute the neuron axes only if they do not exist yet, to avoid overwriting user corrections.
+				Data.Axes = Find_Worm_Longitudinal_Axis(Data,0);
+				Data = Map_Worm_Axes(Data,0,0);
+			end
+		end
+		
 		% If the main and tertiary axes already exist, do not compute them and only get the neuron points.
 		if(isfield(Data,'Axes') && isfield(Data.Axes,'Axis_0') && ~isempty(Data.Axes.Axis_0) && ~isempty(Data.Axes.Axis_1_Ventral))
 			
 			Data = Collect_All_Neuron_Points(Data); % [X, Y, Length, Angle, Curvature].
 			Data.Points = Find_Distance_From_Midline(Data.Points,Data.Axes,Scale_Factor,1);
 			Data.Vertices = Find_Distance_From_Midline(Data.Vertices,Data.Axes,Scale_Factor,1);
-			
-		else % Compute the neuron axes only if they do not exist yet, to avoid overwriting user corrections.
-			Data.Axes = Find_Worm_Longitudinal_Axis(Data,0);
-			Data = Map_Worm_Axes(Data,0,0);
 		end
 		
 		[D,A,L,phi,out] = Get_Corrected_Cylinder_Params([Data.Points.Midline_Distance],[Data.Points.Midline_Orientation],[Data.Points.Length],[Data.Points.Radius]);

@@ -557,7 +557,7 @@ function index()
 			P.GUI_Handles.Waitbar.Value = pp ./ Np;
 			
 			if(~isempty(P.Data(pp).Segments) && ~isempty(P.Data(pp).Vertices))
-				P.Data(pp) = Add_Features_To_All_Workspaces(P.Data(pp));
+				P.Data(pp) = Add_Features_To_All_Workspaces(P.Data(pp),P);
 			else
 				disp('The neuron must be traced before feature extraction.');
 			end
