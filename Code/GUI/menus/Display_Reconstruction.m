@@ -3,7 +3,7 @@ function Display_Reconstruction(P,Data,p,Label)
 	% P is the handle class containing all project and gui data.
 	% Data = P.Data(p), where p is the current selected project. It is passed separately as a struct for faster reading (reading a handle class property in a loop is very slow).
 	
-	Undock = 0;
+	Undock = P.GUI_Handles.Control_Panel_Objects(4,1).Value;
 	LineWidth_1 = 2; % [2,6].
 	DotSize_1 = 10; % 80;
 	DotSize_2 = 15; % 80;
@@ -13,7 +13,8 @@ function Display_Reconstruction(P,Data,p,Label)
 		delete(allchild(Ax));
 	else
 		H = figure;
-		% [ImRows,ImCols] = size(Data.Image0);
+		Ax = gca;
+		[ImRows,ImCols] = size(Data.Info.Files(1).Raw_Image);
 		hold on;
 	end
 	
@@ -132,7 +133,7 @@ function Display_Reconstruction(P,Data,p,Label)
 			
 			% look in "Find_Worm_Longitudinal_Axis" to check the midline finding process.
 			
-		case {'Trace','Segmentation'}
+		case {'Trace - Lite','Trace','Segmentation'}
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			hold(Ax,'on');
 			
@@ -142,13 +143,16 @@ function Display_Reconstruction(P,Data,p,Label)
 					if(numel(Data.Segments(s).Rectangles))
 						x = [Data.Segments(s).Rectangles.X];
 						y = [Data.Segments(s).Rectangles.Y];
+						W = [Data.Segments(s).Rectangles.Width];
 						if(length(x) > 1)
-							[x,y] = Smooth_Points(x,y,100);
+							[x,y] = Smooth_Points(x,y,10);
 						end
 						
 						switch(Label)
+							case 'Trace - Lite'
+								plot(Ax,x,y,'LineWidth',LineWidth_1,'Color',[0,0.8,0]); % [0.12,0.56,1]
 							case 'Trace'
-								plot(Ax,x,y,'LineWidth',LineWidth_1,'Color',[0.12,0.56,1]);
+								plot_line_edge(Ax,x,y,W);
 							case 'Segmentation'
 								plot(Ax,x,y,'LineWidth',LineWidth_1);
 						end
@@ -158,9 +162,20 @@ function Display_Reconstruction(P,Data,p,Label)
 			end
 			
 			% Plot the vertices:
-			%
-			scatter(Ax,[Data.Vertices.X],[Data.Vertices.Y],5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
-			%}
+			switch(Label)
+				case {'Trace - Lite','Segmentation'}
+					Fj = find([Data.Vertices.Order] == 3); % Find junctions.
+					Xj = [Data.Vertices(Fj).X];
+					Yj = [Data.Vertices(Fj).Y];
+					scatter(Ax,Xj,Yj,5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
+					% scatter(Ax,[Data.Vertices.X],[Data.Vertices.Y],5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
+				case 'Trace'
+					for j=1:numel(Data.Vertices)
+						if(Data.Vertices(j).Order >= 3 && numel(Data.Vertices(j).Rectangles) == Data.Vertices(j).Order)
+							plot_junction(Ax,Data.Vertices(j).X,Data.Vertices(j).Y,[Data.Vertices(j).Rectangles.Angle]);
+						end
+					end
+			end
 		case 'Segments by Length'
 			
 			Max_Length = 50; % [um].
