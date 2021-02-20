@@ -4,6 +4,8 @@
 To get started, download the latest Neuronalyzer version from the GitHub repository.
 Then open the file index.m in MATLAB and run it.
 
+Required toolboxes: Computer Vision Toolbox.
+
 <br/>
 
 **1. Load an image or an existing project** <br/>
