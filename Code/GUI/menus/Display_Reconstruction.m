@@ -217,8 +217,8 @@ function Display_Reconstruction(P,Data,p,Label)
 				Np_Waypoints = P.GUI_Handles.Control_Panel_Objects(1,4).Value; % Number of interactive points.
 				
 				% disableDefaultInteractivity(Ax);
-				set(allchild(Ax),'HitTest','off'); set(Ax,'HitTest','off');
-				set(Ax,'PickableParts','all'); % set(allchild(Ax),'PickableParts','none');
+				% set(allchild(Ax),'HitTest','off'); set(Ax,'HitTest','off');
+				% set(Ax,'PickableParts','all'); % set(allchild(Ax),'PickableParts','none');
 				set(P.GUI_Handles.View_Axes.Children(end),'ButtonDownFcn',{@Lock_Image_Func,P}); % Used to fix the image.
 			end
 			
@@ -700,7 +700,7 @@ function Display_Reconstruction(P,Data,p,Label)
 		end
     end
     
-    function Lock_Image_Func(P)
+    function Lock_Image_Func(~,~,P)
         
     end
 	
