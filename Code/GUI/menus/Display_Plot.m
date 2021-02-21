@@ -839,6 +839,7 @@ function Display_Plot(P,Data,Label)
 			Class_Colors = [0.6,0,0 ; 0,0.6,0 ; 0.12,0.56,1 ; 0.8,0.8,0]; % 3=0,0.8,0.8 ; 3.5=0,0,1 ; 5=0.5,0.5,0.5
 			colormap(Ax1,Class_Colors);
 			Max_PVD_Orders = length(Class_Colors);
+			BarWidth = 0.8;
 			
 			% P.GUI_Handles.Control_Panel_Objects(4,1).Value
 			set(P.GUI_Handles.Control_Panel_Objects(2,4),'Items',{'Not Normalized','Normalized to Midline Length','Normalized to Total Length'},'ItemsData',1:3);
@@ -880,10 +881,10 @@ function Display_Plot(P,Data,Label)
 					
 					for o=1:length(Class_Indices)
 						f_D = find([Data(ww).Points.Midline_Distance] >= 0 & [Data(ww).Points.Segment_Class] == Class_Indices(o)); % Dorsal AND Menorah order o.
-						f_V = find([Data(ww).Points.Midline_Distance] <= 0 & [Data(ww).Points.Segment_Class] == Class_Indices(o)); % Ventral AND Menorah order o.
+						f_V = find([Data(ww).Points.Midline_Distance] < 0 & [Data(ww).Points.Segment_Class] == Class_Indices(o)); % Ventral AND Menorah order o.
 						
-						M{g}(o,w,1) = nansum([Data(ww).Points(f_D).(Field_1_Name)]) ./ Normalization_Length;
-						M{g}(o,w,2) = nansum([Data(ww).Points(f_V).(Field_1_Name)]) ./ Normalization_Length;
+						M{g}(o,w,1) = nansum([Data(ww).Points(f_D).(Field_1_Name)]) ./ Normalization_Length; % Dorsal.
+						M{g}(o,w,2) = nansum([Data(ww).Points(f_V).(Field_1_Name)]) ./ Normalization_Length; % Ventral.
 					end
 				end
 			end
@@ -895,9 +896,9 @@ function Display_Plot(P,Data,Label)
 						B_D(:,g) = mean(M{g}(:,:,1),2); % Average across animals (columns). Rows correspond to Menorah orders.
 						B_V(:,g) = -mean(M{g}(:,:,2),2); % ".
 					end
-					H_D = bar(Ax1,1:Max_PVD_Orders,B_D,1,'hist','FaceColor','flat');
+					H_D = bar(Ax1,1:Max_PVD_Orders,B_D,BarWidth,'hist','FaceColor','flat');
 					hold(Ax1,'on');
-					H_V = bar(Ax1,1:Max_PVD_Orders,B_V,1,'hist','FaceColor','flat');
+					H_V = bar(Ax1,1:Max_PVD_Orders,B_V,BarWidth,'hist','FaceColor','flat');
 					
 					for g=1:length(Workspace_Set)
 						H_D(g).FaceColor = CM(g,:); % Class_Colors(o,:);
@@ -907,7 +908,7 @@ function Display_Plot(P,Data,Label)
 						errorbar(Ax1,mean(H_V(g).XData,1),B_V(:,g),std(M{g}(:,:,2),0,2)','Color','k','LineWidth',2,'LineStyle','none');
 					end
 					
-					ylim(Ax1,YLIM);
+					% ylim(Ax1,YLIM);
 					legend(Ax1,Groups,'Interpreter','Latex');
 					grid(Ax1,'on');
 					
@@ -929,14 +930,14 @@ function Display_Plot(P,Data,Label)
 					for g=1:Ng
 						B_DV(:,g) = mean(sum(M{g},3),2);
 					end
-					H_DV = bar(Ax1,1:Max_PVD_Orders,B_DV,1,'hist','FaceColor','flat');
+					H_DV = bar(Ax1,1:Max_PVD_Orders,B_DV,BarWidth,'hist','FaceColor','flat');
 					hold(Ax1,'on');
 					for g=1:length(Workspace_Set)
 						H_DV(g).FaceColor = CM(g,:); % H_DV.CData(o,:) = Class_Colors(o,:);
 						errorbar(Ax1,mean(H_DV(g).XData,1),B_DV(:,g),std(sum(M{g},3),0,2)','Color','k','LineWidth',2,'LineStyle','none');
 					end
 					
-					ylim(Ax1,[0,2.*YLIM(2)]);
+					ylim(Ax1,[0,Ax1.YLim(2)]); % ylim(Ax1,[0,2.*YLIM(2)]);
 					
 					legend(Ax1,Groups,'Interpreter','Latex');
 					grid(Ax1,'on');
@@ -945,23 +946,26 @@ function Display_Plot(P,Data,Label)
 					xlabel(Ax1,['Menorah Order'],'interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 					ylabel(Ax1,Y_Name,'Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 					
-					disp(['Stats (D-V merged):']);
-					disp(['WT:']);
-					for o=2:Max_PVD_Orders % Compare all orders to order 1 in wt.
-						[PVal_D,Test_Name_D] = Stat_Test(nansum(M{1}(1,:,:),3),nansum(M{1}(o,:,:),3)); % Sum up across D-V.
-						disp(['P-Value = ',num2str(PVal_D),' (',Test_Name_D,')']);
-					end
-					disp(['WT-Mutant:']);
-					for o=1:Max_PVD_Orders % Compare each order between wt and mutant.
-						[PVal_D,Test_Name_D] = Stat_Test(nansum(M{1}(o,:,:),3),nansum(M{2}(o,:,:),3)); % Sum up across D-V.
-						disp(['P-Value = ',num2str(PVal_D),' (',Test_Name_D,')']);
+					if(Ng > 2)
+						disp(['Stats (D-V merged):']);
+						disp(['WT:']);
+						for o=2:Max_PVD_Orders % Compare all orders to order 1 in wt.
+							[PVal_D,Test_Name_D] = Stat_Test(nansum(M{1}(1,:,:),3),nansum(M{1}(o,:,:),3)); % Sum up across D-V.
+							disp(['P-Value = ',num2str(PVal_D),' (',Test_Name_D,')']);
+						end
+						disp(['WT-Mutant:']);
+						for o=1:Max_PVD_Orders % Compare each order between wt and mutant.
+							[PVal_D,Test_Name_D] = Stat_Test(nansum(M{1}(o,:,:),3),nansum(M{2}(o,:,:),3)); % Sum up across D-V.
+							disp(['P-Value = ',num2str(PVal_D),' (',Test_Name_D,')']);
+						end
 					end
 				case 3 % Total length (all classes merged).
 					for g=1:Ng
-						B_D(:,g) = mean(sum(sum(M{g}(:,:,1),1),3),2);
+						B_DV(:,g) = mean(sum(sum(M{g},1),3),2); % Sum orders, then sum DV, then average projects.
+						% B_D(:,g) = -mean(sum(M{g}(:,:,1),1),2);
 						% B_V(:,g) = -mean(sum(M{g}(:,:,2),1),2);
 					end
-					H_D = bar(Ax1,1:Ng,B_D,1,'FaceColor','flat');
+					H_D = bar(Ax1,1:Ng,B_DV,BarWidth,'FaceColor','flat');
 					hold(Ax1,'on');
 					% H_V = bar(Ax1,1:length(Workspace_Set),B_V,0.8,'FaceColor','flat');
 					
@@ -969,21 +973,23 @@ function Display_Plot(P,Data,Label)
 						H_D.CData(g,:) = CM(g,:); % Class_Colors(o,:);
 						% H_V.CData(g,:) = CM(g,:); % Class_Colors(o,:);
 						
-						errorbar(Ax1,g,B_D(:,g),std(sum(sum(M{g}(:,:,1),1),3),0,2)','Color','k','LineWidth',2,'LineStyle','none');
+						errorbar(Ax1,g,B_DV(:,g),std(sum(sum(M{g},1),3),0,2)','Color','k','LineWidth',2,'LineStyle','none');
 						% errorbar(g,B_V(:,g),std(sum(M{g}(:,:,2),1),0,2)','Color','k','LineWidth',2,'LineStyle','none');
 					end
 					
-					disp(['Total Neuronal Length - Result:']);
-					Total_Length_1 = nansum(sum(M{1}(:,:,:),1),3); % Sum up across menorah orders and D-V.
-					Total_Length_2 = nansum(sum(M{2}(:,:,:),1),3); % ".
-					[PVal_D,Test_Name_D] = Stat_Test(Total_Length_1,Total_Length_2); % Summing up the classes and then dorsal-ventral.
-					disp(['P-Value = ',num2str(PVal_D),' (',Test_Name_D,')']);
+					if(Ng > 2)
+						disp(['Total Neuronal Length - Result:']);
+						Total_Length_1 = nansum(sum(M{1},1),3); % Sum up across menorah orders and D-V.
+						Total_Length_2 = nansum(sum(M{2},1),3); % ".
+						[PVal_D,Test_Name_D] = Stat_Test(Total_Length_1,Total_Length_2); % Summing up the classes and then dorsal-ventral.
+						disp(['P-Value = ',num2str(PVal_D),' (',Test_Name_D,')']);
+						
+						disp(['Total Length Ratio = ',num2str(mean(Total_Length_2) ./ mean(Total_Length_1))]);
+						disp(['Total Length STDs (1) = ',num2str(mean(Total_Length_1)),'um +\- ',num2str(std(sum(sum(M{1}(:,:,1),1),3),0,2))]);
+						disp(['Total Length STDs (1) = ',num2str(mean(Total_Length_2)),'um +\- ',num2str(std(sum(sum(M{2}(:,:,1),1),3),0,2))]);
+					end
 					
-					disp(['Total Length Ratio = ',num2str(mean(Total_Length_2) ./ mean(Total_Length_1))]);
-					disp(['Total Length STDs (1) = ',num2str(mean(Total_Length_1)),'um +\- ',num2str(std(sum(sum(M{1}(:,:,1),1),3),0,2))]);
-					disp(['Total Length STDs (1) = ',num2str(mean(Total_Length_2)),'um +\- ',num2str(std(sum(sum(M{2}(:,:,1),1),3),0,2))]);
-					
-					ylim(Ax1,[0,3.*YLIM(2)]); % ylim(3*YLIM);
+					ylim(Ax1,[0,Ax1.YLim(2)]); % ylim(3*YLIM);
 					set(Ax1,'XTick',1:length(Workspace_Set),'XTickLabels',Groups,'TickLabelInterpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Ticks); % ,'YTickLabels',abs(get(gca,'YTick'))
 					ylabel(Ax1,Y_Name,'Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 					
