@@ -548,7 +548,7 @@ function index()
 			P.Data(pp).Vertices = Data_pp.Vertices;
 			P.Data(pp).Info.Files(1).Binary_Image = Data_pp.Info.Files(1).Binary_Image;
 		end
-		Menus_Func(findall(P.GUI_Handles.Menus(2),'Label','Trace'),[],P); % Menus_Func(P.GUI_Handles.Reconstruction_Menu_Handles(10),[],P); % Display the trace.
+		Menus_Func(findall(P.GUI_Handles.Menus(2),'Label','Trace - Lite'),[],P); % Menus_Func(P.GUI_Handles.Reconstruction_Menu_Handles(10),[],P); % Display the trace.
 		
 		close(P.GUI_Handles.Waitbar);
 	end
@@ -557,13 +557,14 @@ function index()
 		
 		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Extracting Features');
 		
+		Overwrite_Axes = [];
 		Np = numel(P.Data);
 		for pp=1:Np
 			
 			P.GUI_Handles.Waitbar.Value = pp ./ Np;
 			
 			if(~isempty(P.Data(pp).Segments) && ~isempty(P.Data(pp).Vertices))
-				P.Data(pp) = Add_Features_To_All_Workspaces(P.Data(pp),P);
+				[P.Data(pp),Overwrite_Axes] = Add_Features_To_All_Workspaces(P.Data(pp),P,Overwrite_Axes);
 			else
 				disp('The neuron must be traced before feature extraction.');
 			end
@@ -595,24 +596,30 @@ function index()
 	
 	function Save_Project_Func(~,~,P)
 		
-		All_Enabled_Objects = findobj(P.GUI_Handles(1).Main_Figure,'Enable','on');
-		set(All_Enabled_Objects,'Enable','off');
+		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Saving...');
 		
-		pp = P.GUI_Handles.Current_Project;
-		
-		if(isempty(P.Data(pp).Info) || isempty(P.Data(pp).Info.Experiment(1).Identifier))
-			P.Data(pp).Info.Experiment(1).Identifier = '';
+		if(P.GUI_Handles.Control_Panel_Objects(1,1).Value) % Selected project only.
+			pp = P.GUI_Handles.Current_Project;
+			
+			if(isempty(P.Data(pp).Info) || isempty(P.Data(pp).Info.Experiment(1).Identifier))
+				P.Data(pp).Info.Experiment(1).Identifier = '';
+			end
+			
+			A = ['Project_X_',P.Data(pp).Info.Experiment(1).Identifier,'.mat'];
+			A = strrep(A,':','-');
+			A = strrep(A,' ','_');
+			A = strrep(A,'?','_');
+			
+			Project = P.Data(pp);
+		else
+			Project = P.Data;
+			A = 'Project_X.mat';
 		end
 		
-		A = ['Project_X_',P.Data(pp).Info.Experiment(1).Identifier,'.mat'];
-		A = strrep(A,':','-');
-		A = strrep(A,' ','_');
-		A = strrep(A,'?','_');
 		
-		Project = P.Data(pp);
 		uisave('Project',A);
 		
-		set(All_Enabled_Objects,'Enable','on');
+		close(P.GUI_Handles.Waitbar);
 	end
 	
 	function Reset_Main_Axes(P)
@@ -651,7 +658,7 @@ function index()
 		set(P.GUI_Handles.Buttons(3,2),Func_Button,@Save_Image_Func);
 		set(P.GUI_Handles.Buttons(3,3),Func_Button,{@Save_Project_Func,P});
 		
-		set(P.GUI_Handles.Control_Panel_Objects(1,1),Func_checkbox,{@Checkbox_1_Func,P});
+		% set(P.GUI_Handles.Control_Panel_Objects(1,1),Func_checkbox,{@Checkbox_1_Func,P});
 		
 		set(P.GUI_Handles.Step_Buttons(:),Func_Button,{@Step_Buttons_Func,P});
 		

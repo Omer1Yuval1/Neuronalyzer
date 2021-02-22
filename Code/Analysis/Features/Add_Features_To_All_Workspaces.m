@@ -1,4 +1,4 @@
-function Data = Add_Features_To_All_Workspaces(Data,P)
+function [Data,Overwrite_Axes] = Add_Features_To_All_Workspaces(Data,P,Overwrite_Axes)
 	
 	Scale_Factor = Data.Info.Experiment(1).Scale_Factor;
 	
@@ -81,8 +81,11 @@ function Data = Add_Features_To_All_Workspaces(Data,P)
 			Data.Axes = Find_Worm_Longitudinal_Axis(Data,0);
 			Data = Map_Worm_Axes(Data,0,0);
 		else	
-			selection = uiconfirm(P.GUI_Handles.Main_Figure,'Overwrite axes?','Warning','Icon','question','Options',{'Overwrite','Keep existing axes'});
-			if(isequal(selection,'Overwrite'))
+			if(isempty(Overwrite_Axes))
+				Overwrite_Axes = uiconfirm(P.GUI_Handles.Main_Figure,'Overwrite axes?','Warning','Icon','question','Options',{'Overwrite','Keep existing axes'});
+			end
+			
+			if(isequal(Overwrite_Axes,'Overwrite'))
 				% Compute the neuron axes only if they do not exist yet, to avoid overwriting user corrections.
 				Data.Axes = Find_Worm_Longitudinal_Axis(Data,0);
 				Data = Map_Worm_Axes(Data,0,0);

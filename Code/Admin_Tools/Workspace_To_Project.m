@@ -15,9 +15,9 @@ function Project = Workspace_To_Project(Workspace)
             Project(w).Info.Experiment(1).Identifier = Workspace(w).Workspace.User_Input.File_Name(1:end-4);
         end
 		
-        Project(w).Info.Experiment(1).Username = 'YI';
+        Project(w).Info.Experiment(1).Username = 'AF';
 		Project(w).Info.Experiment.Neuron_Name = 'PVD';
-		Project(w).Info.Experiment.Age = '1D';
+		Project(w).Info.Experiment.Age = Workspace(w).Workspace.User_Input.Features.Age;
 		Project(w).Info.Experiment.Scale_Factor = Workspace(w).Workspace.User_Input.Scale_Factor;
 		Project(w).Info.Experiment.Strain_Name = Workspace(w).Workspace.User_Input.Features.Genotype; % wt = BP709. git-1 = BP1054.
 		Project(w).Info.Experiment.Strain = Workspace(w).Workspace.User_Input.Features.Strain; % wt = BP709. git-1 = BP1054.
