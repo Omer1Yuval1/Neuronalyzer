@@ -339,11 +339,12 @@ function index()
 				% set(P.GUI_Handles.View_Axes(1),'Position',[1,1,P.GUI_Handles.Main_Panel_1.InnerPosition(3:4)]);
 				
 				% Update the image display (for the selected project):
+				P.GUI_Handles.Buttons(3,1).UserData = ''; % This will make sure that the axes are reset too.
 				Menus_Func(findall(P.GUI_Handles.Menus(2),'Checked','on'),[],P);
 			else % Multi-view project.
-				for vv=1:length(File1) % For each view.
-					imshow(P.Data(pp).Info.Files(vv).Raw_Image,'Parent',P.GUI_Handles.View_Axes(vv));
-				end
+				% for vv=1:length(File1) % For each view.
+				% 	imshow(P.Data(pp).Info.Files(vv).Raw_Image,'Parent',P.GUI_Handles.View_Axes(vv));
+				% end
 			end
 			
 			Display_Project_Info(P);
@@ -421,7 +422,6 @@ function index()
 		case 2
 			set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,2}); % Here it is set before running the function, because some options overwrite it.
 			
-			
 			set(findall(P.GUI_Handles.Menus(2)),'Checked','off'); % set(P.GUI_Handles.Reconstruction_Menu_Handles(:),'Checked','off');
 			set(source,'Checked','on');
 			
@@ -492,7 +492,7 @@ function index()
 			
 			P.GUI_Handles.Waitbar.Value = pp ./ numel(P.Data);
 			
-			if(Overwrite || (~isfield(P.Data(pp).Info.Files,'Binary_Image') || isempty(P.Data(pp).Info.Files(1).Binary_Image)) ) % If a binary image is missing or if the user specified to overwrite existing images.
+			if( Overwrite || (~isfield(P.Data(pp).Info.Files,'Binary_Image') || isempty(P.Data(pp).Info.Files(1).Binary_Image)) ) % If a binary image is missing or if the user specified to overwrite existing images.
 				[Im_Rows,Im_Cols] = size(P.Data(pp).Info.Files(1).Raw_Image);
 				
 				CB_BW_Threshold = P.Data(pp).Parameters.Cell_Body.BW_Threshold;
@@ -506,17 +506,7 @@ function index()
 				
 				P.Data(pp).Info.Files(1).Denoised_Image = Apply_CNN_Im2Im(CNN,P.Data(pp).Info.Files(1).Raw_Image); % Apply neural network to the raw image (after removing the cell-body).
 				
-				% Threshold the result to get a binary image:
-				P.Data(pp).Info.Files(1).Binary_Image = zeros(Im_Rows,Im_Cols);
-				P.Data(pp).Info.Files(1).Binary_Image(P.Data(pp).Info.Files(1).Denoised_Image == "Neuron") = 1; % Set to 1 pixels that are above the preset threshold.
-				
-				% Delete sub-threshold objects from the binary image:
-				CC = bwconncomp(P.Data(pp).Info.Files(1).Binary_Image); % Find connected components in the binary image.
-				Nc = cellfun(@length,CC.PixelIdxList); % Number of connected objects.
-				Fc = find(Nc <= BW_Min_Object_Size); % Find sub-threshold object sizes.
-				for c=Fc % For each sub-threshold object.
-					P.Data(pp).Info.Files(1).Binary_Image(CC.PixelIdxList{1,c}) = 0; % Set the object's pixels to 0.
-				end
+				P.Data(pp).Info.Files(1).Binary_Image = Update_Binary_Image(P.Data(pp).Info.Files(1).Denoised_Image,P.Data(pp).Parameters.Neural_Network.Min_CC_Size);
 			end
 		end
 		

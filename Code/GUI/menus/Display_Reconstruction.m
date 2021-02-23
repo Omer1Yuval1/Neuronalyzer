@@ -24,6 +24,7 @@ function Display_Reconstruction(P,Data,p,Label)
 	Scale_Factor = Data.Info.Experiment(1).Scale_Factor;
 	
 	set(P.GUI_Handles.View_Axes,'ButtonDownFcn','');
+	set(P.GUI_Handles.Control_Panel_Objects(1,5),'ValueChangedFcn','');
 	
 	set(P.GUI_Handles.Radio_Group_1,'SelectionChangedFcn',{@Radio_Buttons_Func,P});
 	% Radio_Buttons_Func([],[],P,Label);
@@ -51,43 +52,30 @@ function Display_Reconstruction(P,Data,p,Label)
 			
 			imshow(Im_Label,'Parent',Ax);
 			
-			set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Threshold:');
+			set(P.GUI_Handles.Control_Panel_Objects(1,[4,5]),'Enable','off'); % 'Limits',[0,0.99],'Step',0.01,'Value',Data.Parameters.Neural_Network.Threshold,'Tooltip','Threshold for the binarization of the denoised image.'); % CNN threshold.
 			
-			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[1,1000],'Step',1,'Value',Data.Parameters.Neural_Network.Min_CC_Size,'Enable','on','Tooltip','Minimum object size (in pixels) in the binarized image.'); % Minimum object size.
-			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Enable','off'); % 'Limits',[0,0.99],'Step',0.01,'Value',Data.Parameters.Neural_Network.Threshold,'Tooltip','Threshold for the binarization of the denoised image.'); % CNN threshold.
+			set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,p,Label});
+		case {'Binary Image','Binary Image - RGB'}
 			
-			set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,p,1});
-		case 'Binary Image'
-			imshow(Data.Info.Files(1).Binary_Image,'Parent',Ax);
+			switch(Label)
+				case 'Binary Image'
+					imshow(Data.Info.Files(1).Binary_Image,'Parent',Ax);
+				case 'Binary Image - RGB'
+					Im_RGB = repmat(Data.Info.Files(1).Raw_Image(:,:,1),[1,1,3]);
+					Im_RGB(:,:,1) = Im_RGB(:,:,1) .* uint8(~Data.Info.Files(1).Binary_Image);
+					Im_RGB(:,:,2) = Im_RGB(:,:,2) .* uint8(Data.Info.Files(1).Binary_Image);
+					imshow(Im_RGB,'Parent',Ax);
+			end
 			
 			set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Marker size:');
 			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,20],'Step',1,'Value',2,'Tooltip','Marker size (in pixels) for adding (left mouse click) and removing (left mouse click) pixels.'); % Set the spinner.
-			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',Data.Parameters.Neural_Network.Min_CC_Size,'Tooltip','Minimum object size (in pixels) in the binarized image.'); % Minimum object size.
+			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',Data.Parameters.Neural_Network.Min_CC_Size,'ValueChangedFcn',{@Update_Binary_Threshold_Func,P,p},'Tooltip','Minimum object size (in pixels) in the binarized image.'); % Minimum object size.
 			
 			set(P.GUI_Handles.Control_Panel_Objects([1,2,3],2),'Enable','on'); % Enable the radio buttons.
 			set(P.GUI_Handles.Control_Panel_Objects(1,[4,5]),'Enable','on'); % Enable the spinners.
 			
 			set(allchild(Ax),'HitTest','off');
 			set(Ax,'PickableParts','all');
-			
-			set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,p,2});
-		case 'Binary Image - RGB'
-			Im_RGB = repmat(Data.Info.Files(1).Raw_Image(:,:,1),[1,1,3]);
-			Im_RGB(:,:,1) = Im_RGB(:,:,1) .* uint8(~Data.Info.Files(1).Binary_Image);
-			Im_RGB(:,:,2) = Im_RGB(:,:,2) .* uint8(Data.Info.Files(1).Binary_Image);
-			imshow(Im_RGB,'Parent',Ax);
-			
-			set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Marker size:');
-			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,20],'Step',1,'Value',2,'Tooltip','Marker size (in pixels) for adding (left mouse click) and removing (left mouse click) pixels.'); % Set the spinner.
-			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',Data.Parameters.Neural_Network.Min_CC_Size,'Tooltip','Minimum object size (in pixels) in the binarized image.'); % Minimum object size.
-			
-			set(P.GUI_Handles.Control_Panel_Objects([1,2,3],2),'Enable','on'); % Enable the radio buttons.
-			set(P.GUI_Handles.Control_Panel_Objects(1,[4,5]),'Enable','on'); % Enable the spinners.
-			
-			set(allchild(Ax),'HitTest','off');
-			set(Ax,'PickableParts','all');
-			
-			set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,p,2});
 			
 		case 'Skeleton'
 			[Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints] = Pixel_Trace_Post_Proccessing(Data.Info.Files(1).Binary_Image,Scale_Factor);
@@ -525,17 +513,14 @@ function Display_Reconstruction(P,Data,p,Label)
 		Y = Suxy(:,2)'; % Smoothed y-coordinates.
 	end
 	
-	function Apply_Changes_Func(~,~,P,pp,Option_Flag)
-		switch(Option_Flag)
-			case 1 % CNN.
-				P.Data(pp).Parameters.Neural_Network.Threshold = P.GUI_Handles.Control_Panel_Objects(1,4).Value;
-				disp(['Denoised image threshold changed to: ',num2str(P.Data(pp).Parameters.Neural_Network.Threshold)]);
-			case 2 % BW.
-				% Marker size currently not saved.
-		end
-		
-		P.Data(pp).Parameters.Neural_Network.Min_CC_Size = P.GUI_Handles.Control_Panel_Objects(1,5).Value;
-		disp(['Minimum object size changed to: ',num2str(P.Data(pp).Parameters.Neural_Network.Min_CC_Size)]);
+	function Update_Binary_Threshold_Func(~,~,P,pp)
+		switch(Label)
+			case {'Binary Image','Binary Image - RGB'}
+				
+				P.Data(pp).Parameters.Neural_Network.Min_CC_Size = P.GUI_Handles.Control_Panel_Objects(1,5).Value;
+				disp(['Minimum object size changed to: ',num2str(P.Data(pp).Parameters.Neural_Network.Min_CC_Size)]);
+				
+				P.Data(pp).Info.Files(1).Binary_Image = Update_Binary_Image(P.Data(pp).Info.Files(1).Denoised_Image,P.Data(pp).Parameters.Neural_Network.Min_CC_Size);		end
 	end
 	
 	function Annotate_Image(~,event,P,pp,RGB_Flag)
