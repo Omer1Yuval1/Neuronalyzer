@@ -508,7 +508,7 @@ function index()
 				
 				% Threshold the result to get a binary image:
 				P.Data(pp).Info.Files(1).Binary_Image = zeros(Im_Rows,Im_Cols);
-				% P.Data(pp).Info.Files(1).Binary_Image(P.Data(pp).Info.Files(1).Denoised_Image >= CNN_Threshold) = 1; % Set to 1 pixels that are above the preset threshold.
+				P.Data(pp).Info.Files(1).Binary_Image(P.Data(pp).Info.Files(1).Denoised_Image == "Neuron") = 1; % Set to 1 pixels that are above the preset threshold.
 				
 				% Delete sub-threshold objects from the binary image:
 				CC = bwconncomp(P.Data(pp).Info.Files(1).Binary_Image); % Find connected components in the binary image.
