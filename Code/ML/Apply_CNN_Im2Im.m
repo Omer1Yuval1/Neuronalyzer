@@ -1,26 +1,35 @@
-function ImP = Apply_CNN_Im2Im(My_CNN,Im0)
-	
-	% TODO:
-		% the loop goes over each unique window and classifies it. This is problematic because a pixel may be classified differently in different windows.
-	
+function [C,Im_Label] = Apply_CNN_Im2Im(My_CNN,Im)
+		
 	% This function gets a trained neural My_CNNwork and a grayscale image and produces a matrix of probabilities.
 	% Each pixel in the output matrix contains the probability of the corresponding pixel in the grayscale image of being
 	% a neuron pixel or a non-neuron pixel.
 	
-	STD_Threshold = 0; % 0.05; % 0.1.
+	% Run examples:
+		% BW = Apply_PVD_CNN_Im2Im(PVD_CNN,Im);
+	
+    % Enhance image:
+        % Im1 = uint8(255 * mat2gray(rescale(Im,0,1,'InputMin',0,'InputMax',50)));
+	
 	Save_Patches = 0;
 	
+	S = PVD_CNN_Params();
+	
+    Transparency = 0.3; % 0.3.
+    CM = lines(7);
+    CM([1,2],:) = CM([1,7],:);
+    
 	FS = My_CNN.Layers(1).InputSize(1); % Frame Size.
 	FHS = round(FS ./ 2); % Frame Half Size.
-	dF = round(FS); % 1.
+	dF = FS; % round(FS ./ 2); % FS;
 	
-	% Im0 = rescale(Im0(:,:,1),0,1,'InputMin',0,'InputMax',255);
-	% Im0 = rescale(im2double(Im0(:,:,1)));
-    Im0 = Im0(:,:,1);
+    Im = Im(:,:,1);
+	% Im = S.Input_Image_Func(Im);
+	[Rows1,Cols1] = size(Im);
+	% Binary_Image = false(size(Im));
+    C = categorical(false(size(Im)),0,'BG');
 	
-	[Rows1,Cols1] = size(Im0);
-	ImP = zeros(Rows1,Cols1); % CNN Output.
-	ImD = zeros(Rows1,Cols1); % Corresponding matrix that contains the value to divide each pixel value to get the average.
+	ImP = zeros(size(Im)); % CNN Output.
+	ImD = zeros(size(Im)); % Corresponding matrix that contains the value to divide each pixel value to get the average.
 	
 	if(Save_Patches)
 		figure('WindowState','maximized');
@@ -33,18 +42,11 @@ function ImP = Apply_CNN_Im2Im(My_CNN,Im0)
 		for c=1+FHS:dF:Cols1-FHS % For each col (without the margins).
 			dx = c + (-FHS:(FHS-1));
 			dy = r + (-FHS:(FHS-1));
-			Frame_In = Im0(dy,dx);
+			In = Im(dy,dx);
 			
-			if(std(im2double(Frame_In(:))) > STD_Threshold) % if(std(Frame_In(:))) % If the std of all pixels in the frame > 0.
-				Frame_Out = predict(My_CNN,Frame_In);
+			if(S.Sample_In_Func(S.Input_Image_Func(In)))
 				
-				if(size(Frame_Out,3) > 1)
-					Frame_Out = Frame_Out(:,:,2);
-				end
-				
-				ImP(dy,dx) = ImP(dy,dx) + Frame_Out;
-				
-				ImD(dy,dx) = ImD(dy,dx) + 1;
+                C(dy,dx) = semanticseg(In,My_CNN);
 				
 				if(Save_Patches)
 					ii = ii + 1;
@@ -58,15 +60,45 @@ function ImP = Apply_CNN_Im2Im(My_CNN,Im0)
 		if(Save_Patches && ii == 100)
 			break;
 		end
-	end
-	
-	ImP = ImP ./ ImD;
+    end
+    
+    % Im_Label = labeloverlay(Im,C,'Colormap',CM(2,:),'Transparency',Transparency,'IncludedLabels',["Neuron"]);
 	
 	%
 	% % Im = Workspace(10).Workspace.Image0;
-	% %ImP = Apply_CNN_Im2Im(My_CNN,Im0);
-	% I = imtile({Im0,ImP});
+	% %ImP = Apply_CNN_Im2Im(My_CNN,Im);
+	% I = imtile({Im,ImP});
 	% imshow(I);
 	% % imshow(Workspace(10).Workspace.Im_BW);
 	%}
+    
+    %{
+    for i=1:numel(Project)
+        disp(i);
+        Im = Project(i).Info.Files(1).Raw_Image;
+        [Binary_Image,ImP,Im_Label] = Apply_PVD_CNN_Im2Im(PVD_CNN,Im);
+        imwrite(Im,['E:\Omer\Neuronalyzer\Resources\CNN\Test\',num2str(i),'_In.png']);
+        imwrite(Binary_Image,['E:\Omer\Neuronalyzer\Resources\CNN\Test\',num2str(i),'_Out.png']);
+        
+        imwrite(Im_Label,['E:\Omer\Neuronalyzer\Resources\CNN\Test\',num2str(i),'_Im_Label.png']);
+        
+        ImRGB = im2uint8(zeros([size(Im),3]));
+        ImRGB(:,:,3) = Im;
+        ImRGB(:,:,1) = im2uint8(Binary_Image);
+        imwrite(ImRGB,['E:\Omer\Neuronalyzer\Resources\CNN\Test\',num2str(i),'_In+Out.png']);
+    end
+    
+    
+    
+		set(gca,'position',[0,0,1,1]); axis tight; set(gcf,'InnerPosition',[50,50,size(Im,2)./2.5,size(Im,1)./2.5]);
+    %}
+    
+    %{
+    
+    C((Binary_Image == 1 & C == "BG") | (Binary_Image == 0 & C == "Neuron")) = "non-neuron";
+    
+    Im_Labels = labeloverlay(Im,C,'Colormap',CM([1,2,3],:),'Transparency',0.3,'IncludedLabels',["Neuron","non-neuron"]);
+    imshow(Im_Labels);
+    set(gca,'position',[0,0,1,1]); axis tight; set(gcf,'InnerPosition',[50,50,size(Im,2)./2.5,size(Im,1)./2.5]);
+    %}
 end

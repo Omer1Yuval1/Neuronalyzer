@@ -477,8 +477,8 @@ function index()
 		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Denoising images...'); % ,'Indeterminate','on'
 		
 		% CNN = load('My_CNN_13.mat');
-		CNN = load('PVD_CNN_Segnet_4B.mat'); % PVD_CNN_Segnet_1A
-		CNN = CNN.My_CNN;
+		CNN = load('PVD_CNN_Segnet_6A.mat'); % PVD_CNN_Segnet_1A
+		CNN = CNN.PVD_CNN;
 		
 		selection = uiconfirm(P.GUI_Handles.Main_Figure,'Overwrite existing binary images?','Warning','Icon','question','Options',{'Overwrite','Keep existing binary images'});
 		switch(selection)
@@ -500,15 +500,15 @@ function index()
 				CNN_Threshold = P.Data(pp).Parameters.Neural_Network.Threshold;
 				BW_Min_Object_Size = P.Data(pp).Parameters.Neural_Network.Min_CC_Size;
 				
-				[CB_Pixels,~] = Detect_Cell_Body(P.Data(pp).Info.Files(1).Raw_Image,CB_BW_Threshold,Scale_Factor,0); % Detect cell-body.
-				Im_Input = P.Data(pp).Info.Files(1).Raw_Image;
-				Im_Input(CB_Pixels) = 0;
+				% [CB_Pixels,~] = Detect_Cell_Body(P.Data(pp).Info.Files(1).Raw_Image,CB_BW_Threshold,Scale_Factor,0); % Detect cell-body.
+				% Im_Input = P.Data(pp).Info.Files(1).Raw_Image;
+				% Im_Input(CB_Pixels) = 0;
 				
-				P.Data(pp).Info.Files(1).Denoised_Image = Apply_CNN_Im2Im(CNN,Im_Input); % Apply neural network to the raw image (after removing the cell-body).
+				P.Data(pp).Info.Files(1).Denoised_Image = Apply_CNN_Im2Im(CNN,P.Data(pp).Info.Files(1).Raw_Image); % Apply neural network to the raw image (after removing the cell-body).
 				
 				% Threshold the result to get a binary image:
 				P.Data(pp).Info.Files(1).Binary_Image = zeros(Im_Rows,Im_Cols);
-				P.Data(pp).Info.Files(1).Binary_Image(P.Data(pp).Info.Files(1).Denoised_Image >= CNN_Threshold) = 1; % Set to 1 pixels that are above the preset threshold.
+				% P.Data(pp).Info.Files(1).Binary_Image(P.Data(pp).Info.Files(1).Denoised_Image >= CNN_Threshold) = 1; % Set to 1 pixels that are above the preset threshold.
 				
 				% Delete sub-threshold objects from the binary image:
 				CC = bwconncomp(P.Data(pp).Info.Files(1).Binary_Image); % Find connected components in the binary image.

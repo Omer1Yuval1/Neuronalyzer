@@ -44,23 +44,17 @@ function Display_Reconstruction(P,Data,p,Label)
 			[CB_Vertices,Pixels0,Pixels1] = Find_CB_Vertices(Data.Image0,CB_Perimeter,CB_Pixels,Scale_Factor,CB_BW_Threshold,1);
 			
 			% plot(CB_Perimeter(:,1),CB_Perimeter(:,2),'LineWidth',4);
-		case 'CNN Image - Grayscale'
-			imshow(Data.Info.Files(1).Denoised_Image,'Parent',Ax);
+		case 'CNN Image'
+			
+			CM = lines;
+			Im_Label = labeloverlay(Data.Info.Files(1).Raw_Image,Data.Info.Files(1).Denoised_Image,'Colormap',CM([1,7],:),'Transparency',0.1,'IncludedLabels',["Neuron"]);
+			
+			imshow(Im_Label,'Parent',Ax);
 			
 			set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Threshold:');
-			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,0.99],'Step',0.01,'Value',Data.Parameters.Neural_Network.Threshold,'Tooltip','Threshold for the binarization of the denoised image.'); % CNN threshold.
-			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',Data.Parameters.Neural_Network.Min_CC_Size); % Minimum object size.
-			set(P.GUI_Handles.Control_Panel_Objects(1,[4,5]),'Enable','on'); % Enable the spinners.
 			
-			set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,p,1});
-		case 'CNN Image - RGB'
-			imshow(Data.Info.Files(1).Denoised_Image,'Parent',Ax);
-			colormap(Ax,'turbo');
-			
-			set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Threshold:');
-			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,0.99],'Step',0.01,'Value',Data.Parameters.Neural_Network.Threshold,'Tooltip','Threshold for the binarization of the denoised image.'); % CNN threshold.
-			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',Data.Parameters.Neural_Network.Min_CC_Size,'Tooltip','Minimum object size (in pixels) in the binarized image.'); % Minimum object size.
-			set(P.GUI_Handles.Control_Panel_Objects(1,[4,5]),'Enable','on'); % Enable the spinners.
+			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[1,1000],'Step',1,'Value',Data.Parameters.Neural_Network.Min_CC_Size,'Enable','on','Tooltip','Minimum object size (in pixels) in the binarized image.'); % Minimum object size.
+			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Enable','off'); % 'Limits',[0,0.99],'Step',0.01,'Value',Data.Parameters.Neural_Network.Threshold,'Tooltip','Threshold for the binarization of the denoised image.'); % CNN threshold.
 			
 			set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,p,1});
 		case 'Binary Image'

@@ -6,7 +6,7 @@ function Set_Plots_Menu(P)
 	H_Menu1_Length = uimenu(P.GUI_Handles.Menus(3),'Label','Length');
 		P.GUI_Handles.Plots_Menu_Handles(1) = uimenu(H_Menu1_Length,'Label','Neuronal Length per Menorah Order','Checked','on');
 		P.GUI_Handles.Plots_Menu_Handles(2) = uimenu(H_Menu1_Length,'Label','Mean Segment Length','Enable','off');
-		P.GUI_Handles.Plots_Menu_Handles(3) = uimenu(H_Menu1_Length,'Label','Distribution of Segment Lengths Per Order','Enable','on');
+		P.GUI_Handles.Plots_Menu_Handles(3) = uimenu(H_Menu1_Length,'Label','Distribution of Segment Lengths Per Order','Enable','off');
 		P.GUI_Handles.Plots_Menu_Handles(4) = uimenu(H_Menu1_Length,'Label','Segment Linearity','Enable','off');
 		P.GUI_Handles.Plots_Menu_Handles(5) = uimenu(H_Menu1_Length,'Label','End2End Length Of Segments','Enable','off');
 	
@@ -49,9 +49,9 @@ function Set_Plots_Menu(P)
 		P.GUI_Handles.Plots_Menu_Handles(53) = uimenu(H_Menu8_Angular,'Label','Angular Coordinate of All Points - Second Moment');
 	
 	H_Menu7_Midline_Density = uimenu(P.GUI_Handles.Menus(3),'Label','Menorah Orders','Callback','');
-		P.GUI_Handles.Plots_Menu_Handles(54) = uimenu(H_Menu7_Midline_Density,'Label','Menorah Orders Classification');
+		P.GUI_Handles.Plots_Menu_Handles(54) = uimenu(H_Menu7_Midline_Density,'Label','Menorah Orders Classification','Enable','off');
 		P.GUI_Handles.Plots_Menu_Handles(55) = uimenu(H_Menu7_Midline_Density,'Label','Midline Density - Neuronal Length');
-		P.GUI_Handles.Plots_Menu_Handles(56) = uimenu(H_Menu7_Midline_Density,'Label','Density of Points per Menorah order');
+		P.GUI_Handles.Plots_Menu_Handles(56) = uimenu(H_Menu7_Midline_Density,'Label','Density of Points per Menorah order','Enable','off');
 	
 	% H_Menu5_2D_Plots = uimenu(P.GUI_Handles.Menus(3),'Label','2D Plots','Callback','');
 		% P.GUI_Handles.Plots_Menu_Handles(57) = uimenu(H_Menu5_2D_Plots,'Label','Midline Distance VS Midline Orientation');
