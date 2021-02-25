@@ -3,7 +3,7 @@ function Display_Plot(P,Data,Label)
 	% This function is used to display different plots for quantitative analysis of the data.
 	
 	Group_By = 'Strain_Name';
-	Group_By = 'Age';
+	% Group_By = 'Age';
 	
 	FontSize_1 = 18;
 	

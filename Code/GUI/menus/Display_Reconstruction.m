@@ -23,7 +23,7 @@ function Display_Reconstruction(P,Data,p,Label)
 	p = P.GUI_Handles.Current_Project;
 	Scale_Factor = Data.Info.Experiment(1).Scale_Factor;
 	
-	set(P.GUI_Handles.View_Axes,'ButtonDownFcn','');
+	set(P.GUI_Handles.View_Axes,'ButtonDownFcn',''); % set(P.GUI_Handles.View_Axes,'ButtonDownFcn',{@Show_Image_Func,P});
 	set(P.GUI_Handles.Control_Panel_Objects(1,5),'ValueChangedFcn','');
 	
 	set(P.GUI_Handles.Radio_Group_1,'SelectionChangedFcn',{@Radio_Buttons_Func,P});
@@ -76,7 +76,17 @@ function Display_Reconstruction(P,Data,p,Label)
 			
 			set(allchild(Ax),'HitTest','off');
 			set(Ax,'PickableParts','all');
+		
+		case 'CNN + Binary'
+			CM = lines;
 			
+			Im = Data.Info.Files(1).Denoised_Image;
+			Im(Data.Info.Files(1).Binary_Image == 1 & Im == "BG") = "Added"; % Added pixels.
+			Im(Data.Info.Files(1).Binary_Image == 0 & Im == "Neuron") = "Removed"; % Removed pixels.
+			
+			Im_Label = labeloverlay(Data.Info.Files(1).Raw_Image,Im,'Colormap',CM([1,7,1,3],:),'Transparency',0.1,'IncludedLabels',["Neuron","Added","Removed"]);
+			
+			imshow(Im_Label,'Parent',Ax);
 		case 'Skeleton'
 			[Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints] = Pixel_Trace_Post_Proccessing(Data.Info.Files(1).Binary_Image,Scale_Factor);
 			imshow(Im1_NoiseReduction,'Parent',Ax);
