@@ -25,22 +25,18 @@ Required toolboxes: Computer Vision Toolbox.
 <br/>
 
 **2. Denoising** <br/>
-    Next, you can use the “Denoise Image” button to apply a denoising neural network. This will
-    increase the contrast between neuron and non-neuron pixels using a pre-trained convolutional
-    neural network (CNN). You can adjust the threshold and minimum object size. These will be used to
-    threshold the denoised image and remove small objects (respectively), resulting in a binary (black &
-    white) image (see next step). To display the denoised image, in the “Reconstructions” menu, choose
-    CNN **→** CNN Image - RGB.
+    Next, you can use the “Denoise Image” button to apply a denoising neural network that will classify pixels into neuron and non-neuron.
+	To display the denoised image, in the “Reconstructions” menu, choose CNN **→** CNN Image - RGB.
 
-![Screenshot_CNN](https://user-images.githubusercontent.com/35100851/104649844-37c63680-56ad-11eb-83c5-42941671722f.png)
+![Screenshot_CNN](https://user-images.githubusercontent.com/35100851/109167973-43118500-7776-11eb-9449-3ac13276bf51.png)
 
 <br/>
 
 **3. Manual annotation** <br/>
-    Once the image is denoised, you can display the resulting binary (black & white) image from the
-    “Reconstructions” menu (Binary Image ​ **→** ​ Binary Image - RGB). This image will be used for the
-    mapping of neuronal junctions, as well as for neuron tracing. <br/><br/>
-    In this image a colormap is used for visual and annotation purposes (see below), where “White” (1)
+    Once the image is denoised, you can display it as a binary image, and make corrections if necessary “Reconstructions” menu 
+	(Binary Image ​ **→** ​ Binary Image - RGB). <br/><br/>
+    To filter out small objects, set the threshold value in the top-right spinner (here set to 50), then click "Apply Changed". <br/><br/>
+	In this image a colormap is used for visual and annotation purposes (see below), where “White” (1)
     and “Black” (0) are displayed using their intensities in the original grayscale image. <br/><br/>
     You can use the drawing or annotation modes to manually edit the binary image. First, zoom in to
     magnify a certain image region and choose a marker size. Then, choose “Drawing Mode” or
@@ -49,11 +45,15 @@ Required toolboxes: Computer Vision Toolbox.
     drawing. Annotation mode works in a similar way but with individual clicks that add or remove pixels
     around the clicked position. Switch back to “Default Mode” once finished, or in order to use the
     zoom function. The result is automatically saved. <br/><br/>
-    Note that if you repeat the previous step (apply the image denoising operation), this will overwrite
-    your binary image including your annotation. You can save your work at any time using the “Save
-    Project” button.
+    You can save your work at any time using the “Save Project” button.
     
-![Screenshot_Annotation_New](https://user-images.githubusercontent.com/35100851/104650023-81af1c80-56ad-11eb-8300-0ab8e5e350eb.png)
+![Screenshot_Annotation](https://user-images.githubusercontent.com/35100851/109167991-499ffc80-7776-11eb-94cf-1429548dc6a1.png)
+
+<br/>
+
+Following manual correction, you can display a combined image showing both the CNN-derived image and the corrections labeled in different colors.
+
+![Screenshot_CNN+Annotation](https://user-images.githubusercontent.com/35100851/109168016-515fa100-7776-11eb-8edd-732d259def9e.png)
 
 <br/>
 
