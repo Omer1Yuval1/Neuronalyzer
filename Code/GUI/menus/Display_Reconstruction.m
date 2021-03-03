@@ -47,10 +47,17 @@ function Display_Reconstruction(P,Data,p,Label)
 			% plot(CB_Perimeter(:,1),CB_Perimeter(:,2),'LineWidth',4);
 		case 'CNN Image'
 			
-			CM = lines;
-			Im_Label = labeloverlay(Data.Info.Files(1).Raw_Image,Data.Info.Files(1).Denoised_Image,'Colormap',CM([1,7],:),'Transparency',0.1,'IncludedLabels',["Neuron"]);
-			
-			imshow(Im_Label,'Parent',Ax);
+			if(iscategorical(Data.Info.Files(1).Denoised_Image))
+				CM = lines;
+				Im_Label = labeloverlay(Data.Info.Files(1).Raw_Image,Data.Info.Files(1).Denoised_Image,'Colormap',CM([1,7],:),'Transparency',0.1,'IncludedLabels',["Neuron"]);
+				
+				imshow(Im_Label,'Parent',Ax);
+			else
+				imshow(Data.Info.Files(1).Denoised_Image,'Parent',Ax);
+				colormap(Ax,'turbo');
+				
+				msgbox('You are using an old CNN version. Please press the "Denoise Image" button to apply the most recent CNN to your image.');
+			end
 			
 			set(P.GUI_Handles.Control_Panel_Objects(1,[4,5]),'Enable','off'); % 'Limits',[0,0.99],'Step',0.01,'Value',Data.Parameters.Neural_Network.Threshold,'Tooltip','Threshold for the binarization of the denoised image.'); % CNN threshold.
 			
@@ -585,7 +592,9 @@ function Display_Reconstruction(P,Data,p,Label)
 							for ii=1:length(xx) % For each point.
 								Cxy = [Cxy , combvec(Cx(ii,:) , Cy(ii,:))]; % [2 x Np].
 							end
-							delete(roi_i); % delete(findobj(P.GUI_Handles.View_Axes,'-not','Type','image','-and','-not','Type','axes'));
+							delete(roi_i);
+						else
+							delete(roi_i);
 						end
 					case 3 % Annotation mode.
 						CCi = event.IntersectionPoint;
@@ -612,9 +621,11 @@ function Display_Reconstruction(P,Data,p,Label)
 					Im_RGB_i(:,:,2) = Im_RGB_i(:,:,2) .* uint8(P.Data(pp).Info.Files(1).Binary_Image); % Signal of BW is green.
 					
 					% imshow(Im_RGB_i,'Parent',P.GUI_Handles.View_Axes);
-					set(P.GUI_Handles.View_Axes.Children(1),'CData',Im_RGB_i);
+					% set(P.GUI_Handles.View_Axes.Children(1),'CData',Im_RGB_i);
+					set(findobj(P.GUI_Handles.View_Axes,'Type','image'),'CData',Im_RGB_i);
 				else
-					set(P.GUI_Handles.View_Axes.Children(1),'CData',P.Data(pp).Info.Files(1).Binary_Image);
+					% set(P.GUI_Handles.View_Axes.Children(1),'CData',P.Data(pp).Info.Files(1).Binary_Image);
+					set(findobj(P.GUI_Handles.View_Axes,'Type','image'),'CData',P.Data(pp).Info.Files(1).Binary_Image);
 					% imshow(P.Data(pp).Info.Files(1).Binary_Image,'Parent',P.GUI_Handles.View_Axes);
 				end
 				

@@ -425,19 +425,26 @@ function index()
 			set(findall(P.GUI_Handles.Menus(2)),'Checked','off'); % set(P.GUI_Handles.Reconstruction_Menu_Handles(:),'Checked','off');
 			set(source,'Checked','on');
 			
-			if(~ishandle(P.GUI_Handles.View_Axes)) % If the axes exist, reset.
-				if(~isequal(source.Label,P.GUI_Handles.Buttons(3,1).UserData)) % If a different plot was chosen.
+			if(ishandle(P.GUI_Handles.View_Axes)) % If the axes exist, reset.
+				% if(~isequal(source.Label,P.GUI_Handles.Buttons(3,1).UserData)) % If a different plot was chosen.
+				if(isempty(P.GUI_Handles.Buttons(3,1).UserData)) % If a different project was chosen.
 					Reset_Main_Axes(P);
-				else % Otherwise only delete non-image and non-axes data.
+				else % Otherwise only delete non-image and non-axes data, and save the zoom.
+					XLim = P.GUI_Handles.View_Axes.XLim;
+					YLim = P.GUI_Handles.View_Axes.YLim;
 					delete(findobj(P.GUI_Handles.View_Axes,'-not','Type','image','-and','-not','Type','axes')); % Delete all graphical objects (except for the axes and the image).
 				end
 			end
 			
 			Display_Reconstruction(P,P.Data(pp),pp,source.Label);
 			
-			if(~isequal(source.Label,P.GUI_Handles.Buttons(3,1).UserData)) % If a different plot was chosen, reset the limits.
+			% if(~isequal(source.Label,P.GUI_Handles.Buttons(3,1).UserData)) % If a different plot was chosen, reset the limits.
+			if(isempty(P.GUI_Handles.Buttons(3,1).UserData)) % If a different project was chosen.
 				P.GUI_Handles.View_Axes.XLim = findall(P.GUI_Handles.View_Axes.Children,'Type','image').XData; % P.GUI_Handles.View_Axes.Children(1).XData;
 				P.GUI_Handles.View_Axes.YLim = findall(P.GUI_Handles.View_Axes.Children,'Type','image').YData; % P.GUI_Handles.View_Axes.Children(1).YData;
+			else % Preserve the zoom.
+				P.GUI_Handles.View_Axes.XLim = XLim;
+				P.GUI_Handles.View_Axes.YLim = YLim;
 			end
 			
 			set(P.GUI_Handles.Buttons(3,1),'UserData',source.Label); % Last used plot. Must be set after running the plot.

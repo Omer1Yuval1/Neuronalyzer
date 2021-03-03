@@ -4,7 +4,8 @@
 To get started, download the latest Neuronalyzer version from the GitHub repository.
 Then open the file index.m in MATLAB and run it.
 
-Required toolboxes: Computer Vision Toolbox.
+Required toolboxes: Computer Vision, Navigation, Robotics System, Image Processing, 
+Curve Fitting, Signal Processing, Statistics and Machine Learning, Phased Array System.
 
 <br/>
 
