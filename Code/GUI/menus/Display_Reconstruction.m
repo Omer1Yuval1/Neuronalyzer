@@ -537,7 +537,9 @@ function Display_Reconstruction(P,Data,p,Label)
 				P.Data(pp).Parameters.Neural_Network.Min_CC_Size = P.GUI_Handles.Control_Panel_Objects(1,5).Value;
 				disp(['Minimum object size changed to: ',num2str(P.Data(pp).Parameters.Neural_Network.Min_CC_Size)]);
 				
-				P.Data(pp).Info.Files(1).Binary_Image = Update_Binary_Image(P.Data(pp).Info.Files(1).Denoised_Image,P.Data(pp).Parameters.Neural_Network.Min_CC_Size);		end
+				% Threshold the existing binary image (do not reset it):
+				P.Data(pp).Info.Files(1).Binary_Image = Update_Binary_Image(P.Data(pp).Info.Files(1).Denoised_Image,P.Data(pp).Info.Files(1).Binary_Image,P.Data(pp).Parameters.Neural_Network.Min_CC_Size,0);
+		end
 	end
 	
 	function Annotate_Image(~,event,P,pp,RGB_Flag)
@@ -629,13 +631,11 @@ function Display_Reconstruction(P,Data,p,Label)
 					% imshow(P.Data(pp).Info.Files(1).Binary_Image,'Parent',P.GUI_Handles.View_Axes);
 				end
 				
-				%{
-				drawnow;
-				drawnow;
-				set(P.GUI_Handles.View_Axes,'Visible','on');
-				drawnow;
+				% drawnow;
+				% drawnow;
+				% drawnow;
 				set(P.GUI_Handles.View_Axes.Children(1),'Visible','off','Visible','on');
-				%}
+				
 				set(findall(P.GUI_Handles.View_Axes.Children,'Type','image'),'HitTest','off'); % set(P.GUI_Handles.View_Axes,'PickableParts','all');
 				
 			case 4 % Deletion.

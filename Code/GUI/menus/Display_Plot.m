@@ -712,8 +712,8 @@ function Display_Plot(P,Data,Label)
 			set(Ax1,'TickLabelInterpreter','Latex');
 		
 		case 'Menorah Orders Classification'
-			Clusters_Struct = Map_Branches_Classes(GP.Workspace,1);
-		
+			set(P.GUI_Handles.Control_Panel_Objects(4,4),'Items',{'Default','Contour Levels','Surface'},'ItemsData',1:3);
+			Clusters_Struct = Map_Branches_Classes(Data,Ax1,P.GUI_Handles.Control_Panel_Objects(4,4).Value);
 		case 'Distribution of Mean Squared Curvature Of Segments'
 			Var_Operations{1} = @(x) x(x>=0 & x<=0.1); % The curvature of a segment has to be positive.
 			Filter_Operations = {};

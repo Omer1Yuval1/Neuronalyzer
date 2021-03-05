@@ -499,21 +499,14 @@ function index()
 			
 			P.GUI_Handles.Waitbar.Value = pp ./ numel(P.Data);
 			
-			if( Overwrite || (~isfield(P.Data(pp).Info.Files,'Binary_Image') || isempty(P.Data(pp).Info.Files(1).Binary_Image)) ) % If a binary image is missing or if the user specified to overwrite existing images.
 				[Im_Rows,Im_Cols] = size(P.Data(pp).Info.Files(1).Raw_Image);
-				
-				CB_BW_Threshold = P.Data(pp).Parameters.Cell_Body.BW_Threshold;
-				Scale_Factor = P.Data(pp).Info.Experiment(1).Scale_Factor;
-				CNN_Threshold = P.Data(pp).Parameters.Neural_Network.Threshold;
-				BW_Min_Object_Size = P.Data(pp).Parameters.Neural_Network.Min_CC_Size;
-				
-				% [CB_Pixels,~] = Detect_Cell_Body(P.Data(pp).Info.Files(1).Raw_Image,CB_BW_Threshold,Scale_Factor,0); % Detect cell-body.
-				% Im_Input = P.Data(pp).Info.Files(1).Raw_Image;
-				% Im_Input(CB_Pixels) = 0;
 				
 				P.Data(pp).Info.Files(1).Denoised_Image = Apply_CNN_Im2Im(CNN,P.Data(pp).Info.Files(1).Raw_Image); % Apply neural network to the raw image (after removing the cell-body).
 				
-				P.Data(pp).Info.Files(1).Binary_Image = Update_Binary_Image(P.Data(pp).Info.Files(1).Denoised_Image,P.Data(pp).Parameters.Neural_Network.Min_CC_Size);
+			if( Overwrite || (~isfield(P.Data(pp).Info.Files,'Binary_Image') || isempty(P.Data(pp).Info.Files(1).Binary_Image)) ) % If a binary image is missing or if the user specified to overwrite existing images.
+				P.Data(pp).Info.Files(1).Binary_Image = Update_Binary_Image(P.Data(pp).Info.Files(1).Denoised_Image,[],P.Data(pp).Parameters.Neural_Network.Min_CC_Size,1);
+			else % Keep the existing binary image.
+				P.Data(pp).Info.Files(1).Binary_Image = Update_Binary_Image(P.Data(pp).Info.Files(1).Denoised_Image,P.Data(pp).Info.Files(1).Binary_Image,P.Data(pp).Parameters.Neural_Network.Min_CC_Size,0);
 			end
 		end
 		

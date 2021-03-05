@@ -49,7 +49,7 @@ function Set_Plots_Menu(P)
 		P.GUI_Handles.Plots_Menu_Handles(53) = uimenu(H_Menu8_Angular,'Label','Angular Coordinate of All Points - Second Moment');
 	
 	H_Menu7_Midline_Density = uimenu(P.GUI_Handles.Menus(3),'Label','Menorah Orders','Callback','');
-		P.GUI_Handles.Plots_Menu_Handles(54) = uimenu(H_Menu7_Midline_Density,'Label','Menorah Orders Classification','Enable','off');
+		P.GUI_Handles.Plots_Menu_Handles(54) = uimenu(H_Menu7_Midline_Density,'Label','Menorah Orders Classification','Enable','on');
 		P.GUI_Handles.Plots_Menu_Handles(55) = uimenu(H_Menu7_Midline_Density,'Label','Midline Density - Neuronal Length');
 		P.GUI_Handles.Plots_Menu_Handles(56) = uimenu(H_Menu7_Midline_Density,'Label','Density of Points per Menorah order','Enable','off');
 	

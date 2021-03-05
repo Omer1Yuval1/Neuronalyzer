@@ -1,7 +1,9 @@
-function Binary_Image = Update_Binary_Image(Im_CNN,Min_Object_Size)
-		
-	Binary_Image = zeros(size(Im_CNN));
-	Binary_Image(Im_CNN == "Neuron") = 1; % Set to 1 pixels that are above the preset threshold.
+function Binary_Image = Update_Binary_Image(Im_CNN,Binary_Image,Min_Object_Size,Reset_Flag)
+	
+	if(Reset_Flag)
+		Binary_Image = zeros(size(Im_CNN));
+		Binary_Image(Im_CNN == "Neuron") = 1; % Set to 1 pixels that are above the preset threshold.
+	end
 	
 	% Delete sub-threshold objects from the binary image:
 	CC = bwconncomp(Binary_Image); % Find connected components in the binary image.

@@ -1,4 +1,4 @@
-function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
+function Clusters_Struct = Map_Branches_Classes(Data,Ax,Plot_Type)
 	
 	% TODO:
 		% Rescale X by dividing by the half-radius.
@@ -8,7 +8,7 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 	% close all;
 	
 	Mode = 2;
-    FontSize_1 = 36; % 36.
+    FontSize_1 = 18; % 36.
 	
     switch Mode
 		case 1
@@ -79,15 +79,15 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 	L0 = [];
 	
 	% Extract midline distance and orientation of all workspaces:
-	for w=1:numel(W) % For each workspace.
+	for p=1:numel(Data) % For each project.
 		
-		R3 = [W(w).Workspace.All_Points.Half_Radius];
-		R4 = [W(w).Workspace.All_Points.Radius];
-		Dw = [W(w).Workspace.All_Points.(Field_1)];
-		Ow = [W(w).Workspace.All_Points.(Field_2)];
-		Lw = [W(w).Workspace.All_Points.(Field_3)];
+		% R3 = [Data(p).Points.Half_Radius];
+		% R4 = [Data(p).Points.Radius];
+		Dw = [Data(p).Points.(Field_1)];
+		Ow = [Data(p).Points.(Field_2)];
+		Lw = [Data(p).Points.(Field_3)];
 		
-		% Total_Length = nansum([W(w).Workspace.All_Points.(Field_3)]);
+		% Total_Length = nansum([Data(p).Points.(Field_3)]);
 		% Lw = Lw ./ Total_Length;
 		
 		switch Mode
@@ -178,171 +178,175 @@ function Clusters_Struct = Map_Branches_Classes(W,Plot_01)
 		y4 = y;
 	end
 	% figure; surf(x3,y3,Z3);
-	
-	if(Plot_01 == 2)
-		
-		%{
-		% 3D surface plot
-		H2 = figure(2);
-		set(H2,'color','w');
-		surf(x,y,Z,'EdgeColor','none','FaceColor','interp');
-		axis square;
-		% xlim(Disatnce_Edges([1,end]));
-		% ylim([-0.3,1.3]);
-		zlim([0,0.018]);
-		
-		view([-46,43.15]); % view([-137,40]); % view([-54.8,73.5]);
-		
-		xlabel(['Normalized Midline Distance']); % [',char(181),'m]'
-		ylabel(['Midline Orientation [',char(176),']']);
-		zlabel('Count');
-		
-		set(get(gca,'xlabel'),'rotation',35.5); % set(get(gca,'xlabel'),'rotation',-31);
-		set(get(gca,'ylabel'),'rotation',-32.5); % set(get(gca,'ylabel'),'rotation',37);
-		%
-		cMap = hsv(256);
-		dataMax = 0.018;
-		dataMin = 0;
-		centerPoint = 0.005;
-		scalingIntensity = 4;
-		
-		x = 1:length(cMap); 
-		x = x - (centerPoint-dataMin)*length(x)/(dataMax-dataMin);
-		x = scalingIntensity * x/max(abs(x));
-		
-		x = sign(x).* exp(abs(x));
-		x = x - min(x);
-		x = x*511/max(x)+1; 
-		newMap = interp1(x,cMap,1:512);
-		colormap(newMap);
-		% colormap hsv;
-		h2 = colorbar('Ticks',0);
-		h2.Position(3) = 0.025;
-		h2.Position(4) = 0.37;
-		
-		set(gca,'FontSize',FontSize_1,'XTick',[-1,1],'YTick',[-1,1],'YTickLabels',[0,90]);
-		%}
-		
-		H3 = figure(3);
-		set(H3,'color','w');
-		[M,c] = contourf(x4,y4,Z4,Levels,'edgecolor','none'); % 16
-		if(makeSymmetic)
-			xlabel(['Normalized Midline Distance']); % symmetrical. %  [',char(181),'m]'
-		else
-			xlabel(['Normalized Midline Distance']);
+    
+	if(nargin > 1)
+		switch(Plot_Type)
+			case 1
+				[M,c] = contourf(Ax,x4,y4,Z4,cutoff*[1,1],'edgecolor','none'); % ,'edgecolor','none'; ,'-r';
+				c.LineWidth = 3;
+				
+				xlabel(Ax,'$\mathrm{\phi \; (Azimuthal \; Position)} \; [^{\circ}]$','Interpreter','latex'); % \hat{R}
+				ylabel(Ax,'$\mathrm{\theta \; (Midline \; Orientation)} \; [^{\circ}]$','Interpreter','latex');
+				colormap(Ax,cmap);
+				
+				% set(gcf,'Position',[10,50,1160,900]); % [10,50,900,600]
+				axis(Ax,'tight');
+				set(Ax,'Position',[0.13,0.15,0.85,0.84]); % set(Ax,'Position',[0.10,0.18,0.87,0.80]);
+				axis(Ax,'square');
+				
+				grid(Ax,'on');
+				Ax.XAxis.TickValues = X_Min_Max(1):X_Min_Max(2)./3:X_Min_Max(2); % -1:0.5:1; % [-1,0,1];
+				Ax.XAxis.TickLabels = {'$$-90$$','$$-60$$','$$-30$$','$$0$$','$$30$$','$$60$$','$$90$$'}; % {'$$-90$$','$$-45$$',0,'$$45$$','$$90$$'}; % {'$$-\phi$$','$$-\frac{\phi}{2}$$',0,'$$\frac{\phi}{2}$$','$$\phi$$'}
+				Ax.YAxis.TickValues = [-1,0,1];
+				Ax.YAxis.TickLabels = [0,45,90];
+				% Ax.GridAlpha = 0.3; 
+				Ax.GridColor = 'w';
+				set(Ax,'FontSize',FontSize_1);
+				xlim(Ax,X_Min_Max([1,end])*1.1);
+				ylim(Ax,YLIM); % ylim(Orientation_Edges([1,end])); % ylim([-0.4,1.3]);
+				set(Ax,'TickLabelInterpreter','latex');
+				
+				% set(Ax,'unit','normalize');
+				% set(Ax,'position',[0.10,0.16,0.9,0.83]);
+			case 2
+				[M,c] = contourf(Ax,x4,y4,Z4,Levels,'edgecolor','none'); % 16
+				
+				%{
+				if(makeSymmetic)
+					xlabel(Ax,['Normalized Midline Distance']); % symmetrical. %  [',char(181),'m]'
+				else
+					xlabel(Ax,['Normalized Midline Distance']);
+				end
+				%}
+				xlabel(Ax,'$\mathrm{\phi \; (Azimuthal \; Position)} \; [^{\circ}]$','Interpreter','latex');
+				ylabel(Ax,'$\mathrm{\theta \; (Midline \; Orientation)} \; [^{\circ}]$','Interpreter','latex'); % ylabel(Ax,['Midline Orientation [',char(176),']']);
+				colormap(Ax,jet);
+				set(Ax,'Color','w');
+				
+				% CM = lines(7);
+				% CM = CM([2,7,5,3],:);
+				% CM = lines(4);
+				
+				% set(gcf,'Position',[10,50,900,600]);
+				axis(Ax,'tight');
+				axis(Ax,'square');
+				set(Ax,'Position',[0.10,0.18,0.87,0.80]);
+				% axis(Ax,'square');
+				% set(Ax,'unit','normalize');
+				% set(Ax,'position',[0.10,0.16,0.9,0.83]);
+				
+				grid(Ax,'on');
+				
+				Ax.XAxis.TickValues = [-1,0,1];
+				Ax.YAxis.TickValues = [-1,0,1];
+				Ax.YAxis.TickLabels = [0,45,90];
+				%%% Ax.GridAlpha=0.3; 
+				
+				Ax.GridColor = 'w';
+				xlim(Ax,Disatnce_Edges([1,end]));
+				ylim(Ax,YLIM); % ylim(Ax,Orientation_Edges([1,end])); % ylim([-0.4,1.3]);
+				
+				set(Ax,'FontSize',FontSize_1);
+				
+				%
+				hold(Ax,'on');
+				C = find(M(1,:) == Levels(1));
+				C(end+1) = C(end)+5;
+				for i=1:length(C)-1
+					
+					x = M(1,C(i)+1:C(i+1)-1);
+					y = M(2,C(i)+1:C(i+1)-1);
+					
+					if(length(x) > Cluster_Size_Threshold)
+						Di = ( (mean(x) - [PVD_Orders.X]).^2 + (mean(y) - [PVD_Orders.Y]).^2 ).^(0.5);
+						Fi = find(Di == min(Di),1);
+						
+						plot(Ax,x,y,'Color',Class_Colors(PVD_Orders(Fi).Class,:),'LineWidth',6);
+					end
+				end
+			
+			case 3 % 3D surface plot.
+				
+				% surf(Ax,x,y,Z,'EdgeColor','none','FaceColor','interp');
+				surf(Ax,x4,y4,Z4,'EdgeColor','none','FaceColor','interp');
+				axis(Ax,'square');
+				
+				mask = imregionalmax(imbinarize(rescale(Z4),0.035));
+				hold(Ax,'on');
+				plot3(Ax,x4(mask),y4(mask),Z4(mask),'r+')
+				
+				% xlim(Disatnce_Edges([1,end]));
+				% ylim([-0.3,1.3]);
+				xlim(Ax,Disatnce_Edges([1,end]));
+				ylim(Ax,YLIM);
+				zlim(Ax,[0,0.018]);
+				
+				view(Ax,[-46,43.15]); % view([-137,40]); % view([-54.8,73.5]);
+				
+				xlabel(Ax,['Normalized Midline Distance']); % [',char(181),'m]'
+				ylabel(Ax,['Midline Orientation [',char(176),']']);
+				zlabel(Ax,'Count');
+				
+				% set(get(Ax,'xlabel'),'rotation',35.5); % set(get(gca,'xlabel'),'rotation',-31);
+				% set(get(Ax,'ylabel'),'rotation',-32.5); % set(get(gca,'ylabel'),'rotation',37);
+				
+				%{
+				cMap = hsv(256);
+				dataMax = 0.018;
+				dataMin = 0;
+				centerPoint = 0.005;
+				scalingIntensity = 4;
+				
+				x = 1:length(cMap); 
+				x = x - (centerPoint-dataMin)*length(x)/(dataMax-dataMin);
+				x = scalingIntensity * x/max(abs(x));
+				
+				x = sign(x).* exp(abs(x));
+				x = x - min(x);
+				x = x*511/max(x)+1; 
+				newMap = interp1(x,cMap,1:512);
+				colormap(Ax,newMap);
+				% colormap hsv;
+				h2 = colorbar(Ax,'Ticks',0);
+				h2.Position(3) = 0.025;
+				h2.Position(4) = 0.37;
+				%}
+				
+				set(Ax,'FontSize',FontSize_1,'XTick',[-1,1],'YTick',[-1,1],'YTickLabels',[0,90]);
+			case 4
+				histogram2(Ax,Z);
 		end
-		ylabel(['Midline Orientation [',char(176),']']);
-		colormap(jet);
-		set(gca,'Color','w');
+	end
+	
+	if(nargin > 1 && Plot_Type == 1)
+		C = find(M(1,:) == cutoff);
+		C(end+1) = length(M)+1;
 		
 		% CM = lines(7);
-		% CM = CM([2,7,5,3],:);
-		% CM = lines(4);
+		% CM = CM([1,3,5,7],:);
 		
-		set(gcf,'Position',[10,50,900,600]);
-		axis tight;
-		set(gca,'Position',[0.10,0.18,0.87,0.80]);
-		% axis square;
-		% set(gca,'unit','normalize');
-		% set(gca,'position',[0.10,0.16,0.9,0.83]);
-		
-		h = gca;
-		grid on;
-		
-		h.XAxis.TickValues = [-1,0,1];
-		h.YAxis.TickValues = [-1,0,1];
-		h.YAxis.TickLabels = [0,45,90];
-		%%% h.GridAlpha=0.3; 
-		
-		h.GridColor = 'w';
-		xlim(Disatnce_Edges([1,end]));
-		ylim(YLIM); % ylim(Orientation_Edges([1,end])); % ylim([-0.4,1.3]);
-		
-		set(gca,'FontSize',FontSize_1);
-		
-		%
-		hold on;
-		C = find(M(1,:) == Levels(1));
-		C(end+1) = C(end)+5;
 		for i=1:length(C)-1
 			
 			x = M(1,C(i)+1:C(i+1)-1);
 			y = M(2,C(i)+1:C(i+1)-1);
 			
 			if(length(x) > Cluster_Size_Threshold)
+				Clusters_Struct(end+1).Cluster_ID = i;
+				Clusters_Struct(end).X_Boundary = x;
+				Clusters_Struct(end).Y_Boundary = y;
+				Clusters_Struct(end).Mean_X = mean(x);
+				Clusters_Struct(end).Mean_Y = mean(y);
+				
 				Di = ( (mean(x) - [PVD_Orders.X]).^2 + (mean(y) - [PVD_Orders.Y]).^2 ).^(0.5);
 				Fi = find(Di == min(Di),1);
+				Clusters_Struct(end).Class = PVD_Orders(Fi).Class;
 				
-				plot(x,y,'Color',Class_Colors(PVD_Orders(Fi).Class,:),'LineWidth',6);
+				if(nargin > 1)
+					hold(Ax,'on');
+					plot(Ax,x,y,'Color',Class_Colors(Clusters_Struct(end).Class,:),'LineWidth',5);
+				end
 			end
 		end
-		%}
+		assignin('base','Clusters_Struct',Clusters_Struct);
 	end
-	
-	% return;
-	
-	H4 = figure(4);
-	set(H4,'color','w');
-	[M,c] = contourf(x4,y4,Z4,cutoff*[1,1],'edgecolor','none'); % ,'edgecolor','none'; ,'-r';
-    
-	if(Plot_01)
-		c.LineWidth = 3;
-		
-		xlabel('$$Angular \; Coordinate \; \phi \; (^{\circ})$$','Interpreter','latex'); % \hat{R}
-		ylabel('$$Midline \; Orientation \; (^{\circ})$$','Interpreter','latex');
-		colormap(cmap);
-		
-		set(gcf,'Position',[10,50,1160,900]); % [10,50,900,600]
-		axis tight;
-		set(gca,'Position',[0.13,0.15,0.85,0.84]); % set(gca,'Position',[0.10,0.18,0.87,0.80]);
-		% axis square;
-		
-		h = gca;
-		grid on;
-		h.XAxis.TickValues = X_Min_Max(1):X_Min_Max(2)./3:X_Min_Max(2); % -1:0.5:1; % [-1,0,1];
-		h.XAxis.TickLabels = {'$$-90$$','$$-60$$','$$-30$$','$$0$$','$$30$$','$$60$$','$$90$$'}; % {'$$-90$$','$$-45$$',0,'$$45$$','$$90$$'}; % {'$$-\phi$$','$$-\frac{\phi}{2}$$',0,'$$\frac{\phi}{2}$$','$$\phi$$'}
-		h.YAxis.TickValues = [-1,0,1];
-		h.YAxis.TickLabels = [0,45,90];
-		% h.GridAlpha = 0.3; 
-		h.GridColor = 'w';
-		set(gca,'FontSize',FontSize_1);
-		xlim(X_Min_Max([1,end])*1.1);
-		ylim(YLIM); % ylim(Orientation_Edges([1,end])); % ylim([-0.4,1.3]);
-		set(gca,'TickLabelInterpreter','latex');
-		
-		% set(gca,'unit','normalize');
-		% set(gca,'position',[0.10,0.16,0.9,0.83]);
-	else
-		close all;
-	end
-	
-	C = find(M(1,:) == cutoff);
-	C(end+1) = length(M)+1;
-	
-	% CM = lines(7);
-	% CM = CM([1,3,5,7],:);
-	
-	for i=1:length(C)-1
-		
-		x = M(1,C(i)+1:C(i+1)-1);
-		y = M(2,C(i)+1:C(i+1)-1);
-		
-		if(length(x) > Cluster_Size_Threshold)
-			Clusters_Struct(end+1).Cluster_ID = i;
-			Clusters_Struct(end).X_Boundary = x;
-			Clusters_Struct(end).Y_Boundary = y;
-			Clusters_Struct(end).Mean_X = mean(x);
-			Clusters_Struct(end).Mean_Y = mean(y);
-			
-			Di = ( (mean(x) - [PVD_Orders.X]).^2 + (mean(y) - [PVD_Orders.Y]).^2 ).^(0.5);
-			Fi = find(Di == min(Di),1);
-			Clusters_Struct(end).Class = PVD_Orders(Fi).Class;
-			
-			if(Plot_01)
-				hold on;
-				plot(x,y,'Color',Class_Colors(Clusters_Struct(end).Class,:),'LineWidth',5);
-			end
-		end
-	end
-	assignin('base','Clusters_Struct',Clusters_Struct);
 end
