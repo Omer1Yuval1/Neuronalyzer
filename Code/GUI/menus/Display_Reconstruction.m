@@ -704,4 +704,16 @@ function Display_Reconstruction(P,Data,p,Label)
         
     end
 	
+	%{
+	% Code to loop over all projects and save a reconstruction.
+	Project.GUI_Handles.Control_Panel_Objects(4,1).Value = 1; % Undock;
+	Label = 'Raw Image - Grayscale';
+	for p=1:numel(Project.Data)
+		close all;
+		Display_Reconstruction(Project,Project.Data(p),p,Label);
+		drawnow;
+		print(gcf,[Project.Data(p).Info.Experiment(1).Identifier,'.svg'],'-dsvg','-painters');
+	end
+	%}
+	
 end

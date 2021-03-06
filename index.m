@@ -434,6 +434,9 @@ function index()
 					YLim = P.GUI_Handles.View_Axes.YLim;
 					delete(findobj(P.GUI_Handles.View_Axes,'-not','Type','image','-and','-not','Type','axes')); % Delete all graphical objects (except for the axes and the image).
 				end
+			else % If the axes do not exist.
+				Reset_Main_Axes(P);
+				P.GUI_Handles.Buttons(3,1).UserData = ''; % Used as a flag to reset the axes and axis limits.
 			end
 			
 			Display_Reconstruction(P,P.Data(pp),pp,source.Label);

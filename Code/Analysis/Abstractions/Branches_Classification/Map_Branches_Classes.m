@@ -185,8 +185,12 @@ function Clusters_Struct = Map_Branches_Classes(Data,Ax,Plot_Type)
 				[M,c] = contourf(Ax,x4,y4,Z4,cutoff*[1,1],'edgecolor','none'); % ,'edgecolor','none'; ,'-r';
 				c.LineWidth = 3;
 				
-				xlabel(Ax,'$\mathrm{\phi \; (Azimuthal \; Position)} \; [^{\circ}]$','Interpreter','latex'); % \hat{R}
-				ylabel(Ax,'$\mathrm{\theta \; (Midline \; Orientation)} \; [^{\circ}]$','Interpreter','latex');
+				xlabel(Ax,'$\mathrm{\phi}$ (Azimuthal Position) $[^{\circ}]$','Interpreter','latex');
+				% xlabel(Ax,'$\mathrm{\phi} \; \textsf{(Azimuthal Position)} \; [^{\circ}]$','Interpreter','latex');
+				
+				ylabel(Ax,'$\mathrm{\theta}$ (Midline Orientation) $[^{\circ}]$','Interpreter','latex');
+				% ylabel(Ax,'$\mathrm{\theta} \; \textsf{(Midline Orientation)} \; [^{\circ}]$','Interpreter','latex');
+				
 				colormap(Ax,cmap);
 				
 				% set(gcf,'Position',[10,50,1160,900]); % [10,50,900,600]
