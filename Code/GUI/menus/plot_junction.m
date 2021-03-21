@@ -12,7 +12,7 @@ function plot_junction(ax,x,y,angles)
 	t2 = linspace(angles(2),angles(3),100); % Angle range 2.
 	t3 = [linspace(angles(3),2*pi,100) , linspace(0,angles(1),100)]; % Angle range 3.
 	
-	d = 3.5;
+	d = 2; % 3.5.
 	
 	x1 = d.*[0,cos(t1),0];
 	y1 = d.*[0,sin(t1),0];

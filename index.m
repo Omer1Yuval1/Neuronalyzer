@@ -234,7 +234,7 @@ function index()
 			if(isfield(Loaded_File,'Workspace'))
 				Loaded_File.Project = Workspace_To_Project(Loaded_File.Workspace);
 			end
-			
+						
 			% Temporary ("Neuron_Axes" changed to "Axes"):
             if(isfield(Loaded_File.Project,'Neuron_Axes'))
                 for jj=1:numel(Loaded_File.Project)
@@ -256,6 +256,7 @@ function index()
 					Loaded_File.Project(jj).Vertices = rmfield(Loaded_File.Project(jj).Vertices,'Coordinate');
                 end
             end
+            
 			% *************************************************************************************************************
 			% *************************************************************************************************************
 			
@@ -263,6 +264,11 @@ function index()
 				for jj=1:numel(Loaded_File.Project) % For each project within the ii project file.
 					pp = pp + 1;
 					P.Data(pp) = Loaded_File.Project(jj);
+                    
+                    % Temporary (update the parameters file):
+                    P.Data(pp).Parameters = Parameters_Func(P.Data(pp).Info.Experiment(1).Scale_Factor);
+                    % **********************************************************************************
+                    
 					P.GUI_Handles.Waitbar.Value = jj ./ numel(Loaded_File.Project);
 				end
 			end
@@ -442,10 +448,11 @@ function index()
 			Display_Reconstruction(P,P.Data(pp),pp,source.Label);
 			
 			% if(~isequal(source.Label,P.GUI_Handles.Buttons(3,1).UserData)) % If a different plot was chosen, reset the limits.
-			if(isempty(P.GUI_Handles.Buttons(3,1).UserData)) % If a different project was chosen.
+			Fim = findall(P.GUI_Handles.View_Axes.Children,'Type','image');
+            if(ishandle(P.GUI_Handles.View_Axes) && isempty(P.GUI_Handles.Buttons(3,1).UserData) && ~isempty(Fim)) % If a different project was chosen.
 				P.GUI_Handles.View_Axes.XLim = findall(P.GUI_Handles.View_Axes.Children,'Type','image').XData; % P.GUI_Handles.View_Axes.Children(1).XData;
 				P.GUI_Handles.View_Axes.YLim = findall(P.GUI_Handles.View_Axes.Children,'Type','image').YData; % P.GUI_Handles.View_Axes.Children(1).YData;
-			else % Preserve the zoom.
+			elseif(ishandle(P.GUI_Handles.View_Axes) && ~isempty(Fim)) % Preserve the zoom.
 				P.GUI_Handles.View_Axes.XLim = XLim;
 				P.GUI_Handles.View_Axes.YLim = YLim;
 			end

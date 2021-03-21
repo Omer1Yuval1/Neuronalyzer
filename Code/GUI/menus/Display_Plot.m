@@ -2,10 +2,10 @@ function Display_Plot(P,Data,Label)
 	
 	% This function is used to display different plots for quantitative analysis of the data.
 	
-	Group_By = 'Strain_Name';
-	% Group_By = 'Age';
+	Grouping_List = {'Strain_Name','Age'};
 	
-	FontSize_1 = 18;
+	% FontSize_1 = 18;
+	BarWidth = 0.8;
 	
 	set(P.GUI_Handles.Control_Panel_Objects(2,5),'Enable','off');
 	set(P.GUI_Handles.Control_Panel_Objects(3,[4,5]),'Enable','off');
@@ -20,6 +20,25 @@ function Display_Plot(P,Data,Label)
 	
 	Groups = cell(1,0);
 	Workspace_Set = cell(1,0); % One cell for each group. The cells contain row numbers of the members (Data(p)).
+	
+	% Choose field to group by:
+	Feature_Values = "";
+	Group_By = [];
+	for f=1:length(Grouping_List)
+		
+		for p=1:numel(Data)
+			Feature_Values(p) = [Data(p).Info.Experiment(1).(Grouping_List{f})];
+		end
+		
+		if(length(unique(Feature_Values)) > 1) % If there are multiple values for feature f, use it for grouping.
+			Group_By = Grouping_List{f};
+			break;
+		end
+	end
+	
+	if(isempty(Group_By))
+		Group_By = 'Strain_Name';
+	end
 	
 	% List all groups (all existing values of "Group_By"):
 	if(~P.GUI_Handles.Control_Panel_Objects(1,1).Value) % Use all projects.
@@ -53,12 +72,8 @@ function Display_Plot(P,Data,Label)
 	% Workspace_Set = Workspace_Set(1);
 	
 	set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Bin size:');
-	
+	set(0,'defaulttextInterpreter','tex'); % none.
 	% assignin('base','GP',GP);
-	
-	% set(GP.Handles.Normalization_List,'String',{'Not Normalized'},'Value',1);
-	% set(GP.Handles.Analysis.Dynamic_Slider_Min,'Enable','off');
-	% set(GP.Handles.Analysis.Dynamic_Slider_Max,'Enable','off');
 	
 	switch(Label)
 		case 'Number of Segments'
@@ -198,7 +213,7 @@ function Display_Plot(P,Data,Label)
 				disp(['Menorah Order = ',num2str(Menorah_Classes(o)),': ','; P-Value = ',num2str(PVal),' (',Test_Name,')']);
 			end
 			
-			set(Ax1,'XTick',Menorah_Classes,'FontSize',FontSize_1,'TickLabelInterpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Ticks);
+			set(Ax1,'XTick',Menorah_Classes,'FontSize',FontSize_1,'TickLabelInterpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
 			xlabel(Ax1,'$\mathrm{Class}$','Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 			ylabel(Ax1,'$\mathrm{Segment \; Length}$','Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 			
@@ -254,7 +269,7 @@ function Display_Plot(P,Data,Label)
 			Means_Plot(Input_Struct,GP,GP.Visuals,Y_Label,Title);
 			
 		case 'Mean Curvature'
-			Class_Indices = [1,2,3,4];
+			Class_Indices = 1:length(P.GUI_Handles.Class_Colors);
 			Curvature_Min_Max = [0,0.3];
 			% Class_Colors = [0.6,0,0 ; 0,0.6,0 ; 0.12,0.56,1 ; 0.8,0.8,0]; % 3=0,0.8,0.8 ; 3.5=0,0,1 ; 5=0.5,0.5,0.5
 			% colormap(Class_Colors);
@@ -315,7 +330,7 @@ function Display_Plot(P,Data,Label)
 					end
 					
 					% ylim(Ax1,YLIM);
-					set(Ax1,'XTick',1:Max_PVD_Orders,'XTickLabels',Class_Indices,'TickLabelInterpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Ticks);
+					set(Ax1,'XTick',1:Max_PVD_Orders,'XTickLabels',Class_Indices,'TickLabelInterpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
 					xlabel(Ax1,['$\mathrm{Class}$'],'Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 					ylabel(Ax1,'$\mathrm{Mean \; Curvature \; [\mu m ^{-1}]}$','Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 					
@@ -365,11 +380,15 @@ function Display_Plot(P,Data,Label)
 						end
 					end
 					
-					set(Ax1,'XTick',1:Max_PVD_Orders,'XTickLabels',Class_Indices,'TickLabelInterpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Ticks);
-					xlabel(Ax1,['$\mathrm{Class}$'],'interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
-					ylabel(Ax1,'$\mathrm{Mean \; Curvature \; [\mu m ^{-1}]}$','Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+					set(Ax1,'XTick',1:Max_PVD_Orders,'XTickLabels',Class_Indices,'FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
+					% set(Ax1,'XTick',1:Max_PVD_Orders,'XTickLabels',Class_Indices,'TickLabelInterpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
 					
-					legend(Ax1,Groups,'Interpreter','Latex');
+					xlabel(Ax1,'Class','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize); % ,'interpreter','Latex'
+					ylabel(Ax1,['Mean Curvature [',char(181),'m^{-1}]'],'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+					% ylabel(Ax1,'$Mean \; Curvature \; [\mu m ^{-1}]}$','Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+					% YLabel = ['Neuronal Length [',xy_scale,char(181),'m]'];
+					
+					legend(Ax1,Groups); % ,'Interpreter','Latex'
 					grid(Ax1,'on');
 					
 				case 3 % Total length (all classes merged).
@@ -522,20 +541,19 @@ function Display_Plot(P,Data,Label)
 			switch(Label)
 				case {'Radial Distance of All Points','Radial Distance of All Points - Second Moment'}
 					if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData)) % If the previous plot was different.
-						set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0.01,0.11],'Step',0.01,'Value',0.02,'Tooltip',''); % set(GP.Handles.Analysis.Slider,'Min',0.01,'Max',.11,'Value',0.02,'SliderStep',[0.05,0.2]); % set(GP.Handles.Analysis.Slider,'Min',1,'Max',6,'Value',2,'SliderStep',[0.2,1]);
+						set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0.01,0.11],'Step',0.01,'Value',0.02,'Tooltip','');
 					end
 					Bin_Min = -1;
 					Bin_Max = 1;
 				case {'Angular Coordinate of All Points','Angular Coordinate of All Points - Second Moment','Angular Coordinate of Tips','Angular Coordinate of Junctions'}
 					if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData)) % If the previous plot was different.
-						
-						set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[pi/180,pi/30],'Step',pi/180,'Value',pi/45,'Tooltip',''); % set(GP.Handles.Analysis.Slider,'Min',pi/180,'Max',pi/30,'Value',pi/45,'SliderStep',[pi/180,1]); % [5,20] degrees.
+						set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[1,30],'Step',1,'Value',2,'Tooltip','');
 					end
 					Bin_Min = -pi/2; % Radians.
 					Bin_Max = pi/2; % Radians.
 			end
-			BinSize = P.GUI_Handles.Control_Panel_Objects(1,4).Value;
 			
+			BinSize = P.GUI_Handles.Control_Panel_Objects(1,4).Value .* pi ./ 180; % Degrees to radians.
 			Edges = Bin_Min:BinSize:Bin_Max;
 			xx = (Edges(2:end) + Edges(1:end-1)) ./ 2;
 			
@@ -544,36 +562,36 @@ function Display_Plot(P,Data,Label)
 					Field_1_Name = 'Radial_Distance_Corrected';
 					Vertex_Order_Func = @(X) find(X);
 					Weigh_by_Length = 1;
-					Y_Label = '\mathrm{Neuronal \; Length}';
+					Y_Label = 'Neuronal Length';
 				case {'Angular Coordinate of All Points','Angular Coordinate of All Points - Second Moment'}
 					Field_1_Name = 'Angular_Coordinate';
 					Vertex_Order_Func = @(X) find(X);
 					Weigh_by_Length = 1;
-					Y_Label = '\mathrm{Neuronal \; Length}';
+					Y_Label = 'Neuronal Length}';
 				case 'Radial Distance of Tips'
 					Field_1_Name = 'Radial_Distance_Corrected';
 					Vertex_Order = 1;
 					Vertex_Order_Func = @(X) find(X == Vertex_Order);
 					Weigh_by_Length = 0;
-					Y_Label = '\mathrm{Number \; of \; Tips}';
+					Y_Label = 'Number of Tips';
 				case 'Angular Coordinate of Tips'
 					Field_1_Name = 'Angular_Coordinate';
 					Vertex_Order = 1;
 					Vertex_Order_Func = @(X) find(X == Vertex_Order);
 					Weigh_by_Length = 0;
-					Y_Label = '\mathrm{Number \; of \; Tips}';
+					Y_Label = 'Number of Tips';
 				case 'Radial Distance of 3-Way Junctions'
 					Field_1_Name = 'Radial_Distance_Corrected';
 					Vertex_Order = 3;
 					Vertex_Order_Func = @(X) find(X == Vertex_Order);
 					Weigh_by_Length = 0;
-					Y_Label = '\mathrm{Number \; of \; Junctions}';
+					Y_Label = 'Number of Junctions';
 				case 'Angular Coordinate of Junctions'
 					Field_1_Name = 'Angular_Coordinate';
 					Vertex_Order = 3;
 					Vertex_Order_Func = @(X) find(X == Vertex_Order);
 					Weigh_by_Length = 0;
-					Y_Label = '\mathrm{Number \; of \; Junctions}';
+					Y_Label = 'Number of Junctions';
 			end
 			
 			Ng = length(Workspace_Set);
@@ -616,7 +634,7 @@ function Display_Plot(P,Data,Label)
 					Y{g}(w,:) = Y_L; % Now the height of the bins is neuronal length.
 					
 					% Finally, apply pdf:
-					Y{g}(w,:) = Y{g}(w,:);
+					% Y{g}(w,:) = Y{g}(w,:);
 				end
 			end
 			
@@ -680,17 +698,22 @@ function Display_Plot(P,Data,Label)
 						% legend(Groups,'Interpreter','Latex');
 				end
 				
-				set(Ax1,'FontSize',FontSize_1);
+				set(Ax1,'FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
+				
+				if(P.GUI_Handles.Control_Panel_Objects(1,5).Value > 1)
+					y_scale = num2str(P.GUI_Handles.Control_Panel_Objects(1,5).Value);
+				else
+					y_scale = '';
+				end
 				
 				switch(P.GUI_Handles.Control_Panel_Objects(2,4).Value) % Normalization.
 					case 1
-						xlabel(Ax1,'$\mathrm{\phi} \; [^{\circ}]$','Interpreter','Latex'); % xlabel(['$$Midline Distance $$'],'Interpreter','Latex');
+						xlabel(Ax1,[char(981),' (azimuthal position) [',char(176),']'],'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 						if(Weigh_by_Length)
-							ylabel(Ax1,'$\mathrm{Neuronal \; Length \; [\mu m]}$','Interpreter','Latex');
+							ylabel(Ax1,['Neuronal Length [',y_scale,char(181),'m]'],'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 						else
-							ylabel(Ax1,['$',Y_Label,'$'],'Interpreter','Latex');
+							ylabel(Ax1,Y_Label,'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 						end
-						set(Ax1,'position',[0.09,0.1490,0.89,0.8],'XTick',-pi/2:pi/4:pi/2,'XTickLabels',{'$$-90$$','$$-45$$',0,'$$45$$','$$90$$'});
 					case 2 % Total length.
 						xlabel(Ax1,'$\mathrm{\phi} \; [^{\circ}]$','Interpreter','Latex');
 						ylabel(Ax1,['$\frac{',Y_Label,'}{\mathrm{Total \; Length}}$'],'Interpreter','Latex');
@@ -702,18 +725,18 @@ function Display_Plot(P,Data,Label)
 						ylabel(Ax1,['$\frac{',Y_Label,'}$'],'Interpreter','Latex');
 						% set(Ax1,'position',[0.13,0.1490,0.85,0.7760]); % set(gca,'position',[0.1,0.1490,0.87,0.7760]);
 				end
-				set(Ax1,'position',[0.09,0.1490,0.89,0.8],'XTick',-pi/2:pi/4:pi/2,'XTickLabels',{'$$-90$$','$$-45$$',0,'$$45$$','$$90$$'});
+				set(Ax1,'XTick',-pi/2:pi/4:pi/2,'YTick',0:100:max(get(Ax1,'YTick')));
+				drawnow;
+				set(Ax1,'XTickLabels',get(Ax1,'xtick') .* 180 ./ pi,'YTickLabels',get(Ax1,'YTick') ./ P.GUI_Handles.Control_Panel_Objects(1,5).Value);
 				xlim(Ax1,[Edges(1),Edges(end)]);
 				Py = get(Ax1,'ylim');
 				ylim(Ax1,[0,Py(2)]);
 				grid(Ax1,'on');
 			end
-			
-			set(Ax1,'TickLabelInterpreter','Latex');
 		
 		case 'Menorah Orders Classification'
 			set(P.GUI_Handles.Control_Panel_Objects(4,4),'Items',{'Default','Contour Levels','Surface'},'ItemsData',1:3);
-			Clusters_Struct = Map_Branches_Classes(Data,Ax1,P.GUI_Handles.Control_Panel_Objects(4,4).Value);
+			Clusters_Struct = Map_Branches_Classes(P,Ax1);
 		case 'Distribution of Mean Squared Curvature Of Segments'
 			Var_Operations{1} = @(x) x(x>=0 & x<=0.1); % The curvature of a segment has to be positive.
 			Filter_Operations = {};
@@ -837,11 +860,9 @@ function Display_Plot(P,Data,Label)
 		
 		case 'Neuronal Length per Menorah Order'
 			
-			Class_Indices = [1,2,3,4];
-			Class_Colors = [0.6,0,0 ; 0,0.6,0 ; 0.12,0.56,1 ; 0.8,0.8,0]; % 3=0,0.8,0.8 ; 3.5=0,0,1 ; 5=0.5,0.5,0.5
-			colormap(Ax1,Class_Colors);
-			Max_PVD_Orders = length(Class_Colors);
-			BarWidth = 0.8;
+			Class_Indices = 1:length(P.GUI_Handles.Class_Colors);
+			colormap(Ax1,P.GUI_Handles.Class_Colors);
+			Max_PVD_Orders = length(P.GUI_Handles.Class_Colors);
 			
 			% P.GUI_Handles.Control_Panel_Objects(4,1).Value
 			set(P.GUI_Handles.Control_Panel_Objects(2,4),'Items',{'Not Normalized','Normalized to Midline Length','Normalized to Total Length'},'ItemsData',1:3);
@@ -855,11 +876,19 @@ function Display_Plot(P,Data,Label)
 			
 			switch(P.GUI_Handles.Control_Panel_Objects(2,4).Value) % Normalization.
 				case 1
-					Y_Name = '$\mathrm{Neuronal \; Length}$';
+					
+					if(P.GUI_Handles.Control_Panel_Objects(1,5).Value > 1)
+						xy_scale = num2str(P.GUI_Handles.Control_Panel_Objects(1,5).Value);
+					else
+						xy_scale = '';
+					end
+					
+					Y_Name = ['Neuronal Length [',xy_scale,char(181),'m]'];
 				case 2
-					Y_Name = '$\mathrm{\frac{Neuronal \; Length}{Midline \; Length}}$';
+					Y_Name = 'Neuronal Length / Midline Length'; % '${\frac{Neuronal \; Length}{Midline \; Length}}$';
+					% Y_Name = '$\frac{Neuronal Length}{Midline Length}$';
 				case 3
-					Y_Name = '$\mathrm{\frac{Neuronal \; Length}{Total \; Length}}$';
+					Y_Name = '^{Neuronal Length}/_{Total Length}'; % '$\mathrm{\frac{Neuronal \; Length}{Total \; Length}}$';
 			end
 			
 			Ng = length(Workspace_Set);
@@ -892,7 +921,7 @@ function Display_Plot(P,Data,Label)
 			end
 			
 			CM = lines(Ng);
-			switch(P.GUI_Handles.Control_Panel_Objects(4,4).Value)
+			switch(P.GUI_Handles.Control_Panel_Objects(4,4).Value) % Type.
 				case 1 % All classes, dorsal and ventral separated.
 					for g=1:Ng
 						B_D(:,g) = mean(M{g}(:,:,1),2); % Average across animals (columns). Rows correspond to Menorah orders.
@@ -911,12 +940,12 @@ function Display_Plot(P,Data,Label)
 					end
 					
 					% ylim(Ax1,YLIM);
-					legend(Ax1,Groups,'Interpreter','Latex');
+					legend(Ax1,Groups);
 					grid(Ax1,'on');
 					
-					set(Ax1,'XTick',1:Max_PVD_Orders,'XTickLabels',Class_Indices,'TickLabelInterpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Ticks);
-					xlabel(Ax1,['Menorah Order'],'interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
-					ylabel(Ax1,Y_Name,'Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+					set(Ax1,'XTick',1:Max_PVD_Orders,'XTickLabels',Class_Indices,'FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
+					xlabel(Ax1,'Class','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+					ylabel(Ax1,Y_Name,'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 					
 					if(Ng > 1)
 						disp(['Neuronal Length per Menorah Order - Result:']);
@@ -941,14 +970,16 @@ function Display_Plot(P,Data,Label)
 					
 					ylim(Ax1,[0,Ax1.YLim(2)]); % ylim(Ax1,[0,2.*YLIM(2)]);
 					
-					legend(Ax1,Groups,'Interpreter','Latex');
+					legend(Ax1,Groups);
 					grid(Ax1,'on');
 					
-					set(Ax1,'XTick',1:Max_PVD_Orders,'XTickLabels',Class_Indices,'TickLabelInterpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Ticks);
-					xlabel(Ax1,['Menorah Order'],'interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
-					ylabel(Ax1,Y_Name,'Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+					set(Ax1,'XTick',1:Max_PVD_Orders,'XTickLabels',Class_Indices,'FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize); % ,'TickLabelInterpreter','Latex'
+					xlabel(Ax1,'Class','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+					ylabel(Ax1,Y_Name,'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 					
-					if(Ng > 2)
+					set(Ax1,'YTickLabels',abs(get(Ax1,'YTick')) ./ P.GUI_Handles.Control_Panel_Objects(1,5).Value);
+					
+					if(Ng > 1)
 						disp(['Stats (D-V merged):']);
 						disp(['WT:']);
 						for o=2:Max_PVD_Orders % Compare all orders to order 1 in wt.
@@ -979,7 +1010,7 @@ function Display_Plot(P,Data,Label)
 						% errorbar(g,B_V(:,g),std(sum(M{g}(:,:,2),1),0,2)','Color','k','LineWidth',2,'LineStyle','none');
 					end
 					
-					if(Ng > 2)
+					if(Ng > 1)
 						disp(['Total Neuronal Length - Result:']);
 						Total_Length_1 = nansum(sum(M{1},1),3); % Sum up across menorah orders and D-V.
 						Total_Length_2 = nansum(sum(M{2},1),3); % ".
@@ -991,31 +1022,46 @@ function Display_Plot(P,Data,Label)
 						disp(['Total Length STDs (1) = ',num2str(mean(Total_Length_2)),'um +\- ',num2str(std(sum(sum(M{2}(:,:,1),1),3),0,2))]);
 					end
 					
-					ylim(Ax1,[0,Ax1.YLim(2)]); % ylim(3*YLIM);
-					set(Ax1,'XTick',1:length(Workspace_Set),'XTickLabels',Groups,'TickLabelInterpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Ticks); % ,'YTickLabels',abs(get(gca,'YTick'))
-					ylabel(Ax1,Y_Name,'Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+					xlim(Ax1,[0.5,Ng+0.5]);
+					% ylim(Ax1,[0,Ax1.YLim(2)]); % ylim(3*YLIM);
+					set(Ax1,'XTick',1:length(Workspace_Set),'XTickLabels',Groups,'FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
+					ylabel(Ax1,Y_Name,'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+					set(Ax1,'YTickLabels',abs(get(Ax1,'YTick')) ./ P.GUI_Handles.Control_Panel_Objects(1,5).Value);
 					
 					grid(Ax1,'on');
 				case 4 % Pie chart.
-					set(0,'defaulttextInterpreter','Latex');
+					% set(0,'defaulttextInterpreter','Latex');
 					% H = nan(Ng,2*length(Class_Indices));
 					for g=1:Ng
-						Ax1 = subplot(1,Ng,g,'Parent',P.GUI_Handles.Main_Panel_1);
-						H = pie(Ax1, mean(sum(M{g},3),2) ); % Sum up dorsal ventral, and average across animals.
+						if(P.GUI_Handles.Control_Panel_Objects(4,1).Value)
+							Ax1 = subplot(1,Ng,g,'Parent',gcf);
+						else
+							Ax1 = subplot(1,Ng,g,'Parent',P.GUI_Handles.Main_Panel_1);
+						end
+						
+						V = mean(sum(M{g},3),2);
+						
+						H = pie(Ax1,V,'%.2f%%'); % Sum up dorsal ventral, and average across animals.
+						
+						colormap(Ax1,P.GUI_Handles.Class_Colors);
+						
 						axis(Ax1,'equal');
-						set(Ax1,'XTick',[],'YTick',[],'TickLabelInterpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Ticks);
-						set(findobj(H,'type','text'),'fontsize',P.GUI_Handles.Plots.Axis_Ticks);
+						
+						set(Ax1,'XTick',[],'YTick',[],'FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize); % set(Ax1,'XTick',[],'YTick',[],'TickLabelInterpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
+						
+						set(findobj(H,'type','text'),'FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
 						for i=1:length(H)
 							if(strcmp(H(i).Type,'text'))
-								H(i).String = ['$$',H(i).String(1:end-1),'\%$$'];
+								H(i).String = [H(i).String(1:end-1),'%'];
 							end
 						end
+                        
 					end
 					% assignin('base','H',H);
 			end
-			set(Ax1,'TickLabelInterpreter','Latex');
+			% set(Ax1,'TickLabelInterpreter','Latex');
 			drawnow;
-			set(Ax1,'YTickLabels',abs(get(Ax1,'YTick')));
+			% set(Ax1,'YTickLabels',abs(get(Ax1,'YTick')));
 			% set(gca,'unit','normalize','position',[0.098,0.15,0.89,0.82]);
 		
 		case 'Midline Density - Neuronal Length'
@@ -1026,8 +1072,7 @@ function Display_Plot(P,Data,Label)
 			
 			Max_Midline_Length = 900;
 			
-			Class_Indices = [1,2,3,4];
-			Class_Colors = [0.6,0,0 ; 0,0.6,0 ; 0.12,0.56,1 ; 0.8,0.8,0]; % 3=0,0.8,0.8 ; 3.5=0,0,1 ; 5=0.5,0.5,0.5
+			Class_Indices = 1:length(P.GUI_Handles.Class_Colors);
 			Max_PVD_Orders = length(Class_Indices);
 			
 			set(P.GUI_Handles.Control_Panel_Objects(2,4),'Items',{'Not Normalized','Normalized to Midline Length (X)','Normalized to Total Length (Y)','Normalized to Midline and Total Length'},'ItemsData',1:4);
@@ -1041,13 +1086,14 @@ function Display_Plot(P,Data,Label)
 			
 			switch(P.GUI_Handles.Control_Panel_Objects(2,4).Value)
 				case {1,3}
-					if(1) % ~GP.Handles.Analysis.Slider.UserData
+					if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData)) % If the previous plot was different.
 						set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[10,110],'Value',50);
+						set(P.GUI_Handles.Control_Panel_Objects(1,5),'Value',1,'Limits',[1,100]);
 						% set(GP.Handles.Analysis.Slider,'Min',10,'Max',110,'Value',50,'SliderStep',[0.01,0.1]);
 					end
 					Edges = 0:P.GUI_Handles.Control_Panel_Objects(1,4).Value:Max_Midline_Length;
 				case {2,4} % Normalized to Midline Length.
-					if(1) % ~GP.Handles.Analysis.Slider.UserData
+					if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData)) % If the previous plot was different.
 						set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0.02,12],'Value',0.05);
 						% set(GP.Handles.Analysis.Slider,'Min',0.02,'Max',.12,'Value',0.05,'SliderStep',[0.01,0.1]);
 					end
@@ -1055,7 +1101,7 @@ function Display_Plot(P,Data,Label)
 			end
 			xx = (Edges(2:end) + Edges(1:end-1)) ./ 2;
 			
-			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Value',P.GUI_Handles.Control_Panel_Objects(1,4).Value);
+			% set(P.GUI_Handles.Control_Panel_Objects(1,5),'Value',P.GUI_Handles.Control_Panel_Objects(1,4).Value);
 			
 			for g=1:Ng
 				N_D{g} = nan(Max_PVD_Orders,length(xx),length(Workspace_Set{g}));
@@ -1116,8 +1162,8 @@ function Display_Plot(P,Data,Label)
 				if(1 || P.GUI_Handles.Control_Panel_Objects(4,4).Value == 2)
 					L = size([H_D.CData],1); % # of bars.
 					for o=1:Max_PVD_Orders
-						H_D(o).CData = repmat(Class_Colors(o,:),L,1);
-						H_V(o).CData = repmat(Class_Colors(o,:),L,1);
+						H_D(o).CData = repmat(P.GUI_Handles.Class_Colors(o,:),L,1);
+						H_V(o).CData = repmat(P.GUI_Handles.Class_Colors(o,:),L,1);
 					end
 				else
 					legend(Ax1,{'Dorsal','Ventral'});
@@ -1152,12 +1198,17 @@ function Display_Plot(P,Data,Label)
 			end
 			
 			% xl = 0:pi/6:pi/2;
-			set(Ax1,'FontSize',P.GUI_Handles.Plots.Axis_Ticks,'xlim',[Edges([1,end])],'TickLabelInterpreter','Latex'); % ,'XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)));
+			set(Ax1,'FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize,'xlim',[Edges([1,end])]); % ,'TickLabelInterpreter','Latex','XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)));
 			
 			switch(P.GUI_Handles.Control_Panel_Objects(2,4).Value)
 				case 1
-					XLabel = '$\mathrm{Midline \; Position \; [{\mu}m]}$';
-					YLabel = '$\mathrm{Neuronal \; Length \; [{\mu}m]}$';
+					if(P.GUI_Handles.Control_Panel_Objects(1,5).Value > 1)
+						xy_scale = num2str(P.GUI_Handles.Control_Panel_Objects(1,5).Value);
+					else
+						xy_scale = '';
+					end
+					XLabel = ['Midline Position [',xy_scale,char(181),'m]'];
+					YLabel = ['Neuronal Length [',xy_scale,char(181),'m]'];
 				case 2 % Normalized to Midline Length.
 					XLabel = 'Midline Position (normalized)';
 					YLabel = '$\mathrm{Neuronal \; Length \; [{\mu}m]}$';
@@ -1169,11 +1220,14 @@ function Display_Plot(P,Data,Label)
 					XLabel = 'Midline Position (normalized)';
 					YLabel = '$\frac{ \mathrm{Neuronal Length} }{ \mathrm{Total Length} }$';
 			end
-			xlabel(Ax1,XLabel,'Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
-			ylabel(Ax1,YLabel,'Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+			xlabel(Ax1,XLabel,'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize); % ,'Interpreter','Latex'
+			ylabel(Ax1,YLabel,'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize); % ,'Interpreter','Latex'
 			
 			% set(Ax1,'unit','normalize','position',[0.1,0.15,0.87,0.8]);
 			set(Ax1,'YTickLabels',abs(get(Ax1,'YTick')));
+			
+			set(Ax1,'XTickLabels',get(Ax1,'XTick') ./ P.GUI_Handles.Control_Panel_Objects(1,5).Value);
+			set(Ax1,'YTickLabels',abs(get(Ax1,'YTick')) ./ P.GUI_Handles.Control_Panel_Objects(1,5).Value);
 			
 			% profile off; profile viewer;
 		case {'Midline Density - 3-Way Junctions','Midline Density - Tips'}
@@ -1350,10 +1404,14 @@ function Display_Plot(P,Data,Label)
 			
 		case {'Junction Number/Density','Tip Number/Density'}
 			
-			Field_1 = 'Length_Corrected'; % 'Length';
-			
 			set(P.GUI_Handles.Control_Panel_Objects(2,4),'Items',{'Not Normalized','Midline Length','Total Length'},'ItemsData',1:3);
 			set(P.GUI_Handles.Control_Panel_Objects(4,4),'Items',{'Default','Orders Merged','Orders 1-3'},'ItemsData',1:3); % ,'Dorsal-Ventral Merged',
+			
+			if(P.GUI_Handles.Control_Panel_Objects(2,1).Value) % Apply projection correction.
+				Field_1 = 'Length_Corrected';
+			else
+				Field_1 = 'Length';
+			end
 			
 			switch(Label)
 				case 'Junction Number/Density'
@@ -1378,13 +1436,19 @@ function Display_Plot(P,Data,Label)
 					Nc = 1;
 			end
 			
+			if(P.GUI_Handles.Control_Panel_Objects(1,5).Value > 1)
+				y_scale = num2str(P.GUI_Handles.Control_Panel_Objects(1,5).Value);
+			else
+				y_scale = '';
+			end
+			
 			switch(P.GUI_Handles.Control_Panel_Objects(2,4).Value) % Normalization.
 				case 1
-					Y_Name = ['$\mathrm{\# \; of \;',Name,'s}$'];
+					Y_Name = ['# of ',Name,'s'];
 				case 2
-					Y_Name = ['$\mathrm{\frac{\# \; of \; ',Name,'}{Midline \; Length \; (\mu m)}}$'];
+					Y_Name = ['# of ',Name,'s / Midline Length [',y_scale,char(181),'m]']; % ['$\mathrm{\frac{\# \; of \; ',Name,'}{Midline \; Length \; (\mu m)}}$'];
 				case 3
-					Y_Name = ['$\mathrm{',Name,' Density}$'];
+					Y_Name = [Name,' Density [',y_scale,char(181),'m^{-1}]'];
 			end
 			
 			Ng = length(Workspace_Set);
@@ -1455,7 +1519,7 @@ function Display_Plot(P,Data,Label)
 			
 			switch(P.GUI_Handles.Control_Panel_Objects(4,4).Value) % Type.
 				case 1 % Per order.
-					H = bar(Ax1,1:length(Classes),N_Mean,'hist','FaceColor','flat'); % ".
+					H = bar(Ax1,1:length(Classes),N_Mean,BarWidth,'hist','FaceColor','flat'); % ".
 				case {2,3} % Orders merged. X-axis used for groups.
 					H = bar(Ax1,1:Ng,N_Mean,'FaceColor','flat'); % ".
 			end
@@ -1494,21 +1558,24 @@ function Display_Plot(P,Data,Label)
 				end
 			end
 			
-			set(Ax1,'unit','normalize','position',[0.1,0.15,0.87,0.8],'TickLabelInterpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Ticks);
+			set(Ax1,'FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
 			
 			switch(P.GUI_Handles.Control_Panel_Objects(4,4).Value) % Type.
 				case 1 % Per order.
-					XLabel = 'Menorah Order';
-					legend(Ax1,Groups,'Interpreter','Latex');
+					XLabel = 'Class';
+					legend(Ax1,Groups); % Axis_Ticks_FontSize
 					set(Ax1,'XTick',1:length(Classes),'xlim',[0.5,length(Classes)+0.5]);
+					xlabel(Ax1,XLabel,'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 				case {2,3} % Orders merged. X-axis used for groups.
-					XLabel = 'Menorah Order';
 					set(Ax1,'XTick',1:Ng,'XTickLabels',Groups,'xlim',[0.5,Ng+0.5]);
 			end
-			xlabel(Ax1,XLabel,'Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
-			ylabel(Ax1,Y_Name,'Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+			ylabel(Ax1,Y_Name,'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 			
-			grid(Ax1,'on');
+			if(P.GUI_Handles.Control_Panel_Objects(2,4).Value > 1) % If the count is divided by length (midline/total).
+				set(Ax1,'YTickLabels',abs(get(Ax1,'YTick')) .* P.GUI_Handles.Control_Panel_Objects(1,5).Value);
+			end
+			
+			% grid(Ax1,'on');
 			
 		case 'CB Intensity'
 			Var_Operations = @(x) x; % Sum up all segments lengths of each individual animal (=workspace). The length of a segment has to be positive.
@@ -1663,10 +1730,10 @@ function Display_Plot(P,Data,Label)
 			
 			Ng = length(Workspace_Set);
 			
-			set(GP.Handles.Normalization_List,'String',{'Not Normalized','Total Length'});
-			set(GP.Handles.Plot_Type_List,'String',{'Default','Color Gradient','Vertices Only'});
+			set(P.GUI_Handles.Control_Panel_Objects(2,4),'Items',{'Not Normalized','Total Length'},'ItemsData',1:2);
+			set(P.GUI_Handles.Control_Panel_Objects(4,4),'Items',{'Default','Color Gradient','Vertices Only'},'ItemsData',1:3);
 			
-			if(GP.Handles.Projection_Correction_Checkbox.Value) % Apply projection correction.
+			if(P.GUI_Handles.Control_Panel_Objects(2,1).Value) % Apply projection correction.
 				Field_1_Name = 'Midline_Orientation_Corrected';
 				Field_2_Name = 'Length_Corrected';
 			else
@@ -1674,12 +1741,12 @@ function Display_Plot(P,Data,Label)
 				Field_2_Name = 'Length';
 			end
 			
-			if(~GP.Handles.Analysis.Slider.UserData)
-				set(GP.Handles.Analysis.Slider,'Min',1,'Max',11,'Value',1,'SliderStep',[0.1,0.2]);
+			if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData)) % If the previous plot was different.
+				set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[1,30],'Step',1,'Value',2,'Tooltip','');
 			end
-			Edges = 0:GP.Handles.Analysis.Slider.Value*pi/180:pi/2;
+			BinSize = P.GUI_Handles.Control_Panel_Objects(1,4).Value .* pi ./ 180; % Degrees to radians.
+			Edges = 0:BinSize:pi/2;
 			xx = (Edges(2:end) + Edges(1:end-1)) ./ 2;
-			set(GP.Handles.Analysis.Slider_Text,'String',num2str(GP.Handles.Analysis.Slider.Value));
 			
 			for g=1:Ng
 				
@@ -1687,31 +1754,31 @@ function Display_Plot(P,Data,Label)
 				Y_V{g} = nan(length(Workspace_Set{g}),length(xx));
 				
 				for w=1:length(Workspace_Set{g})
-					ww = Workspace_Set{g}(w);
+					pp = Workspace_Set{g}(w);
 					
-					switch GP.Handles.Normalization_List.Value
+					switch(P.GUI_Handles.Control_Panel_Objects(2,4).Value) % Normalization.
 						case 1
 							Total_Length = 1;
 						case 2
-							Total_Length = nansum([GP.Workspace(ww).Workspace.Points.(Field_2_Name)]);
+							Total_Length = nansum([Data(pp).Points.(Field_2_Name)]);
 					end
 					
-					if(GP.Handles.Plot_Type_List.Value <= 2)
-						f_D = find([GP.Workspace(ww).Workspace.Points.Midline_Distance] <= 0);
-						f_V = find([GP.Workspace(ww).Workspace.Points.Midline_Distance] >= 0);
-					elseif(GP.Handles.Plot_Type_List.Value == 3) % Only use rectangles of vertices.
-						f_D = find([GP.Workspace(ww).Workspace.Points.Midline_Distance] <= 0 & [GP.Workspace(ww).Workspace.Points.Vertex_Order] == 3);
-						f_V = find([GP.Workspace(ww).Workspace.Points.Midline_Distance] >= 0 & [GP.Workspace(ww).Workspace.Points.Vertex_Order] == 3);
+					if(P.GUI_Handles.Control_Panel_Objects(4,4).Value <= 2) % Type.
+						f_D = find([Data(pp).Points.Midline_Distance] <= 0);
+						f_V = find([Data(pp).Points.Midline_Distance] >= 0);
+					elseif(P.GUI_Handles.Control_Panel_Objects(4,4).Value == 3) % Only use rectangles of vertices.
+						f_D = find([Data(pp).Points.Midline_Distance] <= 0 & [Data(pp).Points.Vertex_Order] == 3);
+						f_V = find([Data(pp).Points.Midline_Distance] >= 0 & [Data(pp).Points.Vertex_Order] == 3);
 					end
 					
-					Xw_D = [GP.Workspace(ww).Workspace.Points(f_D).(Field_1_Name)];
-					Xw_V = [GP.Workspace(ww).Workspace.Points(f_V).(Field_1_Name)];
+					Xw_D = [Data(pp).Points(f_D).(Field_1_Name)];
+					Xw_V = [Data(pp).Points(f_V).(Field_1_Name)];
 					
 					% Length:
-					if(GP.Handles.Plot_Type_List.Value <= 2)
-						Lw_D = [GP.Workspace(ww).Workspace.Points(f_D).(Field_2_Name)] ./ Total_Length;
-						Lw_V = [GP.Workspace(ww).Workspace.Points(f_V).(Field_2_Name)] ./ Total_Length;
-					else % Only use rectangles of vertices. Weigh vertices as length 1.
+					if(P.GUI_Handles.Control_Panel_Objects(4,4).Value <= 2) % Type.
+						Lw_D = [Data(pp).Points(f_D).(Field_2_Name)] ./ Total_Length;
+						Lw_V = [Data(pp).Points(f_V).(Field_2_Name)] ./ Total_Length;
+					else % Only use rectangles of vertices. Weigh vertices as length 1 (we only want the number of vertices without length weighing).
 						Lw_D = ones(1,length(f_D)) ./ Total_Length;
 						Lw_V = ones(1,length(f_V)) ./ Total_Length;
 					end
@@ -1736,14 +1803,14 @@ function Display_Plot(P,Data,Label)
 				Merge_DV = 1;
 				switch Merge_DV
 					case 0
-						H_D = bar(xx,mean(Y_D{1},1),1,'FaceColor','flat');
-						hold on;
-						H_V = bar(xx,-mean(Y_V{1},1),1,'FaceColor','flat');
+						H_D = bar(Ax1,xx,mean(Y_D{1},1),1,'FaceColor','flat');
+						hold(Ax1,'on');
+						H_V = bar(Ax1,xx,-mean(Y_V{1},1),1,'FaceColor','flat');
 					case 1
-						H_D = bar(xx,mean(Y_D{1},1)+mean(Y_V{1},1),1,'FaceColor','flat');
+						H_D = bar(Ax1,xx,mean(Y_D{1},1)+mean(Y_V{1},1),1,'FaceColor','flat');
 				end
 				
-				if(GP.Handles.Plot_Type_List.Value == 2 || GP.Handles.Plot_Type_List.Value == 3) % Color gradient.
+				if(P.GUI_Handles.Control_Panel_Objects(4,4).Value == 2 || P.GUI_Handles.Control_Panel_Objects(4,4).Value == 3) % Color gradient.
 					L = size(H_D.CData,1); % # of bars.
 					CM = transpose(rescale(1:L));
 					CM = [1-CM, CM , 0.*CM+0.2];
@@ -1764,38 +1831,50 @@ function Display_Plot(P,Data,Label)
 					xk_V{g} = linspace(Edges(1),Edges(end),1000);
 					fk_V{g} = Fit_Object_V(xk_V{g});
 					
-					H_D{g} = area(xk_D{g},fk_D{g},'FaceColor',CM(g,:),'FaceAlpha',0.5); % 1./(Ng-g+1)./1.5
-					hold on;
-					H_V{g} = area(xk_V{g},-fk_V{g},'FaceColor',CM(g,:),'FaceAlpha',0.5); % 1./(Ng-g+1)./1.5
+					H_D{g} = area(Ax1,xk_D{g},fk_D{g},'FaceColor',CM(g,:),'FaceAlpha',0.5); % 1./(Ng-g+1)./1.5
+					hold(Ax1,'on');
+					H_V{g} = area(Ax1,xk_V{g},-fk_V{g},'FaceColor',CM(g,:),'FaceAlpha',0.5); % 1./(Ng-g+1)./1.5
 				end
 				
 				for g=1:Ng
-					plot(xk_D{g},fk_D{g},'LineWidth',2,'Color',CM(g,:));
-					plot(xk_V{g},-fk_V{g},'LineWidth',2,'Color',CM(g,:));
+					plot(Ax1,xk_D{g},fk_D{g},'LineWidth',2,'Color',CM(g,:));
+					plot(Ax1,xk_V{g},-fk_V{g},'LineWidth',2,'Color',CM(g,:));
 				end
-				legend(Groups);
+				legend(Ax1,Groups);
 			end
 			
-			xlabel(['$$Midline \; Orientation \; (^{\circ})$$'],'Interpreter','Latex');
+			set(Ax1,'FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
 			
-			switch GP.Handles.Normalization_List.Value
-				case 1
-					ylabel('$$Neuronal \; Length \; ({\mu}m)$$','Interpreter','Latex');
-					set(gca,'position',[0.09,0.1490,0.89,0.8]); % set(gca,'position',[0.11,0.1490,0.87,0.8]);
-				case 2
-					ylabel('$$\frac{Neuronal \; Length}{Total \; Length}$$','Interpreter','Latex');
-					set(gca,'position',[0.13,0.1490,0.85,0.7760]);
+			if(P.GUI_Handles.Control_Panel_Objects(1,5).Value > 1)
+				y_scale = num2str(P.GUI_Handles.Control_Panel_Objects(1,5).Value);
+			else
+				y_scale = '';
 			end
 			
-			set(gca,'YTickLabels',abs(get(gca,'YTick')));
-			xl = 0:pi/6:pi/2;
-			set(gca,'FontSize',FontSize_1,'xlim',[Edges([1,end])],'XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)));
-			% ylim([-max(N_V),max(N_D)]);
+			xlabel(Ax1,[char(952),' (orientation) [',char(176),']'],'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 			
-			set(gca,'TickLabelInterpreter','Latex');
-			set(gca,'YTickLabels',abs(get(gca,'YTick')));
+			if(P.GUI_Handles.Control_Panel_Objects(4,4).Value <= 2)
+				switch(P.GUI_Handles.Control_Panel_Objects(2,4).Value) % Normalization.
+					case 1
+						ylabel(Ax1,['Neuronal Length [',y_scale,char(181),'m]'],'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+					case 2
+						ylabel(Ax1,'Neuronal Length / Total Length','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+				end
+				
+				set(Ax1,'XTick',0:pi/4:pi/2,'YTick',0:100:max(get(Ax1,'YTick')));
+			else
+				ylabel(Ax1,'Number of Junctional Elements','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+				
+				set(Ax1,'XTick',0:pi/4:pi/2);
+			end
 			
-			% set(gca,'unit','normalize','position',[0.098,0.15,0.89,0.84]);
+			xlim(Ax1,[Edges([1,end])]);
+			drawnow;
+			% set(Ax1,'FontSize',FontSize_1,'XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)),'YTickLabels',get(Ax1,'YTick') ./ P.GUI_Handles.Control_Panel_Objects(1,5).Value);
+			set(Ax1,'XTickLabels',get(Ax1,'xtick') .* 180 ./ pi,'YTickLabels',get(Ax1,'YTick') ./ P.GUI_Handles.Control_Panel_Objects(1,5).Value);
+			
+			% set(Ax1,'YTickLabels',abs(get(Ax1,'YTick')));
+			
 		case 'Distances Of Vertices From The Medial Axis - Histogram'
 			
 			Workspace_Set = Workspace_Set{1};
@@ -2549,7 +2628,7 @@ function Display_Plot(P,Data,Label)
 						histogram(Ax(g),V{g}(:).*180./pi,Edges);
 						
 						xlim(Ax(g),[0,360]);
-						set(Ax(g),'XTick',0:30:360,'FontSize',FontSize_1,'TickLabelInterpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Ticks);
+						set(Ax(g),'XTick',0:30:360,'FontSize',FontSize_1,'TickLabelInterpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
 						xlabel(Ax(g),'$\mathrm{Angle \; [^{\circ}]}$','Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 						ylabel(Ax(g),'$\mathrm{Count}$','Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 						grid(Ax(g),'on');
@@ -2564,7 +2643,7 @@ function Display_Plot(P,Data,Label)
 						histogram(Ax(g),V{g}(3,:).*180./pi,Edges);
 						
 						xlim(Ax(g),[0,360]);
-						set(Ax(g),'XTick',0:30:360,'FontSize',FontSize_1,'TickLabelInterpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Ticks);
+						set(Ax(g),'XTick',0:30:360,'FontSize',FontSize_1,'TickLabelInterpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
 						xlabel(Ax(g),'$\mathrm{Angle \; [^{\circ}]}$','Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 						ylabel(Ax(g),'$\mathrm{Count}$','Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 						grid(Ax(g),'on');

@@ -3,10 +3,18 @@ function Display_Reconstruction(P,Data,p,Label)
 	% P is the handle class containing all project and gui data.
 	% Data = P.Data(p), where p is the current selected project. It is passed separately as a struct for faster reading (reading a handle class property in a loop is very slow).
 	
+	Segment_Smoothing_Parameter = 1;
+	
 	Undock = P.GUI_Handles.Control_Panel_Objects(4,1).Value;
-	LineWidth_1 = 2; % [2,6].
-	DotSize_1 = 10; % 80;
-	DotSize_2 = 15; % 80;
+	if(Undock)
+		LineWidth_1 = 5; % 1. Use 5 for close up.
+		DotSize_1 = 100; % 2. Use 100 for close up.
+		DotSize_2 = 10;
+	else
+		LineWidth_1 = 2; % [2,6].
+		DotSize_1 = 10; % 80;
+		DotSize_2 = 15; % 80;
+	end
 	
 	if(~Undock)
 		Ax = P.GUI_Handles.View_Axes;
@@ -83,25 +91,31 @@ function Display_Reconstruction(P,Data,p,Label)
 			
 			set(allchild(Ax),'HitTest','off');
 			set(Ax,'PickableParts','all');
-		
+			
 		case 'CNN + Binary'
 			CM = lines;
 			
 			Im = Data.Info.Files(1).Denoised_Image;
+			
+			CNN_Binary = [0,1];
+			CNN_Binary = CNN_Binary(Data.Info.Files(1).Denoised_Image);
+			CNN_Binary = Update_Binary_Image([],CNN_Binary,P.Data(p).Parameters.Neural_Network.Min_CC_Size,0);
+			Im = categorical(CNN_Binary,[0,1],["BG","Neuron"]);
+			
 			Im(Data.Info.Files(1).Binary_Image == 1 & Im == "BG") = "Added"; % Added pixels.
 			Im(Data.Info.Files(1).Binary_Image == 0 & Im == "Neuron") = "Removed"; % Removed pixels.
 			
-			Im_Label = labeloverlay(Data.Info.Files(1).Raw_Image,Im,'Colormap',CM([1,7,1,3],:),'Transparency',0.1,'IncludedLabels',["Neuron","Added","Removed"]);
+			Im_Label = labeloverlay(Data.Info.Files(1).Raw_Image,Im,'Colormap',CM([1,7,6,3],:),'Transparency',0.1,'IncludedLabels',["Neuron","Added","Removed"]);
 			
 			imshow(Im_Label,'Parent',Ax);
 		case 'Skeleton'
 			[Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints] = Pixel_Trace_Post_Proccessing(Data.Info.Files(1).Binary_Image,Scale_Factor);
-			imshow(Im1_NoiseReduction,'Parent',Ax);
 			
 			skel_method = 2;
 			
 			switch(skel_method)
 				case 1 % Display segments.
+					imshow(Im1_NoiseReduction,'Parent',Ax);
 					for s=1:numel(Data.Segments)
 						if(numel(Data.Segments(s).Rectangles))
 							x = [Data.Segments(s).Rectangles.X];
@@ -113,14 +127,20 @@ function Display_Reconstruction(P,Data,p,Label)
 					% [Y,X] = find(Im1_branchpoints); hold on; plot(X,Y,'.k','MarkerSize',30);
 					% [Y,X] = find(Im1_endpoints); hold on; plot(X,Y,'.r','MarkerSize',30);
 				case 2 % Display connected components.
+					imshow(Im1_NoiseReduction,'Parent',Ax);
 					CM = lines(1000);
 					
 					CC = bwconncomp(Im1_NoiseReduction);
 					for c=1:length(CC.PixelIdxList)
 						[y,x] = ind2sub(size(Im1_NoiseReduction),CC.PixelIdxList{c});
 						hold(Ax,'on');
-						plot(Ax,x,y,'.','MarkerSize',7,'Color',CM(c,:));
+						plot(Ax,x,y,'.','MarkerSize',0.2,'Color',CM(c,:)); % 7.
 					end
+				case 3 % Display as label.
+					CM = lines(7);
+					% CM = CM([1,7,2,3,4,5,6],:);
+					Im_Label = labeloverlay(Data.Info.Files(1).Raw_Image,Im1_NoiseReduction,'Colormap',CM(3,:),'Transparency',0.05);
+					imshow(Im_Label,'Parent',Ax);
 			end
 		case 'Blob'
 			[ImB,XYper] = Neuron_To_Blob(Data.Info.Files(1).Binary_Image);
@@ -143,17 +163,31 @@ function Display_Reconstruction(P,Data,p,Label)
 						x = [Data.Segments(s).Rectangles.X];
 						y = [Data.Segments(s).Rectangles.Y];
 						W = [Data.Segments(s).Rectangles.Width];
+						A = atan2d(gradient(y),gradient(x));
+						
 						if(length(x) > 1)
-							[x,y] = Smooth_Points(x,y,10);
+							[x,y] = Smooth_Points(x,y,Segment_Smoothing_Parameter);
 						end
 						
 						switch(Label)
 							case 'Trace - Lite'
-								plot(Ax,x,y,'LineWidth',LineWidth_1,'Color',[0,0.8,0]); % [0.12,0.56,1]
+								if(1)
+									plot(Ax,x,y,'LineWidth',LineWidth_1,'Color',[0,0.6,0]); % [0.12,0.56,1].
+								else
+									for i=1:length(x)
+										[XV,YV] = Get_Rect_Vector([x(i),y(i)],A(i),W(i),1,14);
+										patch(Ax,[XV,XV(1)],[YV,YV(1)],[0,0.6,0],'EdgeColor',[0.8,0,0],'FaceAlpha',0.5);
+									end
+								end
+								Vertex_Color = [0.5,0,0];
 							case 'Trace'
-								plot_line_edge(Ax,x,y,W);
+								Hs = plot(Ax,x,y,'LineWidth',LineWidth_1,'Color',[0,0.6,0]); % [0.12,0.56,1].
+								Hs.Color(4) = 0.75;
+								% plot_line_edge(Ax,x,y,W);
+								Vertex_Color = [0,0,0];
 							case 'Segmentation'
 								plot(Ax,x,y,'LineWidth',LineWidth_1);
+								Vertex_Color = [0.1,0.1,0.1];
 						end
 					end
 					% P.GUI_Handles.Waitbar.Value = s ./ Ns;
@@ -162,11 +196,12 @@ function Display_Reconstruction(P,Data,p,Label)
 			
 			% Plot the vertices:
 			switch(Label)
-				case {'Trace - Lite','Segmentation'}
+				case {'Trace - Lite','Segmentation','Trace'}
 					Fj = find([Data.Vertices.Order] == 3); % Find junctions.
 					Xj = [Data.Vertices(Fj).X];
 					Yj = [Data.Vertices(Fj).Y];
-					scatter(Ax,Xj,Yj,5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
+					scatter(Ax,Xj,Yj,DotSize_1,Vertex_Color,'filled'); % Use 100 when zooming in. Otherwise 10.
+					% scatter(Ax,Xj,Yj,5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
 					% scatter(Ax,[Data.Vertices.X],[Data.Vertices.Y],5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
 				case 'Trace'
 					for j=1:numel(Data.Vertices)
@@ -232,7 +267,7 @@ function Display_Reconstruction(P,Data,p,Label)
 					Waypoints = false(Np_Total,1);
 					Waypoints(1:round(Np_Total / Np_Waypoints):Np_Total) = true;
 					
-					roi = images.roi.Freehand(Ax,'Position',[XY(1,:)',XY(2,:)'],'Waypoints',Waypoints,'UserData',{p,F{f}},'Closed',false,'Color',CM1(f,:),'FaceAlpha',0,'FaceSelectable',false); % roi = images.roi.Polyline(Ax,'Position',[XY(1,:)',XY(2,:)'],'UserData',{p,F{f}});
+					roi = images.roi.Freehand(Ax,'Smoothing',1,'Position',[XY(1,:)',XY(2,:)'],'Waypoints',Waypoints,'UserData',{p,F{f}},'Closed',false,'Color',CM1(f,:),'FaceAlpha',0,'FaceSelectable',false); % roi = images.roi.Polyline(Ax,'Position',[XY(1,:)',XY(2,:)'],'UserData',{p,F{f}});
 					addlistener(roi,'ROIMoved',@(src,evnt) Draggable_Point_Func(src,evnt,P));
 				else
 					plot(Ax,XY(1,:),XY(2,:),'Color',CM1(f,:),'LineWidth',3);
@@ -252,7 +287,7 @@ function Display_Reconstruction(P,Data,p,Label)
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			hold(Ax,'on');
 			Map_Worm_Axes(Data,Data.Axes,1,0,Ax);
-		case {'Radial Distance','Angular Coordinate'}
+		case {'Radial Distance','Azimuthal Angle'}
 			
 			Min_Max = [0,pi./2];
 			CM_Lims = [1,1000];
@@ -261,7 +296,7 @@ function Display_Reconstruction(P,Data,p,Label)
 			switch(Label)
 				case 'Radial Distance'
 					Field_1 = 'Radial_Distance_Corrected';
-				case 'Angular Coordinate'
+				case 'Azimuthal Angle'
 					Field_1 = 'Angular_Coordinate';
 			end
 			
@@ -275,7 +310,7 @@ function Display_Reconstruction(P,Data,p,Label)
 				X = [Data.Points(Fs).X];
 				Y = [Data.Points(Fs).Y];
 				if(length(X) > 1)
-					[X,Y] = Smooth_Points(X,Y,100);
+					[X,Y] = Smooth_Points(X,Y,Segment_Smoothing_Parameter);
 				end
 				
 				C = abs([Data.Points(Fs).(Field_1)]);
@@ -284,8 +319,12 @@ function Display_Reconstruction(P,Data,p,Label)
 				X(end+1) = nan;
 				Y(end+1) = nan;
 				C(end+1,:) = nan(1,3);
-				h = patch(Ax,X',Y',1,'FaceVertexCData',C,'EdgeColor','interp','MarkerFaceColor','flat','LineWidth',2); % 8.
+				h = patch(Ax,X',Y',1,'FaceVertexCData',C,'EdgeColor','interp','MarkerFaceColor','flat','LineWidth',LineWidth_1); % 8.
 			end
+			
+			% Plot the vertices:
+			Fj = find([Data.Vertices.Order] >= 3); % Find junctions.
+			scatter(Ax,[Data.Vertices(Fj).X],[Data.Vertices(Fj).Y],DotSize_1,'k','filled'); % Use 100 when zooming in. Otherwise 10.
 		case 'Midline Orientation'
 			
 			Min_Max = [0,pi./2];
@@ -303,7 +342,7 @@ function Display_Reconstruction(P,Data,p,Label)
 				X = [Data.Points(Fs).X];
 				Y = [Data.Points(Fs).Y];
 				if(length(X) > 1)
-					[X,Y] = Smooth_Points(X,Y,100);
+					[X,Y] = Smooth_Points(X,Y,Segment_Smoothing_Parameter);
 				end
 				
 				C = [Data.Points(Fs).Midline_Orientation];
@@ -312,7 +351,7 @@ function Display_Reconstruction(P,Data,p,Label)
 				X(end+1) = nan;
 				Y(end+1) = nan;
 				C(end+1,:) = nan(1,3);
-				h = patch(X',Y',1,'FaceVertexCData',C,'EdgeColor','interp','MarkerFaceColor','flat','LineWidth',2); % 8.
+				h = patch(X',Y',1,'FaceVertexCData',C,'EdgeColor','interp','MarkerFaceColor','flat','LineWidth',LineWidth_1); % 8.
 			end
 		case 'Longitudinal Gradient'
 			
@@ -324,13 +363,12 @@ function Display_Reconstruction(P,Data,p,Label)
 			CM = jet(CM_Lims(2));
 			
 			for s=1:numel(Data.Segments)
-
 				Fs = find([[Data.Points.Segment_Index]] == Data.Segments(s).Segment_Index);
 			
 				X = [Data.Points(Fs).X];
 				Y = [Data.Points(Fs).Y];
 				if(length(X) > 1)
-					[X,Y] = Smooth_Points(X,Y,100);
+					[X,Y] = Smooth_Points(X,Y,Segment_Smoothing_Parameter);
 				end
 				
 				C = [Data.Points(Fs).Axis_0_Position];
@@ -339,7 +377,7 @@ function Display_Reconstruction(P,Data,p,Label)
 				X(end+1) = nan;
 				Y(end+1) = nan;
 				C(end+1,:) = nan(1,3);
-				h = patch(X',Y',1,'FaceVertexCData',C,'EdgeColor','interp','MarkerFaceColor','flat','LineWidth',2); % 8.
+				h = patch(Ax,X',Y',1,'FaceVertexCData',C,'EdgeColor','interp','MarkerFaceColor','flat','LineWidth',LineWidth_1); % 8.
 			end
 		case 'Dorsal-Ventral'
 			
@@ -436,7 +474,7 @@ function Display_Reconstruction(P,Data,p,Label)
 					X = [Data.Segments(s).Rectangles(f).X];
 					Y = [Data.Segments(s).Rectangles(f).Y];
 					if(length(X) > 1)
-						[X,Y] = Smooth_Points(X,Y,100);
+						[X,Y] = Smooth_Points(X,Y,Segment_Smoothing_Parameter);
 					end
 					
 					C = C(f);
@@ -446,19 +484,19 @@ function Display_Reconstruction(P,Data,p,Label)
 					X(end+1) = nan;
 					Y(end+1) = nan;
 					C(end+1,:) = nan(1,3);
-					h = patch(Ax,X',Y',1,'FaceVertexCData',C,'EdgeColor','interp','MarkerFaceColor','flat','LineWidth',2); % 8.
+					h = patch(Ax,X',Y',1,'FaceVertexCData',C,'EdgeColor','interp','MarkerFaceColor','flat','LineWidth',LineWidth_1); % [1,8].
 				end
 				% P.GUI_Handles.Waitbar.Value = s ./ Ns;
 				
-				scatter(Ax,[Data.Vertices.X],[Data.Vertices.Y],5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
+				% Plot the vertices:
+				Fj = find([Data.Vertices.Order] >= 3); % Find junctions.
+				scatter(Ax,[Data.Vertices(Fj).X],[Data.Vertices(Fj).Y],DotSize_1,'k','filled'); % Use 100 when zooming in. Otherwise 10.
 			end
 		case 'PVD Orders - Points'
 			
 			Class_Num = max([Data.Points.Class]);
+			Class_Colors = [P.GUI_Handles.Class_Colors ; 0.5,0.5,0.5];
 			
-			C = [0.6,0,0 ; 0,0.6,0 ; 0.12,0.56,1 ; 0.8,0.8,0 ; .5,.5,.5];
-			
-			% figure;
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			hold(Ax,'on');
 			
@@ -467,16 +505,12 @@ function Display_Reconstruction(P,Data,p,Label)
 			Classes = [Data.Points.Class]; % Classes = [Data.Points.Segment_Class];
 			Classes(isnan(Classes)) = Class_Num + 1;
 			
-			scatter(Ax,Midline_Distance,Midline_Orientation,5,C(Classes,:),'filled');
+			scatter(Ax,Midline_Distance,Midline_Orientation,5,Class_Colors(Classes,:),'filled');
 			
 			% assignin('base','Points',Data.Points);
 			
 		case 'PVD Orders - Segments'
 			Class_Num = max([Data.Segments.Class]);
-			
-			% C = lines(Class_Num+1);
-			Class_Indices = [1,2,3,4]; %  [1,2,3,3.5,4,5];
-			Class_Colors = [0.6,0,0 ; 0,0.6,0 ; 0.12,0.56,1 ; 0.8,0.8,0]; % 3=0,0.8,0.8 ; 3.5=0,0,1 ; 5=0.5,0.5,0.5
 			
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			hold(Ax,'on');
@@ -487,14 +521,14 @@ function Display_Reconstruction(P,Data,p,Label)
 					y = [Data.Segments(s).Rectangles.Y];
 					
 					if(length(x) > 1)
-						[x,y] = Smooth_Points(x,y,100);
+						[x,y] = Smooth_Points(x,y,Segment_Smoothing_Parameter);
 					end
 					
-					c = find(Class_Indices == Data.Segments(s).Class);
+					c = find((1:length(P.GUI_Handles.Class_Colors)) == Data.Segments(s).Class);
 					if(isempty(c)) % isnan(c)
-						plot(Ax,x,y,'Color',Class_Colors(end,:),'LineWidth',LineWidth_1);
+						plot(Ax,x,y,'Color',P.GUI_Handles.Class_Colors(end,:),'LineWidth',LineWidth_1);
 					else
-						plot(Ax,x,y,'Color',Class_Colors(c,:),'LineWidth',2); % Use 5 when zooming in. Otherwise 2.
+						plot(Ax,x,y,'Color',P.GUI_Handles.Class_Colors(c,:),'LineWidth',LineWidth_1); % Use 5 when zooming in. Otherwise 2.
 					end
 				end
 				% P.GUI_Handles.Waitbar.Value = s ./ Ns;
@@ -502,8 +536,10 @@ function Display_Reconstruction(P,Data,p,Label)
 			
 			% Plot the vertices:
 			%
-			scatter(Ax,[Data.Vertices.X],[Data.Vertices.Y],5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
+			Fj = find([Data.Vertices.Order] >= 3); % Find junctions.
+			scatter(Ax,[Data.Vertices(Fj).X],[Data.Vertices(Fj).Y],DotSize_1,'k','filled'); % Use 100 when zooming in. Otherwise 10.
 			%}
+		
 			
 			% Use when zooming in:
 			% F = find([Data.All_Vertices.Order] >= 2);
@@ -698,11 +734,11 @@ function Display_Reconstruction(P,Data,p,Label)
 			otherwise
 				set(P.GUI_Handles.View_Axes,'ButtonDownFcn','');
 		end
-    end
+	end
     
     function Lock_Image_Func(~,~,P)
         
-    end
+	end
 	
 	%{
 	% Code to loop over all projects and save a reconstruction.
@@ -712,7 +748,12 @@ function Display_Reconstruction(P,Data,p,Label)
 		close all;
 		Display_Reconstruction(Project,Project.Data(p),p,Label);
 		drawnow;
-		print(gcf,[Project.Data(p).Info.Experiment(1).Identifier,'.svg'],'-dsvg','-painters');
+		if(~isempty(Project.Data(p).Info.Experiment(1).Identifier))
+			Name = Project.Data(p).Info.Experiment(1).Identifier;
+		else
+			Name = [num2str(p),'_',Project.Data(p).Info.Experiment(1).Age];
+		end
+		print(gcf,[Name,'.svg'],'-dsvg','-painters');
 	end
 	%}
 	

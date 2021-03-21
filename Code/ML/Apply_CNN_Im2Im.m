@@ -17,6 +17,7 @@ function [C,Im_Label] = Apply_CNN_Im2Im(My_CNN,Im)
     Transparency = 0.3; % 0.3.
     CM = lines(7);
     CM([1,2],:) = CM([1,7],:);
+    Im_Label = [];
     
 	FS = My_CNN.Layers(1).InputSize(1); % Frame Size.
 	FHS = round(FS ./ 2); % Frame Half Size.

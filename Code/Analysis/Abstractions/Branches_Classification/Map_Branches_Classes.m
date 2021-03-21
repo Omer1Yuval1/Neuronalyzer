@@ -1,4 +1,4 @@
-function Clusters_Struct = Map_Branches_Classes(Data,Ax,Plot_Type)
+function Clusters_Struct = Map_Branches_Classes(P,Ax)
 	
 	% TODO:
 		% Rescale X by dividing by the half-radius.
@@ -8,7 +8,10 @@ function Clusters_Struct = Map_Branches_Classes(Data,Ax,Plot_Type)
 	% close all;
 	
 	Mode = 2;
-    FontSize_1 = 18; % 36.
+	FontSize_1 = 18; % 36.
+	
+	Class_Colors = P.GUI_Handles.Class_Colors;
+	Plot_Type = P.GUI_Handles.Control_Panel_Objects(4,4).Value;
 	
     switch Mode
 		case 1
@@ -32,23 +35,32 @@ function Clusters_Struct = Map_Branches_Classes(Data,Ax,Plot_Type)
 			Field_2 = 'Midline_Orientation_Corrected';
 			Field_3 = 'Length_Corrected';
 			
-			% cutoff = 0.0004; % [0.00029,0.00035,0.000287]. % cutoff = 0.000000071; % For total length normalization.
-			% X_Min_Max = [-1,1];
-			% dx = 0.05; % 0.025;
-			% dy = 0.05; % 0.025;
+			switch(4)
+				case 1
+					cutoff = 0.0004; % [0.00029,0.00035,0.000287]. % cutoff = 0.000000071; % For total length normalization.
+					X_Min_Max = [-1,1];
+					dx = 0.05; % 0.025;
+					dy = 0.05; % 0.025;
+				case 2
+					cutoff = 0.00025; % 0.000195.
+					X_Min_Max = [-2,2];
+					dx = 0.06;
+					dy = 0.06;
+				case 3
+					cutoff = 0.000047; % [0.00029,0.00035,0.000287]. % cutoff = 0.000000071; % For total length normalization.
+					X_Min_Max = [-2,2];
+					dx = 0.025; % 0.025;
+					dy = 0.025; % 0.025;
+				case 4
+					cutoff = 0.000045; % [0.00029,0.00035,0.000287]. % cutoff = 0.000000071; % For total length normalization.
+					X_Min_Max = [-2,2];
+					dx = 0.025;
+					dy = 0.025;
+			end
 			
-			% cutoff = 0.000195;
-			% X_Min_Max = [-2,2];
-			% dx = 0.05; % 0.025;
-			% dy = 0.05; % 0.025;
-			
-			cutoff = 0.000047; % [0.00029,0.00035,0.000287]. % cutoff = 0.000000071; % For total length normalization.
-			X_Min_Max = [-2,2];
-			dx = 0.025; % 0.025;
-			dy = 0.025; % 0.025;
 			Cluster_Size_Threshold = 50; % [5,10,*50*].
-			
-			Levels = cutoff:0.00001:0.05; % [0.0001:0.01 , 0.0028:0.001:0.05];
+			dc = 0.00001;
+			Levels = cutoff:dc:0.05; % [0.0001:0.01 , 0.0028:0.001:0.05];
 			% Cluster_Size_Threshold = 10; % [5,10,*50*].
 			
 			XFunc = @(x) rescale(x,X_Min_Max(1),X_Min_Max(2),'InputMin',-pi/2,'InputMax',pi/2);
@@ -67,10 +79,7 @@ function Clusters_Struct = Map_Branches_Classes(Data,Ax,Plot_Type)
 	Orientation_Edges = -1:dy:1;
 		
 	cmap = [0,0,0 ; 0.1,0.1,0.1]; % ;1 1 1];
-	Class_Colors = [0.6,0,0 ; 0,0.6,0 ; 0.12,0.56,1 ; 0.8,0.8,0]; % [0.6,0,0 ; 0,0.6,0 ; 0,0.8,0.8 ; 0.8,0.8,0]; % [1,2,3,4].
 	YLIM = [-2.3,2.05];
-	
-	
 	
 	Clusters_Struct = struct('Cluster_ID',{},'X_Boundary',{},'Y_Boundary',{},'Class',{});
 	
@@ -79,13 +88,13 @@ function Clusters_Struct = Map_Branches_Classes(Data,Ax,Plot_Type)
 	L0 = [];
 	
 	% Extract midline distance and orientation of all workspaces:
-	for p=1:numel(Data) % For each project.
+	for p=1:numel(P.Data) % For each project.
 		
 		% R3 = [Data(p).Points.Half_Radius];
 		% R4 = [Data(p).Points.Radius];
-		Dw = [Data(p).Points.(Field_1)];
-		Ow = [Data(p).Points.(Field_2)];
-		Lw = [Data(p).Points.(Field_3)];
+		Dw = [P.Data(p).Points.(Field_1)];
+		Ow = [P.Data(p).Points.(Field_2)];
+		Lw = [P.Data(p).Points.(Field_3)];
 		
 		% Total_Length = nansum([Data(p).Points.(Field_3)]);
 		% Lw = Lw ./ Total_Length;
@@ -177,42 +186,109 @@ function Clusters_Struct = Map_Branches_Classes(Data,Ax,Plot_Type)
 		x4 = x;
 		y4 = y;
 	end
-	% figure; surf(x3,y3,Z3);
     
+	% xyz_fit = fit([x4(:),y4(:)],Z4(:),'lowess','span',0.001);
+	% Z4(1:length(Z4(:))) = xyz_fit([x4(:),y4(:)]);
+	
 	if(nargin > 1)
 		switch(Plot_Type)
 			case 1
+				[M,c] = contourf(Ax,x4,y4,Z4,cutoff*[1,1],'edgecolor','none');
+				
+				cc = Ax.Children(end).ContourMatrix;
+				m = 1;
+				s = [];
+				n = 1;
+				
+				while(m < size(cc,2))
+					s(n).level = cc(1,m); 
+					s(n).count = cc(2,m); 
+					s(n).column = m;
+					idx = (m+1):(m+cc(2,m));
+					s(n).xdata = cc(1,idx)'; 
+					s(n).ydata = cc(2,idx)'; 
+					n = n+1;
+					m = m+cc(2,m)+1;
+				end
+				cla(Ax);
+				
+				[sort_count,sort_ind] = sort([s.count],'descend');
+				
+				for i=1:6
+					
+					xx = s(sort_ind(i)).xdata;
+					yy = s(sort_ind(i)).ydata;
+					
+					if(length(xx) > Cluster_Size_Threshold)
+						Clusters_Struct(end+1).Cluster_ID = i;
+						Clusters_Struct(end).X_Boundary = xx;
+						Clusters_Struct(end).Y_Boundary = yy;
+						Clusters_Struct(end).Mean_X = mean(xx);
+						Clusters_Struct(end).Mean_Y = mean(yy);
+						
+						Di = ( (mean(xx) - [PVD_Orders.X]).^2 + (mean(yy) - [PVD_Orders.Y]).^2 ).^(0.5);
+						Fi = find(Di == min(Di),1);
+						Clusters_Struct(end).Class = PVD_Orders(Fi).Class;
+						
+						if(nargin > 1)
+							hold(Ax,'on');
+							
+							xxyy = cell2mat(smoothn(num2cell([xx(:),yy(:)],1),200));
+							xx = xxyy(:,1);
+							yy = xxyy(:,2);
+							
+							fill(Ax,[xx;xx(1)],[yy;yy(1)],[0.1,0.1,0.1]);
+							
+							plot(Ax,[xx;xx(1)],[yy;yy(1)],'LineWidth',4,'Color',Class_Colors(Clusters_Struct(end).Class,:));
+						end
+					else
+						% c.ContourMatrix(:,C(i)+1:C(i+1)-1) = nan;
+					end
+				end
+				assignin('base','Clusters_Struct',Clusters_Struct);
+				
+				set(Ax,'FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
+				
+				xlabel(Ax,[char(981),' (azimuthal position) [',char(176),']'],'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+				ylabel(Ax,[char(952),' (midline orientation) [',char(176),']'],'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+				
+				axis(Ax,'tight');
+				axis(Ax,'square');
+				
+				Ax.XAxis.TickValues = X_Min_Max(1):X_Min_Max(2)./3:X_Min_Max(2); % -1:0.5:1; % [-1,0,1];
+				Ax.XAxis.TickLabels = -90:30:90; % {'$$-90$$','$$-60$$','$$-30$$','$$0$$','$$30$$','$$60$$','$$90$$'}; % {'$$-90$$','$$-45$$',0,'$$45$$','$$90$$'}; % {'$$-\phi$$','$$-\frac{\phi}{2}$$',0,'$$\frac{\phi}{2}$$','$$\phi$$'}
+				Ax.YAxis.TickValues = [-1,0,1];
+				Ax.YAxis.TickLabels = [0,45,90];
+				xlim(Ax,X_Min_Max([1,end])*1.1);
+				ylim(Ax,YLIM);
+				
+			case 2
 				[M,c] = contourf(Ax,x4,y4,Z4,cutoff*[1,1],'edgecolor','none'); % ,'edgecolor','none'; ,'-r';
 				c.LineWidth = 3;
 				
-				xlabel(Ax,'$\mathrm{\phi}$ (Azimuthal Position) $[^{\circ}]$','Interpreter','latex');
-				% xlabel(Ax,'$\mathrm{\phi} \; \textsf{(Azimuthal Position)} \; [^{\circ}]$','Interpreter','latex');
+				set(Ax,'FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
 				
-				ylabel(Ax,'$\mathrm{\theta}$ (Midline Orientation) $[^{\circ}]$','Interpreter','latex');
-				% ylabel(Ax,'$\mathrm{\theta} \; \textsf{(Midline Orientation)} \; [^{\circ}]$','Interpreter','latex');
+				xlabel(Ax,[char(981),' (azimuthal position) [',char(176),']'],'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+				ylabel(Ax,[char(952),' (midline orientation) [',char(176),']'],'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 				
 				colormap(Ax,cmap);
 				
 				% set(gcf,'Position',[10,50,1160,900]); % [10,50,900,600]
 				axis(Ax,'tight');
-				set(Ax,'Position',[0.13,0.15,0.85,0.84]); % set(Ax,'Position',[0.10,0.18,0.87,0.80]);
+				% set(Ax,'Position',[0.13,0.15,0.85,0.84]); % set(Ax,'Position',[0.10,0.18,0.87,0.80]);
 				axis(Ax,'square');
 				
 				grid(Ax,'on');
 				Ax.XAxis.TickValues = X_Min_Max(1):X_Min_Max(2)./3:X_Min_Max(2); % -1:0.5:1; % [-1,0,1];
-				Ax.XAxis.TickLabels = {'$$-90$$','$$-60$$','$$-30$$','$$0$$','$$30$$','$$60$$','$$90$$'}; % {'$$-90$$','$$-45$$',0,'$$45$$','$$90$$'}; % {'$$-\phi$$','$$-\frac{\phi}{2}$$',0,'$$\frac{\phi}{2}$$','$$\phi$$'}
+				Ax.XAxis.TickLabels = -90:30:90; % {'$$-90$$','$$-60$$','$$-30$$','$$0$$','$$30$$','$$60$$','$$90$$'}; % {'$$-90$$','$$-45$$',0,'$$45$$','$$90$$'}; % {'$$-\phi$$','$$-\frac{\phi}{2}$$',0,'$$\frac{\phi}{2}$$','$$\phi$$'}
 				Ax.YAxis.TickValues = [-1,0,1];
 				Ax.YAxis.TickLabels = [0,45,90];
-				% Ax.GridAlpha = 0.3; 
 				Ax.GridColor = 'w';
-				set(Ax,'FontSize',FontSize_1);
 				xlim(Ax,X_Min_Max([1,end])*1.1);
-				ylim(Ax,YLIM); % ylim(Orientation_Edges([1,end])); % ylim([-0.4,1.3]);
-				set(Ax,'TickLabelInterpreter','latex');
+				ylim(Ax,YLIM);
 				
-				% set(Ax,'unit','normalize');
-				% set(Ax,'position',[0.10,0.16,0.9,0.83]);
-			case 2
+			case 3
+				Levels = 0:dc:Levels(end);
 				[M,c] = contourf(Ax,x4,y4,Z4,Levels,'edgecolor','none'); % 16
 				
 				%{
@@ -222,8 +298,14 @@ function Clusters_Struct = Map_Branches_Classes(Data,Ax,Plot_Type)
 					xlabel(Ax,['Normalized Midline Distance']);
 				end
 				%}
-				xlabel(Ax,'$\mathrm{\phi \; (Azimuthal \; Position)} \; [^{\circ}]$','Interpreter','latex');
-				ylabel(Ax,'$\mathrm{\theta \; (Midline \; Orientation)} \; [^{\circ}]$','Interpreter','latex'); % ylabel(Ax,['Midline Orientation [',char(176),']']);
+				
+				set(Ax,'FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
+				
+				xlabel(Ax,[char(981),' (Azimuthal Position) [',char(176),']'],'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+				ylabel(Ax,[char(952),' (Midline Orientation) [',char(176),']'],'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+				% xlabel(Ax,'$\mathrm{\phi \; (Azimuthal \; Position)} \; [^{\circ}]$','Interpreter','latex');
+				% ylabel(Ax,'$\mathrm{\theta \; (Midline \; Orientation)} \; [^{\circ}]$','Interpreter','latex'); % ylabel(Ax,['Midline Orientation [',char(176),']']);
+				
 				colormap(Ax,jet);
 				set(Ax,'Color','w');
 				
@@ -234,14 +316,15 @@ function Clusters_Struct = Map_Branches_Classes(Data,Ax,Plot_Type)
 				% set(gcf,'Position',[10,50,900,600]);
 				axis(Ax,'tight');
 				axis(Ax,'square');
-				set(Ax,'Position',[0.10,0.18,0.87,0.80]);
+				% set(Ax,'Position',[0.10,0.18,0.87,0.80]);
 				% axis(Ax,'square');
 				% set(Ax,'unit','normalize');
 				% set(Ax,'position',[0.10,0.16,0.9,0.83]);
 				
 				grid(Ax,'on');
 				
-				Ax.XAxis.TickValues = [-1,0,1];
+				Ax.XAxis.TickValues = X_Min_Max(1):X_Min_Max(2)./3:X_Min_Max(2); % -1:0.5:1; % [-1,0,1];
+				Ax.XAxis.TickLabels = -90:30:90; % {'$$-90$$','$$-60$$','$$-30$$','$$0$$','$$30$$','$$60$$','$$90$$'}; % {'$$-90$$','$$-45$$',0,'$$45$$','$$90$$'}; % {'$$-\phi$$','$$-\frac{\phi}{2}$$',0,'$$\frac{\phi}{2}$$','$$\phi$$'}
 				Ax.YAxis.TickValues = [-1,0,1];
 				Ax.YAxis.TickLabels = [0,45,90];
 				%%% Ax.GridAlpha=0.3; 
@@ -250,9 +333,7 @@ function Clusters_Struct = Map_Branches_Classes(Data,Ax,Plot_Type)
 				xlim(Ax,Disatnce_Edges([1,end]));
 				ylim(Ax,YLIM); % ylim(Ax,Orientation_Edges([1,end])); % ylim([-0.4,1.3]);
 				
-				set(Ax,'FontSize',FontSize_1);
-				
-				%
+				%{
 				hold(Ax,'on');
 				C = find(M(1,:) == Levels(1));
 				C(end+1) = C(end)+5;
@@ -268,8 +349,9 @@ function Clusters_Struct = Map_Branches_Classes(Data,Ax,Plot_Type)
 						plot(Ax,x,y,'Color',Class_Colors(PVD_Orders(Fi).Class,:),'LineWidth',6);
 					end
 				end
+				%}
 			
-			case 3 % 3D surface plot.
+			case 4 % 3D surface plot.
 				
 				% surf(Ax,x,y,Z,'EdgeColor','none','FaceColor','interp');
 				surf(Ax,x4,y4,Z4,'EdgeColor','none','FaceColor','interp');
@@ -317,12 +399,12 @@ function Clusters_Struct = Map_Branches_Classes(Data,Ax,Plot_Type)
 				%}
 				
 				set(Ax,'FontSize',FontSize_1,'XTick',[-1,1],'YTick',[-1,1],'YTickLabels',[0,90]);
-			case 4
+			case 5
 				histogram2(Ax,Z);
 		end
 	end
 	
-	if(nargin > 1 && Plot_Type == 1)
+	if(nargin > 1 && Plot_Type == 2)
 		C = find(M(1,:) == cutoff);
 		C(end+1) = length(M)+1;
 		
@@ -347,10 +429,60 @@ function Clusters_Struct = Map_Branches_Classes(Data,Ax,Plot_Type)
 				
 				if(nargin > 1)
 					hold(Ax,'on');
-					plot(Ax,x,y,'Color',Class_Colors(Clusters_Struct(end).Class,:),'LineWidth',5);
+					
+					u = smoothn(num2cell([x',y'],1),100);
+					xy = horzcat(u{:});
+					x = xy(:,1)'; % Smoothed x-coordinates.
+					y = xy(:,2)'; % Smoothed y-coordinates.
+					
+					plot(Ax,[x,x(1)],[y,y(1)],'Color',Class_Colors(Clusters_Struct(end).Class,:),'LineWidth',5);
 				end
+			else
+				% c.ContourMatrix(:,C(i)+1:C(i+1)-1) = nan;
 			end
 		end
 		assignin('base','Clusters_Struct',Clusters_Struct);
+		
+		BW = c.ZData;
+		BW(BW > c.LevelList) = 1;
+		BW = imbinarize(BW);
+		CC = bwconncomp(BW);
+		
+		%{
+		for i=1:length(CC.PixelIdxList) % For each connected component.
+			if(length(CC.PixelIdxList{i}) <= Cluster_Size_Threshold)
+				% c.ZData(CC.PixelIdxList{i}) = 0;
+				BW(CC.PixelIdxList{i}) = 0;
+			end
+		end
+		%}
+		
+		% BW = bwareaopen(BW,25);
+		% BW = imclearborder(BW);
+		% BW = bwareafilt(BW,1);
+		
+		% BW = imfill(BW,'holes');
+		% BW = imerode(BW,strel('disk',1));
+		% BW = imdilate(BW,ones(1));
+		
+		%{
+		windowSize = 2; % Whatever odd integer you want that's more than 1.
+		kernel = ones(2) / windowSize^2;
+		BW = conv2(BW,kernel,'same');
+		BW = BW > 0.5;
+		%}
+		
+		%{
+		BW = imdilate(BW,ones(1));
+		BW = imfill(BW,'holes');
+		%}
+		
+		% BW = imfill(BW,'holes');
+		% BW = bwareafilt(BW,[25,inf]);
+		
+		% c.ZData(BW == 0) = 0;
+		% c.ZData(BW == 1) = max(c.ZData(:));
+		
+		% figure; imshow(BW); set(gca,'YDir','normal');
 	end
 end

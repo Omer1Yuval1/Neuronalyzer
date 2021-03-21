@@ -32,8 +32,8 @@ function Data = Connect_Vertices(Data,Ax)
 		% (currently only used for the 1st step in each segment (from both sides)).
 	Step_Length = Data.Parameters.Auto_Tracing_Parameters.Global_Step_Length;
 	
-	% Rect_Scan_Length_Width_Ratio = Data.Parameters.Auto_Tracing_Parameters.Rect_Scan_Length_Width_Ratio;
-	Rect_Length_Width_Func = Data.Parameters.Tracing.Rect_Length_Width_Func;
+	% Rect_Length_Width_Func = Data.Parameters.Tracing.Rect_Length_Width_Func;
+	Rect_Length_Width_Ratio = Data.Parameters.Auto_Tracing_Parameters.Rect_Length_Width_Ratio;
 	
 	MinPeakProminence = Data.Parameters.Auto_Tracing_Parameters.Step_Min_Peak_Prominence;
 	MinPeakDistance = Data.Parameters.Auto_Tracing_Parameters.Step_Min_Peak_Distance;
@@ -138,7 +138,10 @@ function Data = Connect_Vertices(Data,Ax)
 				Step_Params.Angle = (Data.Segments(s).(Field0)(end).Angle)*180/pi;
 				Step_Params.Width = (Data.Segments(s).(Field0)(end).Width) / Scale_Factor; % Conversion from micrometers to pixels.
 				Step_Params.Step_Length = Step_Length; % Step_Params.Width / Data.Parameters.Auto_Tracing_Parameters.Rect_Width_StepLength_Ratio; % Data.Segments(s).(Field0)(end).Length;
-				Step_Params.Scan_Length = Rect_Length_Width_Func(Step_Params.Width);
+				
+				Step_Params.Scan_Length = Rect_Length_Width_Ratio .* Step_Params.Width;
+				% Step_Params.Scan_Length = Rect_Length_Width_Func(Step_Params.Width);
+				
 				Step_Params.Scan_Width = Step_Params.Width ./ Width_Scan_Ratio;
 				Step_Params.BG_Intensity = Data.Segments(s).(Field0)(end).BG_Intensity;
 				Step_Params.BG_Peak_Width = Data.Segments(s).(Field0)(end).BG_Peak_Width;

@@ -44,6 +44,7 @@ function P = Parameters_Func(Scale_Factor,P)
 	% Skeleton
 	Tracing(1).Skel_Angle_Min_Length = 1.7857 ./ Scale_Factor; % In particular used with the skeleton since the segment width is 1 (=W_Min).	
 	
+	Auto_Tracing_Parameters(1).Rect_Length_Width_Ratio = 2;
 	Auto_Tracing_Parameters(1).Global_Step_Length = 1; % In pixels.
 	Auto_Tracing_Parameters(1).Min_Rect_Width = .35/Scale_Factor; % Micrometers converted to pixels.
 	Auto_Tracing_Parameters(1).Max_Rect_Width_Ratio = 2; % Upper bound for width scanning (2 rects on both sides of the signal rect). Multiplication factor with the previous step width. Micrometers converted to pixels.

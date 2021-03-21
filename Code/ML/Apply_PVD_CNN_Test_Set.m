@@ -10,6 +10,7 @@ function Apply_PVD_CNN_Test_Set(My_CNN)
 	S = PVD_CNN_Params();
 	Training_Mode = 1;
     Transparency = 0.3;
+    Min_Branch_Length = 0;
 	
 	
 	rng('default'); % Reset the random seed.
@@ -49,7 +50,7 @@ function Apply_PVD_CNN_Test_Set(My_CNN)
     Test_Set = T_Set; % Just use all samples as the test set. 
 	
     CM = lines(7);
-    CM = CM([1,7],:);
+    CM = CM([1,7,2,3,4,5,6],:);
     
 	H = figure('WindowState','Maximized');
 	for i=1:size(Test_Set,1)
@@ -65,24 +66,44 @@ function Apply_PVD_CNN_Test_Set(My_CNN)
 		[Out0,~] = semanticseg(In,My_CNN);
 		Out = false(size(Out0));
 		Out(Out0 == 'Neuron') = true;
+        
 		B = labeloverlay(In,Out,'Colormap',CM(2,:),'Transparency',Transparency);
+        
+		Skel1 = bwskel(Out,'MinBranchLength',Min_Branch_Length);
+		Skel2 = bwmorph(Out,'thin',Inf); % This is the method used in the software.
+        C1 = labeloverlay(In,Skel1,'Colormap',CM(4,:),'Transparency',Transparency/2);
+        C2 = labeloverlay(In,Skel2,'Colormap',CM(4,:),'Transparency',Transparency/2);
 		
         if(0) % Save Figure;
-            subplot(1,3,1); imshow(In); title('Raw Image'); set(gca,'FontSize',18);
+            subplot(1,5,1); imshow(In); title('Raw Image'); set(gca,'FontSize',18);
 
-            subplot(1,3,2); imshow(A); title('Annotation (Ground Truth)'); set(gca,'FontSize',18);
+            subplot(1,5,2); imshow(A); title('Annotation (Ground Truth)'); set(gca,'FontSize',18);
 
-            subplot(1,3,3); imshow(B); title('Prediction'); set(gca,'FontSize',18);
-            % subplot(1,3,3); imshow(Out); title('Prediction');
+            subplot(1,5,3); imshow(B); title('Prediction'); set(gca,'FontSize',18); % subplot(1,3,3); imshow(Out); title('Prediction');
             
-            if(1)
+            subplot(1,5,4); imshow(C1); title('Skeleton'); set(gca,'FontSize',18);
+            
+            subplot(1,5,5); imshow(C2); title('Skeleton'); set(gca,'FontSize',18);
+            
+            if(0)
                 [~,File_Name,~] = fileparts(T_Set{i,1}{:});
                 print(H,[S.Save_Dir_Test_Set_Path,File_Name,'.png'],'-dpng');
                 pause(0.1);
+            else
+                waitforbuttonpress;
             end
         elseif(1) % Save images.
-            imwrite(In,[Full_Path,'_In.png']);
-            imwrite(B,[Full_Path,'_Out.png']);
+            if(1)
+                figure(1); clf(1); imshow(In); set(gcf,'Position',[50,50,500,500]); set(gca,'Position',[0,0,1,1]); print(gcf,[Full_Path,'_In.svg'],'-dsvg','-painters');
+                figure(1); clf(1); imshow(B); set(gcf,'Position',[50,50,500,500]); set(gca,'Position',[0,0,1,1]); print(gcf,[Full_Path,'_Out.svg'],'-dsvg','-painters');
+                figure(1); clf(1); imshow(C1); set(gcf,'Position',[50,50,500,500]); set(gca,'Position',[0,0,1,1]); print(gcf,[Full_Path,'_Skel1.svg'],'-dsvg','-painters');
+                figure(1); clf(1); imshow(C2); set(gcf,'Position',[50,50,500,500]); set(gca,'Position',[0,0,1,1]); print(gcf,[Full_Path,'_Skel2.svg'],'-dsvg','-painters');
+            else
+                imwrite(In,[Full_Path,'_In.png']);
+                imwrite(B,[Full_Path,'_Out.png']);
+                imwrite(C1,[Full_Path,'_Skel1.png']);
+                imwrite(C2,[Full_Path,'_Skel2.png']);
+            end
         else
             waitforbuttonpress;
         end

@@ -21,7 +21,7 @@ Curve Fitting, Signal Processing, Statistics and Machine Learning, Phased Array 
     example: 357b6ac). **The scale-bar is set to 1 as default. Make sure to set it to the correct value**
     **for each loaded image/project**.
 
-![Screenshot_Start](https://user-images.githubusercontent.com/35100851/104649777-1ebd8580-56ad-11eb-8fc5-c170581d9762.png)
+![Screenshot_Start](https://user-images.githubusercontent.com/35100851/111909172-1b9b9880-8a54-11eb-82cf-d8203d966276.png)
 
 <br/>
 
@@ -61,7 +61,7 @@ Following manual correction, you can display a combined image showing both the C
 Use the skeleton view (Reconstructions → Skeleton) to check for gaps in the binary image. In this view, each connected component appears in a different color.
 It is absolutely fine to have separated components, but if you see components that should be connected but are not, then you should go back to the binary image and fix this.
 
-![Screenshot_Skeleton](https://user-images.githubusercontent.com/35100851/106172064-4111d180-618a-11eb-9a2c-1d773b5944af.png)
+![Screenshot_Skeleton](https://user-images.githubusercontent.com/35100851/111909190-3706a380-8a54-11eb-94c3-688d3ba41c32.png)
 
 <br/>
 
@@ -69,7 +69,7 @@ It is absolutely fine to have separated components, but if you see components th
     To obtain the trace of the neurons, click the “Trace Neuron” button. Once finished, the resulting
     trace is displayed. You can use the “Project” menu to navigate between the different traced images.
    
-![Screenshot_Trace](https://user-images.githubusercontent.com/35100851/104650091-9a1f3700-56ad-11eb-89d6-63c7855b7e74.png)
+![Screenshot_Trace](https://user-images.githubusercontent.com/35100851/111909214-4ab20a00-8a54-11eb-92d0-f503b6fe06ed.png)
 
 <br/>
 
@@ -79,28 +79,28 @@ It is absolutely fine to have separated components, but if you see components th
 	You can use the spinner to specify the number of interactive points (here set to 25 points), then click the “Apply Changes” button.
 	Once finished, click again the "Extract Features" button, as other computations depend on these axes.
 
-![Screenshot_Axes](https://user-images.githubusercontent.com/35100851/104650208-c044d700-56ad-11eb-9e6a-b57ea7d164ad.png)
+![Screenshot_Axes](https://user-images.githubusercontent.com/35100851/111909224-58678f80-8a54-11eb-8ccf-744feda48483.png)
 
 <br/>
 
 **6. Validation** <br/>
     Once the images have been traced, you can use the “Reconstructions” menu to visualize various
-    morphological features. The examples below show the radial distance from the midline (top), and
+    morphological features. The examples below show the azimuthal position (top), and
     the classification of neuronal elements into four morphological classes (bottom).
 
-![Screenshot_Radial_Distance](https://user-images.githubusercontent.com/35100851/104650258-d6529780-56ad-11eb-8cef-43d7ae1427b7.png)
+![Screenshot_Azimuthal_Position](https://user-images.githubusercontent.com/35100851/111909236-6c12f600-8a54-11eb-959e-d8ea25cb8f0f.png)
 
-![Screenshot_Classes](https://user-images.githubusercontent.com/35100851/104650304-e5394a00-56ad-11eb-826c-ff5b9126d9e6.png)
+![Screenshot_Classes](https://user-images.githubusercontent.com/35100851/111909243-703f1380-8a54-11eb-8502-6d4176c82cc9.png)
 
 <br/>
 
 **7. Analysis** <br/>
     Finally, use the “Plots” menu to display quantifications of the extracted features. Use the control
     panel to specify plot parameters, then click “Apply Changes”. Plot parameters include bin-size,
-    normalization, statistics and plot types. The examples below show the mean and standard deviation
-    of neuronal length per morphological class for each group of animals (top), and the density of
-    neuronal elements along the neuron’s midline, averaged across wild-type animals (bottom).
-    
-![Screenshot_Plots_Length](https://user-images.githubusercontent.com/35100851/104650330-ef5b4880-56ad-11eb-95be-c8e3d80ceb4e.png)
+    normalization, statistics and plot types. The examples below show the density of
+    neuronal elements along the neuron’s midline, averaged across wild-type animals (top), and the mean and standard deviation
+    of neuronal length per morphological class for each group of animals (bottom).
 
-![Screenshot_Plots_Gradient](https://user-images.githubusercontent.com/35100851/104650362-fda96480-56ad-11eb-9ce9-b90b36cc5b0c.png)
+![Screenshot_Plots_Gradient](https://user-images.githubusercontent.com/35100851/111909276-95338680-8a54-11eb-94ae-315f3e22b4e9.png)
+
+![Screenshot_Plots_Length](https://user-images.githubusercontent.com/35100851/104650330-ef5b4880-56ad-11eb-95be-c8e3d80ceb4e.png)
