@@ -538,10 +538,10 @@ function index()
 			
 			Switch_Project_Func(P.GUI_Handles.Menus(1).Children(Np - pp + 1),[],P); % Switch to project #pp.
 			
-			P.GUI_Handles.Waitbar.Message = 'Analyzing vertices...';
+			P.GUI_Handles.Waitbar.Message = ['Analyzing vertices (',num2str(pp),'\',num2str(Np),')...'];
 			Data_pp = Vertices_Analysis_Index(P.Data(pp));
 			
-			P.GUI_Handles.Waitbar.Message = 'Tracing neuron...';
+			P.GUI_Handles.Waitbar.Message = ['Tracing neuron (',num2str(pp),'\',num2str(Np),')...'];
 			Data_pp = Connect_Vertices(Data_pp,P.GUI_Handles.View_Axes(1));
 			
 			P.Data(pp).Segments = Data_pp.Segments;
@@ -555,13 +555,15 @@ function index()
 	
 	function Extract_Features_Func(source,event,P)
 		
-		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Extracting Features');
+		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','');
 		
 		Overwrite_Axes = [];
 		Np = numel(P.Data);
 		for pp=1:Np
 			
 			P.GUI_Handles.Waitbar.Value = pp ./ Np;
+			
+			P.GUI_Handles.Waitbar.Message = ['Extracting Features (',num2str(pp),'\',num2str(Np),')...'];
 			
 			if(~isempty(P.Data(pp).Segments) && ~isempty(P.Data(pp).Vertices))
 				[P.Data(pp),Overwrite_Axes] = Add_Features_To_All_Workspaces(P.Data(pp),P,Overwrite_Axes);

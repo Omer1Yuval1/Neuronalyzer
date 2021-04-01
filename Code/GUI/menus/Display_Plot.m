@@ -2628,7 +2628,7 @@ function Display_Plot(P,Data,Label)
 						histogram(Ax(g),V{g}(:).*180./pi,Edges);
 						
 						xlim(Ax(g),[0,360]);
-						set(Ax(g),'XTick',0:30:360,'FontSize',FontSize_1,'TickLabelInterpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
+						set(Ax(g),'XTick',0:30:360,'TickLabelInterpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
 						xlabel(Ax(g),'$\mathrm{Angle \; [^{\circ}]}$','Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 						ylabel(Ax(g),'$\mathrm{Count}$','Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 						grid(Ax(g),'on');
@@ -2643,7 +2643,7 @@ function Display_Plot(P,Data,Label)
 						histogram(Ax(g),V{g}(3,:).*180./pi,Edges);
 						
 						xlim(Ax(g),[0,360]);
-						set(Ax(g),'XTick',0:30:360,'FontSize',FontSize_1,'TickLabelInterpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
+						set(Ax(g),'XTick',0:30:360,'TickLabelInterpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
 						xlabel(Ax(g),'$\mathrm{Angle \; [^{\circ}]}$','Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 						ylabel(Ax(g),'$\mathrm{Count}$','Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 						grid(Ax(g),'on');

@@ -196,7 +196,7 @@ function Display_Reconstruction(P,Data,p,Label)
 			
 			% Plot the vertices:
 			switch(Label)
-				case {'Trace - Lite','Segmentation','Trace'}
+				case {'Trace - Lite','Segmentation'} % ,'Trace'
 					Fj = find([Data.Vertices.Order] == 3); % Find junctions.
 					Xj = [Data.Vertices(Fj).X];
 					Yj = [Data.Vertices(Fj).Y];
@@ -206,7 +206,11 @@ function Display_Reconstruction(P,Data,p,Label)
 				case 'Trace'
 					for j=1:numel(Data.Vertices)
 						if(Data.Vertices(j).Order >= 3 && numel(Data.Vertices(j).Rectangles) == Data.Vertices(j).Order)
-							plot_junction(Ax,Data.Vertices(j).X,Data.Vertices(j).Y,[Data.Vertices(j).Rectangles.Angle]);
+							V = sort(Data.Vertices(j).Angles);
+							% if(V(1) < (25*pi/180))
+								plot_junction(Ax,Data.Vertices(j).X,Data.Vertices(j).Y,[Data.Vertices(j).Rectangles.Angle]);
+								% disp([j,V .* 180 ./ pi]);
+							% end
 						end
 					end
 			end

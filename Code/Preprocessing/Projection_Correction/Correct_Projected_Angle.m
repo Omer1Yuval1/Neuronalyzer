@@ -20,7 +20,7 @@ function Corrected_Angle = Correct_Projected_Angle(A,A0,At)
 		% 3. rotate it back to the X-Y plane by rotating aroung the midline only (use axis-angle representation).
 		% 4. 
 	
-	% The projection always makes the angle smaller than it realy is. The angle is the smallest diff between the rectangle and midline orientation within [0,pi/2].
+	% The projection always makes the angle smaller than it really is. The angle is the smallest diff between the rectangle and midline orientation within [0,pi/2].
 	% In other words, the orientation of the rectangle relative to the midline always increases as a result of the correction.
 	% The bigger the angle ([0,pi/2]), the bigger the y-component and the bigger the tilting angle from the origin of the vetex, but also the smaller the x-component.
 	% Altogether, the peak of the error is at pi/4 (45 degrees).

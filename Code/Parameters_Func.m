@@ -73,9 +73,9 @@ function P = Parameters_Func(Scale_Factor,P)
 	Auto_Tracing_Parameters(1).Vertex_Angles_Scan_Rect_Width = 3; % Scanning rectangle width.
 	Auto_Tracing_Parameters(1).Vertex_Angles_Scan_Rect_Length = 1.8 ./ Scale_Factor; % um to px (~5px for 0.3571 um/px).
 	Auto_Tracing_Parameters(1).Vertex_Angles_Min_Score_Ratio = 0.95;
-	Auto_Tracing_Parameters(1).Vertex_Angles_MinPeakDis = 20*(pi/180); % 10 degrees.
+	Auto_Tracing_Parameters(1).Vertex_Angles_MinPeakDis = 30*(pi/180); % 10 degrees.
 	Auto_Tracing_Parameters(1).Vertex_Angles_MinPeakWidth = 5*(pi/180); % 5 degrees.
-	Auto_Tracing_Parameters(1).Vertex_Angles_MinPeakProm = .15; % .15
+	Auto_Tracing_Parameters(1).Vertex_Angles_MinPeakProm = 0.1; % .15
 	
 	Auto_Tracing_Parameters.Zoom_Box = 10/Scale_Factor;
 	Auto_Tracing_Parameters(1).Rect_Rotation_Origin = 14; % Center: 0 ; Between corners 1&4: 14.

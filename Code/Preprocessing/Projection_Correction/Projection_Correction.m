@@ -1,7 +1,7 @@
 function Rects = Projection_Correction(W,v)
 	% function Rects = Projection_Correction(Iw,v,Im,XY_Eval,Cxy,Rects,At,Medial_Tangent,Rx,Rz,Scale_Factor,Corrected_Plane_Angle_Func)
 	
-	% At is the 
+	% At
 	
 	Cxy = [W.Vertices(v).X , W.Vertices(v).Y]; % Just for readability.
 	Midline_Distance = W.Vertices(v).Midline_Distance; % abs(W.Vertices(v).Midline_Distance);

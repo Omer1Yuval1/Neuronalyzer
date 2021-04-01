@@ -19,13 +19,13 @@ function Rectangles = Find_Vertex_Angles(Data,v,Cxy,Rc,Scale_Factor,Im_Rows,Im_C
 	Min_Score_Ratio = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_Min_Score_Ratio;	
 	MinPeakDis = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_MinPeakDis;	
 	MinPeakWidth = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_MinPeakWidth;	
-	MinPeakProm = Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_MinPeakProm;
+	MinPeakProm = 0.1; % Data.Parameters.Auto_Tracing_Parameters(1).Vertex_Angles_MinPeakProm;
 	
 	Angle_Res = 1*(pi/180); % 1 degree. old version: round(60 * Rc); % 360*
 	N = round(2*pi/Angle_Res);
 	Theta = linspace(0,2*pi,N);
 	
-	Unique_Tolerance = Angle_Res; % 10^(-4);
+	Unique_Tolerance = Angle_Res; % MinPeakDis; % 30 * (pi/180); % 10^(-4);
 	
 	Polar_Extension = 2:find(abs([Theta-Extension_Length]) == min(abs([Theta-Extension_Length]))); % TODO: why start from 2?
 	Extension_Neglect_Length = 20*pi/180;
@@ -69,8 +69,7 @@ function Rectangles = Find_Vertex_Angles(Data,v,Cxy,Rc,Scale_Factor,Im_Rows,Im_C
 	Filtered_Scores(1,:) = FitObject(Theta);
 	
 	% Find Peaks:
-	[Peaks,Locs,~,Proms] = findpeaks(Filtered_Scores(1,:),Theta,'MinPeakProminence',MinPeakProm,...
-											'MinPeakDistance',MinPeakDis,'MinPeakWidth',MinPeakWidth);
+	[Peaks,Locs,~,Proms] = findpeaks(Filtered_Scores(1,:),Theta,'MinPeakProminence',MinPeakProm,'MinPeakDistance',MinPeakDis,'MinPeakWidth',MinPeakWidth);
 	
 	% Delete peaks at the edges (using Extension_Neglect_Length):
 	% This is done to avoid a situation in which:
@@ -84,7 +83,7 @@ function Rectangles = Find_Vertex_Angles(Data,v,Cxy,Rc,Scale_Factor,Im_Rows,Im_C
 	Proms = Proms(F);
 	
 	% Part of the range is duplicated because the x-axis is angle. Find duplicated peaks and delete them:
-	[C,ia,ic] = uniquetol(mod(Locs,2*pi),Unique_Tolerance); % Mod 2*pi. % [C,ia,ic] = uniquetol(mod(Locs-1,2*pi)+1,Unique_Tolerance); % Modulo that starts from 1. TODO: Why???
+	[~,ia,~] = uniquetol(mod(Locs,2*pi),Unique_Tolerance); % Mod 2*pi. % [C,ia,ic] = uniquetol(mod(Locs-1,2*pi)+1,Unique_Tolerance); % Modulo that starts from 1. TODO: Why???
 	ia = sort(ia);
 	Peaks = Peaks(ia);
 	Locs = Locs(ia);
@@ -112,51 +111,52 @@ function Rectangles = Find_Vertex_Angles(Data,v,Cxy,Rc,Scale_Factor,Im_Rows,Im_C
 		set(gca,'position',[0.07,0.16,0.91,0.8]);
 	end
 	
-	% List angles & Detect rectangle width for the detected peaks:
+	% List angles & detect rectangle width for the detected peaks:
 	Ap = nan(1,length(Peaks));
 	Cxy = nan(length(Peaks),2);
 	Widths = zeros(1,length(Peaks));
 	for p=1:length(Peaks) % For each peak.
 		F1 = find(Theta == Locs(p)); % Find the central angle that corresponds to this peak.		
-		Ap(p) = Filtered_Scores(2,F1); % List angles (locs).
+		Ap(p) = Filtered_Scores(2,F1); % List of convolution-derived angles (locs).
 		Cxy(p,:) = Pxy(F1,:);
 	end
 	
 	% Replace skeleton angles with the detected peaks, using skeleton angles for pair-wise matching
 		% (additional peaks are ignored, only best matches are used, based on the predefined number of skeleton rectangles).
 	Rectangles = Data.Vertices(v).Rectangles;
-	for r=1:numel(Data.Vertices(v).Rectangles) % For each pre-defined skeleton direction (= segment connected to this vertex).
-		As = mod(Data.Vertices(v).Rectangles(r).Angle,2*pi); % Skeleton angle r.
+	Nskel = numel(Data.Vertices(v).Rectangles); % # of skeleton rectangles.
+	Nconv = length(Peaks); % # of convolution peaks.
+	
+	if(Nskel) % If the Rectangles struct (containing skeleton angles) is not empty (has at least one row).
+		Skel_Conv_Angle_Diffs = abs(transpose(mod([Data.Vertices(v).Rectangles.Angle],2*pi)) - mod(Ap,2*pi)); % [Nskel x 1] .* [Nconv x 1] = [Nskel x Nconv]. 
+		Skel_Conv_Angle_Diffs = min(Skel_Conv_Angle_Diffs , 2*pi - Skel_Conv_Angle_Diffs); % Taking min(a,360-a), for cases where skel and conv angles are close to each other in polar but not cartesian coordinates (e.g. 1 and 359).
+	end
+	
+	for r=1:Nskel % For each pre-defined skeleton direction (= segment connected to this vertex).
 		
-		seg_row = Data.Vertices(v).Rectangles(r).Segment_Row;
+		Use_Skel = 0;
+		
+		F_min_Col = find(Skel_Conv_Angle_Diffs(r,:) == min(Skel_Conv_Angle_Diffs(r,:)),1); % Find the best match for skeleton angle r (along row r).
+		F_min_Row = find(Skel_Conv_Angle_Diffs(r,F_min_Col) == min(Skel_Conv_Angle_Diffs(:,F_min_Col)),1); % Check if the minimum of row r is also the minimum along its column). In other words, check if the convolution angle that best matches skeleton angle r, is the best match across all skeleton angles (in other rows).
+		
+		if(isempty(F_min_Row)) % If the minimum in row r is not equal to the minimum in its column, use the skeleton.
+			Use_Skel = 1;
+		end
+		
+		% TODO: convert Ls to real length unit.
+		seg_row = Data.Vertices(v).Rectangles(r).Segment_Row; % Row # of the corresponding segment.
 		Ls = length(Data.Segments(seg_row).Skeleton_Linear_Coordinates); % Number of skeleton pixels (approximate segment length).
 		
-		if(Ls >= Rect_Length) % If the segment is long enough for convolution scanning.
-			dA = nan(1,length(Peaks));
-			for p=1:length(Peaks) % Find angle diff for each peak.
-				if(~isnan(Ap(p)))
-					dA(p) = max([As,Ap(p)]) - min([As,Ap(p)]); % Positive angle different (bigger minus smaller).
-				else
-					dA(p) = nan;
-				end
-			end
-			Fmin = find(dA == min(dA),1); % Find minimum angle difference between the skeleton and peaks.
-			Lr = Rect_Length;
+		if(Ls >= Rect_Length && ~Use_Skel) % If the segment is long enough for convolution scanning.
 			
-			if(~isempty(Fmin)) % Update the parameters of this vertex direction.
-				Cxy_r = Cxy(Fmin,:);
-				Angle_Final =  Ap(Fmin); % Replace the most similar angle and set to the nan (to avoid using it for other rects).
-				Ap(Fmin) = nan; % Remove the chosen angle value from the list.
-			else
-				Cxy_r = [Data.Vertices(v).X,Data.Vertices(v).Y];
-				Angle_Final = Rectangles(r).Angle; % Angle is unchanged.
-			end
+			Angle_Final =  Ap(F_min_Col); % Replace the most similar angle and set to the nan (to avoid using it for other rects).
+			Cxy_r = Cxy(F_min_Col,:); % Rectangle-specific origin on the circumference of the junction circle (this is different from the junction center point).
+			Lr = Rect_Length;
 		else % Use the skeleton angle.
-			Fmin = [];
 			Lr = Ls;
-			Cxy_r = [Data.Vertices(v).X,Data.Vertices(v).Y];
+			Cxy_r = [Data.Vertices(v).X,Data.Vertices(v).Y]; % Rectangle-specific origin on the circumference of the junction circle (this is different from the junction center point).
 			Angle_Final = Rectangles(r).Angle; % Angle is unchanged.
-        end
+		end
 		
         Wp = Adjust_Rect_Width_Rot_Generalized(Data.Info.Files(1).Binary_Image,Cxy_r,Angle_Final*180/pi,Lr,[MinWidth,MaxWidth],14,Width_SmoothingParameter,Width_Ratio,Im_Rows,Im_Cols);
         Widths(r) = max([Min_Final_Width,Wp]); % Rectangle width.

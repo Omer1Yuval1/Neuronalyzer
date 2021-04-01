@@ -39,7 +39,7 @@ function Data = Analyze_Vertex_Morphology(Data,Im_branchpoints)
 	end
 	
 	for i=1:numel(Data.Vertices) % For each approximate center.
-		if(Data.Vertices(i).Order >= 3) % If it's a junction.
+        if(Data.Vertices(i).Order >= 3) % If it's a junction.
 			
 			Ls = nan(1,numel(Data.Vertices(i).Rectangles));
 			for r=1:numel(Data.Vertices(i).Rectangles) % For each pre-defined skeleton direction (= segment connected to this vertex).
@@ -57,6 +57,10 @@ function Data = Analyze_Vertex_Morphology(Data,Im_branchpoints)
 		elseif(Data.Vertices(i).Order == 1) % If it's a tip.
 			New_Cxy = [Data.Vertices(i).X,Data.Vertices(i).Y]; % Do not correct the center of end-point.
 			Rc = 0; % Vertex center radius. Tips are assigned with a 0 radius.
+        end
+        
+        if(i == 401) % 17,396.
+            disp(1);
         end
         
 		Rectangles = Find_Vertex_Angles(Data,i,New_Cxy,Rc,Scale_Factor,Im_Rows,Im_Cols);

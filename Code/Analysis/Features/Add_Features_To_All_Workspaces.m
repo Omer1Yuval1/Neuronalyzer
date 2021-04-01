@@ -35,13 +35,13 @@ function [Data,Overwrite_Axes] = Add_Features_To_All_Workspaces(Data,P,Overwrite
 							Data.Segments(s).Rectangles(j).Curvature = Cxy(j);
 						end
 					else
-						[Data.Segments(s).Rectangles.Curvature] = deal(-1);
+						[Data.Segments(s).Rectangles.Curvature] = deal(nan);
 					end
 					% end
 				else
-					[Data.Segments(s).Rectangles.Curvature] = deal(-1);
-					Data.Segments(s).Curvature = -1;
-					Data.Segments(s).Max_Curvature = -1;
+					[Data.Segments(s).Rectangles.Curvature] = deal(nan);
+					Data.Segments(s).Curvature = nan;
+					Data.Segments(s).Max_Curvature = nan;
 				end
 				
 				% Find vertices:
@@ -59,9 +59,9 @@ function [Data,Overwrite_Axes] = Add_Features_To_All_Workspaces(Data,P,Overwrite
 					disp(['Something is wrong with the vertices of segment index ',num2str(Data.Segments(s).Segment_Index)]);
 				end
 			else
-				Data.Segments(s).Width = -1;
-				Data.Segments(s).Length = -1;
-				Data.Segments(s).Curvature = -1;
+				Data.Segments(s).Width = nan;
+				Data.Segments(s).Length = nan;
+				Data.Segments(s).Curvature = nan;
 				Data.Segments(s).Terminal = nan;
 			end
 		end
@@ -127,7 +127,7 @@ function [Data,Overwrite_Axes] = Add_Features_To_All_Workspaces(Data,P,Overwrite
 				% Compute the corrected angles diffs:
 				Data.Vertices(v).Corrected_Angles = Calc_Junction_Angles([Data.Vertices(v).Rectangles.Corrected_Angle]); % Data.Vertices(v).Corrected_Angles = Calc_Junction_Angles([Data.Vertices(v).Rectangles.Angle_Corrected]);
 			else
-				Data.Vertices(v).Corrected_Angles = -1;
+				Data.Vertices(v).Corrected_Angles = nan;
 			end
 			%}
 		end
