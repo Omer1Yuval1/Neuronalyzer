@@ -12,7 +12,8 @@ function GUI_Params(P)
 	P.GUI_Handles.Buttons_Names = {'Load Data','Load Project','Edit Parameters' ; 'Denoise Image','Trace Neuron','Extract Features' ; 'Apply Changes','Save Image','Save Project'};
 	P.GUI_Handles.Step_Buttons_Names = {'Back','Start','Denoising','Vertex Detection','Neuron Tracing','Validation','Analysis','Next'};
 	P.GUI_Handles.Info_Fields_List = {'Experiment','Analysis','Graphics'}; % Fields to include as tabs and tables in the info panel.
-	P.GUI_Handles.Menu_Names = {'Project','Reconstructions','Plots'};
+	P.GUI_Handles.Menu_Names = {'Project','Reconstructions','Plots','Mode'};
+	P.GUI_Handles.Mode_Names = {'Single Image (2D)','Z-Stacks (3D)','Time-Lapse'};
 	
 	P.GUI_Handles.Reconstruction_Menu_Entries = {'Project','Reconstruction','Plot'};
 	

@@ -5,6 +5,8 @@ function Display_Reconstruction(P,Data,p,Label)
 	
 	Segment_Smoothing_Parameter = 1;
 	
+	set(P.GUI_Handles.Control_Panel_Objects(3,1),'Text','Display Scale-bar');
+	
 	Undock = P.GUI_Handles.Control_Panel_Objects(4,1).Value;
 	if(Undock)
 		LineWidth_1 = 5; % 1. Use 5 for close up.

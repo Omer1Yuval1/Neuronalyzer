@@ -18,7 +18,7 @@ function Set_Plots_Menu(P)
 		
 	H_Menu3_Curvature = uimenu(P.GUI_Handles.Menus(3),'Label','Curvature');
 		P.GUI_Handles.Plots_Menu_Handles(10) = uimenu(H_Menu3_Curvature,'Label','Mean Curvature','Enable','on');
-		P.GUI_Handles.Plots_Menu_Handles(11) = uimenu(H_Menu3_Curvature,'Label','Curvature Distribution','Enable','off');
+		P.GUI_Handles.Plots_Menu_Handles(11) = uimenu(H_Menu3_Curvature,'Label','Curvature Distribution','Enable','on');
 		P.GUI_Handles.Plots_Menu_Handles(12) = uimenu(H_Menu3_Curvature,'Label','Max Segment Curvature per Menorah Order','Enable','off');
 	
 	H_Menu2_CB = uimenu(P.GUI_Handles.Menus(3),'Label','Cell Body','Callback','');

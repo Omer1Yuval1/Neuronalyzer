@@ -7,6 +7,7 @@ function Display_Plot(P,Data,Label)
 	% FontSize_1 = 18;
 	BarWidth = 0.8;
 	
+	set(P.GUI_Handles.Control_Panel_Objects(3,1),'Text','Show Data Points');
 	set(P.GUI_Handles.Control_Panel_Objects(2,5),'Enable','off');
 	set(P.GUI_Handles.Control_Panel_Objects(3,[4,5]),'Enable','off');
 	set(P.GUI_Handles.Control_Panel_Objects(4,5),'Enable','off');
@@ -331,8 +332,8 @@ function Display_Plot(P,Data,Label)
 					
 					% ylim(Ax1,YLIM);
 					set(Ax1,'XTick',1:Max_PVD_Orders,'XTickLabels',Class_Indices,'TickLabelInterpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
-					xlabel(Ax1,['$\mathrm{Class}$'],'Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
-					ylabel(Ax1,'$\mathrm{Mean \; Curvature \; [\mu m ^{-1}]}$','Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+					xlabel(Ax1,['$\mathrm{Class}$'],'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+					ylabel(Ax1,'$\mathrm{Mean \; Curvature \; [\mu m ^{-1}]}$','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 					
 					legend(Ax1,Groups,'Interpreter','Latex');
 					grid(Ax1,'on');
@@ -354,9 +355,19 @@ function Display_Plot(P,Data,Label)
 					end
 					H_DV = bar(Ax1,1:Max_PVD_Orders,B_DV,0.8,'hist','FaceColor','flat');
 					hold(Ax1,'on');
-					for g=1:length(Workspace_Set)
+					for g=1:Ng
 						H_DV(g).FaceColor = CM(g,:); % H_DV.CData(o,:) = Class_Colors(o,:);
-						errorbar(Ax1,mean(H_DV(g).XData,1),B_DV(:,g),std(nanmean(M{g},3),0,2)','Color','k','LineWidth',2,'LineStyle','none');
+						
+						Xm = mean(H_DV(g).XData,1);
+						
+						errorbar(Ax1,Xm,B_DV(:,g),std(nanmean(M{g},3),0,2)','Color','k','LineWidth',2,'LineStyle','none');
+						
+						if(P.GUI_Handles.Control_Panel_Objects(3,1).Value) % Plot data points.
+							DV_Mean = nanmean(M{g},3);
+							for o=1:length(Class_Indices)
+								scatter(Ax1,Xm(o).*ones(1,size(DV_Mean,2)),DV_Mean(o,:),10,[0.2,0.2,0.2],'filled','jitter','on','jitterAmount',0.2);
+							end
+						end
 					end
 					
 					if(g == 1)
@@ -385,10 +396,8 @@ function Display_Plot(P,Data,Label)
 					
 					xlabel(Ax1,'Class','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize); % ,'interpreter','Latex'
 					ylabel(Ax1,['Mean Curvature [',char(181),'m^{-1}]'],'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
-					% ylabel(Ax1,'$Mean \; Curvature \; [\mu m ^{-1}]}$','Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
-					% YLabel = ['Neuronal Length [',xy_scale,char(181),'m]'];
 					
-					legend(Ax1,Groups); % ,'Interpreter','Latex'
+					legend(Ax1,Groups);
 					grid(Ax1,'on');
 					
 				case 3 % Total length (all classes merged).
@@ -459,19 +468,22 @@ function Display_Plot(P,Data,Label)
 				for w=1:length(Workspace_Set{g})
 					ww = Workspace_Set{g}(w);
 					
-					% Fw = find([GP.Workspace(ww).Workspace.Points.Segment_Class] == 4);
-					% Cw = [GP.Workspace(ww).Workspace.Points(Fw).(Field_1_Name)];
+					if(0)
+						Fw = find([Data(ww).Points.Segment_Class] == 3);
+						Cw = [Data(ww).Points(Fw).(Field_1_Name)];
+						Lw = [Data(ww).Points(Fw).(Field_2_Name)];
+					else
+						Cw = [Data(ww).Points.(Field_1_Name)];
+						Lw = [Data(ww).Points.(Field_2_Name)];
+						% Cw = rescale(Cw,Curvature_Min_Max(1),Curvature_Min_Max(2),'InputMin',Curvature_Min_Max(1),'InputMax',Curvature_Min_Max(2));
+						% Cw(Cw < Curvature_Min_Max(1) | Cw > Curvature_Min_Max(2)) = nan;
+					end
 					
-					Cw = [GP.Workspace(ww).Workspace.Points.(Field_1_Name)];
-					Lw = [GP.Workspace(ww).Workspace.Points.(Field_2_Name)];
-					% Cw = rescale(Cw,Curvature_Min_Max(1),Curvature_Min_Max(2),'InputMin',Curvature_Min_Max(1),'InputMax',Curvature_Min_Max(2));
-					
-					% Cw(Cw < Curvature_Min_Max(1) | Cw > Curvature_Min_Max(2)) = nan;
 					X{g} = [X{g},Cw];
 					Y{g} = [Y{g},Lw];
 				end
 				
-				histogram(X{g},Curvature_Min_Max(1):dx:Curvature_Min_Max(2),'normalization','probability');
+				histogram(Ax1,X{g},Curvature_Min_Max(1):dx:Curvature_Min_Max(2),'normalization','probability');
 				%%% histogram(1./X{g},Curvature_Min_Max(1):dx:Curvature_Min_Max(2),'normalization','probability');
 				
 				%{
@@ -481,14 +493,15 @@ function Display_Plot(P,Data,Label)
 				set(gca,'FontSize',18,'TickLabelInterpreter','Latex');
 				%}
 				
-				xlim(Curvature_Min_Max);
+				xlim(Ax1,Curvature_Min_Max);
 				% ylim([0,0.07]);
 				
-				xlabel('$$Mean \; Curvature \; (\frac{1}{{\mu}m})$$','Interpreter','Latex');
-				ylabel('Probability','Interpreter','Latex');
-				set(gca,'FontSize',FontSize_1/2,'TickLabelInterpreter','Latex');
+				set(Ax1,'FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
+				xlabel(Ax1,['Mean Curvature [\mum^{-1}]'],'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+				ylabel(Ax1,'Probability','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+				
 				% legend(Groups,'Interpreter','Latex');
-				grid on;
+				% grid on;
 			end
 			
 			% set(gca,'unit','normalize','position',[0.098,0.2,0.87,0.76]);
