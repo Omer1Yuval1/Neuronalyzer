@@ -103,4 +103,4 @@ It is absolutely fine to have separated components, but if you see components th
 
 ![Screenshot_Plots_Gradient](https://user-images.githubusercontent.com/35100851/111909276-95338680-8a54-11eb-94ae-315f3e22b4e9.png)
 
-![Screenshot_Plots_Length](https://user-images.githubusercontent.com/35100851/104650330-ef5b4880-56ad-11eb-95be-c8e3d80ceb4e.png)
+![Screenshot_Plots_Length](https://user-images.githubusercontent.com/35100851/113595058-66aad380-9630-11eb-94ec-a018aea3ee35.png)

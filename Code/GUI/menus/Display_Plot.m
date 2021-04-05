@@ -19,7 +19,6 @@ function Display_Plot(P,Data,Label)
 		set(P.GUI_Handles.Control_Panel_Objects(4,4),'Value',1);
 	end
 	
-	
 	Groups = cell(1,0);
 	Workspace_Set = cell(1,0); % One cell for each group. The cells contain row numbers of the members (Data(p)).
 	
@@ -75,7 +74,6 @@ function Display_Plot(P,Data,Label)
 	
 	set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Bin size:');
 	set(0,'defaulttextInterpreter','tex'); % none.
-	% assignin('base','GP',GP);
 	
 	switch(Label)
 		case 'Number of Segments'
