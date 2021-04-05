@@ -6,6 +6,7 @@ function Display_Plot(P,Data,Label)
 	
 	% FontSize_1 = 18;
 	BarWidth = 0.8;
+	Jitter_Size = 0.1;
 	
 	set(P.GUI_Handles.Control_Panel_Objects(3,1),'Text','Show Data Points');
 	set(P.GUI_Handles.Control_Panel_Objects(2,5),'Enable','off');
@@ -279,6 +280,10 @@ function Display_Plot(P,Data,Label)
 			set(P.GUI_Handles.Control_Panel_Objects(3,4),'Items',{'Not Normalized'},'ItemsData',1);
 			set(P.GUI_Handles.Control_Panel_Objects(4,4),'Items',{'Default','Dorsal-Ventral Merged','Orders Merged','Pie Chart'},'ItemsData',1:4); % ,'All Merged'});
 			
+			if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData)) % If the previous plot was different.
+				P.GUI_Handles.Control_Panel_Objects(4,4).Value = 2; % Set the default option to be DV merged.
+			end
+			
 			if(P.GUI_Handles.Control_Panel_Objects(2,1).Value) % Apply projection correction.
 				Field_1_Name = 'Curvature';
 				Field_2_Name = 'Length_Corrected';
@@ -365,7 +370,7 @@ function Display_Plot(P,Data,Label)
 						if(P.GUI_Handles.Control_Panel_Objects(3,1).Value) % Plot data points.
 							DV_Mean = nanmean(M{g},3);
 							for o=1:length(Class_Indices)
-								scatter(Ax1,Xm(o).*ones(1,size(DV_Mean,2)),DV_Mean(o,:),10,[0.2,0.2,0.2],'filled','jitter','on','jitterAmount',0.2);
+								scatter(Ax1,Xm(o).*ones(1,size(DV_Mean,2)),DV_Mean(o,:),10,[0.2,0.2,0.2],'filled','jitter','on','jitterAmount',Jitter_Size);
 							end
 						end
 					end
@@ -881,6 +886,10 @@ function Display_Plot(P,Data,Label)
 			set(P.GUI_Handles.Control_Panel_Objects(2,4),'Items',{'Not Normalized','Normalized to Midline Length','Normalized to Total Length'},'ItemsData',1:3);
 			set(P.GUI_Handles.Control_Panel_Objects(4,4),'Items',{'Default','Dorsal-Ventral Merged','Total Length (Orders Merged)','Pie Chart'},'ItemsData',1:4); % ,'All Merged'});
 			
+			if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData)) % If the previous plot was different.
+				P.GUI_Handles.Control_Panel_Objects(4,4).Value = 2; % Set the default option to be DV merged.
+			end
+			
 			if(P.GUI_Handles.Control_Panel_Objects(2,1).Value) % Apply projection correction.
 				Field_1_Name = 'Length_Corrected';
 			else
@@ -972,13 +981,23 @@ function Display_Plot(P,Data,Label)
 					end
 				case 2 % Dorsal-ventral merged.
 					for g=1:Ng
-						B_DV(:,g) = mean(sum(M{g},3),2);
+						B_DV(:,g) = mean(sum(M{g},3),2); % Class x Project x DV.
 					end
 					H_DV = bar(Ax1,1:Max_PVD_Orders,B_DV,BarWidth,'hist','FaceColor','flat');
 					hold(Ax1,'on');
 					for g=1:length(Workspace_Set)
 						H_DV(g).FaceColor = CM(g,:); % H_DV.CData(o,:) = Class_Colors(o,:);
-						errorbar(Ax1,mean(H_DV(g).XData,1),B_DV(:,g),std(sum(M{g},3),0,2)','Color','k','LineWidth',2,'LineStyle','none');
+						
+						Xm = mean(H_DV(g).XData,1);
+						
+						errorbar(Ax1,Xm,B_DV(:,g),std(sum(M{g},3),0,2)','Color','k','LineWidth',2,'LineStyle','none');
+						
+						if(P.GUI_Handles.Control_Panel_Objects(3,1).Value) % Plot data points.
+							DV_Sum = nansum(M{g},3);
+							for o=1:length(Class_Indices)
+								scatter(Ax1,Xm(o).*ones(1,size(DV_Sum,2)),DV_Sum(o,:),10,[0.2,0.2,0.2],'filled','jitter','on','jitterAmount',Jitter_Size);
+							end
+						end
 					end
 					
 					ylim(Ax1,[0,Ax1.YLim(2)]); % ylim(Ax1,[0,2.*YLIM(2)]);
@@ -1080,7 +1099,6 @@ function Display_Plot(P,Data,Label)
 		case 'Midline Density - Neuronal Length'
 			% profile clear; profile on;
 			
-			% Workspace_Set = Workspace_Set{1};
 			Ng = length(Workspace_Set);
 			
 			Max_Midline_Length = 900;
@@ -1417,8 +1435,14 @@ function Display_Plot(P,Data,Label)
 			
 		case {'Junction Number/Density','Tip Number/Density'}
 			
+			Class_Indices = 1:length(P.GUI_Handles.Class_Colors);
+			
 			set(P.GUI_Handles.Control_Panel_Objects(2,4),'Items',{'Not Normalized','Midline Length','Total Length'},'ItemsData',1:3);
 			set(P.GUI_Handles.Control_Panel_Objects(4,4),'Items',{'Default','Orders Merged','Orders 1-3'},'ItemsData',1:3); % ,'Dorsal-Ventral Merged',
+			
+			if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData)) % If the previous plot was different.
+				P.GUI_Handles.Control_Panel_Objects(4,4).Value = 1; % Set the default option to be DV merged.
+			end
 			
 			if(P.GUI_Handles.Control_Panel_Objects(2,1).Value) % Apply projection correction.
 				Field_1 = 'Length_Corrected';
@@ -1537,11 +1561,21 @@ function Display_Plot(P,Data,Label)
 					H = bar(Ax1,1:Ng,N_Mean,'FaceColor','flat'); % ".
 			end
 			hold(Ax1,'on');
+			
 			for g=1:Ng
 				switch(P.GUI_Handles.Control_Panel_Objects(4,4).Value) % Type.
 					case 1 % Per order.
 						H(g).FaceColor = CM(g,:);
-						errorbar(Ax1,mean(H(g).XData,1),N_Mean(:,g),N_std(:,g),'Color','k','LineWidth',2,'LineStyle','none');
+						
+						Xm = mean(H(g).XData,1);
+						
+						errorbar(Ax1,Xm,N_Mean(:,g),N_std(:,g),'Color','k','LineWidth',2,'LineStyle','none');
+						
+						if(P.GUI_Handles.Control_Panel_Objects(3,1).Value) % Plot data points.
+							for o=1:length(Class_Indices)
+								scatter(Ax1,Xm(o).*ones(1,size(N{g},2)),N{g}(o,:),10,[0.2,0.2,0.2],'filled','jitter','on','jitterAmount',Jitter_Size);
+							end
+						end
 					case {2,3} % Orders merged. X-axis used for groups.
 						H.CData(g,:) = CM(g,:);
 						errorbar(Ax1,H.XData(g),N_Mean(:,g),N_std(:,g),'Color','k','LineWidth',2,'LineStyle','none');
@@ -2607,11 +2641,15 @@ function Display_Plot(P,Data,Label)
 			
 		case {'Histogram of all Angles'}
 			
-			BinSize = 3;
-			Edges = 0:BinSize:300;
+			BinSize = 5;
+			Edges = 0:BinSize:240;
 			
 			set(P.GUI_Handles.Control_Panel_Objects(2,4),'Items',{'Not Normalized'},'ItemsData',1);
 			set(P.GUI_Handles.Control_Panel_Objects(4,4),'Items',{'Default','Sort by size'},'ItemsData',1:2);
+			
+			if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData)) % If the previous plot was different.
+				P.GUI_Handles.Control_Panel_Objects(4,4).Value = 2; % Set the default option to be DV merged.
+			end
 			
 			V = cell(1,length(Workspace_Set));
 			for g=1:length(Workspace_Set)
@@ -2640,10 +2678,10 @@ function Display_Plot(P,Data,Label)
 						Ax(g) = subplot(1,length(Workspace_Set),g,'Parent',P.GUI_Handles.Main_Panel_1);
 						histogram(Ax(g),V{g}(:).*180./pi,Edges);
 						
-						xlim(Ax(g),[0,360]);
-						set(Ax(g),'XTick',0:30:360,'TickLabelInterpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
-						xlabel(Ax(g),'$\mathrm{Angle \; [^{\circ}]}$','Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
-						ylabel(Ax(g),'$\mathrm{Count}$','Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+						xlim(Ax(g),Edges([1,end]));
+						set(Ax(g),'XTick',0:30:360,'FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
+						xlabel(Ax(g),['Angle [',char(176),']'],'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+						ylabel(Ax(g),['Count'],'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 						grid(Ax(g),'on');
 						box(Ax(g),'on');
 					end
@@ -2655,10 +2693,10 @@ function Display_Plot(P,Data,Label)
 						histogram(Ax(g),V{g}(2,:).*180./pi,Edges);
 						histogram(Ax(g),V{g}(3,:).*180./pi,Edges);
 						
-						xlim(Ax(g),[0,360]);
-						set(Ax(g),'XTick',0:30:360,'TickLabelInterpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
-						xlabel(Ax(g),'$\mathrm{Angle \; [^{\circ}]}$','Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
-						ylabel(Ax(g),'$\mathrm{Count}$','Interpreter','Latex','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+						xlim(Ax(g),Edges([1,end]));
+						set(Ax(g),'XTick',0:30:360,'FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
+						xlabel(Ax(g),['Angle [',char(176),']'],'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
+						ylabel(Ax(g),['Count'],'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 						grid(Ax(g),'on');
 						box(Ax(g),'on');
 						% Plot_3Angles_Junction_Histogram(V{g},BinSize,Title);
