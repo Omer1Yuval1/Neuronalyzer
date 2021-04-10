@@ -8,6 +8,8 @@ function Display_Plot(P,Data,Label)
 	BarWidth = 0.8;
 	Jitter_Size = 0.1;
 	
+	pval_threshold = 0.05;
+	
 	set(P.GUI_Handles.Control_Panel_Objects(3,1),'Text','Show Data Points');
 	set(P.GUI_Handles.Control_Panel_Objects(2,5),'Enable','off');
 	set(P.GUI_Handles.Control_Panel_Objects(3,[4,5]),'Enable','off');
@@ -876,9 +878,11 @@ function Display_Plot(P,Data,Label)
 		
 		case 'Neuronal Length per Menorah Order'
 			
+			Ng = length(Workspace_Set);
 			Class_Indices = 1:length(P.GUI_Handles.Class_Colors);
 			colormap(Ax1,P.GUI_Handles.Class_Colors);
 			Max_PVD_Orders = length(P.GUI_Handles.Class_Colors);
+			sig_mat = zeros(length(Class_Indices),length(Class_Indices),Ng,Ng);
 			
 			% P.GUI_Handles.Control_Panel_Objects(4,1).Value
 			set(P.GUI_Handles.Control_Panel_Objects(2,4),'Items',{'Not Normalized','Normalized to Midline Length','Normalized to Total Length'},'ItemsData',1:3);
@@ -911,7 +915,7 @@ function Display_Plot(P,Data,Label)
 					Y_Name = '^{Neuronal Length}/_{Total Length}'; % '$\mathrm{\frac{Neuronal \; Length}{Total \; Length}}$';
 			end
 			
-			Ng = length(Workspace_Set);
+			
 			for g=1:Ng
 				M{g} = zeros(length(Class_Indices) , length(Workspace_Set{g}) , 2); % Class x workspace x dorsal-ventral.
 				
@@ -940,7 +944,8 @@ function Display_Plot(P,Data,Label)
 				end
 			end
 			
-			CM = lines(Ng);
+			CM = lines(Ng); % CM = lines; CM(2,:) = CM(7,:);
+			
 			switch(P.GUI_Handles.Control_Panel_Objects(4,4).Value) % Type.
 				case 1 % All classes, dorsal and ventral separated.
 					for g=1:Ng
@@ -1000,7 +1005,6 @@ function Display_Plot(P,Data,Label)
 					
 					ylim(Ax1,[0,Ax1.YLim(2)]); % ylim(Ax1,[0,2.*YLIM(2)]);
 					
-					legend(Ax1,Groups);
 					grid(Ax1,'on');
 					
 					set(Ax1,'XTick',1:Max_PVD_Orders,'XTickLabels',Class_Indices,'FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize); % ,'TickLabelInterpreter','Latex'
@@ -1009,19 +1013,41 @@ function Display_Plot(P,Data,Label)
 					
 					set(Ax1,'YTickLabels',abs(get(Ax1,'YTick')) ./ P.GUI_Handles.Control_Panel_Objects(1,5).Value);
 					
-					if(Ng > 1)
-						disp(['Stats (D-V merged):']);
-						disp(['WT:']);
-						for o=2:Max_PVD_Orders % Compare all orders to order 1 in wt.
-							[PVal_D,Test_Name_D] = Stat_Test(nansum(M{1}(1,:,:),3),nansum(M{1}(o,:,:),3)); % Sum up across D-V.
-							disp(['P-Value = ',num2str(PVal_D),' (',Test_Name_D,')']);
-						end
-						disp(['WT-Mutant:']);
-						for o=1:Max_PVD_Orders % Compare each order between wt and mutant.
-							[PVal_D,Test_Name_D] = Stat_Test(nansum(M{1}(o,:,:),3),nansum(M{2}(o,:,:),3)); % Sum up across D-V.
-							disp(['P-Value = ',num2str(PVal_D),' (',Test_Name_D,')']);
+					disp(['Stats (D-V merged):']);
+					disp(['WT:']);
+					for o=2:Max_PVD_Orders % Compare all orders to order 1 in wt.
+						[PVal_D,Test_Name_D] = Stat_Test(nansum(M{1}(1,:,:),3),nansum(M{1}(o,:,:),3)); % Sum up across D-V.
+						disp(['P-Value = ',num2str(PVal_D),' (',Test_Name_D,')']);
+						
+						if(PVal_D < pval_threshold/100)
+							sig_mat(1,o,1,1) = 3;
+						elseif(PVal_D < pval_threshold/10)
+							sig_mat(1,o,1,1) = 2;
+						elseif(PVal_D < pval_threshold)
+							sig_mat(1,o,1,1) = 1;
 						end
 					end
+					
+					if(Ng > 1)
+						disp(['WT-Mutant:']);
+						for g=2:Ng % Compare each order between wt and mutant.
+							for o=1:Max_PVD_Orders % Compare each order between wt and mutant.
+								[PVal_D,Test_Name_D] = Stat_Test(nansum(M{1}(o,:,:),3),nansum(M{g}(o,:,:),3)); % Sum up across D-V.
+								disp(['P-Value = ',num2str(PVal_D),' (',Test_Name_D,')']);
+								
+								if(PVal_D < pval_threshold/100)
+									sig_mat(o,o,1,g) = 3;
+								elseif(PVal_D < pval_threshold/10)
+									sig_mat(o,o,1,g) = 2;
+								elseif(PVal_D < pval_threshold)
+									sig_mat(o,o,1,g) = 1;
+								end
+							end
+						end
+					end
+					[sig_mat_Y,sig_mat_X1,sig_mat_X2] = Get_Sig(Ax1,sig_mat);
+					legend(Ax1,Groups);
+					
 				case 3 % Total length (all classes merged).
 					for g=1:Ng
 						B_DV(:,g) = mean(sum(sum(M{g},1),3),2); % Sum orders, then sum DV, then average projects.
