@@ -67,6 +67,12 @@ function [sig_mat_Y,sig_mat_X1,sig_mat_X2] = Get_Sig(ax,sig_mat)
 		case 'patch'	
 			X = squeeze(mean(cat(3,H(:).XData),1))';
 			Y = squeeze(max(cat(3,H(:).YData),[],1))';
+    end
+    
+	% Force classes to be along the 2nd dimension:
+	if(min(size(X)) == 1)
+		X = X(:)';
+		Y = Y(:)';
 	end
 	
 	% If error bars exist, change the y-values to the upper limit of the error bar:

@@ -19,14 +19,18 @@ function Display_Reconstruction(P,Data,p,Label)
 	end
 	
 	if(~Undock)
+		H = P.GUI_Handles.Main_Figure;
 		Ax = P.GUI_Handles.View_Axes;
 		delete(allchild(Ax));
 	else
 		H = figure;
 		Ax = gca;
 		[ImRows,ImCols] = size(Data.Info.Files(1).Raw_Image);
-		hold on;
+		hold(Ax,'on');
 	end
+	% colormap(Ax,'gray');
+	% set(pan(H),'ActionPostCallback','');
+	% set(zoom(H),'ActionPostCallback','');
 	
 	% Set_Dynamic_Sliders_Values(GP.Handles.Analysis,0,50);
 	
@@ -77,12 +81,22 @@ function Display_Reconstruction(P,Data,p,Label)
 			switch(Label)
 				case 'Binary Image'
 					imshow(Data.Info.Files(1).Binary_Image,'Parent',Ax);
+					% image(Ax,Data.Info.Files(1).Binary_Image,'CDataMapping','scaled');
+					
+					% set(pan(H),'ActionPostCallback',@(src,event) Adjust_Image_Display(src,event,Ax,Data.Info.Files(1).Binary_Image));
+					% set(zoom(H),'ActionPostCallback',@(src,event) Adjust_Image_Display(src,event,Ax,Data.Info.Files(1).Binary_Image));
 				case 'Binary Image - RGB'
 					Im_RGB = repmat(Data.Info.Files(1).Raw_Image(:,:,1),[1,1,3]);
 					Im_RGB(:,:,1) = Im_RGB(:,:,1) .* uint8(~Data.Info.Files(1).Binary_Image);
 					Im_RGB(:,:,2) = Im_RGB(:,:,2) .* uint8(Data.Info.Files(1).Binary_Image);
+					
+					% image(Ax,Im_RGB);
 					imshow(Im_RGB,'Parent',Ax);
+					
+					% set(pan(H),'ActionPostCallback',@(src,event) Adjust_Image_Display(src,event,Ax,Im_RGB));
+					% set(zoom(H),'ActionPostCallback',@(src,event) Adjust_Image_Display(src,event,Ax,Im_RGB));
 			end
+			% Ax.Interactions = [];
 			
 			set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Marker size:');
 			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,20],'Step',1,'Value',2,'Tooltip','Marker size (in pixels) for adding (left mouse click) and removing (left mouse click) pixels.'); % Set the spinner.
@@ -742,6 +756,17 @@ function Display_Reconstruction(P,Data,p,Label)
 		end
 	end
     
+	%{
+	function Adjust_Image_Display(~,~,Ax,Im)
+		% set(Ax.Children(end),'CData',Im(round(Ax.YLim(1)):round(Ax.YLim(2)),round(Ax.XLim(1)):round(Ax.XLim(2)),:),'XData',round(Ax.XLim(1)),'YData',round(Ax.YLim(1)));
+		AAA = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Loading...');
+		drawnow;
+		set(Ax.Children(end),'CData',Im(round(Ax.YLim(1)):round(Ax.YLim(2)),round(Ax.XLim(1)):round(Ax.XLim(2)),:),'XData',round(Ax.XLim([1,end])),'YData',round(Ax.YLim([1,end])));
+		disp(1);
+		close(AAA);
+	end
+	%}
+	
     function Lock_Image_Func(~,~,P)
         
 	end
