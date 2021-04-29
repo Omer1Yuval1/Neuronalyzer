@@ -53,14 +53,28 @@ function [sig_mat_Y,sig_mat_X1,sig_mat_X2] = Get_Sig(ax,sig_mat)
 		% X and Y are matrices containing x,y values of a bar plot, with y-values being the maximum across bars and error-bars.
 		% Each row of x and y corresponds to a different group.
 	
-	dy = 0.05 .* ax.YLim(2); % Distance between significance bars.
-	y_star = 0.2*dy; % Distance of stars from their significance bar.
+	dy = 0.1 .* ax.YLim(2); % sum(abs(ax.YLim)); % Distance between significance bars.
+	y_star = 0.1*dy; % Distance of stars from their significance bar.
 	Star_Font_Size = 20;
+	pval_Font_Size = 12;
+	s = 1; % Default sign for y-data.
+	MaxMin_Func = @(x) nanmax(x,[],1);
+	txt_align = 'bottom';
 	
 	% Find x and y positions of the bars:
-	H = findall(ax.Children,'Type','bar','-or','Type','patch'); % Find all bar/patch objects.
-	H = flipud(H); % The order of the objects is reversed in order to have the left-most group as the first.
-	switch(H(1).Type)
+	if(nargin < 3 || isempty(H) || any(~ishandle(H)))
+		H = findall(ax.Children,'Type','bar','-or','Type','patch'); % Find all bar/patch objects.
+		H = flipud(H(:)); % The order of the objects is reversed in order to have the left-most group as the first.
+	end
+	
+	if(nanmean([H(:).YData],'all') < 0)
+		s = -1;
+		dy = -dy;
+		y_star = -3.5 * y_star;
+		MaxMin_Func = @(x) nanmin(x,[],1);
+    end
+    
+    switch(H(1).Type)
 		case 'bar'
 			X = cat(1,H(:).XEndPoints);
 			Y = cat(1,H(:).YEndPoints);
@@ -68,22 +82,47 @@ function [sig_mat_Y,sig_mat_X1,sig_mat_X2] = Get_Sig(ax,sig_mat)
 			X = squeeze(mean(cat(3,H(:).XData),1))';
 			Y = squeeze(max(cat(3,H(:).YData),[],1))';
     end
-    
-	% Force classes to be along the 2nd dimension:
-	if(min(size(X)) == 1)
-		X = X(:)';
-		Y = Y(:)';
+	
+	% Make sure rows of X & Y correspond to group, and columns to categories:
+	if(size(X,2) ~= size(sig_mat,1) || size(X,1) ~= size(sig_mat,3))
+		X = transpose(X);
+		Y = transpose(Y);
 	end
 	
 	% If error bars exist, change the y-values to the upper limit of the error bar:
 	He = findall(ax.Children,'Type','ErrorBar'); % Find all error-bar objects.
-	if(~isempty(He))
-		He = flipud(He); % The order of the objects is reversed in order to have the left-most group as the first.
-		Y = Y + cat(1,He(:).YPositiveDelta);
-	end
 	
-	% disp(X);
-	% disp(Y);
+	% Match error bars with data series (in case there are more error bars than bars):
+	h = false(1,length(He));
+	for i=1:length(He)
+		
+		Ye = He(i).YData;
+		
+		if(size(Ye,2) ~= size(sig_mat,1))
+			Ye = transpose(Ye);
+		end
+		
+		if(any(ismember(Y,Ye,'rows')))
+			h(i) = 1;
+		end
+	end
+	He = He(h);
+	
+	if(~isempty(He))
+		He = flipud(He(:)); % The order of the objects is reversed in order to have the left-most group as the first.
+		
+		if(s == 1)
+			Ye = cat(1,He(:).YPositiveDelta);
+		else
+			Ye = cat(1,He(:).YNegativeDelta);
+		end
+		
+		if(size(Ye,2) ~= size(sig_mat,1) || size(Ye,1) ~= size(sig_mat,3))
+			Ye = transpose(Ye);
+		end
+		
+		Y = Y + s.*Ye;
+	end
 	
 	sig_mat_Y = nan(size(sig_mat)); % Set y-values for each pair (or nan if there isn't any).
 	sig_mat_X1 = nan(size(sig_mat)); % Set y-values for each pair (or nan if there isn't any).
@@ -142,8 +181,12 @@ function [sig_mat_Y,sig_mat_X1,sig_mat_X2] = Get_Sig(ax,sig_mat)
 				Ns = sig_mat(i); % # of stars.
 				
 				plot(ax,[x1,x2],[y,y],'k','LineWidth',1.5);
-				text(ax,mean([x1,x2]),y+y_star,repmat('*',1,Ns),'HorizontalAlignment','center','VerticalAlignment','middle','FontSize',Star_Font_Size);
-
+                
+                if(Ns >= 1 && mod(Ns,1) == 0) % If a whole number >= 1, treat as the number of asterisks.
+                    text(ax,mean([x1,x2]),y+y_star,repmat('*',1,Ns),'HorizontalAlignment','center','VerticalAlignment','middle','FontSize',Star_Font_Size,'LineStyle','-');
+                else % Treat as p-value.
+                    text(ax,mean([x1,x2]),y+2*y_star,num2str(Ns),'HorizontalAlignment','center','VerticalAlignment','middle','FontSize',pval_Font_Size);
+                end
 			end
 		end
 	% end
