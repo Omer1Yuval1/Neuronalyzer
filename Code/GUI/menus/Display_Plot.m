@@ -30,7 +30,7 @@ function Display_Plot(P,Data,Label)
 	for f=1:length(Grouping_List)
 		
 		for p=1:numel(Data)
-			Feature_Values(p) = [Data(p).Info.Experiment(1).(Grouping_List{f})];
+			Feature_Values(p) = char([Data(p).Info.Experiment(1).(Grouping_List{f})]);
 		end
 		
 		if(length(unique(Feature_Values)) > 1) % If there are multiple values for feature f, use it for grouping.
