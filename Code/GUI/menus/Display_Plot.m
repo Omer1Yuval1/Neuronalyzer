@@ -1014,37 +1014,22 @@ function Display_Plot(P,Data,Label)
 					set(Ax1,'YTickLabels',abs(get(Ax1,'YTick')) ./ P.GUI_Handles.Control_Panel_Objects(1,5).Value);
 					
 					disp(['Stats (D-V merged):']);
-					disp(['WT:']);
-					for o=2:Max_PVD_Orders % Compare all orders to order 1 in wt.
-						[PVal_D,Test_Name_D] = Stat_Test(nansum(M{1}(1,:,:),3),nansum(M{1}(o,:,:),3)); % Sum up across D-V.
-						disp(['P-Value = ',num2str(PVal_D),' (',Test_Name_D,')']);
-						
-						if(PVal_D < pval_threshold/100)
-							sig_mat(1,o,1,1) = 3;
-						elseif(PVal_D < pval_threshold/10)
-							sig_mat(1,o,1,1) = 2;
-						elseif(PVal_D < pval_threshold)
-							sig_mat(1,o,1,1) = 1;
-						end
-					end
-					
-					if(Ng > 1)
-						disp(['WT-Mutant:']);
-						for g=2:Ng % Compare each order between wt and mutant.
-							for o=1:Max_PVD_Orders % Compare each order between wt and mutant.
+					for o=1:Max_PVD_Orders % Compare each order between wt and mutant.
+						for g=1:Ng % Compare each order between wt and mutant.
+							if(g == 1 && o > 1) % Compare classes withing the 1st group.
+								[PVal_D,Test_Name_D] = Stat_Test(nansum(M{1}(1,:,:),3),nansum(M{1}(o,:,:),3));
+								Stat_Name = ['(Group-',num2str(1),', Class-',num2str(1),') VS ','(Group-',num2str(1),', Class-',num2str(o),'): '];
+								disp([Stat_Name,'P-Value = ',num2str(PVal_D),' (',Test_Name_D,')']);
+								sig_mat = update_sig_mat(sig_mat,1,o,1,1,PVal_D,pval_threshold);
+							elseif(g > 1) % Compare corresponding classes between group 1 and g.
 								[PVal_D,Test_Name_D] = Stat_Test(nansum(M{1}(o,:,:),3),nansum(M{g}(o,:,:),3)); % Sum up across D-V.
-								disp(['P-Value = ',num2str(PVal_D),' (',Test_Name_D,')']);
-								
-								if(PVal_D < pval_threshold/100)
-									sig_mat(o,o,1,g) = 3;
-								elseif(PVal_D < pval_threshold/10)
-									sig_mat(o,o,1,g) = 2;
-								elseif(PVal_D < pval_threshold)
-									sig_mat(o,o,1,g) = 1;
-								end
+								Stat_Name = ['(Group ',num2str(1),', Class ',num2str(o),') VS ','(Group ',num2str(g),', Class ',num2str(o),'): '];
+								disp([Stat_Name,'P-Value = ',num2str(PVal_D),' (',Test_Name_D,')']);
+								sig_mat = update_sig_mat(sig_mat,o,o,1,g,PVal_D,pval_threshold);
 							end
 						end
 					end
+					
 					[sig_mat_Y,sig_mat_X1,sig_mat_X2] = Get_Sig(Ax1,sig_mat);
 					legend(Ax1,Groups);
 					
@@ -2757,6 +2742,16 @@ function Display_Plot(P,Data,Label)
 			out = [];
 		else
 			out = ss;
+		end
+	end
+	
+	function sig_mat = update_sig_mat(sig_mat,c1,c2,g1,g2,PVal_D,pval_threshold)
+		if(PVal_D < pval_threshold/100)
+			sig_mat(c1,c2,g1,g2) = 3;
+		elseif(PVal_D < pval_threshold/10)
+			sig_mat(c1,c2,g1,g2) = 2;
+		elseif(PVal_D < pval_threshold)
+			sig_mat(c1,c2,g1,g2) = 1;
 		end
 	end
 end
