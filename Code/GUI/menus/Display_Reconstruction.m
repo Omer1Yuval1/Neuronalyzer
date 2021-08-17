@@ -260,7 +260,10 @@ function Display_Reconstruction(P,Data,p,Label)
 			set(P.GUI_Handles.Control_Panel_Objects([1,3],2),'Enable','on'); % Enable the radio buttons.
 			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Enable','off');
 			set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Points:');
-			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[5,100],'Step',1,'Enable','on','Tooltip','Number of interactive points.'); % Set the spinner.
+			
+			if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData)) % If a different plot was chosen.
+				set(P.GUI_Handles.Control_Panel_Objects(1,4),'Value',50,'Limits',[5,100],'Step',1,'Enable','on','Tooltip','Number of interactive points.'); % Set the spinner.
+			end
 			
 			CM1 = lines(7);
 			CM1 = CM1([7,1,1,3,3],:);
@@ -284,10 +287,12 @@ function Display_Reconstruction(P,Data,p,Label)
 				
 				if(P.GUI_Handles.Control_Panel_Objects(3,2).Value == 1) % Annotation mode.
 					
-					Waypoints = false(Np_Total,1);
-					Waypoints(1:round(Np_Total / Np_Waypoints):Np_Total) = true;
+					XY = Distribute_Equidistantly(XY',Np_Waypoints,1000);
+					roi = images.roi.Polyline (Ax,'Position',[XY(:,1),XY(:,2)],'UserData',{p,F{f}},'Color',CM1(f,:));
 					
-					roi = images.roi.Freehand(Ax,'Smoothing',1,'Position',[XY(1,:)',XY(2,:)'],'Waypoints',Waypoints,'UserData',{p,F{f}},'Closed',false,'Color',CM1(f,:),'FaceAlpha',0,'FaceSelectable',false); % roi = images.roi.Polyline(Ax,'Position',[XY(1,:)',XY(2,:)'],'UserData',{p,F{f}});
+					% Waypoints = false(Np_Total,1);
+					% Waypoints(1:round(Np_Total / Np_Waypoints):Np_Total) = true;
+					% roi = images.roi.Freehand(Ax,'Smoothing',1,'Position',[XY(1,:)',XY(2,:)'],'Waypoints',Waypoints,'UserData',{p,F{f}},'Closed',false,'Color',CM1(f,:),'FaceAlpha',0,'FaceSelectable',false); % roi = images.roi.Polyline(Ax,'Position',[XY(1,:)',XY(2,:)'],'UserData',{p,F{f}});
 					addlistener(roi,'ROIMoved',@(src,evnt) Draggable_Point_Func(src,evnt,P));
 				else
 					plot(Ax,XY(1,:),XY(2,:),'Color',CM1(f,:),'LineWidth',3);
@@ -708,18 +713,19 @@ function Display_Reconstruction(P,Data,p,Label)
 		end
 	end
 	
-	function Draggable_Point_Func(source,~,P) % Update the position of annotated points.
+	function Draggable_Point_Func(source,event,P) % Update the position of annotated points.
+		
+		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Loading...');
 		
 		ppp = source.UserData{1}; % Project number.
 		FF = source.UserData{2}; % Field name.
 		
-		xx = source.Position(:,1)';
-		yy = source.Position(:,2)';
+		xx = source.Position(:,1);
+		yy = source.Position(:,2);
+		xy_axis = Distribute_Equidistantly([xx,yy],numel(P.Data(ppp).Axes.(FF)),1000);
 		
-		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Loading...');
-		
-		xxc = num2cell(xx);
-		yyc = num2cell(yy);
+		xxc = num2cell(xy_axis(:,1));
+		yyc = num2cell(xy_axis(:,2));
 		[P.Data(ppp).Axes.(FF).X] = xxc{:};
 		[P.Data(ppp).Axes.(FF).Y] = yyc{:};
 		
