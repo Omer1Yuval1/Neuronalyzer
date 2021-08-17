@@ -289,10 +289,6 @@ function Display_Reconstruction(P,Data,p,Label)
 					
 					XY = Distribute_Equidistantly(XY',Np_Waypoints,1000);
 					roi = images.roi.Polyline (Ax,'Position',[XY(:,1),XY(:,2)],'UserData',{p,F{f}},'Color',CM1(f,:));
-					
-					% Waypoints = false(Np_Total,1);
-					% Waypoints(1:round(Np_Total / Np_Waypoints):Np_Total) = true;
-					% roi = images.roi.Freehand(Ax,'Smoothing',1,'Position',[XY(1,:)',XY(2,:)'],'Waypoints',Waypoints,'UserData',{p,F{f}},'Closed',false,'Color',CM1(f,:),'FaceAlpha',0,'FaceSelectable',false); % roi = images.roi.Polyline(Ax,'Position',[XY(1,:)',XY(2,:)'],'UserData',{p,F{f}});
 					addlistener(roi,'ROIMoved',@(src,evnt) Draggable_Point_Func(src,evnt,P));
 				else
 					plot(Ax,XY(1,:),XY(2,:),'Color',CM1(f,:),'LineWidth',3);
