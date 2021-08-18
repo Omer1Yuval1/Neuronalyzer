@@ -3,7 +3,6 @@ function Worm_Axes = Find_Worm_Longitudinal_Axis(Data,Plot1,Ax)
 	% TODO: use scale-bar:
 	Scale_Factor = Data.Info.Experiment(1).Scale_Factor;
 	Initial_Radius = 120; % 60 ./ Scale_Factor;
-	Min_Branch_Length = 300;
 	Mask_Size = 100;
 	
 	% This functions uses a higher level perspective (the entire neuron) to detect the longitudinal axis of the worm.
@@ -24,15 +23,11 @@ function Worm_Axes = Find_Worm_Longitudinal_Axis(Data,Plot1,Ax)
 	[ImB,XYper] = Neuron_To_Blob(Data.Info.Files(1).Binary_Image); % Data.Info.Files(1).Raw_Image.
 	S(1).Boundary_Pixels = XYper;
     
-    % Im_Skel = bwmorph(ImB,'skel',inf); % The skeleton of the blob.
-	% Im_Skel = bwmorph(imclose(ImB,strel('disk',Mask_Size)),'skel',inf); % The skeleton of the blob. % Im_Axis = bwmorph(imclose(ImB,strel('disk',100)),'thin',inf);
-	Im_Skel_Pruned = bwskel(ImB,'MinBranchLength',Min_Branch_Length);
-    % Im_Skel_Pruned = bwskel(Im_Skel,'MinBranchLength',Min_Branch_Length);
+    [Blob_Skel,xe,ye] = Skeleton_Blob(ImB); % Skeleton image and two end-points.
 	
 	% Save midline pixels ordered from head (left) to tail:
-	[Y,X] = find(bwmorph(Im_Skel_Pruned,'endpoints')); % End points of the midline.
-	f = find(X == min(X)); % Find the midline pixel with the smallest x-value (conventionally the head point).
-	XY = Order_Connected_Pixels(Im_Skel_Pruned,[X(f(1)),Y(f(1))]); % [Nx2].
+	f = find(xe == min(xe)); % Find the midline pixel with the smallest x-value (conventionally the head point).
+	XY = Order_Connected_Pixels(Blob_Skel,[xe(f(1)),ye(f(1))]); % [Nx2].
 	S(1).Midline_Pixels = [XY(:,1) , XY(:,2)];
 	
 	% Smooth & Fit Midline:		
@@ -106,7 +101,7 @@ function Worm_Axes = Find_Worm_Longitudinal_Axis(Data,Plot1,Ax)
 			plot(S.Boundary_Pixels(:,1),S.Boundary_Pixels(:,2),'.','Color',[0.8,0,0],'MarkerSize',15); % [0.8,0,0], [0.5,0.5,0]
 			
 		case 2
-			[Y,X] = find(Im_Skel_Pruned);
+			[Y,X] = find(Blob_Skel);
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax); % imshow(ImB);
 			set(gca,'YDir','normal');
 			hold on;

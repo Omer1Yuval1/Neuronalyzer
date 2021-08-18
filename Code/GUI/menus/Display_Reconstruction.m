@@ -262,7 +262,8 @@ function Display_Reconstruction(P,Data,p,Label)
 			set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Points:');
 			
 			if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData)) % If a different plot was chosen.
-				set(P.GUI_Handles.Control_Panel_Objects(1,4),'Value',50,'Limits',[5,100],'Step',1,'Enable','on','Tooltip','Number of interactive points.'); % Set the spinner.
+				set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[5,100],'Value',50,'Step',1,'Enable','on','Tooltip','Number of interactive points.'); % Set the spinner.
+				% set(P.GUI_Handles.Control_Panel_Objects(1,4),'Value',50);
 			end
 			
 			CM1 = lines(7);
