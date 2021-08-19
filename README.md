@@ -13,8 +13,8 @@ Curve Fitting, Signal Processing, Statistics and Machine Learning, Phased Array 
     Use the “Load Data” button to load an image(s), or the “Load Project” button to load an existing
     project file(s). Then, use the “Project” menu to navigate between the different images/projects. You
     can load multiple image/project files at once, or load a project file that contains multiple projects.  <br/><br/>
-    Use the tables at the bottom-right corner to add meta-data. The first table allows you to enter
-    experimental information such as scale-bar, temperature and strain name (the third column is used
+    Use the tables at the bottom-right corner to add meta-data. The second column contains the values, and the third column contains the units.
+	The first table allows you to enter experimental information such as scale-bar, temperature and strain name (the third column is used
     for units). The second table allows you to enter analysis information for reproducibility. This includes
     the version and commit id of the code used for the analysis, as well as the date and the name of the
     person that performed the analysis. You can find the commit id on the GitHub repository (for
