@@ -49,7 +49,6 @@ function index()
 			if(~iscell(File1))
 				File1 = {File1};
 			end
-			P.Data(1).Info.Experiment(1).Identifier = File1{1}(1:end-4);
 		end
 		
 		cd(CurrentDir); % Return to the main directory.
@@ -57,26 +56,31 @@ function index()
 		if(~P.GUI_Handles.Multi_View) % single-view project. Create a project for each loaded file.
 			P.GUI_Handles.View_Axes = gobjects(1);
 			if(~isempty(source)) % If data was loaded.
+				pp = numel(P.Data);
 				for ff=1:length(File1) % For each file.
 					
-					P.Data(ff) = project_init(P); % Initialize project struct;
+					pp = pp + 1;
+					
+					P.Data(pp) = project_init(P); % Initialize project struct;
 					
 					[filepath,filename,ext] = fileparts(File1{ff});
-					P.Data(ff).Info.Experiment(1).Identifier = filename;
+					P.Data(pp).Info.Experiment(1).Identifier = filename;
 					
 					if(P.GUI_Handles.Save_Input_Data_Path) % Save path to input files.
-						P.Data(ff).Info.Files(1).Raw_Image = File1{ff};
+						P.Data(pp).Info.Files(1).Raw_Image = File1{ff};
 					else % Save input data explicitly.
-						P.Data(ff).Info.Files(1).Raw_Image = imread([Path1,filesep,File1{ff}]);
+						P.Data(pp).Info.Files(1).Raw_Image = imread([Path1,filesep,File1{ff}]);
 					end
-					P.Data(ff).Info.Files(1).Raw_Image = P.Data(ff).Info.Files(1).Raw_Image(:,:,1);
+					P.Data(pp).Info.Files(1).Raw_Image = P.Data(pp).Info.Files(1).Raw_Image(:,:,1);
 					
-					Label_ff = ['Project_',num2str(ff),'_',P.Data(ff).Info.Experiment(1).Identifier];
-					uimenu(P.GUI_Handles.Menus(1),'Text',Label_ff,'UserData',ff,'Callback',{@Switch_Project_Func,P});
+					Label_pp = ['Project_',num2str(pp),'_',P.Data(pp).Info.Experiment(1).Identifier];
+					uimenu(P.GUI_Handles.Menus(1),'Text',Label_pp,'UserData',pp,'Callback',{@Switch_Project_Func,P});
 					
 					P.GUI_Handles.Waitbar.Value = ff ./ length(File1);
 				end
 			else % If a project file(s) was loaded.
+				delete(P.GUI_Handles.Menus(1).Children); % Empty the Project menu.
+				
 				for pp=1:numel(P.Data) % For each project.
 					
 					if(P.GUI_Handles.Save_Input_Data_Path) % Validate path. If it is not found, ask the user to specify a new path and save it.
@@ -222,11 +226,12 @@ function index()
 		figure(P.GUI_Handles.Main_Figure);
 		set(P.GUI_Handles.Waitbar,'Indeterminate','off','Value',0);
 		
-		pp = 0;
+		pp = numel(P.Data); % This allows loading different projects separately (rather than loading all projects at once).
 		for ii=1:length(File) % For each loaded project file (may contain one or more projects).
 			
 			Loaded_File = load([Path,File{ii}]);
 			
+			% *************************************************************************************************************
 			% *************************************************************************************************************
 			% *************************************************************************************************************
 			
@@ -257,6 +262,7 @@ function index()
                 end
             end
             
+			% *************************************************************************************************************
 			% *************************************************************************************************************
 			% *************************************************************************************************************
 			
@@ -445,7 +451,7 @@ function index()
 				P.GUI_Handles.Buttons(3,1).UserData = ''; % Used as a flag to reset the axes and axis limits.
 			end
 			
-			Display_Reconstruction(P,P.Data(pp),pp,source.Label);
+			Display_Reconstruction(P,P.Data(pp),source.Label);
 			
 			% if(~isequal(source.Label,P.GUI_Handles.Buttons(3,1).UserData)) % If a different plot was chosen, reset the limits.
 			Fim = findall(P.GUI_Handles.View_Axes.Children,'Type','image');

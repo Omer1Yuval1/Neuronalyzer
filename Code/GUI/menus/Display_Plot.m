@@ -2,9 +2,20 @@ function Display_Plot(P,Data,Label)
 	
 	% This function is used to display different plots for quantitative analysis of the data.
 	
+	for pp=1:numel(P.Data)
+		if(isempty(P.Data(pp).Points) || isempty(P.Data(pp).Segments) || isempty(P.Data(pp).Vertices) || isempty(P.Data(pp).Axes))
+			warndlg('Some projects have not been traced or analyzed yet.','Warning');
+			return;
+		end
+		
+		if(isempty(P.Data(pp).Info.Experiment(1).Strain_Name) && isempty(P.Data(pp).Info.Experiment(1).Age))
+			warndlg('Some projects are missing neccesary experimental parameters, such as age or strain name.','Warning');
+			return;
+		end
+	end
+	
 	Grouping_List = {'Strain_Name','Age'};
 	
-	% FontSize_1 = 18;
 	BarWidth = 0.8;
 	Jitter_Size = 0.1;
 	
@@ -32,6 +43,7 @@ function Display_Plot(P,Data,Label)
 		for p=1:numel(Data)
 			Feature_Values(p) = char([Data(p).Info.Experiment(1).(Grouping_List{f})]);
 		end
+		Feature_Values(cellfun('isempty',Feature_Values)) = []; % Remove empty strings.
 		
 		if(length(unique(Feature_Values)) > 1) % If there are multiple values for feature f, use it for grouping.
 			Group_By = Grouping_List{f};

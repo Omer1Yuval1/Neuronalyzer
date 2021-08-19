@@ -1,4 +1,4 @@
-function Display_Reconstruction(P,Data,p,Label)
+function Display_Reconstruction(P,Data,Label)
 	
 	% P is the handle class containing all project and gui data.
 	% Data = P.Data(p), where p is the current selected project. It is passed separately as a struct for faster reading (reading a handle class property in a loop is very slow).
@@ -35,6 +35,12 @@ function Display_Reconstruction(P,Data,p,Label)
 	% Set_Dynamic_Sliders_Values(GP.Handles.Analysis,0,50);
 	
 	p = P.GUI_Handles.Current_Project;
+	
+	if(isempty(P.Data(p).Segments))
+		Label = 'Raw Image - Grayscale';
+		warndlg('Warning: The selected image has not been traced yet.','Warning');
+	end
+	
 	Scale_Factor = Data.Info.Experiment(1).Scale_Factor;
 	
 	set(P.GUI_Handles.View_Axes,'ButtonDownFcn',''); % set(P.GUI_Handles.View_Axes,'ButtonDownFcn',{@Show_Image_Func,P});
