@@ -36,11 +36,6 @@ function Display_Reconstruction(P,Data,Label)
 	
 	p = P.GUI_Handles.Current_Project;
 	
-	if(isempty(P.Data(p).Segments))
-		Label = 'Raw Image - Grayscale';
-		warndlg('Warning: The selected image has not been traced yet.','Warning');
-	end
-	
 	Scale_Factor = Data.Info.Experiment(1).Scale_Factor;
 	
 	set(P.GUI_Handles.View_Axes,'ButtonDownFcn',''); % set(P.GUI_Handles.View_Axes,'ButtonDownFcn',{@Show_Image_Func,P});
@@ -67,84 +62,114 @@ function Display_Reconstruction(P,Data,Label)
 			% plot(CB_Perimeter(:,1),CB_Perimeter(:,2),'LineWidth',4);
 		case 'CNN Image'
 			
-			if(iscategorical(Data.Info.Files(1).Denoised_Image))
+			if(isfield(Data.Info.Files,'Denoised_Image') && ~isempty(Data.Info.Files(1).Denoised_Image))
+				if(iscategorical(Data.Info.Files(1).Denoised_Image))
+					CM = lines;
+					Im_Label = labeloverlay(Data.Info.Files(1).Raw_Image,Data.Info.Files(1).Denoised_Image,'Colormap',CM([1,7],:),'Transparency',0.1,'IncludedLabels',["Neuron"]);
+					
+					imshow(Im_Label,'Parent',Ax);
+				else
+					imshow(Data.Info.Files(1).Denoised_Image,'Parent',Ax);
+					colormap(Ax,'turbo');
+					
+					msgbox('You are using an old CNN version. Please press the "Denoise Image" button to apply the most recent CNN to your image.');
+				end
+				
+				set(P.GUI_Handles.Control_Panel_Objects(1,[4,5]),'Enable','off'); % 'Limits',[0,0.99],'Step',0.01,'Value',Data.Parameters.Neural_Network.Threshold,'Tooltip','Threshold for the binarization of the denoised image.'); % CNN threshold.
+				
+				set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,p,Label});
+			else
+				imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+				warndlg('Warning: A denoised image has not been created yet.','Warning');
+			end
+		case {'Binary Image','Binary Image - RGB'}
+			
+			if(isfield(Data.Info.Files,'Binary_Image') && ~isempty(Data.Info.Files(1).Binary_Image))
+				switch(Label)
+					case 'Binary Image'
+						imshow(Data.Info.Files(1).Binary_Image,'Parent',Ax);
+						% image(Ax,Data.Info.Files(1).Binary_Image,'CDataMapping','scaled');
+						
+						% set(pan(H),'ActionPostCallback',@(src,event) Adjust_Image_Display(src,event,Ax,Data.Info.Files(1).Binary_Image));
+						% set(zoom(H),'ActionPostCallback',@(src,event) Adjust_Image_Display(src,event,Ax,Data.Info.Files(1).Binary_Image));
+					case 'Binary Image - RGB'
+						Im_RGB = repmat(Data.Info.Files(1).Raw_Image(:,:,1),[1,1,3]);
+						Im_RGB(:,:,1) = Im_RGB(:,:,1) .* uint8(~Data.Info.Files(1).Binary_Image);
+						Im_RGB(:,:,2) = Im_RGB(:,:,2) .* uint8(Data.Info.Files(1).Binary_Image);
+						
+						% image(Ax,Im_RGB);
+						imshow(Im_RGB,'Parent',Ax);
+						
+						% set(pan(H),'ActionPostCallback',@(src,event) Adjust_Image_Display(src,event,Ax,Im_RGB));
+						% set(zoom(H),'ActionPostCallback',@(src,event) Adjust_Image_Display(src,event,Ax,Im_RGB));
+				end
+				% Ax.Interactions = [];
+			
+				set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Marker size:');
+				set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,20],'Step',1,'Value',2,'Tooltip','Marker size (in pixels) for adding (left mouse click) and removing (left mouse click) pixels.'); % Set the spinner.
+				set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',Data.Parameters.Neural_Network.Min_CC_Size,'ValueChangedFcn',{@Update_Binary_Threshold_Func,P,p},'Tooltip','Minimum object size (in pixels) in the binarized image.'); % Minimum object size.
+				
+				set(P.GUI_Handles.Control_Panel_Objects([1,2,3],2),'Enable','on'); % Enable the radio buttons.
+				set(P.GUI_Handles.Control_Panel_Objects(1,[4,5]),'Enable','on'); % Enable the spinners.
+				
+				set(allchild(Ax),'HitTest','off');
+				set(Ax,'PickableParts','all');
+			else
+				imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+				warndlg('Warning: A binary image has not been created yet.','Warning');
+			end
+			
+		case 'CNN + Binary'
+			
+			if(isfield(Data.Info.Files,'Binary_Image') && ~isempty(Data.Info.Files(1).Binary_Image) && ...
+				isfield(Data.Info.Files,'Denoised_Image') && ~isempty(Data.Info.Files(1).Denoised_Image))
+			
 				CM = lines;
-				Im_Label = labeloverlay(Data.Info.Files(1).Raw_Image,Data.Info.Files(1).Denoised_Image,'Colormap',CM([1,7],:),'Transparency',0.1,'IncludedLabels',["Neuron"]);
+				
+				Im = Data.Info.Files(1).Denoised_Image;
+				
+				CNN_Binary = [0,1];
+				CNN_Binary = CNN_Binary(Data.Info.Files(1).Denoised_Image);
+				CNN_Binary = Update_Binary_Image([],CNN_Binary,P.Data(p).Parameters.Neural_Network.Min_CC_Size,0);
+				Im = categorical(CNN_Binary,[0,1],["BG","Neuron"]);
+				
+				Im(Data.Info.Files(1).Binary_Image == 1 & Im == "BG") = "Added"; % Added pixels.
+				Im(Data.Info.Files(1).Binary_Image == 0 & Im == "Neuron") = "Removed"; % Removed pixels.
+				
+				Im_Label = labeloverlay(Data.Info.Files(1).Raw_Image,Im,'Colormap',CM([1,7,6,3],:),'Transparency',0.1,'IncludedLabels',["Neuron","Added","Removed"]);
 				
 				imshow(Im_Label,'Parent',Ax);
 			else
-				imshow(Data.Info.Files(1).Denoised_Image,'Parent',Ax);
-				colormap(Ax,'turbo');
-				
-				msgbox('You are using an old CNN version. Please press the "Denoise Image" button to apply the most recent CNN to your image.');
+				imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+				warndlg('Warning: Binary and/or denoised images have not been created yet.','Warning');
 			end
-			
-			set(P.GUI_Handles.Control_Panel_Objects(1,[4,5]),'Enable','off'); % 'Limits',[0,0.99],'Step',0.01,'Value',Data.Parameters.Neural_Network.Threshold,'Tooltip','Threshold for the binarization of the denoised image.'); % CNN threshold.
-			
-			set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,p,Label});
-		case {'Binary Image','Binary Image - RGB'}
-			
-			switch(Label)
-				case 'Binary Image'
-					imshow(Data.Info.Files(1).Binary_Image,'Parent',Ax);
-					% image(Ax,Data.Info.Files(1).Binary_Image,'CDataMapping','scaled');
-					
-					% set(pan(H),'ActionPostCallback',@(src,event) Adjust_Image_Display(src,event,Ax,Data.Info.Files(1).Binary_Image));
-					% set(zoom(H),'ActionPostCallback',@(src,event) Adjust_Image_Display(src,event,Ax,Data.Info.Files(1).Binary_Image));
-				case 'Binary Image - RGB'
-					Im_RGB = repmat(Data.Info.Files(1).Raw_Image(:,:,1),[1,1,3]);
-					Im_RGB(:,:,1) = Im_RGB(:,:,1) .* uint8(~Data.Info.Files(1).Binary_Image);
-					Im_RGB(:,:,2) = Im_RGB(:,:,2) .* uint8(Data.Info.Files(1).Binary_Image);
-					
-					% image(Ax,Im_RGB);
-					imshow(Im_RGB,'Parent',Ax);
-					
-					% set(pan(H),'ActionPostCallback',@(src,event) Adjust_Image_Display(src,event,Ax,Im_RGB));
-					% set(zoom(H),'ActionPostCallback',@(src,event) Adjust_Image_Display(src,event,Ax,Im_RGB));
-			end
-			% Ax.Interactions = [];
-			
-			set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Marker size:');
-			set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,20],'Step',1,'Value',2,'Tooltip','Marker size (in pixels) for adding (left mouse click) and removing (left mouse click) pixels.'); % Set the spinner.
-			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',Data.Parameters.Neural_Network.Min_CC_Size,'ValueChangedFcn',{@Update_Binary_Threshold_Func,P,p},'Tooltip','Minimum object size (in pixels) in the binarized image.'); % Minimum object size.
-			
-			set(P.GUI_Handles.Control_Panel_Objects([1,2,3],2),'Enable','on'); % Enable the radio buttons.
-			set(P.GUI_Handles.Control_Panel_Objects(1,[4,5]),'Enable','on'); % Enable the spinners.
-			
-			set(allchild(Ax),'HitTest','off');
-			set(Ax,'PickableParts','all');
-			
-		case 'CNN + Binary'
-			CM = lines;
-			
-			Im = Data.Info.Files(1).Denoised_Image;
-			
-			CNN_Binary = [0,1];
-			CNN_Binary = CNN_Binary(Data.Info.Files(1).Denoised_Image);
-			CNN_Binary = Update_Binary_Image([],CNN_Binary,P.Data(p).Parameters.Neural_Network.Min_CC_Size,0);
-			Im = categorical(CNN_Binary,[0,1],["BG","Neuron"]);
-			
-			Im(Data.Info.Files(1).Binary_Image == 1 & Im == "BG") = "Added"; % Added pixels.
-			Im(Data.Info.Files(1).Binary_Image == 0 & Im == "Neuron") = "Removed"; % Removed pixels.
-			
-			Im_Label = labeloverlay(Data.Info.Files(1).Raw_Image,Im,'Colormap',CM([1,7,6,3],:),'Transparency',0.1,'IncludedLabels',["Neuron","Added","Removed"]);
-			
-			imshow(Im_Label,'Parent',Ax);
 		case 'Skeleton'
-			[Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints] = Pixel_Trace_Post_Proccessing(Data.Info.Files(1).Binary_Image,Scale_Factor);
+			
+			if(isfield(Data.Info.Files,'Binary_Image') && ~isempty(Data.Info.Files(1).Binary_Image))
+				[Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints] = Pixel_Trace_Post_Proccessing(Data.Info.Files(1).Binary_Image,Scale_Factor);
+			else
+				imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+				warndlg('Warning: A binary image has not been created yet.','Warning');
+				return;
+			end
 			
 			skel_method = 2;
 			
 			switch(skel_method)
 				case 1 % Display segments.
 					imshow(Im1_NoiseReduction,'Parent',Ax);
-					for s=1:numel(Data.Segments)
-						if(numel(Data.Segments(s).Rectangles))
-							x = [Data.Segments(s).Rectangles.X];
-							y = [Data.Segments(s).Rectangles.Y];
-							hold(Ax,'on');
-							plot(Ax,x,y,'LineWidth',1); % plot(x,y,'.','MarkerSize',30,'Color',rand(1,3));
+					
+					if(isfield(Data,'Segments') && ~isempty(Data.Segments))
+						for s=1:numel(Data.Segments)
+							if(numel(Data.Segments(s).Rectangles))
+								x = [Data.Segments(s).Rectangles.X];
+								y = [Data.Segments(s).Rectangles.Y];
+								hold(Ax,'on');
+								plot(Ax,x,y,'LineWidth',1); % plot(x,y,'.','MarkerSize',30,'Color',rand(1,3));
+							end
 						end
+					else
+						warndlg('Warning: The selected image has not been traced yet.','Warning');
 					end
 					% [Y,X] = find(Im1_branchpoints); hold on; plot(X,Y,'.k','MarkerSize',30);
 					% [Y,X] = find(Im1_endpoints); hold on; plot(X,Y,'.r','MarkerSize',30);
@@ -165,21 +190,25 @@ function Display_Reconstruction(P,Data,Label)
 					imshow(Im_Label,'Parent',Ax);
 			end
 		case 'Blob'
-			[ImB,XYper] = Neuron_To_Blob(Data.Info.Files(1).Binary_Image);
 			
-			imshow(ImB,'Parent',Ax);
-			hold(Ax,'on');
-			
-			plot(Ax,XYper(:,1),XYper(:,2),'LineWidth',2);
-			
-			% look in "Find_Worm_Longitudinal_Axis" to check the midline finding process.
+			if(isfield(Data.Info.Files,'Binary_Image') && ~isempty(Data.Info.Files(1).Binary_Image))
+				[ImB,XYper] = Neuron_To_Blob(Data.Info.Files(1).Binary_Image);
+				
+				imshow(ImB,'Parent',Ax);
+				hold(Ax,'on');
+				
+				plot(Ax,XYper(:,1),XYper(:,2),'LineWidth',2);
+			else
+				imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+				warndlg('Warning: A binary image has not been created yet.','Warning');
+			end
 			
 		case {'Trace - Lite','Trace','Segmentation'}
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			hold(Ax,'on');
 			
-			Ns =  numel(Data.Segments);
-			if(isfield(Data,'Segments'))
+			if(isfield(Data,'Segments') && ~isempty(Data.Segments))
+				Ns =  numel(Data.Segments);
 				for s=1:Ns
 					if(numel(Data.Segments(s).Rectangles))
 						x = [Data.Segments(s).Rectangles.X];
@@ -214,27 +243,29 @@ function Display_Reconstruction(P,Data,Label)
 					end
 					% P.GUI_Handles.Waitbar.Value = s ./ Ns;
 				end
-			end
 			
-			% Plot the vertices:
-			switch(Label)
-				case {'Trace - Lite','Segmentation'} % ,'Trace'
-					Fj = find([Data.Vertices.Order] == 3); % Find junctions.
-					Xj = [Data.Vertices(Fj).X];
-					Yj = [Data.Vertices(Fj).Y];
-					scatter(Ax,Xj,Yj,DotSize_1,Vertex_Color,'filled'); % Use 100 when zooming in. Otherwise 10.
-					% scatter(Ax,Xj,Yj,5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
-					% scatter(Ax,[Data.Vertices.X],[Data.Vertices.Y],5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
-				case 'Trace'
-					for j=1:numel(Data.Vertices)
-						if(Data.Vertices(j).Order >= 3 && numel(Data.Vertices(j).Rectangles) == Data.Vertices(j).Order)
-							V = sort(Data.Vertices(j).Angles);
-							% if(V(1) < (25*pi/180))
-								plot_junction(Ax,Data.Vertices(j).X,Data.Vertices(j).Y,[Data.Vertices(j).Rectangles.Angle]);
-								% disp([j,V .* 180 ./ pi]);
-							% end
+				% Plot the vertices:
+				switch(Label)
+					case {'Trace - Lite','Segmentation'} % ,'Trace'
+						Fj = find([Data.Vertices.Order] == 3); % Find junctions.
+						Xj = [Data.Vertices(Fj).X];
+						Yj = [Data.Vertices(Fj).Y];
+						scatter(Ax,Xj,Yj,DotSize_1,Vertex_Color,'filled'); % Use 100 when zooming in. Otherwise 10.
+						% scatter(Ax,Xj,Yj,5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
+						% scatter(Ax,[Data.Vertices.X],[Data.Vertices.Y],5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
+					case 'Trace'
+						for j=1:numel(Data.Vertices)
+							if(Data.Vertices(j).Order >= 3 && numel(Data.Vertices(j).Rectangles) == Data.Vertices(j).Order)
+								V = sort(Data.Vertices(j).Angles);
+								% if(V(1) < (25*pi/180))
+									plot_junction(Ax,Data.Vertices(j).X,Data.Vertices(j).Y,[Data.Vertices(j).Rectangles.Angle]);
+									% disp([j,V .* 180 ./ pi]);
+								% end
+							end
 						end
-					end
+				end
+			else
+				warndlg('Warning: The selected image has not been traced yet.','Warning');
 			end
 		case 'Segments by Length'
 			
@@ -243,25 +274,30 @@ function Display_Reconstruction(P,Data,Label)
 			
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			hold on;
-			for s=1:numel(Data.Segments)
-				if(numel(Data.Segments(s).Rectangles))
-					x = [Data.Segments(s).Rectangles.X];
-					y = [Data.Segments(s).Rectangles.Y];
-					c = [Data.Segments(s).Length];
-					if(isnan(c) || c <= 0)
-						plot(x,y,'Color','w','LineWidth',3);
-					else
-						plot(x,y,'Color',CM(round(rescale(c,1,1000,'InputMin',0,'InputMax',Max_Length)),:),'LineWidth',3);
+			
+			if(isfield(Data,'Segments') && ~isempty(Data.Segments) && isfield(Data,'Vertices') && ~isempty(Data.Vertices))
+				for s=1:numel(Data.Segments)
+					if(numel(Data.Segments(s).Rectangles))
+						x = [Data.Segments(s).Rectangles.X];
+						y = [Data.Segments(s).Rectangles.Y];
+						c = [Data.Segments(s).Length];
+						if(isnan(c) || c <= 0)
+							plot(x,y,'Color','w','LineWidth',3);
+						else
+							plot(x,y,'Color',CM(round(rescale(c,1,1000,'InputMin',0,'InputMax',Max_Length)),:),'LineWidth',3);
+						end
 					end
 				end
-			end
 			
-			scatter(Ax,[Data.Vertices.X],[Data.Vertices.Y],5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
+				scatter(Ax,[Data.Vertices.X],[Data.Vertices.Y],5,'k','filled'); % Use 100 when zooming in. Otherwise 10.
+			else
+				warndlg('Warning: The selected image has not been traced yet.','Warning');
+			end
 		case 'Axes'
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			hold(Ax,'on');
 			
-			% look in "Find_Worm_Longitudinal_Axis" to check the midline finding process.
+			
 			
 			set(P.GUI_Handles.Control_Panel_Objects([1,3],2),'Enable','on'); % Enable the radio buttons.
 			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Enable','off');
@@ -270,6 +306,11 @@ function Display_Reconstruction(P,Data,Label)
 			if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData)) % If a different plot was chosen.
 				set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[5,100],'Value',50,'Step',1,'Enable','on','Tooltip','Number of interactive points.'); % Set the spinner.
 				% set(P.GUI_Handles.Control_Panel_Objects(1,4),'Value',50);
+			end
+			
+			if(~isfield(Data,'Axes') && isempty(Data.Axes))
+				warndlg('Warning: The selected image has not been traced yet.','Warning');
+				return;
 			end
 			
 			CM1 = lines(7);
