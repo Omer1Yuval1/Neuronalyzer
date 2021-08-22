@@ -4,6 +4,9 @@
 To get started, download the latest Neuronalyzer version from the GitHub repository.
 Then open the file index.m in MATLAB and run it.
 
+Please cite this paper:<br/>
+[Yuval, O., Iosilevskii, Y., Meledin, A., Podbilewicz, B., & Shemesh, T. (2021). Neuron tracing and quantitative analyses of dendritic architecture reveal symmetrical three-way-junctions and phenotypes of git-1 in C. elegans. PLoS computational biology, 17(7), e1009185.](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1009185)
+
 Required toolboxes: Computer Vision, Navigation, Robotics System, Image Processing, 
 Curve Fitting, Signal Processing, Statistics and Machine Learning, Phased Array System.
 
@@ -75,8 +78,9 @@ It is absolutely fine to have separated components, but if you see components th
 
 **5. Feature extraction and neuron axes** <br/>
     Once the tracing is done, click the "Extract Features" button to extract various morphological features from the trace.
-	In particular, the neuron axes are mapped (Reconstructions ​ **→** ​ Axes). To tweak the axes positions manually, change to annotation mode and click the “Apply Changes" button.
-	You can use the spinner to specify the number of interactive points (here set to 25 points), then click the “Apply Changes” button.
+	In particular, the neuron axes are mapped (Reconstructions ​ **→** ​ Axes). To tweak the axes positions manually, change to annotation mode and click the "Apply Changes" button.
+	You can use the spinner to specify the number of interactive points (here set to 25 points), then click the "Apply Changes" button.
+	To move the image around in this mode, use the arrow keys on your keyboard.
 	Once finished, click again the "Extract Features" button, as other computations depend on these axes.
 
 ![Screenshot_Axes](https://user-images.githubusercontent.com/35100851/111909224-58678f80-8a54-11eb-8ccf-744feda48483.png)

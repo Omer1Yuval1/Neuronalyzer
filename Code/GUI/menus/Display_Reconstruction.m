@@ -20,6 +20,7 @@ function Display_Reconstruction(P,Data,Label)
 	
 	if(~Undock)
 		H = P.GUI_Handles.Main_Figure;
+		set(P.GUI_Handles.Main_Figure,'KeyPressFcn',{@Key_Func,P.GUI_Handles.View_Axes});
 		Ax = P.GUI_Handles.View_Axes;
 		delete(allchild(Ax));
 	else
@@ -308,7 +309,7 @@ function Display_Reconstruction(P,Data,Label)
 				% set(P.GUI_Handles.Control_Panel_Objects(1,4),'Value',50);
 			end
 			
-			if(~isfield(Data,'Axes') && isempty(Data.Axes))
+			if(~isfield(Data,'Axes') || isempty(Data.Axes))
 				warndlg('Warning: The selected image has not been traced yet.','Warning');
 				return;
 			end
@@ -774,10 +775,10 @@ function Display_Reconstruction(P,Data,Label)
 		[P.Data(ppp).Axes.(FF).Y] = yyc{:};
 		
 		if(isequal(FF,'Axis_0')) % If it's the midline, also update arc-lengths and tangents.
-			dxy = sum(([xx(2:end) ; yy(2:end)] - [xx(1:end-1) ; yy(1:end-1)]).^2,1).^(0.5); % sum([2 x Np],1). Summing up Xi+Yi and then taking the sqrt.
+			dxy = transpose(sum(([xy_axis(2:end,1) - xy_axis(1:end-1,1) , xy_axis(2:end,2) - xy_axis(1:end-1,2)]).^2,2).^(0.5)); % sum([2 x Np],1). Summing up Xi+Yi and then taking the sqrt.
 			Arc_Length = num2cell(cumsum([0 , dxy]) .* P.Data(ppp).Info.Experiment(1).Scale_Factor); % Convert pixels to real length units (um).
 			
-			dr = [gradient(xx(:)) , gradient(yy(:))]; % First derivative.
+			dr = [gradient(xy_axis(:,1)) , gradient(xy_axis(:,2))]; % First derivative.
 			ddr = [gradient(dr(:,1)) , gradient(dr(:,2))];
 			Tangent_Angles = atan2(ddr(:,2),ddr(:,1));
 			Tangent_Angles = num2cell(Tangent_Angles);
@@ -817,10 +818,23 @@ function Display_Reconstruction(P,Data,Label)
 	end
 	%}
 	
-    function Lock_Image_Func(~,~,P)
-        
+    function Key_Func(source,event,ax)
+		d = 10;
+		switch(event.Key)
+			case 'leftarrow'
+				ax.XLim = ax.XLim - d;
+			case 'rightarrow'
+				ax.XLim = ax.XLim + d;
+			case 'uparrow'
+				ax.YLim = ax.YLim - d;
+			case 'downarrow'
+				ax.YLim = ax.YLim + d;
+		end
 	end
 	
+	function Lock_Image_Func(~,~,P)
+		
+	end
 	%{
 	% Code to loop over all projects and save a reconstruction.
 	Project.GUI_Handles.Control_Panel_Objects(4,1).Value = 1; % Undock;
