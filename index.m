@@ -45,6 +45,8 @@ function index()
 		
 		if(Selection_Index == 0)
 			disp('Files not found.');
+			close(P.GUI_Handles.Waitbar);
+			return;
 		elseif(~isempty(source))
 			if(~iscell(File1))
 				File1 = {File1};
@@ -83,7 +85,7 @@ function index()
 				
 				for pp=1:numel(P.Data) % For each project.
 					
-					if(P.GUI_Handles.Save_Input_Data_Path) % Validate path. If it is not found, ask the user to specify a new path and save it.
+					if(P.GUI_Handles.Save_Input_Data_Path) % Validate image path. If it is not found, ask the user to specify a new path and save it.
 						[filepath,filename,ext] = fileparts(P.Data(pp).Info.Files(1).Raw_Image);
 						
 						if(~exist(filepath,'dir') == 7 || isfile(P.Data(pp).Info.Files(1).Raw_Image)) % If the path or file don't exist.
