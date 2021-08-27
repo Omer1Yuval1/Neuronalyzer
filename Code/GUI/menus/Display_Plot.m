@@ -1138,15 +1138,15 @@ function Display_Plot(P,Data,Label)
 			
 			switch(P.GUI_Handles.Control_Panel_Objects(2,4).Value)
 				case {1,3}
-					if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData)) % If the previous plot was different.
+					if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData) || P.GUI_Handles.Control_Panel_Objects(1,4).Value <= 10) % If the previous plot was different.
 						set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[10,110],'Value',50);
 						set(P.GUI_Handles.Control_Panel_Objects(1,5),'Value',1,'Limits',[1,100]);
 						% set(GP.Handles.Analysis.Slider,'Min',10,'Max',110,'Value',50,'SliderStep',[0.01,0.1]);
 					end
 					Edges = 0:P.GUI_Handles.Control_Panel_Objects(1,4).Value:Max_Midline_Length;
 				case {2,4} % Normalized to Midline Length.
-					if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData)) % If the previous plot was different.
-						set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0.02,12],'Value',0.05);
+					if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData) || P.GUI_Handles.Control_Panel_Objects(1,4).Value >= 1) % If the previous plot was different.
+						set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0.02,1],'Value',0.05);
 						% set(GP.Handles.Analysis.Slider,'Min',0.02,'Max',.12,'Value',0.05,'SliderStep',[0.01,0.1]);
 					end
 					Edges = 0:P.GUI_Handles.Control_Panel_Objects(1,4).Value:1;
@@ -1170,10 +1170,10 @@ function Display_Plot(P,Data,Label)
 							Total_Length = 1;
 						case 3 % Normalized to Total Length.
 							Midline_Length = 1;
-							Total_Length = sum([Data(ww).Points.(Field_1_Name)]);
+							Total_Length = nansum([Data(ww).Points.(Field_1_Name)]);
 						case 4 % Normalized to both Midline and Total Length.
 							Midline_Length = Data(ww).Axes.Axis_0(end).Arc_Length;
-							Total_Length = sum([Data(ww).Points.(Field_1_Name)]);
+							Total_Length = nansum([Data(ww).Points.(Field_1_Name)]);
 					end
 					
 					for o=1:Max_PVD_Orders
@@ -1223,7 +1223,11 @@ function Display_Plot(P,Data,Label)
 				
 				YL_D = max(sum(reshape([H_D(:).YData],[],Max_PVD_Orders),2));
 				YL_V = min(sum(reshape([H_V(:).YData],[],Max_PVD_Orders),2));
-				ylim(Ax1,round(max([-(1.25.*YL_V),1.25.*YL_D]),-2) .* [-1,1]);
+				My = max([-(1.25.*YL_V),1.25.*YL_D]);
+				if(My > 1)
+					My = round(My,-2);
+				end
+				ylim(Ax1,My .* [-1,1]);
 				legend(Ax1,{'1','2','3','4'},'Orientation','horizontal');
 			else
 				CM = lines(Ng);
@@ -1252,28 +1256,29 @@ function Display_Plot(P,Data,Label)
 			% xl = 0:pi/6:pi/2;
 			set(Ax1,'FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize,'xlim',[Edges([1,end])]); % ,'TickLabelInterpreter','Latex','XTick',xl,'XTickLabels',strsplit(num2str(xl.*180/pi)));
 			
+			if(P.GUI_Handles.Control_Panel_Objects(1,5).Value > 1)
+				xy_scale = num2str(P.GUI_Handles.Control_Panel_Objects(1,5).Value);
+			else
+				xy_scale = '';
+			end
+			
 			switch(P.GUI_Handles.Control_Panel_Objects(2,4).Value)
 				case 1
-					if(P.GUI_Handles.Control_Panel_Objects(1,5).Value > 1)
-						xy_scale = num2str(P.GUI_Handles.Control_Panel_Objects(1,5).Value);
-					else
-						xy_scale = '';
-					end
 					XLabel = ['Midline Position [',xy_scale,char(181),'m]'];
 					YLabel = ['Neuronal Length [',xy_scale,char(181),'m]'];
 				case 2 % Normalized to Midline Length.
 					XLabel = 'Midline Position (normalized)';
-					YLabel = '$\mathrm{Neuronal \; Length \; [{\mu}m]}$';
+					YLabel = ['Neuronal Length [',xy_scale,char(181),'m]'];
 				case 3
 					XLabel = ['Midline Position [',char(181),'m]'];
-					YLabel = '$\mathrm{\frac{Neuronal \; Length}{Total \; Length}}$';
+					YLabel = 'Neuronal Length / Total Length';
 					% set(gca,'YLim',1.25.*get(gca,'YLim'));
 				case 4
 					XLabel = 'Midline Position (normalized)';
-					YLabel = '$\frac{ \mathrm{Neuronal Length} }{ \mathrm{Total Length} }$';
+					YLabel = 'Neuronal Length / Total Length';
 			end
-			xlabel(Ax1,XLabel,'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize); % ,'Interpreter','Latex'
-			ylabel(Ax1,YLabel,'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize); % ,'Interpreter','Latex'
+			xlabel(Ax1,XLabel,'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize); 
+			ylabel(Ax1,YLabel,'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 			
 			% set(Ax1,'unit','normalize','position',[0.1,0.15,0.87,0.8]);
 			set(Ax1,'YTickLabels',abs(get(Ax1,'YTick')));

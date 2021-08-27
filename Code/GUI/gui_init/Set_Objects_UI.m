@@ -100,7 +100,7 @@ function Set_Objects_UI(P)
 	end
 	
 	set(P.GUI_Handles.Control_Panel_Objects(1,1),'Text','Selected project only');
-	set(P.GUI_Handles.Control_Panel_Objects(2,1),'Text','Projection correction');
+	set(P.GUI_Handles.Control_Panel_Objects(2,1),'Text','Projection correction','Value',1);
 	set(P.GUI_Handles.Control_Panel_Objects(3,1),'Text','Display scale-bar');
 	set(P.GUI_Handles.Control_Panel_Objects(4,1),'Text','Undock');
 	
