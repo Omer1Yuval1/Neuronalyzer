@@ -76,6 +76,8 @@ function index()
 						P.Data(pp).Info.Files(1).Raw_Image = P.Data(pp).Info.Files(1).Raw_Image(:,:,1); % If there are multiple channels, take only the first (they contain identical information).
 					end
 					
+					P.Data(pp).Info.Files(1).Stacks_Num = numel(file_info);
+					
 					Label_pp = ['Project_',num2str(pp),'_',P.Data(pp).Info.Experiment(1).Identifier];
 					uimenu(P.GUI_Handles.Menus(1),'Text',Label_pp,'UserData',pp,'Callback',{@Switch_Project_Func,P});
 					
@@ -105,6 +107,13 @@ function index()
 						end
 					end
 					
+					if(isnumeric(P.Data(pp).Info.Files(1).Raw_Image))
+						P.Data(pp).Info.Files(1).Stacks_Num = 1;
+					else % If the path is saved.
+						file_info = imfinfo(P.Data(pp).Info.Files(1).Raw_Image); % Get file meta-data.
+						P.Data(pp).Info.Files(1).Stacks_Num = numel(file_info);
+					end
+					
 					Label_pp = ['Project_',num2str(pp),'_',P.Data(pp).Info.Experiment(1).Identifier];
 					uimenu(P.GUI_Handles.Menus(1),'Text',Label_pp,'UserData',pp,'Callback',{@Switch_Project_Func,P});
 					
@@ -117,8 +126,6 @@ function index()
 			if(isnumeric(P.Data(1).Info.Files(1).Raw_Image)) % If the image is stored explicitly in the project class.
 				imshow(P.Data(1).Info.Files(1).Raw_Image,'Parent',P.GUI_Handles.View_Axes(1));
 			else % If the path to the image is saved.
-				
-				P.Data(1).Info.Files(1).Stacks_Num = numel(imfinfo([Path1,filesep,File1{1}]));
 				
 				if(P.Data(1).Info.Files(1).Stacks_Num > 1) % If it is a multi-stack image file.
 					P.GUI_Handles.Current_Stack = 1;
@@ -516,7 +523,7 @@ function index()
 	
 	function Key_Func(source,event,P) % A key detection callback for shifting the axes and for changing stacks.
 		
-		if(1)
+		if(1) % TODO: execute only if an image is displayed.
 			pp = P.GUI_Handles.Current_Project;
 			d = 10;
 			
@@ -541,6 +548,7 @@ function index()
 			% disp(event.Key);
 		end
 	end
+	
 	function Denoise_Image_Func(source,event,P)
 		
 		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Denoising images...'); % ,'Indeterminate','on'
