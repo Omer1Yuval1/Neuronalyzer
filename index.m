@@ -65,15 +65,16 @@ function index()
 					
 					P.Data(pp) = project_init(P); % Initialize project struct;
 					
-					[filepath,filename,ext] = fileparts(File1{ff});
+					file_info = imfinfo([Path1,filesep,File1{ff}]); % Get file meta-data.
+					[filepath,filename,ext] = fileparts([Path1,filesep,File1{ff}]);
 					P.Data(pp).Info.Experiment(1).Identifier = filename;
 					
-					if(P.GUI_Handles.Save_Input_Data_Path) % Save path to input files.
-						P.Data(pp).Info.Files(1).Raw_Image = File1{ff};
+					if(P.GUI_Handles.Save_Input_Data_Path || numel(file_info) > 1) % If the user specified to save the path, or it is a multi-stack image file,
+						P.Data(pp).Info.Files(1).Raw_Image = [Path1,filesep,File1{ff}]; % Save only the path to the input file.
 					else % Save input data explicitly.
 						P.Data(pp).Info.Files(1).Raw_Image = imread([Path1,filesep,File1{ff}]);
+						P.Data(pp).Info.Files(1).Raw_Image = P.Data(pp).Info.Files(1).Raw_Image(:,:,1); % If there are multiple channels, take only the first (they contain identical information).
 					end
-					P.Data(pp).Info.Files(1).Raw_Image = P.Data(pp).Info.Files(1).Raw_Image(:,:,1);
 					
 					Label_pp = ['Project_',num2str(pp),'_',P.Data(pp).Info.Experiment(1).Identifier];
 					uimenu(P.GUI_Handles.Menus(1),'Text',Label_pp,'UserData',pp,'Callback',{@Switch_Project_Func,P});
@@ -113,7 +114,20 @@ function index()
 			
 			Reset_Main_Axes(P);
 			
-			imshow(P.Data(1).Info.Files(1).Raw_Image,'Parent',P.GUI_Handles.View_Axes(1));
+			if(isnumeric(P.Data(1).Info.Files(1).Raw_Image)) % If the image is stored explicitly in the project class.
+				imshow(P.Data(1).Info.Files(1).Raw_Image,'Parent',P.GUI_Handles.View_Axes(1));
+			else % If the path to the image is saved.
+				
+				P.Data(1).Info.Files(1).Stacks_Num = numel(imfinfo([Path1,filesep,File1{1}]));
+				
+				if(P.Data(1).Info.Files(1).Stacks_Num > 1) % If it is a multi-stack image file.
+					P.GUI_Handles.Current_Stack = 1;
+					imshow(tiffreadVolume([Path1,filesep,File1{1}],'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]}),'Parent',P.GUI_Handles.View_Axes(1)); % Display the first stack.
+					
+					set(P.GUI_Handles.Menus(4).Children(:),'Checked','off');
+					set(P.GUI_Handles.Menus(4).Children(2),'Checked','on','Enable','on');
+				end
+			end
 			P.GUI_Handles.View_Axes.XLim = findall(P.GUI_Handles.View_Axes.Children,'Type','image').XData; % P.GUI_Handles.View_Axes.Children(1).XData;
 			P.GUI_Handles.View_Axes.YLim = findall(P.GUI_Handles.View_Axes.Children,'Type','image').YData; % P.GUI_Handles.View_Axes.Children(1).YData;
 			
@@ -204,6 +218,9 @@ function index()
 			P.GUI_Handles.Current_Step = 1;
 			set(P.GUI_Handles.Step_Buttons(P.GUI_Handles.Current_Step+1),'Backgroundcolor',P.GUI_Handles.Step_BG_Active);
 		end
+		
+		% Set a key detection callback for shifting the axes and for changing stacks:
+		set(P.GUI_Handles.Main_Figure,'KeyPressFcn',{@Key_Func,P});
 		
 		if(~isempty(event))
 			close(P.GUI_Handles.Waitbar);
@@ -377,7 +394,7 @@ function index()
 	
 	function Display_Project_Info(P)
 		
-		% temporary fix: Data is copied and than copied back to the handle class to avoid repetitive reading of the class.
+		% temporary fix: Data is copied and then copied back to the handle class to avoid repetitive reading of the class.
 		
 		pp = P.GUI_Handles.Current_Project;
 		
@@ -433,7 +450,7 @@ function index()
 		
 		% profile on;
 		switch(source.UserData)
-		case 2
+		case 2 % Reconstruction menu.
 			set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,2}); % Here it is set before running the function, because some options overwrite it.
 			
 			set(findall(P.GUI_Handles.Menus(2)),'Checked','off'); % set(P.GUI_Handles.Reconstruction_Menu_Handles(:),'Checked','off');
@@ -470,7 +487,7 @@ function index()
 			% drawnow; drawnow;
 			
 			% set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn','');
-		case 3
+		case 3 % Plots menu.
 			set(findall(P.GUI_Handles.Menus(3)),'Checked','off'); % set(P.GUI_Handles.Reconstruction_Menu_Handles(:),'Checked','off');
 			set(source,'Checked','on');
 			
@@ -497,6 +514,33 @@ function index()
 		close(P.GUI_Handles.Waitbar);
 	end
 	
+	function Key_Func(source,event,P) % A key detection callback for shifting the axes and for changing stacks.
+		
+		if(1)
+			pp = P.GUI_Handles.Current_Project;
+			d = 10;
+			
+			switch(event.Key)
+				case 'leftarrow'
+					P.GUI_Handles.View_Axes.XLim = P.GUI_Handles.View_Axes.XLim - d;
+				case 'rightarrow'
+					P.GUI_Handles.View_Axes.XLim = P.GUI_Handles.View_Axes.XLim + d;
+				case 'uparrow'
+					P.GUI_Handles.View_Axes.YLim = P.GUI_Handles.View_Axes.YLim - d;
+				case 'downarrow'
+					P.GUI_Handles.View_Axes.YLim = P.GUI_Handles.View_Axes.YLim + d;
+				case 'hyphen' % 45
+					P.GUI_Handles.Current_Stack = max(1,P.GUI_Handles.Current_Stack - 1);
+					Menus_Func(findall(P.GUI_Handles.Menus(2),'Checked','on'),[],P);
+					disp(['Current stack = ',num2str(P.GUI_Handles.Current_Stack)]);
+				case 'equal' % 61
+					P.GUI_Handles.Current_Stack = min(P.Data(pp).Info.Files(1).Stacks_Num,P.GUI_Handles.Current_Stack + 1);
+					Menus_Func(findall(P.GUI_Handles.Menus(2),'Checked','on'),[],P);
+					disp(['Current stack = ',num2str(P.GUI_Handles.Current_Stack)]);
+			end
+			% disp(event.Key);
+		end
+	end
 	function Denoise_Image_Func(source,event,P)
 		
 		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Denoising images...'); % ,'Indeterminate','on'

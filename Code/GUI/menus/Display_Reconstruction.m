@@ -4,6 +4,7 @@ function Display_Reconstruction(P,Data,Label)
 	% Data = P.Data(p), where p is the current selected project. It is passed separately as a struct for faster reading (reading a handle class property in a loop is very slow).
 	
 	Segment_Smoothing_Parameter = 1;
+	p = P.GUI_Handles.Current_Project;
 	
 	set(P.GUI_Handles.Control_Panel_Objects(3,1),'Text','Display Scale-bar');
 	
@@ -20,7 +21,6 @@ function Display_Reconstruction(P,Data,Label)
 	
 	if(~Undock)
 		H = P.GUI_Handles.Main_Figure;
-		set(P.GUI_Handles.Main_Figure,'KeyPressFcn',{@Key_Func,P.GUI_Handles.View_Axes});
 		Ax = P.GUI_Handles.View_Axes;
 		delete(allchild(Ax));
 	else
@@ -35,8 +35,6 @@ function Display_Reconstruction(P,Data,Label)
 	
 	% Set_Dynamic_Sliders_Values(GP.Handles.Analysis,0,50);
 	
-	p = P.GUI_Handles.Current_Project;
-	
 	Scale_Factor = Data.Info.Experiment(1).Scale_Factor;
 	
 	set(P.GUI_Handles.View_Axes,'ButtonDownFcn',''); % set(P.GUI_Handles.View_Axes,'ButtonDownFcn',{@Show_Image_Func,P});
@@ -47,7 +45,12 @@ function Display_Reconstruction(P,Data,Label)
 	
 	switch(Label)
 		case 'Raw Image - Grayscale'
-			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+			
+			if(P.Data(p).Info.Files(1).Stacks_Num == 1)
+				imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+			else
+				imshow(tiffreadVolume(Data.Info.Files(1).Raw_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]}),'Parent',Ax); % Display the first stack.
+			end
 		case 'Raw Image - RGB'
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			colormap(Ax,'hot');
@@ -609,7 +612,7 @@ function Display_Reconstruction(P,Data,Label)
 			Fj = find([Data.Vertices.Order] >= 3); % Find junctions.
 			scatter(Ax,[Data.Vertices(Fj).X],[Data.Vertices(Fj).Y],DotSize_1,'k','filled'); % Use 100 when zooming in. Otherwise 10.
 			%}
-		
+			
 			
 			% Use when zooming in:
 			% F = find([Data.All_Vertices.Order] >= 2);
@@ -817,20 +820,6 @@ function Display_Reconstruction(P,Data,Label)
 		close(AAA);
 	end
 	%}
-	
-    function Key_Func(source,event,ax)
-		d = 10;
-		switch(event.Key)
-			case 'leftarrow'
-				ax.XLim = ax.XLim - d;
-			case 'rightarrow'
-				ax.XLim = ax.XLim + d;
-			case 'uparrow'
-				ax.YLim = ax.YLim - d;
-			case 'downarrow'
-				ax.YLim = ax.YLim + d;
-		end
-	end
 	
 	function Lock_Image_Func(~,~,P)
 		
