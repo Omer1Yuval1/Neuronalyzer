@@ -131,8 +131,8 @@ function index()
 					P.GUI_Handles.Current_Stack = 1;
 					imshow(tiffreadVolume([Path1,filesep,File1{1}],'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]}),'Parent',P.GUI_Handles.View_Axes(1)); % Display the first stack.
 					
-					set(P.GUI_Handles.Menus(4).Children(:),'Checked','off');
-					set(P.GUI_Handles.Menus(4).Children(2),'Checked','on','Enable','on');
+					set(P.GUI_Handles.Menus(4).Children(:),'Checked',false);
+					set(P.GUI_Handles.Menus(4).Children(2),'Checked',true,'Enable','on');
 				end
 			end
 			P.GUI_Handles.View_Axes.XLim = findall(P.GUI_Handles.View_Axes.Children,'Type','image').XData; % P.GUI_Handles.View_Axes.Children(1).XData;
@@ -218,6 +218,7 @@ function index()
 		
 		set(P.GUI_Handles.Menus(1),'UserData',1);
 		set(P.GUI_Handles.Menus(1).Children(end),'Checked','on');
+		P.GUI_Handles.Current_Menu = nan;
 		
 		set(P.GUI_Handles.Buttons(1),'Backgroundcolor',P.GUI_Handles.Step_BG_Done);
 		
@@ -455,54 +456,56 @@ function index()
 		
 		set(P.GUI_Handles.Control_Panel_Objects(:,2),'Enable','off'); % Disable the radio buttons.
 		
+		P.GUI_Handles.Current_Menu = source.UserData;
+		
 		% profile on;
 		switch(source.UserData)
-		case 2 % Reconstruction menu.
-			set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,2}); % Here it is set before running the function, because some options overwrite it.
-			
-			set(findall(P.GUI_Handles.Menus(2)),'Checked','off'); % set(P.GUI_Handles.Reconstruction_Menu_Handles(:),'Checked','off');
-			set(source,'Checked','on');
-			
-			if(ishandle(P.GUI_Handles.View_Axes)) % If the axes exist, reset.
-				% if(~isequal(source.Label,P.GUI_Handles.Buttons(3,1).UserData)) % If a different plot was chosen.
-				if(isempty(P.GUI_Handles.Buttons(3,1).UserData)) % If a different project was chosen.
+			case 2 % Reconstruction menu.
+				set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,2}); % Here it is set before running the function, because some options overwrite it.
+				
+				set(findall(P.GUI_Handles.Menus(2)),'Checked','off'); % set(P.GUI_Handles.Reconstruction_Menu_Handles(:),'Checked','off');
+				set(source,'Checked','on');
+				
+				if(ishandle(P.GUI_Handles.View_Axes)) % If the axes exist, reset.
+					% if(~isequal(source.Label,P.GUI_Handles.Buttons(3,1).UserData)) % If a different plot was chosen.
+					if(isempty(P.GUI_Handles.Buttons(3,1).UserData)) % If a different project was chosen.
+						Reset_Main_Axes(P);
+					else % Otherwise only delete non-image and non-axes data, and save the zoom.
+						XLim = P.GUI_Handles.View_Axes.XLim;
+						YLim = P.GUI_Handles.View_Axes.YLim;
+						delete(findobj(P.GUI_Handles.View_Axes,'-not','Type','image','-and','-not','Type','axes')); % Delete all graphical objects (except for the axes and the image).
+					end
+				else % If the axes do not exist.
 					Reset_Main_Axes(P);
-				else % Otherwise only delete non-image and non-axes data, and save the zoom.
-					XLim = P.GUI_Handles.View_Axes.XLim;
-					YLim = P.GUI_Handles.View_Axes.YLim;
-					delete(findobj(P.GUI_Handles.View_Axes,'-not','Type','image','-and','-not','Type','axes')); % Delete all graphical objects (except for the axes and the image).
+					P.GUI_Handles.Buttons(3,1).UserData = ''; % Used as a flag to reset the axes and axis limits.
 				end
-			else % If the axes do not exist.
-				Reset_Main_Axes(P);
-				P.GUI_Handles.Buttons(3,1).UserData = ''; % Used as a flag to reset the axes and axis limits.
-			end
-			
-			Display_Reconstruction(P,P.Data(pp),source.Label);
-			
-			% if(~isequal(source.Label,P.GUI_Handles.Buttons(3,1).UserData)) % If a different plot was chosen, reset the limits.
-			Fim = findall(P.GUI_Handles.View_Axes.Children,'Type','image');
-            if(ishandle(P.GUI_Handles.View_Axes) && isempty(P.GUI_Handles.Buttons(3,1).UserData) && ~isempty(Fim)) % If a different project was chosen.
-				P.GUI_Handles.View_Axes.XLim = findall(P.GUI_Handles.View_Axes.Children,'Type','image').XData; % P.GUI_Handles.View_Axes.Children(1).XData;
-				P.GUI_Handles.View_Axes.YLim = findall(P.GUI_Handles.View_Axes.Children,'Type','image').YData; % P.GUI_Handles.View_Axes.Children(1).YData;
-			elseif(ishandle(P.GUI_Handles.View_Axes) && ~isempty(Fim)) % Preserve the zoom.
-				P.GUI_Handles.View_Axes.XLim = XLim;
-				P.GUI_Handles.View_Axes.YLim = YLim;
-			end
-			
-			set(P.GUI_Handles.Buttons(3,1),'UserData',source.Label); % Last used plot. Must be set after running the plot.
-			
-			% drawnow; drawnow;
-			
-			% set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn','');
-		case 3 % Plots menu.
-			set(findall(P.GUI_Handles.Menus(3)),'Checked','off'); % set(P.GUI_Handles.Reconstruction_Menu_Handles(:),'Checked','off');
-			set(source,'Checked','on');
-			
-			set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,3});
-			
-			Display_Plot(P,P.Data,source.Label);
-			
-			set(P.GUI_Handles.Buttons(3,1),'UserData',source.Label); % Last used plot. Must be set after running the plot.
+				
+				Display_Reconstruction(P,P.Data(pp),source.Label);
+				
+				% if(~isequal(source.Label,P.GUI_Handles.Buttons(3,1).UserData)) % If a different plot was chosen, reset the limits.
+				Fim = findall(P.GUI_Handles.View_Axes.Children,'Type','image');
+				if(ishandle(P.GUI_Handles.View_Axes) && isempty(P.GUI_Handles.Buttons(3,1).UserData) && ~isempty(Fim)) % If a different project was chosen.
+					P.GUI_Handles.View_Axes.XLim = findall(P.GUI_Handles.View_Axes.Children,'Type','image').XData; % P.GUI_Handles.View_Axes.Children(1).XData;
+					P.GUI_Handles.View_Axes.YLim = findall(P.GUI_Handles.View_Axes.Children,'Type','image').YData; % P.GUI_Handles.View_Axes.Children(1).YData;
+				elseif(ishandle(P.GUI_Handles.View_Axes) && ~isempty(Fim)) % Preserve the zoom.
+					P.GUI_Handles.View_Axes.XLim = XLim;
+					P.GUI_Handles.View_Axes.YLim = YLim;
+				end
+				
+				set(P.GUI_Handles.Buttons(3,1),'UserData',source.Label); % Last used plot. Must be set after running the plot.
+				
+				% drawnow; drawnow;
+				
+				% set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn','');
+			case 3 % Plots menu.
+				set(findall(P.GUI_Handles.Menus(3)),'Checked','off'); % set(P.GUI_Handles.Reconstruction_Menu_Handles(:),'Checked','off');
+				set(source,'Checked','on');
+				
+				set(P.GUI_Handles.Buttons(3,1),'ButtonPushedFcn',{@Apply_Changes_Func,P,3});
+				
+				Display_Plot(P,P.Data,source.Label);
+				
+				set(P.GUI_Handles.Buttons(3,1),'UserData',source.Label); % Last used plot. Must be set after running the plot.
 		end
 		% profile off; profile viewer;
 		if(~isempty(event))
@@ -512,11 +515,18 @@ function index()
 	
 	function Apply_Changes_Func(source,event,P,Option_Flag)
 		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Loading...');
+		
 		switch(Option_Flag)
 			case 2 % Reconstructions.
 				Menus_Func(findall(P.GUI_Handles.Menus(2),'Checked','on'),[],P);
 			case 3 % Plots.
 				Menus_Func(findall(P.GUI_Handles.Menus(3),'Checked','on'),[],P);
+			case 4
+				set(findall(P.GUI_Handles.Menus(4)),'Checked','off');
+				set(source,'Checked','on');
+				if(P.GUI_Handles.Current_Menu == 2 || P.GUI_Handles.Current_Menu == 3)
+					Menus_Func(findall(P.GUI_Handles.Menus(P.GUI_Handles.Current_Menu),'Checked','on'),[],P);
+				end
 		end
 		close(P.GUI_Handles.Waitbar);
 	end
@@ -565,18 +575,60 @@ function index()
 			Overwrite = 0;
 		end
 		
-		for pp=1:numel(P.Data)
+		% pp = P.GUI_Handles.Current_Project;
+		
+		for pp=1:numel(P.Data) % For each project.
 			
-			P.GUI_Handles.Waitbar.Value = pp ./ numel(P.Data);
-			
-				[Im_Rows,Im_Cols] = size(P.Data(pp).Info.Files(1).Raw_Image);
+			if(P.Data(pp).Info.Files(1).Stacks_Num == 1)
 				
+				P.GUI_Handles.Waitbar.Value = pp ./ numel(P.Data);
+				
+				[Im_Rows,Im_Cols] = size(P.Data(pp).Info.Files(1).Raw_Image);
 				P.Data(pp).Info.Files(1).Denoised_Image = Apply_CNN_Im2Im(CNN,P.Data(pp).Info.Files(1).Raw_Image); % Apply neural network to the raw image (after removing the cell-body).
 				
-			if( Overwrite || (~isfield(P.Data(pp).Info.Files,'Binary_Image') || isempty(P.Data(pp).Info.Files(1).Binary_Image)) ) % If a binary image is missing or if the user specified to overwrite existing images.
-				P.Data(pp).Info.Files(1).Binary_Image = Update_Binary_Image(P.Data(pp).Info.Files(1).Denoised_Image,[],P.Data(pp).Parameters.Neural_Network.Min_CC_Size,1);
-			else % Keep the existing binary image.
-				P.Data(pp).Info.Files(1).Binary_Image = Update_Binary_Image(P.Data(pp).Info.Files(1).Denoised_Image,P.Data(pp).Info.Files(1).Binary_Image,P.Data(pp).Parameters.Neural_Network.Min_CC_Size,0);
+				if( Overwrite || (~isfield(P.Data(pp).Info.Files,'Binary_Image') || isempty(P.Data(pp).Info.Files(1).Binary_Image)) ) % If a binary image is missing or if the user specified to overwrite existing images.
+					P.Data(pp).Info.Files(1).Binary_Image = Update_Binary_Image(P.Data(pp).Info.Files(1).Denoised_Image,[],P.Data(pp).Parameters.Neural_Network.Min_CC_Size,1);
+				else % Keep the existing binary image.
+					% TODO: why is this needed?
+					P.Data(pp).Info.Files(1).Binary_Image = Update_Binary_Image(P.Data(pp).Info.Files(1).Denoised_Image,P.Data(pp).Info.Files(1).Binary_Image,P.Data(pp).Parameters.Neural_Network.Min_CC_Size,0); % This only deletes sub-threshold objects.
+				end
+				
+			else % Apply CNN to all stacks.
+				
+				if(isempty(P.Data(pp).Info.Files(1).Denoised_Image) && ~isnumeric(P.Data(pp).Info.Files(1).Raw_Image))
+					[filepath,filename,ext] = fileparts(P.Data(pp).Info.Files(1).Raw_Image);
+					mkdir([filepath,filesep,filename(1:end-4)]);
+					P.Data(pp).Info.Files(1).Denoised_Image = [filepath,filesep,filename(1:end-4),filesep,'Denoised_Image.dcm']; % Save the path to the image rather than the image itself.
+					P.Data(pp).Info.Files(1).Binary_Image = [filepath,filesep,filename(1:end-4),filesep,'Binary_Image.dcm']; % ".
+				end
+				
+				% Memory pre-allocation:
+				file_info = imfinfo(P.Data(pp).Info.Files(1).Raw_Image);
+				Denoised_Image_Stack_0 = categorical(nan([file_info(1).Height,file_info(1).Width,P.Data(pp).Info.Files(1).Stacks_Num]));
+				Binary_Image_Stack = nan([file_info(1).Height,file_info(1).Width,P.Data(pp).Info.Files(1).Stacks_Num]);
+				
+				for ss=1:P.Data(pp).Info.Files(1).Stacks_Num % For each stack.
+					
+					P.GUI_Handles.Waitbar.Value = (pp * ss) ./ (numel(P.Data) * P.Data(pp).Info.Files(1).Stacks_Num);
+					
+					Im = im2uint8(tiffreadVolume(P.Data(pp).Info.Files(1).Raw_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[ss,1,ss]}));
+					
+					Denoised_Image_Stack_0(:,:,ss) = Apply_CNN_Im2Im(CNN,Im);
+					
+					if( Overwrite || (~isfield(P.Data(pp).Info.Files,'Binary_Image') || isempty(P.Data(pp).Info.Files(1).Binary_Image)) ) % If a binary image is missing or if the user specified to overwrite existing images.
+						Binary_Image_Stack(:,:,ss) = Update_Binary_Image(Denoised_Image_Stack_0(:,:,ss),[],P.Data(pp).Parameters.Neural_Network.Min_CC_Size,1);
+					else % Keep the existing binary image.
+						% TODO: why is this needed?
+						Binary_Image_Stack(:,:,ss) = Update_Binary_Image(Denoised_Image_Stack_0(:,:,ss),Binary_Image_Stack(:,:,ss),P.Data(pp).Parameters.Neural_Network.Min_CC_Size,0); % This only deletes sub-threshold objects.
+					end
+				end
+				% imwrite(Denoised_Image_Stack,P.Data(pp).Info.Files(1).Denoised_Image,'Compression','none'); % Save the denoised (CNN) image (all stacks) to a file (same dir as the raw image).
+				Denoised_Image_Stack = im2uint8(zeros(size(Denoised_Image_Stack_0)));
+				Denoised_Image_Stack(Denoised_Image_Stack_0 == "Neuron") = 255;
+				dicomwrite(permute(im2uint8(Denoised_Image_Stack),[1,2,4,3]),P.Data(pp).Info.Files(1).Denoised_Image);
+				
+				% imwrite(Binary_Image_Stack,P.Data(pp).Info.Files(1).Binary_Image,'Compression','none'); % Save the denoised (CNN) image (all stacks) to a file (same dir as the raw image).
+				dicomwrite(permute(im2uint8(Binary_Image_Stack),[1,2,4,3]),P.Data(pp).Info.Files(1).Binary_Image);
 			end
 		end
 		
@@ -731,6 +783,7 @@ function index()
 		% Menus:
 		set(findall(P.GUI_Handles.Menus(2),'UserData',2),'Callback',{@Menus_Func,P});
 		set(findall(P.GUI_Handles.Menus(3),'UserData',3),'Callback',{@Menus_Func,P});
+		set(allchild(P.GUI_Handles.Menus(4)),'Callback',{@Apply_Changes_Func,P,4});
 		
 		close(P.GUI_Handles.Waitbar);
 	end

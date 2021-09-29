@@ -3,6 +3,8 @@ function Display_Reconstruction(P,Data,Label)
 	% P is the handle class containing all project and gui data.
 	% Data = P.Data(p), where p is the current selected project. It is passed separately as a struct for faster reading (reading a handle class property in a loop is very slow).
 	
+	Raw_Image_Func_2D = @(x) im2uint8(max(x,[],3));
+	
 	Segment_Smoothing_Parameter = 1;
 	p = P.GUI_Handles.Current_Project;
 	
@@ -46,10 +48,23 @@ function Display_Reconstruction(P,Data,Label)
 	switch(Label)
 		case 'Raw Image - Grayscale'
 			
+			if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData)) % If a different plot was chosen.
+				set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Pixel limits:');
+				set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,100],'Step',1,'Value',0,'Tooltip','Lower bound of image pixel value (background).'); % Set the spinner.
+				set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[10,255],'Step',1,'Value',255,'ValueChangedFcn','','Tooltip','Upper bound of image pixel value (signal).'); % Minimum object size.
+			end
+			
 			if(P.Data(p).Info.Files(1).Stacks_Num == 1)
 				imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
-			else
-				imshow(tiffreadVolume(Data.Info.Files(1).Raw_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]}),'Parent',Ax); % Display the first stack.
+			else % Multi-stack image.
+				if(P.GUI_Handles.Menus(4).Children(end).Checked == 1) % 2D. Maximum projection.
+					Im = im2uint8(max(tiffreadVolume(Data.Info.Files(1).Raw_Image),[],3)); % ,'PixelRegion',{[1,1,inf],[1,1,inf],[1,1,inf]}.
+					Im = im2uint8(rescale(Im,0,1,'InputMin',P.GUI_Handles.Control_Panel_Objects(1,4).Value,'InputMax',P.GUI_Handles.Control_Panel_Objects(1,5).Value));
+					imshow(Im,'Parent',Ax); % Display the first stack.
+					disp('Displaying maximum projection image');
+				else % 3D. Display individual stacks.
+					imshow(tiffreadVolume(Data.Info.Files(1).Raw_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]}),'Parent',Ax); % Display the current stack.
+				end
 			end
 		case 'Raw Image - RGB'
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
@@ -67,16 +82,39 @@ function Display_Reconstruction(P,Data,Label)
 		case 'CNN Image'
 			
 			if(isfield(Data.Info.Files,'Denoised_Image') && ~isempty(Data.Info.Files(1).Denoised_Image))
-				if(iscategorical(Data.Info.Files(1).Denoised_Image))
-					CM = lines;
-					Im_Label = labeloverlay(Data.Info.Files(1).Raw_Image,Data.Info.Files(1).Denoised_Image,'Colormap',CM([1,7],:),'Transparency',0.1,'IncludedLabels',["Neuron"]);
+				if(P.Data(p).Info.Files(1).Stacks_Num == 1)
+					if(iscategorical(Data.Info.Files(1).Denoised_Image))
+						CM = lines;
+						Im_Label = labeloverlay(Data.Info.Files(1).Raw_Image,Data.Info.Files(1).Denoised_Image,'Colormap',CM([1,7],:),'Transparency',0.1,'IncludedLabels',["Neuron"]);
+						
+						imshow(Im_Label,'Parent',Ax);
+					else
+						imshow(Data.Info.Files(1).Denoised_Image,'Parent',Ax);
+						colormap(Ax,'turbo');
+						
+						msgbox('You are using an old CNN version. Please press the "Denoise Image" button to apply the most recent CNN to your image.');
+					end
+				else % Multi-stack image.
+					if(P.GUI_Handles.Menus(4).Children(end).Checked == 1) % 2D. Maximum projection.
+						Im = Raw_Image_Func_2D(tiffreadVolume(Data.Info.Files(1).Raw_Image));
+						Im_CNN = max(dicomread(Data.Info.Files(1).Denoised_Image),[],4);
+					else % 3D. Display individual stacks.
+						Im = im2uint8(tiffreadVolume(Data.Info.Files(1).Raw_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]}));
+						Im_CNN = dicomread(Data.Info.Files(1).Denoised_Image,'frames',P.GUI_Handles.Current_Stack);
+					end
+
+					CM = lines(7);
+					CM([1,2],:) = CM([1,7],:);
 					
-					imshow(Im_Label,'Parent',Ax);
-				else
-					imshow(Data.Info.Files(1).Denoised_Image,'Parent',Ax);
-					colormap(Ax,'turbo');
+					if(max(Im_CNN(:)) > 0)
+						Im_Label = labeloverlay(Im,categorical(Im_CNN,[0,255],["BG","Neuron"]),'Colormap',CM,'Transparency',0.3,'IncludedLabels',"Neuron");
+						imshow(Im_Label,'Parent',Ax);
+					else
+						imshow(Im,'Parent',Ax);
+					end
 					
-					msgbox('You are using an old CNN version. Please press the "Denoise Image" button to apply the most recent CNN to your image.');
+					% disp(CM);
+					% disp(unique(Im_CNN));
 				end
 				
 				set(P.GUI_Handles.Control_Panel_Objects(1,[4,5]),'Enable','off'); % 'Limits',[0,0.99],'Step',0.01,'Value',Data.Parameters.Neural_Network.Threshold,'Tooltip','Threshold for the binarization of the denoised image.'); % CNN threshold.
@@ -91,15 +129,39 @@ function Display_Reconstruction(P,Data,Label)
 			if(isfield(Data.Info.Files,'Binary_Image') && ~isempty(Data.Info.Files(1).Binary_Image))
 				switch(Label)
 					case 'Binary Image'
-						imshow(Data.Info.Files(1).Binary_Image,'Parent',Ax);
-						% image(Ax,Data.Info.Files(1).Binary_Image,'CDataMapping','scaled');
+						if(P.Data(p).Info.Files(1).Stacks_Num == 1)
+							imshow(Data.Info.Files(1).Binary_Image,'Parent',Ax); % image(Ax,Data.Info.Files(1).Binary_Image,'CDataMapping','scaled');
+						else
+							if(P.GUI_Handles.Menus(4).Children(end).Checked == 1) % 2D. Maximum projection.
+								imshow(max(dicomread(Data.Info.Files(1).Binary_Image),[],4),'Parent',Ax); % Display the first stack.
+								disp('Displaying maximum projection image');
+							else % 3D. Display individual stacks.
+								imshow(dicomread(Data.Info.Files(1).Binary_Image,'frames',P.GUI_Handles.Current_Stack),'Parent',Ax); % Display the current stack.
+							end
+						end
 						
 						% set(pan(H),'ActionPostCallback',@(src,event) Adjust_Image_Display(src,event,Ax,Data.Info.Files(1).Binary_Image));
 						% set(zoom(H),'ActionPostCallback',@(src,event) Adjust_Image_Display(src,event,Ax,Data.Info.Files(1).Binary_Image));
 					case 'Binary Image - RGB'
-						Im_RGB = repmat(Data.Info.Files(1).Raw_Image(:,:,1),[1,1,3]);
-						Im_RGB(:,:,1) = Im_RGB(:,:,1) .* uint8(~Data.Info.Files(1).Binary_Image);
-						Im_RGB(:,:,2) = Im_RGB(:,:,2) .* uint8(Data.Info.Files(1).Binary_Image);
+						if(P.Data(p).Info.Files(1).Stacks_Num == 1)
+							Im = Data.Info.Files(1).Raw_Image(:,:,1);
+							Binary_Image = Data.Info.Files(1).Binary_Image;
+						else
+							if(P.GUI_Handles.Menus(4).Children(end).Checked == 1) % 2D. Maximum projection.
+								Im = Raw_Image_Func_2D(tiffreadVolume(Data.Info.Files(1).Raw_Image));
+								Binary_Image = logical(max(dicomread(Data.Info.Files(1).Binary_Image),[],4));
+								disp('Displaying maximum projection image');
+							else % 3D. Display individual stacks.
+								Im = im2uint8(tiffreadVolume(Data.Info.Files(1).Raw_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]}));
+								Binary_Image = logical(dicomread(Data.Info.Files(1).Binary_Image,'frames',P.GUI_Handles.Current_Stack));
+							end
+						end
+						
+						Im_RGB = repmat(Im,[1,1,3]);
+						
+						% Im(find(~Binary_Image)) = 0;
+						Im_RGB(:,:,1) = uint8(~Binary_Image) .* Im;
+						Im_RGB(:,:,2) = uint8(Binary_Image) .* Im;
 						
 						% image(Ax,Im_RGB);
 						imshow(Im_RGB,'Parent',Ax);

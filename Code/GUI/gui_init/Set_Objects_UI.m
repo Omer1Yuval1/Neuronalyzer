@@ -39,9 +39,9 @@ function Set_Objects_UI(P)
 	
 	% Mode menu (2D, 3D, time-lapse):
 	for i=1:length(P.GUI_Handles.Mode_Names)
-		uimenu(P.GUI_Handles.Menus(4),'Label',P.GUI_Handles.Mode_Names{i},'Enable','off');
+		uimenu(P.GUI_Handles.Menus(4),'Label',P.GUI_Handles.Mode_Names{i},'Enable','on'); % ,'MenuSelectedFcn',''
 	end
-	set(P.GUI_Handles.Menus(4).Children(end),'Checked','on','Enable','on');
+	set(P.GUI_Handles.Menus(4).Children(end),'Checked',true,'Enable','on');
 	
 	% P.GUI_Handles.Menu_Button = uipushtool(P.GUI_Handles.Main_Figure,'Separator','on','Icon',fullfile(matlabroot,'toolbox','matlab','icons','greencircleicon.gif'));
 	
