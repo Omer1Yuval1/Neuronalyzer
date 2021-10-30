@@ -97,10 +97,14 @@ function Display_Reconstruction(P,Data,Label)
 				else % Multi-stack image.
 					if(P.GUI_Handles.Menus(4).Children(end).Checked == 1) % 2D. Maximum projection.
 						Im = Raw_Image_Func_2D(tiffreadVolume(Data.Info.Files(1).Raw_Image));
-						Im_CNN = max(dicomread(Data.Info.Files(1).Denoised_Image),[],4);
+						
+						Im_CNN = max(tiffreadVolume(Data.Info.Files(1).Denoised_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[1,1,inf]}),[],3);
+						% Im_CNN = max(dicomread(Data.Info.Files(1).Denoised_Image),[],4);
 					else % 3D. Display individual stacks.
 						Im = im2uint8(tiffreadVolume(Data.Info.Files(1).Raw_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]}));
-						Im_CNN = dicomread(Data.Info.Files(1).Denoised_Image,'frames',P.GUI_Handles.Current_Stack);
+						
+						Im_CNN = tiffreadVolume(Data.Info.Files(1).Denoised_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]});
+						% Im_CNN = dicomread(Data.Info.Files(1).Denoised_Image,'frames',P.GUI_Handles.Current_Stack);
 					end
 
 					CM = lines(7);
@@ -133,10 +137,12 @@ function Display_Reconstruction(P,Data,Label)
 							imshow(Data.Info.Files(1).Binary_Image,'Parent',Ax); % image(Ax,Data.Info.Files(1).Binary_Image,'CDataMapping','scaled');
 						else
 							if(P.GUI_Handles.Menus(4).Children(end).Checked == 1) % 2D. Maximum projection.
-								imshow(max(dicomread(Data.Info.Files(1).Binary_Image),[],4),'Parent',Ax); % Display the first stack.
+								imshow(max(tiffreadVolume(Data.Info.Files(1).Binary_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[1,1,inf]}),[],3),'Parent',Ax); % Display maximum projection.
+								% imshow(max(dicomread(Data.Info.Files(1).Binary_Image),[],4),'Parent',Ax); % Display maximum projection.
 								disp('Displaying maximum projection image');
 							else % 3D. Display individual stacks.
-								imshow(dicomread(Data.Info.Files(1).Binary_Image,'frames',P.GUI_Handles.Current_Stack),'Parent',Ax); % Display the current stack.
+								imshow(tiffreadVolume(Data.Info.Files(1).Binary_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]}),'Parent',Ax); % Display the current stack.
+								% imshow(dicomread(Data.Info.Files(1).Binary_Image,'frames',P.GUI_Handles.Current_Stack),'Parent',Ax); % Display the current stack.
 							end
 						end
 						
@@ -149,11 +155,13 @@ function Display_Reconstruction(P,Data,Label)
 						else
 							if(P.GUI_Handles.Menus(4).Children(end).Checked == 1) % 2D. Maximum projection.
 								Im = Raw_Image_Func_2D(tiffreadVolume(Data.Info.Files(1).Raw_Image));
-								Binary_Image = logical(max(dicomread(Data.Info.Files(1).Binary_Image),[],4));
+								
+								Binary_Image = logical(max(tiffreadVolume(Data.Info.Files(1).Binary_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[1,1,inf]}),[],3));
 								disp('Displaying maximum projection image');
 							else % 3D. Display individual stacks.
 								Im = im2uint8(tiffreadVolume(Data.Info.Files(1).Raw_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]}));
-								Binary_Image = logical(dicomread(Data.Info.Files(1).Binary_Image,'frames',P.GUI_Handles.Current_Stack));
+								
+								Binary_Image = logical(tiffreadVolume(Data.Info.Files(1).Binary_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]}));
 							end
 						end
 						

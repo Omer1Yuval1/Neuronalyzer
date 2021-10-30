@@ -595,17 +595,30 @@ function index()
 				
 			else % Apply CNN to all stacks.
 				
-				if(isempty(P.Data(pp).Info.Files(1).Denoised_Image) && ~isnumeric(P.Data(pp).Info.Files(1).Raw_Image))
-					[filepath,filename,ext] = fileparts(P.Data(pp).Info.Files(1).Raw_Image);
-					mkdir([filepath,filesep,filename(1:end-4)]);
-					P.Data(pp).Info.Files(1).Denoised_Image = [filepath,filesep,filename(1:end-4),filesep,'Denoised_Image.dcm']; % Save the path to the image rather than the image itself.
-					P.Data(pp).Info.Files(1).Binary_Image = [filepath,filesep,filename(1:end-4),filesep,'Binary_Image.dcm']; % ".
-				end
-				
 				% Memory pre-allocation:
 				file_info = imfinfo(P.Data(pp).Info.Files(1).Raw_Image);
 				Denoised_Image_Stack_0 = categorical(nan([file_info(1).Height,file_info(1).Width,P.Data(pp).Info.Files(1).Stacks_Num]));
 				Binary_Image_Stack = nan([file_info(1).Height,file_info(1).Width,P.Data(pp).Info.Files(1).Stacks_Num]);
+				
+				% Create CNN and BW image files:
+				if(isempty(P.Data(pp).Info.Files(1).Denoised_Image) && ~isnumeric(P.Data(pp).Info.Files(1).Raw_Image))
+					[filepath,filename,ext] = fileparts(P.Data(pp).Info.Files(1).Raw_Image);
+					Dir1 = [filepath,filesep,filename(1:end-4)];
+					mkdir(Dir1);
+					
+					% Create tiff files:
+					t_cnn = Tiff([Dir1,filesep,'Denoised_Image.tif'],'w');
+					t_bw = Tiff([Dir1,filesep,'Binary_Image.tif'],'w');
+					
+					Tags_Struct = TIF_Init([file_info(1).Width,file_info(1).Height]);
+					
+					% Save the absolute directory of the tiff files into the project file:
+					P.Data(pp).Info.Files(1).Denoised_Image = [Dir1,filesep,'Denoised_Image.tif']; % Save the path to the image rather than the image itself.
+					P.Data(pp).Info.Files(1).Binary_Image = [Dir1,filesep,'Binary_Image.tif']; % ".
+					
+					% P.Data(pp).Info.Files(1).Denoised_Image = [filepath,filesep,filename(1:end-4),filesep,'Denoised_Image.dcm']; % Save the path to the image rather than the image itself.
+					% P.Data(pp).Info.Files(1).Binary_Image = [filepath,filesep,filename(1:end-4),filesep,'Binary_Image.dcm']; % ".
+				end
 				
 				for ss=1:P.Data(pp).Info.Files(1).Stacks_Num % For each stack.
 					
@@ -621,14 +634,27 @@ function index()
 						% TODO: why is this needed?
 						Binary_Image_Stack(:,:,ss) = Update_Binary_Image(Denoised_Image_Stack_0(:,:,ss),Binary_Image_Stack(:,:,ss),P.Data(pp).Parameters.Neural_Network.Min_CC_Size,0); % This only deletes sub-threshold objects.
 					end
+					
+					% Write slices to tiff files:
+					Denoised_Image_Stack = im2uint8(zeros(size(Denoised_Image_Stack_0,[1,2])));
+					Denoised_Image_Stack(Denoised_Image_Stack_0(:,:,ss) == "Neuron") = 255;
+					
+					setTag(t_cnn,Tags_Struct);
+					setTag(t_bw,Tags_Struct);
+					
+					write(t_cnn,im2uint8(Denoised_Image_Stack));
+					write(t_bw,im2uint8(Binary_Image_Stack(:,:,ss)));
+					
+					writeDirectory(t_cnn);
+					writeDirectory(t_bw);
 				end
-				% imwrite(Denoised_Image_Stack,P.Data(pp).Info.Files(1).Denoised_Image,'Compression','none'); % Save the denoised (CNN) image (all stacks) to a file (same dir as the raw image).
-				Denoised_Image_Stack = im2uint8(zeros(size(Denoised_Image_Stack_0)));
-				Denoised_Image_Stack(Denoised_Image_Stack_0 == "Neuron") = 255;
-				dicomwrite(permute(im2uint8(Denoised_Image_Stack),[1,2,4,3]),P.Data(pp).Info.Files(1).Denoised_Image);
+				%%% imwrite(Denoised_Image_Stack,P.Data(pp).Info.Files(1).Denoised_Image,'Compression','none'); % Save the denoised (CNN) image (all stacks) to a file (same dir as the raw image).
+				% Denoised_Image_Stack = im2uint8(zeros(size(Denoised_Image_Stack_0)));
+				% Denoised_Image_Stack(Denoised_Image_Stack_0 == "Neuron") = 255;
+				% dicomwrite(permute(im2uint8(Denoised_Image_Stack),[1,2,4,3]),P.Data(pp).Info.Files(1).Denoised_Image);
 				
-				% imwrite(Binary_Image_Stack,P.Data(pp).Info.Files(1).Binary_Image,'Compression','none'); % Save the denoised (CNN) image (all stacks) to a file (same dir as the raw image).
-				dicomwrite(permute(im2uint8(Binary_Image_Stack),[1,2,4,3]),P.Data(pp).Info.Files(1).Binary_Image);
+				%%% imwrite(Binary_Image_Stack,P.Data(pp).Info.Files(1).Binary_Image,'Compression','none'); % Save the denoised (CNN) image (all stacks) to a file (same dir as the raw image).
+				% dicomwrite(permute(im2uint8(Binary_Image_Stack),[1,2,4,3]),P.Data(pp).Info.Files(1).Binary_Image);
 			end
 		end
 		
