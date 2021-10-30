@@ -133,7 +133,7 @@ function Display_Reconstruction(P,Data,Label)
 			if(isfield(Data.Info.Files,'Binary_Image') && ~isempty(Data.Info.Files(1).Binary_Image))
 				switch(Label)
 					case 'Binary Image'
-						if(P.Data(p).Info.Files(1).Stacks_Num == 1)
+						if(Data.Info.Files(1).Stacks_Num == 1)
 							imshow(Data.Info.Files(1).Binary_Image,'Parent',Ax); % image(Ax,Data.Info.Files(1).Binary_Image,'CDataMapping','scaled');
 						else
 							if(P.GUI_Handles.Menus(4).Children(end).Checked == 1) % 2D. Maximum projection.
@@ -149,7 +149,7 @@ function Display_Reconstruction(P,Data,Label)
 						% set(pan(H),'ActionPostCallback',@(src,event) Adjust_Image_Display(src,event,Ax,Data.Info.Files(1).Binary_Image));
 						% set(zoom(H),'ActionPostCallback',@(src,event) Adjust_Image_Display(src,event,Ax,Data.Info.Files(1).Binary_Image));
 					case 'Binary Image - RGB'
-						if(P.Data(p).Info.Files(1).Stacks_Num == 1)
+						if(Data.Info.Files(1).Stacks_Num == 1)
 							Im = Data.Info.Files(1).Raw_Image(:,:,1);
 							Binary_Image = Data.Info.Files(1).Binary_Image;
 						else
@@ -783,30 +783,72 @@ function Display_Reconstruction(P,Data,Label)
 						Cxy = combvec(CCi(1) + dd , CCi(2) + dd); % [2 x Np].
 				end
 				
-				Ci = (size(P.Data(pp).Info.Files(1).Binary_Image,1) .* (Cxy(1,:) - 1) + Cxy(2,:)); % Linear indices.
-				
 				switch(Mouse_Button)
 					case 1 % Left mouse click - add pixels.
-						P.Data(pp).Info.Files(1).Binary_Image(Ci) = 1;
+						New_Pixel_Value = 1;
 						disp('Pixels added.');
 					case 3 % Right mouse click - delete pixels.
-						P.Data(pp).Info.Files(1).Binary_Image(Ci) = 0;
+						New_Pixel_Value = 0;
 						disp('Pixels removed.');
+				end
+				
+				if(P.Data(pp).Info.Files(1).Stacks_Num == 1) % 2D image.
+					Ci = (size(P.Data(pp).Info.Files(1).Binary_Image,1) .* (Cxy(1,:) - 1) + Cxy(2,:)); % Linear indices.
+					P.Data(pp).Info.Files(1).Binary_Image(Ci) = New_Pixel_Value;
+				else % Multi-stack.
+					if(P.GUI_Handles.Menus(4).Children(end).Checked == 1) % 2D. Maximum projection.
+						disp('Annotation of a maximum projection image from a multi-stack image file is not possible');
+						return;
+					else % 3D. Display individual stacks.
+						Binary_Image_Current = logical(tiffreadVolume(P.Data(pp).Info.Files(1).Binary_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]}));
+						
+						% Update annotated pixels:
+						Ci = (size(Binary_Image_Current,1) .* (Cxy(1,:) - 1) + Cxy(2,:)); % Linear indices.
+						Binary_Image_Current(Ci) = New_Pixel_Value;
+						
+						% Write updated stack back to image file:
+						t_bw = Tiff(P.Data(pp).Info.Files(1).Binary_Image,'r+');
+						setDirectory(t_bw,P.GUI_Handles.Current_Stack);
+						write(t_bw,im2uint8(Binary_Image_Current));
+						close(t_bw);
+					end
 				end
 				
 				% delete(allchild(P.GUI_Handles.View_Axes));
 				
-				if(RGB_Flag)
-					Im_RGB_i = repmat(P.Data(pp).Info.Files(1).Raw_Image(:,:,1),[1,1,3]); % Replicate the full image in all channels.
-					Im_RGB_i(:,:,1) = Im_RGB_i(:,:,1) .* uint8(~P.Data(pp).Info.Files(1).Binary_Image); % BG of BW is red.
-					Im_RGB_i(:,:,2) = Im_RGB_i(:,:,2) .* uint8(P.Data(pp).Info.Files(1).Binary_Image); % Signal of BW is green.
+				if(RGB_Flag) % RGB mode.
 					
+					Image_Object = findobj(P.GUI_Handles.View_Axes,'Type','image');
+					
+					if(P.Data(pp).Info.Files(1).Stacks_Num == 1) % 2D image.
+						
+						Image_Object.CData(:,:,1) = Image_Object.CData(:,:,3) .* uint8(~P.Data(pp).Info.Files(1).Binary_Image); % BG of BW is red.
+						Image_Object.CData(:,:,2) = Image_Object.CData(:,:,3) .* uint8(P.Data(pp).Info.Files(1).Binary_Image); % Signal of BW is green.
+						
+						% Im_RGB_i = repmat(P.Data(pp).Info.Files(1).Raw_Image(:,:,1),[1,1,3]); % Replicate the full image in all channels.
+						% Im_RGB_i(:,:,1) = Im_RGB_i(:,:,1) .* uint8(~P.Data(pp).Info.Files(1).Binary_Image); % BG of BW is red.
+						% Im_RGB_i(:,:,2) = Im_RGB_i(:,:,2) .* uint8(P.Data(pp).Info.Files(1).Binary_Image); % Signal of BW is green.
+						% set(Image_Object,'CData',Im_RGB_i);
+					else % 3D. Display individual stacks.
+						Image_Object.CData(:,:,1) = Image_Object.CData(:,:,3) .* uint8(~Binary_Image_Current); % BG of BW is red.
+						Image_Object.CData(:,:,2) = Image_Object.CData(:,:,3) .* uint8(Binary_Image_Current); % Signal of BW is green.
+						drawnow;
+					end
 					% imshow(Im_RGB_i,'Parent',P.GUI_Handles.View_Axes);
 					% set(P.GUI_Handles.View_Axes.Children(1),'CData',Im_RGB_i);
-					set(findobj(P.GUI_Handles.View_Axes,'Type','image'),'CData',Im_RGB_i);
-				else
+					
+					% set(findobj(P.GUI_Handles.View_Axes,'Type','image'),'CData',Im_RGB_i);
+				else % Simple binary image mode.
+					Image_Object = findobj(P.GUI_Handles.View_Axes,'Type','image');
+					
+					if(P.Data(pp).Info.Files(1).Stacks_Num == 1) % 2D image.
+						set(Image_Object,'CData',P.Data(pp).Info.Files(1).Binary_Image);
+					else % 3D. Display individual stacks.
+						set(Image_Object,'CData',Binary_Image_Current);
+					end
+					
 					% set(P.GUI_Handles.View_Axes.Children(1),'CData',P.Data(pp).Info.Files(1).Binary_Image);
-					set(findobj(P.GUI_Handles.View_Axes,'Type','image'),'CData',P.Data(pp).Info.Files(1).Binary_Image);
+					% set(findobj(P.GUI_Handles.View_Axes,'Type','image'),'CData',P.Data(pp).Info.Files(1).Binary_Image);
 					% imshow(P.Data(pp).Info.Files(1).Binary_Image,'Parent',P.GUI_Handles.View_Axes);
 				end
 				
@@ -864,6 +906,7 @@ function Display_Reconstruction(P,Data,Label)
 	end
 	
 	function Radio_Buttons_Func(~,~,P)
+		disp('Radio button changed.');
 		switch(find([P.GUI_Handles.Radio_Group_1.Children.Value] == 1)) % Mode.
 			case {2,3} % Annotation & Drawing modes.
 				zoom(P.GUI_Handles.View_Axes,'off'); % Switch off the zoom function.

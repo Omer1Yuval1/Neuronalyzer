@@ -603,7 +603,7 @@ function index()
 				% Create CNN and BW image files:
 				if(isempty(P.Data(pp).Info.Files(1).Denoised_Image) && ~isnumeric(P.Data(pp).Info.Files(1).Raw_Image))
 					[filepath,filename,ext] = fileparts(P.Data(pp).Info.Files(1).Raw_Image);
-					Dir1 = [filepath,filesep,filename(1:end-4)];
+					Dir1 = [filepath,filename(1:end-4)];
 					mkdir(Dir1);
 					
 					% Create tiff files:
@@ -648,6 +648,8 @@ function index()
 					writeDirectory(t_cnn);
 					writeDirectory(t_bw);
 				end
+				close(t_cnn);
+				close(t_bw);
 				%%% imwrite(Denoised_Image_Stack,P.Data(pp).Info.Files(1).Denoised_Image,'Compression','none'); % Save the denoised (CNN) image (all stacks) to a file (same dir as the raw image).
 				% Denoised_Image_Stack = im2uint8(zeros(size(Denoised_Image_Stack_0)));
 				% Denoised_Image_Stack(Denoised_Image_Stack_0 == "Neuron") = 255;
