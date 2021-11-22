@@ -88,10 +88,13 @@ function index()
 				
 				for pp=1:numel(P.Data) % For each project.
 					
-					if(P.GUI_Handles.Save_Input_Data_Path) % Validate image path. If it is not found, ask the user to specify a new path and save it.
+					if(P.GUI_Handles.Save_Input_Data_Path || ischar(P.Data(pp).Info.Files(1).Raw_Image)) % Validate image path. If it is not found, ask the user to specify a new path and save it.
+					
+						P.GUI_Handles.Save_Input_Data_Path = 1; % Update this flag in stack projects, in case the user haven't specified it in GUI_Params.
+						
 						[filepath,filename,ext] = fileparts(P.Data(pp).Info.Files(1).Raw_Image);
 						
-						if(~exist(filepath,'dir') == 7 || isfile(P.Data(pp).Info.Files(1).Raw_Image)) % If the path or file don't exist.
+						if(~(exist(filepath,'dir') == 7) || ~isfile(P.Data(pp).Info.Files(1).Raw_Image)) % If the path or file don't exist.
 							[File1,Path1,Selection_Index] = uigetfile(P.GUI_Handles.Input_Data_Formats); % Ask the user to select the file.
 						else
 							Selection_Index = 0;
@@ -129,7 +132,7 @@ function index()
 				
 				if(P.Data(1).Info.Files(1).Stacks_Num > 1) % If it is a multi-stack image file.
 					P.GUI_Handles.Current_Stack = 1;
-					imshow(tiffreadVolume([Path1,filesep,File1{1}],'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]}),'Parent',P.GUI_Handles.View_Axes(1)); % Display the first stack.
+					imshow(tiffreadVolume(P.Data(1).Info.Files(1).Raw_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]}),'Parent',P.GUI_Handles.View_Axes(1)); % Display the first stack.
 					
 					set(P.GUI_Handles.Menus(4).Children(:),'Checked',false);
 					set(P.GUI_Handles.Menus(4).Children(2),'Checked',true,'Enable','on');
