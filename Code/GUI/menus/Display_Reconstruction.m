@@ -128,7 +128,7 @@ function Display_Reconstruction(P,Data,Label)
 				imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 				warndlg('Warning: A denoised image has not been created yet.','Warning');
 			end
-		case {'Binary Image','Binary Image - RGB'}
+		case {'Binary Image','Binary Image - RGB','3D Binary'}
 			
 			if(isfield(Data.Info.Files,'Binary_Image') && ~isempty(Data.Info.Files(1).Binary_Image))
 				switch(Label)
@@ -176,6 +176,15 @@ function Display_Reconstruction(P,Data,Label)
 						
 						% set(pan(H),'ActionPostCallback',@(src,event) Adjust_Image_Display(src,event,Ax,Im_RGB));
 						% set(zoom(H),'ActionPostCallback',@(src,event) Adjust_Image_Display(src,event,Ax,Im_RGB));
+						
+					case '3D Binary'
+						Im = tiffreadVolume(Data.Info.Files(1).Binary_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[1,1,inf]});
+						volshow(Im,'ScaleFactors',[1,1,1]); % Display all stacks as a volume.
+						% ,'Parent',P.GUI_Handles.Main_Panel_1
+						
+						% [x,y,z] = ind2sub(size(Im),find(Im));
+						% plot3(x,y,z,'.w','Parent',Ax);
+						% set(Ax,'DataAspectRatio',[1,1,1]);
 				end
 				% Ax.Interactions = [];
 			
@@ -697,7 +706,9 @@ function Display_Reconstruction(P,Data,Label)
 		axis tight;
 		H.InnerPosition = [50,50,ImCols./2.5,ImRows./2.5];
 	else
-		set(P.GUI_Handles.View_Axes.Children(1),'Visible','off','Visible','on');
+		if(~isempty(P.GUI_Handles.View_Axes.Children))
+			set(P.GUI_Handles.View_Axes.Children(1),'Visible','off','Visible','on');
+		end
 	end
 	
 	function [X,Y] = Smooth_Points(X,Y,Smoothing_Parameter) % X=[1,n]. Y=[1,n].
