@@ -101,18 +101,23 @@ function index()
 						end
 						
 						if(Selection_Index) % If the path should be updated.
-							[filepath1,filename1,ext1] = fileparts(File1);
+							[~,filename1,~] = fileparts(File1);
 							if(~isequal(filename,filename1))
 								warning('File name does not match the original file name.');
 							end
 							P.Data(pp).Info.Experiment(1).Identifier = filename1;
-							P.Data(pp).Info.Files(1).Raw_Image = File1{1}; % A single file for project pp.
+							P.Data(pp).Info.Files(1).Raw_Image = [Path1,File1]; % A single file for project pp.
+                            
+                            if(~isnumeric(P.Data(pp).Info.Files(1).Raw_Image) && P.Data(pp).Info.Files(1).Stacks_Num > 0) % If multi-stack.
+                                P.Data(pp).Info.Files(1).Binary_Image = [Path1,File1(1:end-4),filesep,'Binary_Image.tif'];
+                                P.Data(pp).Info.Files(1).Denoised_Image = [Path1,File1(1:end-4),filesep,'Denoised_Image.tif'];
+                            end
 						end
 					end
 					
 					if(isnumeric(P.Data(pp).Info.Files(1).Raw_Image))
 						P.Data(pp).Info.Files(1).Stacks_Num = 1;
-					else % If the path is saved.
+                    elseif(~isfield(P.Data(pp).Info.Files(1),'Stacks_Num') || isempty(P.Data(pp).Info.Files(1).Stacks_Num)) % If the path is saved.
 						file_info = imfinfo(P.Data(pp).Info.Files(1).Raw_Image); % Get file meta-data.
 						P.Data(pp).Info.Files(1).Stacks_Num = numel(file_info);
 					end
