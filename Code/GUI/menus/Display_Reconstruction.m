@@ -214,6 +214,9 @@ function Display_Reconstruction(P,Data,Label)
 				
 				Im = Data.Info.Files(1).Denoised_Image;
 				
+				% if(Data.Info.Files(1).Stacks_Num == 1)
+				% Im_CNN = tiffreadVolume(Data.Info.Files(1).Denoised_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]});
+				
 				CNN_Binary = [0,1];
 				CNN_Binary = CNN_Binary(Data.Info.Files(1).Denoised_Image);
 				CNN_Binary = Update_Binary_Image([],CNN_Binary,P.Data(p).Parameters.Neural_Network.Min_CC_Size,0);
