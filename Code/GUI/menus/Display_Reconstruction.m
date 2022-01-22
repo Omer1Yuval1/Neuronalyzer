@@ -178,8 +178,11 @@ function Display_Reconstruction(P,Data,Label)
 						% set(zoom(H),'ActionPostCallback',@(src,event) Adjust_Image_Display(src,event,Ax,Im_RGB));
 						
 					case '3D Binary'
-						Im = tiffreadVolume(Data.Info.Files(1).Binary_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[1,1,inf]});
-						volshow(Im,'ScaleFactors',[1,1,1]); % Display all stacks as a volume.
+						Im = tiffreadVolume(Data.Info.Files(1).Binary_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[1,1,inf]}); % [start stride stop].
+						
+						[Nr,Nc] = size(Im);
+						% volshow(Im(1:min(Nr,2048),1:min(Nc,2048),:),'ScaleFactors',[1,1,1]); % Display all stacks as a volume.
+						volumeViewer (Im(1:min(Nr,2048),1:min(Nc,2048),:)); % Display all stacks as a volume.
 						% ,'Parent',P.GUI_Handles.Main_Panel_1
 						
 						% [x,y,z] = ind2sub(size(Im),find(Im));
