@@ -1,4 +1,4 @@
-function PVD_Generate_Dataset()
+function PVD_Generate_Dataset(Im_In,Im_Out,S)
 	
 	% This function generates a training set made of input-output pairs of PVD patches from annotated grayscale images.
 	
@@ -10,32 +10,47 @@ function PVD_Generate_Dataset()
 		
 	rng('default'); % Reset the random seed.
 	
-	S = PVD_CNN_Params();
+	if(nargin < 3 || isempty(S))
+		S = PVD_CNN_Params();
+	end
 	
-	% File_List = dir([S.Projects_Path,'Project_WT*.mat']); % List all project files.
-	File_List = dir([S.Projects_Path,'Project_WT_x1.mat']); % Use only image o.
-	% File_List = dir([S.Projects_Path,'Project_WT_x10_No_o.mat']);
-	
-	% File_List = dir([S.Projects_Path,'Project_WT_x11.mat']); % All WT images included in the paper.
-	% File_List = dir([S.Projects_Path,'\annotated_others\*.mat']); % WT images used for training only.
+	if(nargin < 2)
+		File_List = dir([S.Projects_Path,'Project_WT_x11.mat']);
+		N_Files = numel(File_List);
+	else
+		N_Files = 1;
+		N_Images = length(Im_In);
+	end
 	
 	T_Set = table('Size',[S.Ns,2],'VariableTypes',{'cell','cell'},'VariableNames',{'Input','Output'});
 	t = 0;
+	Source_Image_Index = 0;
 	
-	for f=1:numel(File_List) % For each project file.
+	for f=1:N_Files % For each image (or project file).
 		
-		% Load file:
-		P.Data = load([File_List(f).folder,filesep,File_List(f).name]);
-		P.Data = P.Data.Project;
+		if(nargin < 2)
+			% Load file:
+			P.Data = load([File_List(f).folder,filesep,File_List(f).name]);
+			P.Data = P.Data.Project;
+			N_Images = numel(P.Data);
+		end
 		
-		for p=1:numel(P.Data) % For each project within file f.
+		for p=1:N_Images % For each project within file f.
 			
-			ID = P.Data(p).Info.Experiment(1).Identifier;
-			disp(ID);
+			Source_Image_Index = Source_Image_Index + 1;
 			
 			% Get raw and annotated images:
-			Im = S.Input_Image_Func(P.Data(p).Info.Files.Raw_Image(:,:,1)); % Raw image.
-			Im_BW = P.Data(p).Info.Files.Binary_Image(:,:,1); % Binary image.
+			if(nargin < 2)
+				Im = S.Input_Image_Func(P.Data(p).Info.Files.Raw_Image(:,:,1)); % Raw image.
+				Im_BW = P.Data(p).Info.Files.Binary_Image(:,:,1); % Binary image.
+				ID = P.Data(p).Info.Experiment(1).Identifier;
+			else
+				Im = Im_In{p}; % Raw image.
+				Im_BW = Im_Out{p}; % Binary image.
+				ID = p;
+			end
+			disp(ID);
+			
 			Im_Size = size(Im);
 			
 			% Force uint8 format for both the input and output:
@@ -86,11 +101,11 @@ function PVD_Generate_Dataset()
 					
 					T_Set.Input{t} = [S.Train_Dir_Input,File_Name];
 					T_Set.Output{t} = [S.Train_Dir_Output,File_Name];
+					T_Set.Source_Image_Index{t} = Source_Image_Index;
 					
 					% Validate:
 					% H = figure; subplot(1,2,1); imshow(In); subplot(1,2,2); imshow(Out); waitforbuttonpress; close(H);
 				end
-				
 				
 				if(tt == S.Samples_Per_Image)
 					break;

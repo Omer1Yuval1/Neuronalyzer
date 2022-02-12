@@ -7,25 +7,25 @@ function Set_Objects_UI(P)
 	
 	P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Loading...','Indeterminate','on');
 	
-	Main_Grid = uigridlayout(P.GUI_Handles.Main_Figure,[25,10],'RowHeight',repmat({'1x'},1,25),'ColumnWidth',repmat({'1x'},1,10),'BackgroundColor',P.GUI_Handles.BG_Color_1);
+	P.GUI_Handles.Main_Grid = uigridlayout(P.GUI_Handles.Main_Figure,[25,10],'RowHeight',repmat({'1x'},1,25),'ColumnWidth',repmat({'1x'},1,10),'BackgroundColor',P.GUI_Handles.BG_Color_1);
 	
-	P.GUI_Handles.Main_Panel_1 = uipanel(Main_Grid,'BackgroundColor',P.GUI_Handles.BG_Color_1,'AutoResizeChildren','off');
+	P.GUI_Handles.Main_Panel_1 = uipanel(P.GUI_Handles.Main_Grid,'BackgroundColor',P.GUI_Handles.BG_Color_1,'AutoResizeChildren','off');
 	P.GUI_Handles.Main_Panel_1.Layout.Row = [1,18];
 	P.GUI_Handles.Main_Panel_1.Layout.Column = [1,10];
 	
-	P.GUI_Handles.Buttons_Panel = uipanel(Main_Grid,'BackgroundColor',P.GUI_Handles.BG_Color_1);
+	P.GUI_Handles.Buttons_Panel = uipanel(P.GUI_Handles.Main_Grid,'BackgroundColor',P.GUI_Handles.BG_Color_1);
 	P.GUI_Handles.Buttons_Panel.Layout.Row = [19,23];
 	P.GUI_Handles.Buttons_Panel.Layout.Column = [1,3];
 	
-	P.GUI_Handles.Control_Panel = uipanel(Main_Grid,'BackgroundColor',P.GUI_Handles.BG_Color_1);
+	P.GUI_Handles.Control_Panel = uipanel(P.GUI_Handles.Main_Grid,'BackgroundColor',P.GUI_Handles.BG_Color_1);
 	P.GUI_Handles.Control_Panel.Layout.Row = [19,23];
 	P.GUI_Handles.Control_Panel.Layout.Column = [4,8];
 	
-	P.GUI_Handles.Info_Panel = uipanel(Main_Grid,'BackgroundColor',P.GUI_Handles.BG_Color_1);
+	P.GUI_Handles.Info_Panel = uipanel(P.GUI_Handles.Main_Grid,'BackgroundColor',P.GUI_Handles.BG_Color_1);
 	P.GUI_Handles.Info_Panel.Layout.Row = [19,23];
 	P.GUI_Handles.Info_Panel.Layout.Column = [9,10];
 	
-	P.GUI_Handles.Steps_Panel = uipanel(Main_Grid,'BackgroundColor',P.GUI_Handles.BG_Color_1);
+	P.GUI_Handles.Steps_Panel = uipanel(P.GUI_Handles.Main_Grid,'BackgroundColor',P.GUI_Handles.BG_Color_1);
 	P.GUI_Handles.Steps_Panel.Layout.Row = [24,25];
 	P.GUI_Handles.Steps_Panel.Layout.Column = [1,10];
 	
@@ -42,6 +42,20 @@ function Set_Objects_UI(P)
 		uimenu(P.GUI_Handles.Menus(4),'Label',P.GUI_Handles.Mode_Names{i},'Enable','on'); % ,'MenuSelectedFcn',''
 	end
 	set(P.GUI_Handles.Menus(4).Children(end),'Checked',true,'Enable','on');
+	
+	% Advanced menu:
+	for i=1:length(P.GUI_Handles.Advanced_Names)
+		uimenu(P.GUI_Handles.Menus(5),'Label',P.GUI_Handles.Advanced_Names{i},'Enable','on');
+	end
+	
+	CNN_List = dir('./Inputs/pretrained_cnn/*.mat');
+	for i=1:numel(CNN_List) % For each pretrained CNN.
+		if(contains(CNN_List(i).name,'PVD_CNN_Segnet_6A'))
+			uimenu(P.GUI_Handles.Menus(5).Children(end),'Label',CNN_List(i).name(1:end-4),'Checked','on');
+		else
+			uimenu(P.GUI_Handles.Menus(5).Children(end),'Label',CNN_List(i).name(1:end-4));
+		end
+	end
 	
 	% P.GUI_Handles.Menu_Button = uipushtool(P.GUI_Handles.Main_Figure,'Separator','on','Icon',fullfile(matlabroot,'toolbox','matlab','icons','greencircleicon.gif'));
 	

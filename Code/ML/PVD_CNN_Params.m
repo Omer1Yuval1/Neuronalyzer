@@ -43,6 +43,7 @@ function P = PVD_CNN_Params()
 	% ******************************
 	P.Solver = 'adam';
 	P.Test_Set_Ratio = 0.2;
+	P.Randomize_By_Image = 1; % 0 = randomise individual samples regardless of their source image.
 	P.ExecutionEnvironment = 'parallel';
 	P.Plots = 'none'; % 'training-progress';
 	P.Verbose = true;

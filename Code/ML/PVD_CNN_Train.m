@@ -1,9 +1,19 @@
-function PVD_CNN = PVD_CNN_Train(Training_Mode,net)
+function PVD_CNN = PVD_CNN_Train(Training_Mode,S,net)
 	
     % Run Examples:
         % PVD_CNN = PVD_CNN_Train(1,[]);
-
-	S = PVD_CNN_Params();
+	
+	switch(nargin)
+		case 0
+			Training_Mode = 1;
+			S = PVD_CNN_Params();
+			net = [];
+		case 1
+			S = PVD_CNN_Params();
+			net = [];
+		case 2
+			net = [];
+	end
 	
 	rng('default'); % Reset the random seed.
 	
@@ -28,14 +38,25 @@ function PVD_CNN = PVD_CNN_Train(Training_Mode,net)
 		end
 	end
 	
-	I_Set = randperm(size(T_Set,1)); % Random unique permutation of all rows in T_Set.
-	I_Threshold = round(S.Test_Set_Ratio .* size(T_Set,1)); % Last index of test set (+1 is the first of the training set).
-	
-	I_Test = I_Set(1:I_Threshold); % Test set indices.
-	I_Ttrain = I_Set((I_Threshold+1):end); % Training set indices.
-	
+	if(S.Randomize_By_Image)
+		N_Im = length(unique([T_Set.Source_Image_Index{:}])); % Total number of images.
+		N_Test = ceil(S.Test_Set_Ratio * N_Im); % Number of test images.
+		I_Set = randperm(N_Im); % Image indices with randomised order.
+		
+		I_Test = find(ismember([T_Set.Source_Image_Index{:}],I_Set(1:N_Test))); % Indices of samples from test images.
+		I_Train = find(ismember([T_Set.Source_Image_Index{:}],I_Set(N_Test+1:end))); % Indices of samples from train images.
+		
+		disp(['Training set: ',num2str(I_Set(N_Test+1:end))]);
+		disp(['Test set: ',num2str(I_Set(1:N_Test))]);
+	else
+		I_Set = randperm(size(T_Set,1)); % Random unique permutation of all rows in T_Set.
+		I_Threshold = round(S.Test_Set_Ratio .* size(T_Set,1)); % Last index of test set (+1 is the first of the training set).
+		
+		I_Test = I_Set(1:I_Threshold); % Test set indices.
+		I_Train = I_Set((I_Threshold+1):end); % Training set indices.
+	end
 	Test_Set = T_Set(I_Test,:);
-	Train_Set = T_Set(I_Ttrain,:);
+	Train_Set = T_Set(I_Train,:);
 	
 	switch(S.Im2Im)
 		case 1
@@ -49,13 +70,11 @@ function PVD_CNN = PVD_CNN_Train(Training_Mode,net)
 			% Train_Set = combine(Input_Train,Output_Train);
 			% Test_Set = combine(Input_Test,Output_Test);
 			
-			%
 			Train_Set = randomPatchExtractionDatastore(Input_Train,Output_Train,S.Patch_Size,'PatchesPerImage',S.miniBatchSize_Patch,'DataAugmentation','none');
 			Train_Set.MiniBatchSize = S.miniBatchSize_Patch;
 			
 			Test_Set = randomPatchExtractionDatastore(Input_Test,Output_Test,S.Patch_Size,'PatchesPerImage',S.miniBatchSize_Patch,'DataAugmentation','none');
 			Test_Set.MiniBatchSize = S.miniBatchSize_Patch;
-			%}
 			
 			clear Input_Train Input_Test Output_Train Output_Test;
 		case 2 % Use tables with explicit images.

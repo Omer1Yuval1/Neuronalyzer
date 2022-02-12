@@ -529,7 +529,7 @@ function index()
 				Menus_Func(findall(P.GUI_Handles.Menus(2),'Checked','on'),[],P);
 			case 3 % Plots.
 				Menus_Func(findall(P.GUI_Handles.Menus(3),'Checked','on'),[],P);
-			case 4
+			case 4 % Mode.
 				set(findall(P.GUI_Handles.Menus(4)),'Checked','off');
 				set(source,'Checked','on');
 				if(P.GUI_Handles.Current_Menu == 2 || P.GUI_Handles.Current_Menu == 3)
@@ -571,8 +571,7 @@ function index()
 		
 		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Denoising images...'); % ,'Indeterminate','on'
 		
-		% CNN = load('My_CNN_13.mat');
-		CNN = load('PVD_CNN_Segnet_6A.mat'); % PVD_CNN_Segnet_1A
+		CNN = load([findall(P.GUI_Handles.Menus(5).Children(end).Children,'Checked','on').Text,'.mat']);
 		CNN = CNN.PVD_CNN;
 		
 		selection = uiconfirm(P.GUI_Handles.Main_Figure,'Overwrite existing binary images?','Warning','Icon','question','Options',{'Overwrite','Keep existing binary images'});
@@ -772,6 +771,115 @@ function index()
 		close(P.GUI_Handles.Waitbar);
 	end
 	
+	function Advanced_Menu_Func(source,~,P)
+		switch(source.Position)
+			case 2 % Train a denoising CNN.
+				
+				cnn_gui.cnn_panel = uipanel(P.GUI_Handles.Main_Grid,'Title','Train a denoising CNN','Scrollable','on','ForegroundColor',[1,1,1],'BackgroundColor',P.GUI_Handles.BG_Color_1,'AutoResizeChildren','off');
+				cnn_gui.cnn_panel.Layout.Row = [1,18];
+				cnn_gui.cnn_panel.Layout.Column = [1,10];
+				% cnn_gui.cnn_panel.Position(1) = 0.1 * P.GUI_Handles.Main_Panel_1.Position(3);
+				% cnn_gui.cnn_panel.Position(3) = 0.8 * P.GUI_Handles.Main_Panel_1.Position(3);
+				% cnn_gui.cnn_panel.Position(4) = 0.9 * P.GUI_Handles.Main_Panel_1.Position(4);
+				
+				CNN_Grid_Dims = [12,6];
+				
+				cnn_gui.cnn_grid = uigridlayout(cnn_gui.cnn_panel,CNN_Grid_Dims,'RowHeight',repmat({'0.8x','1x','0.2x'},1,CNN_Grid_Dims(1)/3),'ColumnWidth',repmat({'1x','0.2x'},1,CNN_Grid_Dims(2)/2),'Scrollable','on','BackgroundColor',P.GUI_Handles.BG_Color_1);
+				
+				Training_Params = PVD_CNN_Params();
+				Field_Names = {'Name','Solver','Input_Size','Samples_Per_Image','Max_Epochs','miniBatchSize','Encoder_Depth','Conv_Num','InitialLearnRate','Randomize_By_Image','Test_Set_Ratio'};
+				Default_Values = {['My_CNN_',datestr(datetime,'yyyymmdd_HH-MM-SS')],{'adam','sgdm','rmsprop'},Training_Params.Input_Size(1),Training_Params.Samples_Per_Image, ...
+													Training_Params.Max_Epochs,Training_Params.miniBatchSize,Training_Params.Encoder_Depth,Training_Params.Conv_Num, ...
+													Training_Params.InitialLearnRate,{'Randomize source images','Radnomize input samples'},Training_Params.Test_Set_Ratio};
+				Param_Names = {'Name','Solver','Sample size (px^2)','Number of samples per image','Number of epochs','Mini batch size', ...
+								'Encoder Depth','Number of convolution layers (per encoder)','Initial learning rate','Sample randomization method','Test set ratio'};
+				
+				for ii=1:length(Param_Names) % For each input field.
+					
+					[row,col] = ind2sub([CNN_Grid_Dims(1)/3,CNN_Grid_Dims(2)/2],ii);
+					
+					Name_label = uilabel(cnn_gui.cnn_grid,'Text',Param_Names{ii},'FontSize',16,'FontColor',[1,1,1]);
+					Name_label.Layout.Row = 1 + 3*(row-1);
+					Name_label.Layout.Column = 1 + 2*(col-1);
+					
+					if(ii == 2) % Solver.
+						cnn_gui.(Field_Names{ii}) = uidropdown(cnn_gui.cnn_grid,'Items',Default_Values{ii},'Value',Default_Values{ii}{1});
+					elseif(ii == 10) % Randomization method.
+						cnn_gui.(Field_Names{ii}) = uidropdown(cnn_gui.cnn_grid,'Items',Default_Values{ii},'ItemsData',[1,0],'Value',1);
+					elseif(isnumeric(Default_Values{ii}))
+						cnn_gui.(Field_Names{ii}) = uieditfield(cnn_gui.cnn_grid,'numeric','Value',Default_Values{ii},'HorizontalAlignment','center');
+					else
+						cnn_gui.(Field_Names{ii}) = uieditfield(cnn_gui.cnn_grid,'Value',Default_Values{ii});
+					end
+					
+					cnn_gui.(Field_Names{ii}).Layout.Row = 2 + 3*(row-1);
+					cnn_gui.(Field_Names{ii}).Layout.Column = 1 + 2*(col-1);
+				end
+				% uilabel(cnn_gui.cnn_grid,'Text','Number of samples per image');
+				% uieditfield(cnn_gui.cnn_grid,'numeric','Limits', [-5 10],'Value',5);
+				
+				cnn_gui.submit = uibutton(cnn_gui.cnn_grid,'Text','Go!','ButtonPushedFcn',{@train_cnn_func,P,cnn_gui,Field_Names,Training_Params},'FontSize',P.GUI_Handles.Buttons_FontSize);
+				cnn_gui.submit.Layout.Row = CNN_Grid_Dims(1)-1;
+				cnn_gui.submit.Layout.Column = CNN_Grid_Dims(2)-1;
+				
+				cnn_gui.cancel = uibutton(cnn_gui.cnn_grid,'Text','Cancel','ButtonPushedFcn',{@cancel_cnn_func,cnn_gui},'FontSize',P.GUI_Handles.Buttons_FontSize);
+				cnn_gui.cancel.Layout.Row = CNN_Grid_Dims(1)-1;
+				cnn_gui.cancel.Layout.Column = CNN_Grid_Dims(2);
+		end
+		
+		function cancel_cnn_func(~,~,cnn_gui)
+			delete(cnn_gui.cnn_panel);
+		end
+		
+		function train_cnn_func(~,~,P,cnn_gui,Field_Names,Training_Params)
+			
+			if(numel(P.Data) == 0)
+				msgbox('You must first load a dataset in order to be able to train a denoising CNN.','Error','warn');
+				delete(cnn_gui.cnn_panel);
+				return;
+			end
+			
+			P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Trainig...'); % ,'Indeterminate','on'
+			
+			for iii=1:length(Field_Names)
+				if(isfield(Training_Params,Field_Names{iii})) % If the form field exists in the default CNN parameters struct.
+					if(any(isletter(cnn_gui.(Field_Names{iii}).Value))) % If the value contains letter, treat it as a string.
+						Training_Params.(Field_Names{iii}) = cnn_gui.(Field_Names{iii}).Value;
+					elseif(isnumeric(cnn_gui.(Field_Names{iii}).Value)) % Treat as number.
+						Training_Params.(Field_Names{iii}) = cnn_gui.(Field_Names{iii}).Value;
+					else % A string that actually contains a numeric value.
+						Training_Params.(Field_Names{iii}) = str2double(cnn_gui.(Field_Names{iii}).Value);
+					end
+				end
+			end
+			% assignin('base','Training_Params',Training_Params);
+			
+			% Prepare input and output images:
+			for iii=1:numel(P.Data)
+				Im_In{iii} = P.Data(iii).Info.Files.Raw_Image;
+				Im_Out{iii} = P.Data(iii).Info.Files.Binary_Image;
+			end
+			
+			% Save training and test set to .\Resources\CNN\:
+			PVD_Generate_Dataset(Im_In,Im_Out,Training_Params);
+			
+			net = PVD_CNN_Train(1,Training_Params);
+			save(['./Inputs/pretrained_cnn/',cnn_gui.Name.Value,'.mat'],'net');
+			% [Im_Out,Im_Label] = Segment_Neuron(net,Im_In_4);
+			
+			uimenu(P.GUI_Handles.Menus(5).Children(end),'Label',cnn_gui.Name.Value,'Callback',@select_cnn_func); % ,'Checked','on'.
+			
+			delete(cnn_gui.cnn_panel);
+			
+			close(P.GUI_Handles.Waitbar);
+		end
+	end
+	
+	function select_cnn_func(source,~)
+		set(allchild(P.GUI_Handles.Menus(5).Children(end)),'Checked','off');
+		set(source,'Checked','on');
+	end
+	
 	function Reset_Main_Axes(P)
 		
 		delete(allchild(P.GUI_Handles.Main_Panel_1));
@@ -817,9 +925,11 @@ function index()
 		end
 		
 		% Menus:
-		set(findall(P.GUI_Handles.Menus(2),'UserData',2),'Callback',{@Menus_Func,P});
-		set(findall(P.GUI_Handles.Menus(3),'UserData',3),'Callback',{@Menus_Func,P});
-		set(allchild(P.GUI_Handles.Menus(4)),'Callback',{@Apply_Changes_Func,P,4});
+		set(findall(P.GUI_Handles.Menus(2),'UserData',2),'Callback',{@Menus_Func,P}); % Reconstruction menu.
+		set(findall(P.GUI_Handles.Menus(3),'UserData',3),'Callback',{@Menus_Func,P}); % Plot menu.
+		set(allchild(P.GUI_Handles.Menus(4)),'Callback',{@Apply_Changes_Func,P,4}); % Mode menu.
+		set(allchild(P.GUI_Handles.Menus(5)),'Callback',{@Advanced_Menu_Func,P}); % Advanced menu.
+		set(allchild(P.GUI_Handles.Menus(5).Children(end)),'Callback',@select_cnn_func); % Advanced menu.
 		
 		close(P.GUI_Handles.Waitbar);
 	end
