@@ -42,33 +42,46 @@ function Display_Reconstruction(P,Data,Label)
 	set(P.GUI_Handles.View_Axes,'ButtonDownFcn',''); % set(P.GUI_Handles.View_Axes,'ButtonDownFcn',{@Show_Image_Func,P});
 	set(P.GUI_Handles.Control_Panel_Objects(1,5),'ValueChangedFcn','');
 	
-	set(P.GUI_Handles.Radio_Group_1,'SelectionChangedFcn',{@Radio_Buttons_Func,P});
+	set(P.GUI_Handles.Radio_Group_1,'SelectionChangedFcn',{@Radio_Buttons_Func,P,Label});
 	% Radio_Buttons_Func([],[],P,Label);
 	
+	if(~isfield(P.Data(p).Parameters.General_Parameters,'Pixel_Limits'))
+		P.Data(p).Parameters.General_Parameters.Pixel_Limits = [0,255];
+	end
+	
 	switch(Label)
-		case 'Raw Image - Grayscale'
+		case {'Raw Image - Grayscale','Raw Image - RGB'}
 			
 			if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData)) % If a different plot was chosen.
+				Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
 				set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Pixel limits:');
-				set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,100],'Step',1,'Value',0,'Tooltip','Lower bound of image pixel value (background).'); % Set the spinner.
-				set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[10,255],'Step',1,'Value',255,'ValueChangedFcn','','Tooltip','Upper bound of image pixel value (signal).'); % Minimum object size.
+				set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,100],'Step',1,'Value',Pix_Lim(1),'Enable','on','Tooltip','Lower bound of image pixel value (background).'); % Set the spinner.
+				set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[10,255],'Step',1,'Value',Pix_Lim(2),'Enable','on','ValueChangedFcn','','Tooltip','Upper bound of image pixel value (signal).'); % Minimum object size.
+			else
+				P.Data(p).Parameters.General_Parameters.Pixel_Limits = [P.GUI_Handles.Control_Panel_Objects(1,4).Value,P.GUI_Handles.Control_Panel_Objects(1,5).Value];
+				Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+				set(P.GUI_Handles.Control_Panel_Objects(1,4),'Enable','on');
+				set(P.GUI_Handles.Control_Panel_Objects(1,5),'Enable','on');
 			end
 			
 			if(P.Data(p).Info.Files(1).Stacks_Num == 1)
-				imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+				Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+				imshow(Im,'Parent',Ax);
+				if(isequal(Label,'Raw Image - RGB'))
+					colormap(Ax,'hot');
+				end
 			else % Multi-stack image.
 				if(P.GUI_Handles.Menus(4).Children(end).Checked == 1) % 2D. Maximum projection.
 					Im = im2uint8(max(tiffreadVolume(Data.Info.Files(1).Raw_Image),[],3)); % ,'PixelRegion',{[1,1,inf],[1,1,inf],[1,1,inf]}.
-					Im = im2uint8(rescale(Im,0,1,'InputMin',P.GUI_Handles.Control_Panel_Objects(1,4).Value,'InputMax',P.GUI_Handles.Control_Panel_Objects(1,5).Value));
-					imshow(Im,'Parent',Ax); % Display the first stack.
-					disp('Displaying maximum projection image');
+					disp('Displaying maximum projection image.');
 				else % 3D. Display individual stacks.
-					imshow(tiffreadVolume(Data.Info.Files(1).Raw_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]}),'Parent',Ax); % Display the current stack.
+					Im = im2uint8(tiffreadVolume(Data.Info.Files(1).Raw_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]}));
+					disp('Displaying the current stack.');
 				end
+				
+				Im = im2uint8(rescale(Im,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+				imshow(Im,'Parent',Ax);
 			end
-		case 'Raw Image - RGB'
-			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
-			colormap(Ax,'hot');
 		case 'Cell Body' % Detect and display CB and the outsets of the branches connected to it:
 			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 			hold(Ax,'on');
@@ -81,11 +94,16 @@ function Display_Reconstruction(P,Data,Label)
 			% plot(CB_Perimeter(:,1),CB_Perimeter(:,2),'LineWidth',4);
 		case 'CNN Image'
 			
+			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			
 			if(isfield(Data.Info.Files,'Denoised_Image') && ~isempty(Data.Info.Files(1).Denoised_Image))
 				if(P.Data(p).Info.Files(1).Stacks_Num == 1)
 					if(iscategorical(Data.Info.Files(1).Denoised_Image))
 						CM = lines;
-						Im_Label = labeloverlay(Data.Info.Files(1).Raw_Image,Data.Info.Files(1).Denoised_Image,'Colormap',CM([1,7],:),'Transparency',0.1,'IncludedLabels',["Neuron"]);
+						
+						Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+						
+						Im_Label = labeloverlay(Im,Data.Info.Files(1).Denoised_Image,'Colormap',CM([1,7],:),'Transparency',0.1,'IncludedLabels',["Neuron"]);
 						
 						imshow(Im_Label,'Parent',Ax);
 					else
@@ -98,10 +116,14 @@ function Display_Reconstruction(P,Data,Label)
 					if(P.GUI_Handles.Menus(4).Children(end).Checked == 1) % 2D. Maximum projection.
 						Im = Raw_Image_Func_2D(tiffreadVolume(Data.Info.Files(1).Raw_Image));
 						
+						Im = im2uint8(rescale(Im,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+						
 						Im_CNN = max(tiffreadVolume(Data.Info.Files(1).Denoised_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[1,1,inf]}),[],3);
 						% Im_CNN = max(dicomread(Data.Info.Files(1).Denoised_Image),[],4);
 					else % 3D. Display individual stacks.
 						Im = im2uint8(tiffreadVolume(Data.Info.Files(1).Raw_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]}));
+						
+						Im = im2uint8(rescale(Im,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
 						
 						Im_CNN = tiffreadVolume(Data.Info.Files(1).Denoised_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]});
 						% Im_CNN = dicomread(Data.Info.Files(1).Denoised_Image,'frames',P.GUI_Handles.Current_Stack);
@@ -130,6 +152,8 @@ function Display_Reconstruction(P,Data,Label)
 			end
 		case {'Binary Image','Binary Image - RGB','3D Binary'}
 			
+			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			
 			if(isfield(Data.Info.Files,'Binary_Image') && ~isempty(Data.Info.Files(1).Binary_Image))
 				switch(Label)
 					case 'Binary Image'
@@ -151,15 +175,19 @@ function Display_Reconstruction(P,Data,Label)
 					case 'Binary Image - RGB'
 						if(Data.Info.Files(1).Stacks_Num == 1)
 							Im = Data.Info.Files(1).Raw_Image(:,:,1);
+							Im = im2uint8(rescale(Im,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+							
 							Binary_Image = Data.Info.Files(1).Binary_Image;
 						else
 							if(P.GUI_Handles.Menus(4).Children(end).Checked == 1) % 2D. Maximum projection.
 								Im = Raw_Image_Func_2D(tiffreadVolume(Data.Info.Files(1).Raw_Image));
+								Im = im2uint8(rescale(Im,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
 								
 								Binary_Image = logical(max(tiffreadVolume(Data.Info.Files(1).Binary_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[1,1,inf]}),[],3));
 								disp('Displaying maximum projection image');
 							else % 3D. Display individual stacks.
 								Im = im2uint8(tiffreadVolume(Data.Info.Files(1).Raw_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]}));
+								Im = im2uint8(rescale(Im,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
 								
 								Binary_Image = logical(tiffreadVolume(Data.Info.Files(1).Binary_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]}));
 							end
@@ -193,7 +221,7 @@ function Display_Reconstruction(P,Data,Label)
 			
 				set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Marker size:');
 				set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,20],'Step',1,'Value',2,'Tooltip','Marker size (in pixels) for adding (left mouse click) and removing (left mouse click) pixels.'); % Set the spinner.
-				set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',Data.Parameters.Neural_Network.Min_CC_Size,'ValueChangedFcn',{@Update_Binary_Threshold_Func,P,p},'Tooltip','Minimum object size (in pixels) in the binarized image.'); % Minimum object size.
+				set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,1000],'Step',1,'Value',Data.Parameters.Neural_Network.Min_CC_Size,'ValueChangedFcn',{@Update_Binary_Threshold_Func,P,p,Label},'Tooltip','Minimum object size (in pixels) in the binarized image.'); % Minimum object size.
 				
 				set(P.GUI_Handles.Control_Panel_Objects([1,2,3],2),'Enable','on'); % Enable the radio buttons.
 				set(P.GUI_Handles.Control_Panel_Objects(1,[4,5]),'Enable','on'); % Enable the spinners.
@@ -234,10 +262,14 @@ function Display_Reconstruction(P,Data,Label)
 			end
 		case 'Skeleton'
 			
+			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			
 			if(isfield(Data.Info.Files,'Binary_Image') && ~isempty(Data.Info.Files(1).Binary_Image))
 				[Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints] = Pixel_Trace_Post_Proccessing(Data.Info.Files(1).Binary_Image,Scale_Factor);
 			else
-				imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+				Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+				
+				imshow(Im,'Parent',Ax);
 				warndlg('Warning: A binary image has not been created yet.','Warning');
 				return;
 			end
@@ -275,7 +307,8 @@ function Display_Reconstruction(P,Data,Label)
 				case 3 % Display as label.
 					CM = lines(7);
 					% CM = CM([1,7,2,3,4,5,6],:);
-					Im_Label = labeloverlay(Data.Info.Files(1).Raw_Image,Im1_NoiseReduction,'Colormap',CM(3,:),'Transparency',0.05);
+					Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+					Im_Label = labeloverlay(Im,Im1_NoiseReduction,'Colormap',CM(3,:),'Transparency',0.05);
 					imshow(Im_Label,'Parent',Ax);
 			end
 		case 'Blob'
@@ -288,12 +321,18 @@ function Display_Reconstruction(P,Data,Label)
 				
 				plot(Ax,XYper(:,1),XYper(:,2),'LineWidth',2);
 			else
-				imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+				Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+				Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+				imshow(Im,'Parent',Ax);
 				warndlg('Warning: A binary image has not been created yet.','Warning');
 			end
 			
 		case {'Trace - Lite','Trace','Segmentation'}
-			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+			
+			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+			
+			imshow(Im,'Parent',Ax);
 			hold(Ax,'on');
 			
 			if(isfield(Data,'Segments') && ~isempty(Data.Segments))
@@ -361,7 +400,10 @@ function Display_Reconstruction(P,Data,Label)
 			Max_Length = 50; % [um].
 			CM = jet(1000);
 			
-			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+			
+			imshow(Im,'Parent',Ax);
 			hold on;
 			
 			if(isfield(Data,'Segments') && ~isempty(Data.Segments) && isfield(Data,'Vertices') && ~isempty(Data.Vertices))
@@ -383,10 +425,12 @@ function Display_Reconstruction(P,Data,Label)
 				warndlg('Warning: The selected image has not been traced yet.','Warning');
 			end
 		case 'Axes'
-			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+			
+			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+			
+			imshow(Im,'Parent',Ax);
 			hold(Ax,'on');
-			
-			
 			
 			set(P.GUI_Handles.Control_Panel_Objects([1,3],2),'Enable','on'); % Enable the radio buttons.
 			set(P.GUI_Handles.Control_Panel_Objects(1,5),'Enable','off');
@@ -442,7 +486,11 @@ function Display_Reconstruction(P,Data,Label)
 				end
 			end
 		case 'Axes Mapping Process'
-			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+			
+			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+			
+			imshow(Im,'Parent',Ax);
 			hold(Ax,'on');
 			Map_Worm_Axes(Data,Data.Axes,1,0,Ax);
 		case {'Radial Distance','Azimuthal Angle'}
@@ -458,7 +506,10 @@ function Display_Reconstruction(P,Data,Label)
 					Field_1 = 'Angular_Coordinate';
 			end
 			
-			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+			
+			imshow(Im,'Parent',Ax);
 			hold(Ax,'on');
 			
 			for s=1:numel(Data.Segments)
@@ -490,7 +541,10 @@ function Display_Reconstruction(P,Data,Label)
 			c = linspace(0,1,CM_Lims(2))';
 			CM = [1-c,c,0.*c+0.1]; % CM = jet(CM_Lims(2));
 			
-			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+			
+			imshow(Im,'Parent',Ax);
 			hold(Ax,'on');
 			
 			for s=1:numel(Data.Segments)
@@ -513,7 +567,10 @@ function Display_Reconstruction(P,Data,Label)
 			end
 		case 'Longitudinal Gradient'
 			
-			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+			
+			imshow(Im,'Parent',Ax);
 			hold(Ax,'on');
 			
 			Min_Max = [0,800]; % um.
@@ -550,7 +607,10 @@ function Display_Reconstruction(P,Data,Label)
 			D = find(Dist <= 0);
 			V = find(Dist > 0);
 			
-			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+			
+			imshow(Im,'Parent',Ax);
 			hold(Ax,'on');
 			scatter(Ax,X(D),Y(D),DotSize_1,CM(1,:),'filled');
 			scatter(Ax,X(V),Y(V),DotSize_1,CM(end,:),'filled');
@@ -559,7 +619,10 @@ function Display_Reconstruction(P,Data,Label)
 			
 			a = 5;
 			
-			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+			
+			imshow(Im,'Parent',Ax);
 			
 			Reconstruct_Vertices(Data);
 			
@@ -576,7 +639,11 @@ function Display_Reconstruction(P,Data,Label)
 			plot(Vx,Vy,'LineWidth',3);
 			%}
 		case 'Vertex Positions'
-			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+			
+			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+			
+			imshow(Im,'Parent',Ax);
 			
 			Fv = find([Data.Vertices.Order] >= 3); % Junctions.
 			Ft = find([Data.Vertices.Order] == 1); % Tips.
@@ -619,7 +686,10 @@ function Display_Reconstruction(P,Data,Label)
 			CM_Lims = [1,1000];
 			CM = turbo(CM_Lims(2));
 			
-			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+			
+			imshow(Im,'Parent',Ax);
 			hold(Ax,'on');
 			
 			Ns =  numel(Data.Segments);
@@ -655,7 +725,10 @@ function Display_Reconstruction(P,Data,Label)
 			Class_Num = max([Data.Points.Class]);
 			Class_Colors = [P.GUI_Handles.Class_Colors ; 0.5,0.5,0.5];
 			
-			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+			
+			imshow(Im,'Parent',Ax);
 			hold(Ax,'on');
 			
 			Midline_Distance = [Data.Points.X];
@@ -670,7 +743,10 @@ function Display_Reconstruction(P,Data,Label)
 		case 'PVD Orders - Segments'
 			Class_Num = max([Data.Segments.Class]);
 			
-			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+			
+			imshow(Im,'Parent',Ax);
 			hold(Ax,'on');
 			Ns = numel(Data.Segments);
 			for s=1:Ns
@@ -704,7 +780,10 @@ function Display_Reconstruction(P,Data,Label)
 			% R = [Data.All_Vertices.Radius] .* GP.Workspace(1).Workspace.User_Input.Scale_Factor ./ 10;
 			% viscircles([X(F)',Y(F)'],R(F),'Color','k','LineWidth',5); % [0.6350 0.0780 0.1840]
 		otherwise
-			imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
+			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+			
+			imshow(Im,'Parent',Ax);
 	end
 	
 	if(Undock)
@@ -726,7 +805,7 @@ function Display_Reconstruction(P,Data,Label)
 		Y = Suxy(:,2)'; % Smoothed y-coordinates.
 	end
 	
-	function Update_Binary_Threshold_Func(~,~,P,pp)
+	function Update_Binary_Threshold_Func(~,~,P,pp,Label)
 		switch(Label)
 			case {'Binary Image','Binary Image - RGB'}
 				
@@ -922,7 +1001,7 @@ function Display_Reconstruction(P,Data,Label)
 		close(P.GUI_Handles.Waitbar);
 	end
 	
-	function Radio_Buttons_Func(~,~,P)
+	function Radio_Buttons_Func(~,~,P,Label)
 		disp('Radio button changed.');
 		switch(find([P.GUI_Handles.Radio_Group_1.Children.Value] == 1)) % Mode.
 			case {2,3} % Annotation & Drawing modes.
@@ -951,9 +1030,8 @@ function Display_Reconstruction(P,Data,Label)
 	end
 	%}
 	
-	function Lock_Image_Func(~,~,P)
-		
-	end
+	% function Lock_Image_Func(~,~,P)
+	% end
 	%{
 	% Code to loop over all projects and save a reconstruction.
 	Project.GUI_Handles.Control_Panel_Objects(4,1).Value = 1; % Undock;

@@ -132,12 +132,17 @@ function index()
 			Reset_Main_Axes(P);
 			
 			if(isnumeric(P.Data(1).Info.Files(1).Raw_Image)) % If the image is stored explicitly in the project class.
-				imshow(P.Data(1).Info.Files(1).Raw_Image,'Parent',P.GUI_Handles.View_Axes(1));
+				Menus_Func(findall(P.GUI_Handles.Menus(2),'Label','Raw Image - Grayscale'),[],P);
+				% Display_Reconstruction(P,P.Data(1),'Raw Image - Grayscale');
+				% imshow(P.Data(1).Info.Files(1).Raw_Image,'Parent',P.GUI_Handles.View_Axes(1));
 			else % If the path to the image is saved.
 				
 				if(P.Data(1).Info.Files(1).Stacks_Num > 1) % If it is a multi-stack image file.
 					P.GUI_Handles.Current_Stack = 1;
-					imshow(tiffreadVolume(P.Data(1).Info.Files(1).Raw_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]}),'Parent',P.GUI_Handles.View_Axes(1)); % Display the first stack.
+					
+					Menus_Func(findall(P.GUI_Handles.Menus(2),'Label','Raw Image - Grayscale'),[],P);
+					% Display_Reconstruction(P,P.Data(1),'Raw Image - Grayscale');
+					% imshow(tiffreadVolume(P.Data(1).Info.Files(1).Raw_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]}),'Parent',P.GUI_Handles.View_Axes(1)); % Display the first stack.
 					
 					set(P.GUI_Handles.Menus(4).Children(:),'Checked',false);
 					set(P.GUI_Handles.Menus(4).Children(2),'Checked',true,'Enable','on');
@@ -586,12 +591,16 @@ function index()
 		
 		for pp=1:numel(P.Data) % For each project.
 			
-			if(P.Data(pp).Info.Files(1).Stacks_Num == 1)
+			Pix_Lim = P.Data(pp).Parameters.General_Parameters.Pixel_Limits;
+			
+			if(P.Data(pp).Info.Files(1).Stacks_Num == 1) % One image per project.
 				
 				P.GUI_Handles.Waitbar.Value = pp ./ numel(P.Data);
 				
-				[Im_Rows,Im_Cols] = size(P.Data(pp).Info.Files(1).Raw_Image);
-				P.Data(pp).Info.Files(1).Denoised_Image = Apply_CNN_Im2Im(CNN,P.Data(pp).Info.Files(1).Raw_Image); % Apply neural network to the raw image (after removing the cell-body).
+				Im = im2uint8(rescale(P.Data(pp).Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+				
+				[Im_Rows,Im_Cols] = size(Im);
+				P.Data(pp).Info.Files(1).Denoised_Image = Apply_CNN_Im2Im(CNN,Im); % Apply neural network to the raw image (after removing the cell-body).
 				
 				if( Overwrite || (~isfield(P.Data(pp).Info.Files,'Binary_Image') || isempty(P.Data(pp).Info.Files(1).Binary_Image)) ) % If a binary image is missing or if the user specified to overwrite existing images.
 					P.Data(pp).Info.Files(1).Binary_Image = Update_Binary_Image(P.Data(pp).Info.Files(1).Denoised_Image,[],P.Data(pp).Parameters.Neural_Network.Min_CC_Size,1);
@@ -632,6 +641,8 @@ function index()
 					P.GUI_Handles.Waitbar.Value = (pp * ss) ./ (numel(P.Data) * P.Data(pp).Info.Files(1).Stacks_Num);
 					
 					Im = im2uint8(tiffreadVolume(P.Data(pp).Info.Files(1).Raw_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[ss,1,ss]}));
+					
+					Im = im2uint8(rescale(Im,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2))); % Enahce image.
 					
 					Denoised_Image_Stack_0(:,:,ss) = Apply_CNN_Im2Im(CNN,Im);
 					
@@ -681,15 +692,19 @@ function index()
 		for pp=1:Np
 			P.GUI_Handles.Waitbar.Value = pp ./ Np;
 			
+			% Load and enhance the raw image:
+			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+			
 			Menus_Func(findall(P.GUI_Handles.Menus(2),'Label','Raw Image - Grayscale'),[],P); % set(P.GUI_Handles.Reconstruction_Menu_Handles(1),'Checked','on'); % Select the raw image in the reconstruction menu. It will be displayed through Switch_Project_Func -> Menus_Func.
 			
 			Switch_Project_Func(P.GUI_Handles.Menus(1).Children(Np - pp + 1),[],P); % Switch to project #pp.
 			
 			P.GUI_Handles.Waitbar.Message = ['Analyzing vertices (',num2str(pp),'\',num2str(Np),')...'];
-			Data_pp = Vertices_Analysis_Index(P.Data(pp));
+			Data_pp = Vertices_Analysis_Index(Im,P.Data(pp));
 			
 			P.GUI_Handles.Waitbar.Message = ['Tracing neuron (',num2str(pp),'\',num2str(Np),')...'];
-			Data_pp = Connect_Vertices(Data_pp,P.GUI_Handles.View_Axes(1));
+			Data_pp = Connect_Vertices(Im,Data_pp,P.GUI_Handles.View_Axes(1));
 			
 			P.Data(pp).Segments = Data_pp.Segments;
 			P.Data(pp).Vertices = Data_pp.Vertices;
