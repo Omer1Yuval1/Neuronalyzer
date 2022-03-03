@@ -76,6 +76,11 @@ function index()
 						P.Data(pp).Info.Files(1).Raw_Image = P.Data(pp).Info.Files(1).Raw_Image(:,:,1); % If there are multiple channels, take only the first (they contain identical information).
 					end
 					
+					% Temporary:
+					if(~isfield(P.Data(pp).Parameters.General_Parameters,'Pixel_Limits'))
+						P.Data(pp).Parameters.General_Parameters.Pixel_Limits = [0,255];
+					end
+					
 					P.Data(pp).Info.Files(1).Stacks_Num = numel(file_info);
 					
 					Label_pp = ['Project_',num2str(pp),'_',P.Data(pp).Info.Experiment(1).Identifier];
@@ -113,6 +118,12 @@ function index()
                                 P.Data(pp).Info.Files(1).Denoised_Image = [Path1,File1(1:end-4),filesep,'Denoised_Image.tif'];
                             end
 						end
+						
+					end
+					
+					% Temporary:
+					if(~isfield(P.Data(pp).Parameters.General_Parameters,'Pixel_Limits'))
+						P.Data(pp).Parameters.General_Parameters.Pixel_Limits = [0,255];
 					end
 					
 					if(isnumeric(P.Data(pp).Info.Files(1).Raw_Image))

@@ -23,7 +23,6 @@ classdef Project_Class < handle
 			S.Info.Analysis = struct('Commit',{},'Date',{},'Username',{});
 			S.Info.Files = struct('Raw_Image',{},'Denoised_Image',{},'Binary_Image',{});
 			
-			
 			S.Info.Experiment(1).Scale_Factor = 1;
 			
 			% The second row is used for units:
@@ -35,6 +34,8 @@ classdef Project_Class < handle
 			
 			S.Info.Analysis(1).Commit = [];
 			S.Info.Analysis(2).Date = 'YYYYMMDD';
+			
+			S.Parameters.General_Parameters.Pixel_Limits = [0,255];
 		end
     end
 end
