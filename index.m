@@ -598,8 +598,6 @@ function index()
 			Overwrite = 0;
 		end
 		
-		% pp = P.GUI_Handles.Current_Project;
-		
 		for pp=1:numel(P.Data) % For each project.
 			
 			Pix_Lim = P.Data(pp).Parameters.General_Parameters.Pixel_Limits;
@@ -704,8 +702,8 @@ function index()
 			P.GUI_Handles.Waitbar.Value = pp ./ Np;
 			
 			% Load and enhance the raw image:
-			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
-			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+			Pix_Lim = P.Data(pp).Parameters.General_Parameters.Pixel_Limits;
+			Im = im2uint8(rescale(P.Data(pp).Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
 			
 			Menus_Func(findall(P.GUI_Handles.Menus(2),'Label','Raw Image - Grayscale'),[],P); % set(P.GUI_Handles.Reconstruction_Menu_Handles(1),'Checked','on'); % Select the raw image in the reconstruction menu. It will be displayed through Switch_Project_Func -> Menus_Func.
 			
