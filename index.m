@@ -77,9 +77,9 @@ function index()
 					end
 					
 					% Temporary:
-					if(~isfield(P.Data(pp).Parameters.General_Parameters,'Pixel_Limits'))
-						P.Data(pp).Parameters.General_Parameters.Pixel_Limits = [0,255];
-					end
+					% if(~isfield(P.Data(pp).Parameters.Image_Parameters,'Pixel_Limits'))
+					% 	P.Data(pp).Parameters.Image_Parameters.Pixel_Limits = [0,255];
+					% end
 					
 					P.Data(pp).Info.Files(1).Stacks_Num = numel(file_info);
 					
@@ -122,9 +122,9 @@ function index()
 					end
 					
 					% Temporary:
-					if(~isfield(P.Data(pp).Parameters.General_Parameters,'Pixel_Limits'))
-						P.Data(pp).Parameters.General_Parameters.Pixel_Limits = [0,255];
-					end
+					% if(~isfield(P.Data(pp).Parameters.Image_Parameters,'Pixel_Limits'))
+					% 	P.Data(pp).Parameters.Image_Parameters.Pixel_Limits = [0,255];
+					% end
 					
 					if(isnumeric(P.Data(pp).Info.Files(1).Raw_Image))
 						P.Data(pp).Info.Files(1).Stacks_Num = 1;
@@ -600,7 +600,7 @@ function index()
 		
 		for pp=1:numel(P.Data) % For each project.
 			
-			Pix_Lim = P.Data(pp).Parameters.General_Parameters.Pixel_Limits;
+			Pix_Lim = P.Data(pp).Parameters.Image_Parameters.Pixel_Limits;
 			
 			if(P.Data(pp).Info.Files(1).Stacks_Num == 1) % One image per project.
 				
@@ -702,7 +702,7 @@ function index()
 			P.GUI_Handles.Waitbar.Value = pp ./ Np;
 			
 			% Load and enhance the raw image:
-			Pix_Lim = P.Data(pp).Parameters.General_Parameters.Pixel_Limits;
+			Pix_Lim = P.Data(pp).Parameters.Image_Parameters.Pixel_Limits;
 			Im = im2uint8(rescale(P.Data(pp).Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
 			
 			Menus_Func(findall(P.GUI_Handles.Menus(2),'Label','Raw Image - Grayscale'),[],P); % set(P.GUI_Handles.Reconstruction_Menu_Handles(1),'Checked','on'); % Select the raw image in the reconstruction menu. It will be displayed through Switch_Project_Func -> Menus_Func.

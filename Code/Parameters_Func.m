@@ -145,4 +145,8 @@ function P = Parameters_Func(Scale_Factor,P)
 		end
 	end
 	
+	if(~isfield(P,'Image_Parameters'))
+		P.Image_Parameters.Pixel_Limits = [0,255];
+	end
+	
 end

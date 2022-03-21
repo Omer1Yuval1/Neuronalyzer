@@ -45,21 +45,21 @@ function Display_Reconstruction(P,Data,Label)
 	set(P.GUI_Handles.Radio_Group_1,'SelectionChangedFcn',{@Radio_Buttons_Func,P,Label});
 	% Radio_Buttons_Func([],[],P,Label);
 	
-	if(~isfield(P.Data(p).Parameters.General_Parameters,'Pixel_Limits'))
-		P.Data(p).Parameters.General_Parameters.Pixel_Limits = [0,255];
-	end
+	% if(~isfield(P.Data(p).Parameters.Image_Parameters,'Pixel_Limits'))
+	% 	P.Data(p).Parameters.Image_Parameters.Pixel_Limits = [0,255];
+	% end
 	
 	switch(Label)
 		case {'Raw Image - Grayscale','Raw Image - RGB'}
 			
 			if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData)) % If a different plot was chosen.
-				Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+				Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 				set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Pixel limits:');
 				set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[0,100],'Step',1,'Value',Pix_Lim(1),'Enable','on','Tooltip','Lower bound of image pixel value (background).'); % Set the spinner.
 				set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[10,255],'Step',1,'Value',Pix_Lim(2),'Enable','on','ValueChangedFcn','','Tooltip','Upper bound of image pixel value (signal).'); % Minimum object size.
 			else
-				P.Data(p).Parameters.General_Parameters.Pixel_Limits = [P.GUI_Handles.Control_Panel_Objects(1,4).Value,P.GUI_Handles.Control_Panel_Objects(1,5).Value];
-				Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+				P.Data(p).Parameters.Image_Parameters.Pixel_Limits = [P.GUI_Handles.Control_Panel_Objects(1,4).Value,P.GUI_Handles.Control_Panel_Objects(1,5).Value];
+				Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 				set(P.GUI_Handles.Control_Panel_Objects(1,4),'Enable','on');
 				set(P.GUI_Handles.Control_Panel_Objects(1,5),'Enable','on');
 			end
@@ -94,7 +94,7 @@ function Display_Reconstruction(P,Data,Label)
 			% plot(CB_Perimeter(:,1),CB_Perimeter(:,2),'LineWidth',4);
 		case 'CNN Image'
 			
-			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 			
 			if(isfield(Data.Info.Files,'Denoised_Image') && ~isempty(Data.Info.Files(1).Denoised_Image))
 				if(P.Data(p).Info.Files(1).Stacks_Num == 1)
@@ -152,7 +152,7 @@ function Display_Reconstruction(P,Data,Label)
 			end
 		case {'Binary Image','Binary Image - RGB','3D Binary'}
 			
-			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 			
 			if(isfield(Data.Info.Files,'Binary_Image') && ~isempty(Data.Info.Files(1).Binary_Image))
 				switch(Label)
@@ -262,7 +262,7 @@ function Display_Reconstruction(P,Data,Label)
 			end
 		case 'Skeleton'
 			
-			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 			
 			if(isfield(Data.Info.Files,'Binary_Image') && ~isempty(Data.Info.Files(1).Binary_Image))
 				[Im1_NoiseReduction,Im1_branchpoints,Im1_endpoints] = Pixel_Trace_Post_Proccessing(Data.Info.Files(1).Binary_Image,Scale_Factor);
@@ -321,7 +321,7 @@ function Display_Reconstruction(P,Data,Label)
 				
 				plot(Ax,XYper(:,1),XYper(:,2),'LineWidth',2);
 			else
-				Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+				Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 				Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
 				imshow(Im,'Parent',Ax);
 				warndlg('Warning: A binary image has not been created yet.','Warning');
@@ -329,7 +329,7 @@ function Display_Reconstruction(P,Data,Label)
 			
 		case {'Trace - Lite','Trace','Segmentation'}
 			
-			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
 			
 			imshow(Im,'Parent',Ax);
@@ -400,7 +400,7 @@ function Display_Reconstruction(P,Data,Label)
 			Max_Length = 50; % [um].
 			CM = jet(1000);
 			
-			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
 			
 			imshow(Im,'Parent',Ax);
@@ -426,7 +426,7 @@ function Display_Reconstruction(P,Data,Label)
 			end
 		case 'Axes'
 			
-			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
 			
 			imshow(Im,'Parent',Ax);
@@ -487,7 +487,7 @@ function Display_Reconstruction(P,Data,Label)
 			end
 		case 'Axes Mapping Process'
 			
-			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
 			
 			imshow(Im,'Parent',Ax);
@@ -506,7 +506,7 @@ function Display_Reconstruction(P,Data,Label)
 					Field_1 = 'Angular_Coordinate';
 			end
 			
-			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
 			
 			imshow(Im,'Parent',Ax);
@@ -541,7 +541,7 @@ function Display_Reconstruction(P,Data,Label)
 			c = linspace(0,1,CM_Lims(2))';
 			CM = [1-c,c,0.*c+0.1]; % CM = jet(CM_Lims(2));
 			
-			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
 			
 			imshow(Im,'Parent',Ax);
@@ -567,7 +567,7 @@ function Display_Reconstruction(P,Data,Label)
 			end
 		case 'Longitudinal Gradient'
 			
-			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
 			
 			imshow(Im,'Parent',Ax);
@@ -607,7 +607,7 @@ function Display_Reconstruction(P,Data,Label)
 			D = find(Dist <= 0);
 			V = find(Dist > 0);
 			
-			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
 			
 			imshow(Im,'Parent',Ax);
@@ -619,7 +619,7 @@ function Display_Reconstruction(P,Data,Label)
 			
 			a = 5;
 			
-			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
 			
 			imshow(Im,'Parent',Ax);
@@ -640,7 +640,7 @@ function Display_Reconstruction(P,Data,Label)
 			%}
 		case 'Vertex Positions'
 			
-			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
 			
 			imshow(Im,'Parent',Ax);
@@ -686,7 +686,7 @@ function Display_Reconstruction(P,Data,Label)
 			CM_Lims = [1,1000];
 			CM = turbo(CM_Lims(2));
 			
-			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
 			
 			imshow(Im,'Parent',Ax);
@@ -725,7 +725,7 @@ function Display_Reconstruction(P,Data,Label)
 			Class_Num = max([Data.Points.Class]);
 			Class_Colors = [P.GUI_Handles.Class_Colors ; 0.5,0.5,0.5];
 			
-			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
 			
 			imshow(Im,'Parent',Ax);
@@ -743,7 +743,7 @@ function Display_Reconstruction(P,Data,Label)
 		case 'PVD Orders - Segments'
 			Class_Num = max([Data.Segments.Class]);
 			
-			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
 			
 			imshow(Im,'Parent',Ax);
@@ -780,7 +780,7 @@ function Display_Reconstruction(P,Data,Label)
 			% R = [Data.All_Vertices.Radius] .* GP.Workspace(1).Workspace.User_Input.Scale_Factor ./ 10;
 			% viscircles([X(F)',Y(F)'],R(F),'Color','k','LineWidth',5); % [0.6350 0.0780 0.1840]
 		otherwise
-			Pix_Lim = P.Data(p).Parameters.General_Parameters.Pixel_Limits;
+			Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
 			
 			imshow(Im,'Parent',Ax);

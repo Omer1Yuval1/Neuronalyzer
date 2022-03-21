@@ -34,8 +34,6 @@ classdef Project_Class < handle
 			
 			S.Info.Analysis(1).Commit = [];
 			S.Info.Analysis(2).Date = 'YYYYMMDD';
-			
-			S.Parameters.General_Parameters.Pixel_Limits = [0,255];
 		end
     end
 end
