@@ -806,17 +806,17 @@ function index()
 				% cnn_gui.cnn_panel.Position(3) = 0.8 * P.GUI_Handles.Main_Panel_1.Position(3);
 				% cnn_gui.cnn_panel.Position(4) = 0.9 * P.GUI_Handles.Main_Panel_1.Position(4);
 				
-				CNN_Grid_Dims = [12,6];
+				CNN_Grid_Dims = [15,6];
 				
 				cnn_gui.cnn_grid = uigridlayout(cnn_gui.cnn_panel,CNN_Grid_Dims,'RowHeight',repmat({'0.8x','1x','0.2x'},1,CNN_Grid_Dims(1)/3),'ColumnWidth',repmat({'1x','0.2x'},1,CNN_Grid_Dims(2)/2),'Scrollable','on','BackgroundColor',P.GUI_Handles.BG_Color_1);
 				
 				Training_Params = PVD_CNN_Params();
-				Field_Names = {'Name','Solver','Input_Size','Samples_Per_Image','Max_Epochs','miniBatchSize','Encoder_Depth','Conv_Num','InitialLearnRate','Randomize_By_Image','Test_Set_Ratio'};
+				Field_Names = {'Name','Solver','Input_Size','Samples_Per_Image','Max_Epochs','miniBatchSize','Encoder_Depth','Conv_Num','InitialLearnRate','Randomize_By_Image','Test_Set_Ratio','ExecutionEnvironment'};
 				Default_Values = {['My_CNN_',datestr(datetime,'yyyymmdd_HH-MM-SS')],{'adam','sgdm','rmsprop'},Training_Params.Input_Size(1),Training_Params.Samples_Per_Image, ...
 													Training_Params.Max_Epochs,Training_Params.miniBatchSize,Training_Params.Encoder_Depth,Training_Params.Conv_Num, ...
-													Training_Params.InitialLearnRate,{'Randomize source images','Radnomize input samples'},Training_Params.Test_Set_Ratio};
+													Training_Params.InitialLearnRate,{'Randomize source images','Radnomize input samples'},Training_Params.Test_Set_Ratio,{'CPU (no parallel computing)','Parallel'}};
 				Param_Names = {'Name','Solver','Sample size (px^2)','Number of samples per image','Number of epochs','Mini batch size', ...
-								'Encoder Depth','Number of convolution layers (per encoder)','Initial learning rate','Sample randomization method','Test set ratio'};
+								'Encoder Depth','Number of convolution layers (per encoder)','Initial learning rate','Sample randomization method','Test set ratio','Parallel computing'};
 				
 				for ii=1:length(Param_Names) % For each input field.
 					
@@ -830,6 +830,8 @@ function index()
 						cnn_gui.(Field_Names{ii}) = uidropdown(cnn_gui.cnn_grid,'Items',Default_Values{ii},'Value',Default_Values{ii}{1});
 					elseif(ii == 10) % Randomization method.
 						cnn_gui.(Field_Names{ii}) = uidropdown(cnn_gui.cnn_grid,'Items',Default_Values{ii},'ItemsData',[1,0],'Value',1);
+					elseif(ii == 12) % Parallelization.
+						cnn_gui.(Field_Names{ii}) = uidropdown(cnn_gui.cnn_grid,'Items',Default_Values{ii},'ItemsData',{'cpu','parallel'},'Value','cpu');
 					elseif(isnumeric(Default_Values{ii}))
 						cnn_gui.(Field_Names{ii}) = uieditfield(cnn_gui.cnn_grid,'numeric','Value',Default_Values{ii},'HorizontalAlignment','center');
 					else
@@ -864,6 +866,23 @@ function index()
 			end
 			
 			P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Trainig...'); % ,'Indeterminate','on'
+			
+			% Make sure that the necessary directories exist:
+			cd(fileparts(which('index.m'))); % Change the path to the main repository folder.
+			if(~isfolder('./Resources/CNN/PVD_Dataset_In'))
+				mkdir('./Resources/CNN/PVD_Dataset_In');
+			else % Delete all files in that folder.
+				delete('./Resources/CNN/PVD_Dataset_In/*');
+			end
+			if(~isfolder('./Resources/CNN/PVD_Dataset_Out'))
+				mkdir('./Resources/CNN/PVD_Dataset_Out');
+			else % Delete all files in that folder.
+				delete('./Resources/CNN/PVD_Dataset_Out/*');
+
+			end
+			if(~isfolder('./Resources/CNN/Checkpoints'))
+				mkdir('./Resources/CNN/Checkpoints');
+			end
 			
 			for iii=1:length(Field_Names)
 				if(isfield(Training_Params,Field_Names{iii})) % If the form field exists in the default CNN parameters struct.

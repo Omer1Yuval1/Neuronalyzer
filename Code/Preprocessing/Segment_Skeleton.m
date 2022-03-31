@@ -56,7 +56,7 @@ function [Vertices,Segments] = Segment_Skeleton(Im1_NoiseReduction,Im1_branchpoi
 		for r=1:length(Ry) % For each route connected to this branch-point.
 
 			% If a pixel is connected to a branch-point and no longer connected to anything else (it was traced from the opposite side), ignore it.
-			if( length(find(Im1_NoiseReduction(Ry(r)-1:Ry(r)+1,Rx(r)-1:Rx(r)+1) > 0)) == 0)
+			if(length(find(Im1_NoiseReduction(Ry(r)-1:Ry(r)+1,Rx(r)-1:Rx(r)+1) > 0)) == 0)
 				if(Messages)
 					disp(['I detected a pixel connected to a branch-point but not to anything else. I am ignoring this pixel. Coordinate: [',num2str([Rx(r),Ry(r)]),'].']);
 				end
