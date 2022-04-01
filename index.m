@@ -910,7 +910,7 @@ function index()
 			save(['./Inputs/pretrained_cnn/',cnn_gui.Name.Value,'.mat'],'net');
 			% [Im_Out,Im_Label] = Segment_Neuron(net,Im_In_4);
 			
-			uimenu(P.GUI_Handles.Menus(5).Children(end),'Label',cnn_gui.Name.Value,'Callback',@select_cnn_func); % ,'Checked','on'.
+			uimenu(P.GUI_Handles.Menus(5).Children(end),'Label',cnn_gui.Name.Value,'Callback',{@select_cnn_func,P}); % ,'Checked','on'.
 			
 			delete(cnn_gui.cnn_panel);
 			
@@ -918,7 +918,7 @@ function index()
 		end
 	end
 	
-	function select_cnn_func(source,~)
+	function select_cnn_func(source,~,P)
 		set(allchild(P.GUI_Handles.Menus(5).Children(end)),'Checked','off');
 		set(source,'Checked','on');
 	end
@@ -971,8 +971,9 @@ function index()
 		set(findall(P.GUI_Handles.Menus(2),'UserData',2),'Callback',{@Menus_Func,P}); % Reconstruction menu.
 		set(findall(P.GUI_Handles.Menus(3),'UserData',3),'Callback',{@Menus_Func,P}); % Plot menu.
 		set(allchild(P.GUI_Handles.Menus(4)),'Callback',{@Apply_Changes_Func,P,4}); % Mode menu.
+		
 		set(allchild(P.GUI_Handles.Menus(5)),'Callback',{@Advanced_Menu_Func,P}); % Advanced menu.
-		set(allchild(P.GUI_Handles.Menus(5).Children(end)),'Callback',@select_cnn_func); % Advanced menu.
+		set(allchild(P.GUI_Handles.Menus(5).Children(end)),'Callback',{@select_cnn_func,P}); % Advanced menu.
 		
 		close(P.GUI_Handles.Waitbar);
 	end
