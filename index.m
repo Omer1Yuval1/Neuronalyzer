@@ -796,8 +796,11 @@ function index()
 	end
 	
 	function Advanced_Menu_Func(source,~,P)
+		
 		switch(source.Position)
 			case 2 % Train a denoising CNN.
+				
+				P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','');
 				
 				cnn_gui.cnn_panel = uipanel(P.GUI_Handles.Main_Grid,'Title','Train a denoising CNN','Scrollable','on','ForegroundColor',[1,1,1],'BackgroundColor',P.GUI_Handles.BG_Color_1,'AutoResizeChildren','off');
 				cnn_gui.cnn_panel.Layout.Row = [1,18];
@@ -851,6 +854,8 @@ function index()
 				cnn_gui.cancel = uibutton(cnn_gui.cnn_grid,'Text','Cancel','ButtonPushedFcn',{@cancel_cnn_func,cnn_gui},'FontSize',P.GUI_Handles.Buttons_FontSize);
 				cnn_gui.cancel.Layout.Row = CNN_Grid_Dims(1)-1;
 				cnn_gui.cancel.Layout.Column = CNN_Grid_Dims(2);
+				
+				close(P.GUI_Handles.Waitbar);
 		end
 		
 		function cancel_cnn_func(~,~,cnn_gui)
@@ -906,8 +911,8 @@ function index()
 			% Save training and test set to .\Resources\CNN\:
 			PVD_Generate_Dataset(Im_In,Im_Out,Training_Params);
 			
-			net = PVD_CNN_Train(1,Training_Params);
-			save(['./Inputs/pretrained_cnn/',cnn_gui.Name.Value,'.mat'],'net');
+			PVD_CNN = PVD_CNN_Train(1,Training_Params);
+			save(['./Inputs/pretrained_cnn/',cnn_gui.Name.Value,'.mat'],'PVD_CNN');
 			% [Im_Out,Im_Label] = Segment_Neuron(net,Im_In_4);
 			
 			uimenu(P.GUI_Handles.Menus(5).Children(end),'Label',cnn_gui.Name.Value,'Callback',{@select_cnn_func,P}); % ,'Checked','on'.
