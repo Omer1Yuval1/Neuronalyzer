@@ -48,7 +48,7 @@ function PVD_CNN = PVD_CNN_Train(Training_Mode,S,net)
 		
 		disp(['Training set: ',num2str(I_Set(N_Test+1:end))]);
 		disp(['Test set: ',num2str(I_Set(1:N_Test))]);
-	else
+	else % Randomize samples.
 		I_Set = randperm(size(T_Set,1)); % Random unique permutation of all rows in T_Set.
 		I_Threshold = round(S.Test_Set_Ratio .* size(T_Set,1)); % Last index of test set (+1 is the first of the training set).
 		
@@ -107,7 +107,7 @@ function PVD_CNN = PVD_CNN_Train(Training_Mode,S,net)
 	if(S.Im2Im)
 		Options = trainingOptions(S.Solver,'LearnRateSchedule','piecewise','InitialLearnRate',S.InitialLearnRate,'LearnRateDropFactor',S.LearnRateDropFactor,'LearnRateDropPeriod',S.LearnRateDropPeriod,...
 				'L2Regularization',S.L2Regularization,'MiniBatchSize',S.miniBatchSize,'Shuffle','once','MaxEpochs',S.Max_Epochs,'ExecutionEnvironment',S.ExecutionEnvironment, ...
-				'Plots','none','Verbose',true,'ValidationData',Test_Set,'ValidationFrequency',S.ValidationFrequency,'CheckpointPath',S.CheckpointPath);
+				'Plots',S.Plots,'Verbose',true,'ValidationData',Test_Set,'ValidationFrequency',S.ValidationFrequency,'CheckpointPath',S.CheckpointPath);
 	else % Predict coordinates.
 		Options = trainingOptions(S.Solver,'MiniBatchSize',S.miniBatchSize,'MaxEpochs',S.Max_Epochs, ...
 			'InitialLearnRate',S.InitialLearnRate,'LearnRateSchedule','piecewise','LearnRateDropFactor',S.LearnRateDropFactor,'LearnRateDropPeriod',S.LearnRateDropPeriod,...

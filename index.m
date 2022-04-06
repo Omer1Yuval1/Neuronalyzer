@@ -814,12 +814,12 @@ function index()
 				cnn_gui.cnn_grid = uigridlayout(cnn_gui.cnn_panel,CNN_Grid_Dims,'RowHeight',repmat({'0.8x','1x','0.2x'},1,CNN_Grid_Dims(1)/3),'ColumnWidth',repmat({'1x','0.2x'},1,CNN_Grid_Dims(2)/2),'Scrollable','on','BackgroundColor',P.GUI_Handles.BG_Color_1);
 				
 				Training_Params = PVD_CNN_Params();
-				Field_Names = {'Name','Solver','Input_Size','Samples_Per_Image','Max_Epochs','miniBatchSize','Encoder_Depth','Conv_Num','InitialLearnRate','Randomize_By_Image','Test_Set_Ratio','ExecutionEnvironment'};
+				Field_Names = {'Name','Solver','Input_Size','Samples_Per_Image','Max_Epochs','miniBatchSize','Encoder_Depth','Conv_Num','InitialLearnRate','Randomize_By_Image','Test_Set_Ratio','ExecutionEnvironment','Plots'};
 				Default_Values = {['My_CNN_',datestr(datetime,'yyyymmdd_HH-MM-SS')],{'adam','sgdm','rmsprop'},Training_Params.Input_Size(1),Training_Params.Samples_Per_Image, ...
 													Training_Params.Max_Epochs,Training_Params.miniBatchSize,Training_Params.Encoder_Depth,Training_Params.Conv_Num, ...
-													Training_Params.InitialLearnRate,{'Randomize source images','Radnomize input samples'},Training_Params.Test_Set_Ratio,{'CPU (no parallel computing)','Parallel'}};
+													Training_Params.InitialLearnRate,{'Randomize source images','Radnomize input samples'},Training_Params.Test_Set_Ratio,{'CPU (no parallel computing)','Parallel'},{'None (progress printed to command line)','Plot progress'}};
 				Param_Names = {'Name','Solver','Sample size (px^2)','Number of samples per image','Number of epochs','Mini batch size', ...
-								'Encoder Depth','Number of convolution layers (per encoder)','Initial learning rate','Sample randomization method','Test set ratio','Parallel computing'};
+								'Encoder Depth','Number of convolution layers (per encoder)','Initial learning rate','Sample randomization method','Test set ratio','Parallel computing','Progress visualization'};
 				
 				for ii=1:length(Param_Names) % For each input field.
 					
@@ -832,9 +832,11 @@ function index()
 					if(ii == 2) % Solver.
 						cnn_gui.(Field_Names{ii}) = uidropdown(cnn_gui.cnn_grid,'Items',Default_Values{ii},'Value',Default_Values{ii}{1});
 					elseif(ii == 10) % Randomization method.
-						cnn_gui.(Field_Names{ii}) = uidropdown(cnn_gui.cnn_grid,'Items',Default_Values{ii},'ItemsData',[1,0],'Value',1);
+						cnn_gui.(Field_Names{ii}) = uidropdown(cnn_gui.cnn_grid,'Items',Default_Values{ii},'ItemsData',[1,0],'Value',1,'Tooltip','The first option means that all samples from one neuron image are allocated as a group to either the training or test set. The second option means that different samples from one neuron image can be in different sets (i.e., training or test).');
 					elseif(ii == 12) % Parallelization.
 						cnn_gui.(Field_Names{ii}) = uidropdown(cnn_gui.cnn_grid,'Items',Default_Values{ii},'ItemsData',{'cpu','parallel'},'Value','cpu');
+					elseif(ii == 13) % Progress visualization.
+						cnn_gui.(Field_Names{ii}) = uidropdown(cnn_gui.cnn_grid,'Items',Default_Values{ii},'ItemsData',{'none','training-progress'},'Value','none');
 					elseif(isnumeric(Default_Values{ii}))
 						cnn_gui.(Field_Names{ii}) = uieditfield(cnn_gui.cnn_grid,'numeric','Value',Default_Values{ii},'HorizontalAlignment','center');
 					else
@@ -870,7 +872,7 @@ function index()
 				return;
 			end
 			
-			P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Trainig...'); % ,'Indeterminate','on'
+			P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Training...'); % ,'Indeterminate','on'
 			
 			% Make sure that the necessary directories exist:
 			cd(fileparts(which('index.m'))); % Change the path to the main repository folder.
@@ -883,7 +885,6 @@ function index()
 				mkdir('./Resources/CNN/PVD_Dataset_Out');
 			else % Delete all files in that folder.
 				delete('./Resources/CNN/PVD_Dataset_Out/*');
-
 			end
 			if(~isfolder('./Resources/CNN/Checkpoints'))
 				mkdir('./Resources/CNN/Checkpoints');
