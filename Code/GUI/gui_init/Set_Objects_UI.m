@@ -5,7 +5,7 @@ function Set_Objects_UI(P)
 	set(P.GUI_Handles.Main_Figure,'WindowState','maximized','Color',P.GUI_Handles.BG_Color_1);
 	drawnow;
 	
-	P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Loading...','Indeterminate','on');
+	P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please wait','Message','Loading...','Indeterminate','on');
 	
 	P.GUI_Handles.Main_Grid = uigridlayout(P.GUI_Handles.Main_Figure,[25,10],'RowHeight',repmat({'1x'},1,25),'ColumnWidth',repmat({'1x'},1,10),'BackgroundColor',P.GUI_Handles.BG_Color_1);
 	

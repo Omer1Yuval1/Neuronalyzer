@@ -1140,7 +1140,7 @@ function Display_Plot(P,Data,Label)
 				case {1,3}
 					if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData) || P.GUI_Handles.Control_Panel_Objects(1,4).Value <= 10) % If the previous plot was different.
 						set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[10,110],'Value',50);
-						set(P.GUI_Handles.Control_Panel_Objects(1,5),'Value',1,'Limits',[1,100]);
+						set(P.GUI_Handles.Control_Panel_Objects(1,5),'Limits',[1,100],'Value',1);
 						% set(GP.Handles.Analysis.Slider,'Min',10,'Max',110,'Value',50,'SliderStep',[0.01,0.1]);
 					end
 					Edges = 0:P.GUI_Handles.Control_Panel_Objects(1,4).Value:Max_Midline_Length;

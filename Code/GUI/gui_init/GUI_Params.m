@@ -9,11 +9,11 @@ function GUI_Params(P)
 	
 	P.GUI_Handles.Input_Data_Formats = {'*.tif;*.tiff;*.jpg;*.png'};
 	
-	P.GUI_Handles.Buttons_Names = {'Load Data','Load Project','Edit Parameters' ; 'Denoise Image','Trace Neuron','Extract Features' ; 'Apply Changes','Save Image','Save Project'};
-	P.GUI_Handles.Step_Buttons_Names = {'Back','Start','Denoising','Vertex Detection','Neuron Tracing','Validation','Analysis','Next'};
+	P.GUI_Handles.Buttons_Names = {'Load data','Load project','Edit parameters' ; 'Denoise image','Trace neuron','Extract features' ; 'Apply changes','Save image','Save project'};
+	P.GUI_Handles.Step_Buttons_Names = {'Back','Start','Denoising','Vertex detection','Neuron tracing','Validation','Analysis','Next'};
 	P.GUI_Handles.Info_Fields_List = {'Experiment','Analysis','Graphics'}; % Fields to include as tabs and tables in the info panel.
 	P.GUI_Handles.Menu_Names = {'Project','Reconstructions','Plots','Mode','Advanced'};
-	P.GUI_Handles.Mode_Names = {'Single Image (2D)','Z-Stacks (3D)','Time-Lapse'};
+	P.GUI_Handles.Mode_Names = {'Single image (2D)','Z-stacks (3D)','Time-lapse'};
 	P.GUI_Handles.Advanced_Names = {'Choose a pretrained denoising CNN','Train a denoising CNN'};
 	% P.GUI_Handles.Reconstruction_Menu_Entries = {'Project','Reconstruction','Plot'};
 	

@@ -290,7 +290,13 @@ function index()
 			if(isfield(Loaded_File,'Workspace'))
 				Loaded_File.Project = Workspace_To_Project(Loaded_File.Workspace);
 			end
-						
+			
+			% Temporary (rename P to Project):
+			if(isfield(Loaded_File,'P'))
+				Loaded_File.Project = Loaded_File.P;
+				Loaded_File = rmfield(Loaded_File,'P');
+			end
+			
 			% Temporary ("Neuron_Axes" changed to "Axes"):
             if(isfield(Loaded_File.Project,'Neuron_Axes'))
                 for jj=1:numel(Loaded_File.Project)
@@ -802,7 +808,7 @@ function index()
 				
 				P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','');
 				
-				cnn_gui.cnn_panel = uipanel(P.GUI_Handles.Main_Grid,'Title','Train a denoising CNN','Scrollable','on','ForegroundColor',[1,1,1],'BackgroundColor',P.GUI_Handles.BG_Color_1,'AutoResizeChildren','off');
+				cnn_gui.cnn_panel = uipanel(P.GUI_Handles.Main_Grid,'Title','Train a denoising CNN','Scrollable','on','ForegroundColor',[1,1,1],'BackgroundColor',P.GUI_Handles.BG_Color_1,'AutoResizeChildren','off','FontSize',22);
 				cnn_gui.cnn_panel.Layout.Row = [1,18];
 				cnn_gui.cnn_panel.Layout.Column = [1,10];
 				% cnn_gui.cnn_panel.Position(1) = 0.1 * P.GUI_Handles.Main_Panel_1.Position(3);
@@ -849,7 +855,7 @@ function index()
 				% uilabel(cnn_gui.cnn_grid,'Text','Number of samples per image');
 				% uieditfield(cnn_gui.cnn_grid,'numeric','Limits', [-5 10],'Value',5);
 				
-				cnn_gui.submit = uibutton(cnn_gui.cnn_grid,'Text','Go!','ButtonPushedFcn',{@train_cnn_func,P,cnn_gui,Field_Names,Training_Params},'FontSize',P.GUI_Handles.Buttons_FontSize);
+				cnn_gui.submit = uibutton(cnn_gui.cnn_grid,'Text','Start training!','ButtonPushedFcn',{@train_cnn_func,P,cnn_gui,Field_Names,Training_Params},'FontSize',P.GUI_Handles.Buttons_FontSize);
 				cnn_gui.submit.Layout.Row = CNN_Grid_Dims(1)-1;
 				cnn_gui.submit.Layout.Column = CNN_Grid_Dims(2)-1;
 				
