@@ -89,8 +89,6 @@ function Display_Plot(P,Data,Label)
 	Max_PVD_Orders = length(P.GUI_Handles.Class_Colors);
 	sig_mat = zeros(length(Class_Indices),length(Class_Indices),Ng,Ng);
 	
-	% Workspace_Set = Workspace_Set(1);
-	
 	set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Bin size:');
 	set(0,'defaulttextInterpreter','tex'); % none.
 	
