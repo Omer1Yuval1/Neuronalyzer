@@ -84,6 +84,11 @@ function Display_Plot(P,Data,Label)
 		% hold on;
 	end
 	
+	Ng = length(Workspace_Set);
+	Class_Indices = 1:length(P.GUI_Handles.Class_Colors);
+	Max_PVD_Orders = length(P.GUI_Handles.Class_Colors);
+	sig_mat = zeros(length(Class_Indices),length(Class_Indices),Ng,Ng);
+	
 	% Workspace_Set = Workspace_Set(1);
 	
 	set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Bin size:');
@@ -890,17 +895,17 @@ function Display_Plot(P,Data,Label)
 		
 		case 'Neuronal Length per Menorah Order'
 			
-			Ng = length(Workspace_Set);
-			Class_Indices = 1:length(P.GUI_Handles.Class_Colors);
 			colormap(Ax1,P.GUI_Handles.Class_Colors);
-			Max_PVD_Orders = length(P.GUI_Handles.Class_Colors);
-			sig_mat = zeros(length(Class_Indices),length(Class_Indices),Ng,Ng);
 			
 			% P.GUI_Handles.Control_Panel_Objects(4,1).Value
 			set(P.GUI_Handles.Control_Panel_Objects(2,4),'Items',{'Not Normalized','Normalized to Midline Length','Normalized to Total Length'},'ItemsData',1:3);
 			set(P.GUI_Handles.Control_Panel_Objects(4,4),'Items',{'Default','Dorsal-Ventral Merged','Total Length (Orders Merged)','Pie Chart'},'ItemsData',1:4); % ,'All Merged'});
 			
 			if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData)) % If the previous plot was different.
+				set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Show per (µm):');
+				set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[1,1000],'Value',1);
+				set(P.GUI_Handles.Control_Panel_Objects(1,5),'Enable','off');
+				
 				P.GUI_Handles.Control_Panel_Objects(4,4).Value = 2; % Set the default option to be DV merged.
 			end
 			
@@ -913,8 +918,8 @@ function Display_Plot(P,Data,Label)
 			switch(P.GUI_Handles.Control_Panel_Objects(2,4).Value) % Normalization.
 				case 1
 					
-					if(P.GUI_Handles.Control_Panel_Objects(1,5).Value > 1)
-						xy_scale = num2str(P.GUI_Handles.Control_Panel_Objects(1,5).Value);
+					if(P.GUI_Handles.Control_Panel_Objects(1,4).Value > 1)
+						xy_scale = num2str(P.GUI_Handles.Control_Panel_Objects(1,4).Value);
 					else
 						xy_scale = '';
 					end
@@ -926,7 +931,6 @@ function Display_Plot(P,Data,Label)
 				case 3
 					Y_Name = '^{Neuronal Length}/_{Total Length}'; % '$\mathrm{\frac{Neuronal \; Length}{Total \; Length}}$';
 			end
-			
 			
 			for g=1:Ng
 				M{g} = zeros(length(Class_Indices) , length(Workspace_Set{g}) , 2); % Class x workspace x dorsal-ventral.
@@ -1023,7 +1027,7 @@ function Display_Plot(P,Data,Label)
 					xlabel(Ax1,'Class','FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 					ylabel(Ax1,Y_Name,'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 					
-					set(Ax1,'YTickLabels',abs(get(Ax1,'YTick')) ./ P.GUI_Handles.Control_Panel_Objects(1,5).Value);
+					set(Ax1,'YTickLabels',abs(get(Ax1,'YTick')) ./ P.GUI_Handles.Control_Panel_Objects(1,4).Value);
 					
 					disp(['Stats (D-V merged):']);
 					for o=1:Max_PVD_Orders % Compare each order between wt and mutant.
@@ -1043,6 +1047,10 @@ function Display_Plot(P,Data,Label)
 					end
 					
 					[sig_mat_Y,sig_mat_X1,sig_mat_X2] = Get_Sig(Ax1,sig_mat);
+					if(~all(isnan(sig_mat_Y(:))))
+						Ax1.YLim(1) = 1.1 * min([0 ; sig_mat_Y(:)]);
+						Ax1.YLim(2) = 1.1 * max([0 ; sig_mat_Y(:)]);
+					end
 					legend(Ax1,Groups);
 					
 				case 3 % Total length (all classes merged).
@@ -1079,7 +1087,7 @@ function Display_Plot(P,Data,Label)
 					% ylim(Ax1,[0,Ax1.YLim(2)]); % ylim(3*YLIM);
 					set(Ax1,'XTick',1:length(Workspace_Set),'XTickLabels',Groups,'FontSize',P.GUI_Handles.Plots.Axis_Ticks_FontSize);
 					ylabel(Ax1,Y_Name,'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
-					set(Ax1,'YTickLabels',abs(get(Ax1,'YTick')) ./ P.GUI_Handles.Control_Panel_Objects(1,5).Value);
+					set(Ax1,'YTickLabels',abs(get(Ax1,'YTick')) ./ P.GUI_Handles.Control_Panel_Objects(1,4).Value);
 					
 					grid(Ax1,'on');
 				case 4 % Pie chart.
@@ -1461,12 +1469,14 @@ function Display_Plot(P,Data,Label)
 			
 		case {'Junction Number/Density','Tip Number/Density'}
 			
-			Class_Indices = 1:length(P.GUI_Handles.Class_Colors);
-			
 			set(P.GUI_Handles.Control_Panel_Objects(2,4),'Items',{'Not Normalized','Midline Length','Total Length'},'ItemsData',1:3);
 			set(P.GUI_Handles.Control_Panel_Objects(4,4),'Items',{'Default','Orders Merged','Orders 1-3'},'ItemsData',1:3); % ,'Dorsal-Ventral Merged',
 			
 			if(~isequal(Label,P.GUI_Handles.Buttons(3,1).UserData)) % If the previous plot was different.
+				set(P.GUI_Handles.Control_Panel_Objects(1,3),'Text','Show per (µm):');
+				set(P.GUI_Handles.Control_Panel_Objects(1,4),'Limits',[1,1000],'Value',1);
+				set(P.GUI_Handles.Control_Panel_Objects(1,5),'Enable','off');
+				
 				P.GUI_Handles.Control_Panel_Objects(4,4).Value = 1; % Set the default option to be DV merged.
 			end
 			
@@ -1499,17 +1509,22 @@ function Display_Plot(P,Data,Label)
 					Nc = 1;
 			end
 			
-			if(P.GUI_Handles.Control_Panel_Objects(1,5).Value > 1)
-				y_scale = num2str(P.GUI_Handles.Control_Panel_Objects(1,5).Value);
-			else
-				y_scale = '';
-			end
+
 			
 			switch(P.GUI_Handles.Control_Panel_Objects(2,4).Value) % Normalization.
-				case 1
-					Y_Name = ['# of ',Name,'s'];
+				case 1 % No normalization.
+					
+					if(P.GUI_Handles.Control_Panel_Objects(1,4).Value > 1)
+						y_scale = num2str(P.GUI_Handles.Control_Panel_Objects(1,4).Value);
+						Y_Name = ['Number of ',Name,'s [per ',y_scale,char(181),'m]'];
+					else
+						y_scale = '';
+						Y_Name = ['Number of ',Name,'s'];
+					end
+					
+					
 				case 2
-					Y_Name = ['# of ',Name,'s / Midline Length [',y_scale,char(181),'m]']; % ['$\mathrm{\frac{\# \; of \; ',Name,'}{Midline \; Length \; (\mu m)}}$'];
+					Y_Name = ['Number of ',Name,'s / Midline Length [',y_scale,char(181),'m]']; % ['$\mathrm{\frac{\# \; of \; ',Name,'}{Midline \; Length \; (\mu m)}}$'];
 				case 3
 					Y_Name = [Name,' Density [',y_scale,char(181),'m^{-1}]'];
 			end
@@ -1542,7 +1557,7 @@ function Display_Plot(P,Data,Label)
 								N{g}(o,w) = length(I3) ./ Normalization_Factor; % Number of 3-way junctions (or tips) that have at least one rectangle of order o.
 								
 							end
-						case 2 % No classification
+						case 2 % No classification (orders merged).
 							switch(P.GUI_Handles.Control_Panel_Objects(2,4).Value) % Normalization.
 								case 1
 									Normalization_Factor = 1;
@@ -1609,24 +1624,18 @@ function Display_Plot(P,Data,Label)
 			end
 			
 			disp(['Stats (',Name,')']);
-			disp(['Across Classes:']);
-			for g=1:Ng % First compare classes within each group.
-				disp([Groups{g},':']);
-				for o=2:Nc
-					switch(P.GUI_Handles.Control_Panel_Objects(4,4).Value) % Type.
-						case 1 % Per order.
-							[PVal_Junctions,Test_Name_Junctions] = Stat_Test(N{g}(o-1,:),N{g}(o,:));
-							disp(['P-Value (',num2str(Classes(o)),') = ',num2str(PVal_Junctions),' (',Test_Name_Junctions,')']);
-					end
-				end
-			end
-			
-			if(Ng > 1)
-				disp(['Across Groups:']);
-				for g=2:Ng % Then compare across groups.
-					for o=1:Nc
+			for o=1:Nc
+				for g=1:Ng % First compare classes within each group.
+					if(g == 1 && o > 1) % Compare classes withing the 1st group.
+						[PVal_Junctions,Test_Name_Junctions] = Stat_Test(N{g}(o-1,:),N{g}(o,:));
+						Stat_Name = ['(Group-',num2str(1),', Class-',num2str(1),') VS ','(Group-',num2str(1),', Class-',num2str(o),'): '];
+						disp([Stat_Name,'P-Value = ',num2str(PVal_Junctions),' (',Test_Name_Junctions,')']);
+						sig_mat = update_sig_mat(sig_mat,1,o,1,1,PVal_Junctions,pval_threshold);
+					elseif(g > 1) % Compare corresponding classes between group 1 and g.
 						[PVal_Junctions,Test_Name_Junctions] = Stat_Test(N{g-1}(o,:),N{g}(o,:));
-						disp(['P-Value (',num2str(Classes(o)),') = ',num2str(PVal_Junctions),' (',Test_Name_Junctions,')']);
+						Stat_Name = ['(Group ',num2str(1),', Class ',num2str(o),') VS ','(Group ',num2str(g),', Class ',num2str(o),'): '];
+						disp([Stat_Name,'P-Value = ',num2str(PVal_Junctions),' (',Test_Name_Junctions,')']);
+						sig_mat = update_sig_mat(sig_mat,o,o,1,g,PVal_Junctions,pval_threshold);
 					end
 				end
 			end
@@ -1641,11 +1650,19 @@ function Display_Plot(P,Data,Label)
 					xlabel(Ax1,XLabel,'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 				case {2,3} % Orders merged. X-axis used for groups.
 					set(Ax1,'XTick',1:Ng,'XTickLabels',Groups,'xlim',[0.5,Ng+0.5]);
+					legend(Ax1,Groups); % Axis_Ticks_FontSize
 			end
+			
+			[sig_mat_Y,sig_mat_X1,sig_mat_X2] = Get_Sig(Ax1,sig_mat);
+			if(~all(isnan(sig_mat_Y(:))))
+				Ax1.YLim(1) = 1.1 * min([0 ; sig_mat_Y(:)]);
+				Ax1.YLim(2) = 1.1 * max([0 ; sig_mat_Y(:)]);
+			end
+			
 			ylabel(Ax1,Y_Name,'FontSize',P.GUI_Handles.Plots.Axis_Title_FontSize);
 			
 			if(P.GUI_Handles.Control_Panel_Objects(2,4).Value > 1) % If the count is divided by length (midline/total).
-				set(Ax1,'YTickLabels',abs(get(Ax1,'YTick')) .* P.GUI_Handles.Control_Panel_Objects(1,5).Value);
+				set(Ax1,'YTickLabels',abs(get(Ax1,'YTick')) .* P.GUI_Handles.Control_Panel_Objects(1,4).Value);
 			end
 			
 			% grid(Ax1,'on');
