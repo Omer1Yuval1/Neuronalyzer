@@ -508,6 +508,10 @@ function index()
 				else % If the axes do not exist.
 					Reset_Main_Axes(P);
 					P.GUI_Handles.Buttons(3,1).UserData = ''; % Used as a flag to reset the axes and axis limits.
+					
+					P.GUI_Handles.Control_Panel_Objects(1,3).Text = "Line width:";
+					P.GUI_Handles.Control_Panel_Objects(1,4).Value = 2;
+					P.GUI_Handles.Control_Panel_Objects(1,5).Value = 10;
 				end
 				
 				Display_Reconstruction(P,P.Data(pp),source.Label);

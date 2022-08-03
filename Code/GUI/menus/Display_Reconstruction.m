@@ -16,8 +16,8 @@ function Display_Reconstruction(P,Data,Label)
 		DotSize_1 = 100; % 2. Use 100 for close up.
 		DotSize_2 = 10;
 	else
-		LineWidth_1 = 2; % [2,6].
-		DotSize_1 = 10; % 80;
+		LineWidth_1 = P.GUI_Handles.Control_Panel_Objects(1,4).Value; % [2,6].
+		DotSize_1 = P.GUI_Handles.Control_Panel_Objects(1,5).Value; % 80;
 		DotSize_2 = 15; % 80;
 	end
 	
