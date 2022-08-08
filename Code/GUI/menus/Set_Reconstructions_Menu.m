@@ -16,40 +16,41 @@ function Set_Reconstructions_Menu(P)
 	
 	H_Skel = uimenu(P.GUI_Handles.Menus(2),'Label','Skeleton');
 		H(8) = uimenu(H_Skel,'Label','Skeleton');
-		H(9) = uimenu(H_Skel,'Label','3D Skeleton','Enable','off');
+		H(9) = uimenu(H_Skel,'Label','Skeleton (connected components)','Enable','on');
+		H(10) = uimenu(H_Skel,'Label','3D Skeleton','Enable','off');
 	
-	H(10) = uimenu(P.GUI_Handles.Menus(2),'Label','Cell Body','Enable','off');
-	H(11) = uimenu(P.GUI_Handles.Menus(2),'Label','Blob','Enable','on');
+	H(11) = uimenu(P.GUI_Handles.Menus(2),'Label','Cell Body','Enable','off');
+	H(12) = uimenu(P.GUI_Handles.Menus(2),'Label','Blob','Enable','on');
 	
 	H_Trace = uimenu(P.GUI_Handles.Menus(2),'Label','Trace');
-		H(12) = uimenu(H_Trace,'Label','Trace - Lite');
-		H(13) = uimenu(H_Trace,'Label','Trace');
+		H(13) = uimenu(H_Trace,'Label','Trace - Lite');
+		H(14) = uimenu(H_Trace,'Label','Trace');
 	
 	H_Segments = uimenu(P.GUI_Handles.Menus(2),'Label','Segments');
-		H(14) = uimenu(H_Segments,'Label','Segmentation');
-		H(15) = uimenu(H_Segments,'Label','Segments by Length');
+		H(15) = uimenu(H_Segments,'Label','Segmentation');
+		H(16) = uimenu(H_Segments,'Label','Segments by Length');
 	
-	H(16) = uimenu(P.GUI_Handles.Menus(2),'Label','Menorahs','Enable','off');
+	H(17) = uimenu(P.GUI_Handles.Menus(2),'Label','Menorahs','Enable','off');
 	
 	H_Vertices = uimenu(P.GUI_Handles.Menus(2),'Label','Vertices');
-		H(17) = uimenu(H_Vertices,'Label','Vertex Positions');
-		H(18) = uimenu(H_Vertices,'Label','Junction Angles');
+		H(18) = uimenu(H_Vertices,'Label','Vertex Positions');
+		H(19) = uimenu(H_Vertices,'Label','Junction Angles');
 	
-	H(19) = uimenu(P.GUI_Handles.Menus(2),'Label','Curvature');
+	H(20) = uimenu(P.GUI_Handles.Menus(2),'Label','Curvature');
 	
 	H0_1_8 = uimenu(P.GUI_Handles.Menus(2),'Label','Axes');
-		H(20) = uimenu(H0_1_8,'Label','Axes');
-		H(21) = uimenu(H0_1_8,'Label','Axes Mapping Process','Enable','off');
+		H(21) = uimenu(H0_1_8,'Label','Axes');
+		H(22) = uimenu(H0_1_8,'Label','Axes Mapping Process','Enable','off');
 		
-	H(22) = uimenu(P.GUI_Handles.Menus(2),'Label','Radial Distance');
-	H(23) = uimenu(P.GUI_Handles.Menus(2),'Label','Azimuthal Angle');
-	H(24) = uimenu(P.GUI_Handles.Menus(2),'Label','Midline Orientation');
-	H(25) = uimenu(P.GUI_Handles.Menus(2),'Label','Longitudinal Gradient');
-	H(26) = uimenu(P.GUI_Handles.Menus(2),'Label','Dorsal-Ventral');
+	H(23) = uimenu(P.GUI_Handles.Menus(2),'Label','Radial Distance');
+	H(24) = uimenu(P.GUI_Handles.Menus(2),'Label','Azimuthal Angle');
+	H(25) = uimenu(P.GUI_Handles.Menus(2),'Label','Midline Orientation');
+	H(26) = uimenu(P.GUI_Handles.Menus(2),'Label','Longitudinal Gradient');
+	H(27) = uimenu(P.GUI_Handles.Menus(2),'Label','Dorsal-Ventral');
 	
 	H0_1_7 = uimenu(P.GUI_Handles.Menus(2),'Label','PVD Orders');
-		H(27) = uimenu(H0_1_7,'Label','PVD Orders - Points');
-		H(28) = uimenu(H0_1_7,'Label','PVD Orders - Segments');
+		H(28) = uimenu(H0_1_7,'Label','PVD Orders - Points');
+		H(29) = uimenu(H0_1_7,'Label','PVD Orders - Segments');
 		
 	
 	for i=1:length(H)

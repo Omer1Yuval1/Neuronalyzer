@@ -16,8 +16,14 @@ function Display_Reconstruction(P,Data,Label)
 		DotSize_1 = 100; % 2. Use 100 for close up.
 		DotSize_2 = 10;
 	else
-		LineWidth_1 = P.GUI_Handles.Control_Panel_Objects(1,4).Value; % [2,6].
-		DotSize_1 = P.GUI_Handles.Control_Panel_Objects(1,5).Value; % 80;
+		
+		if(isequal(P.GUI_Handles.Control_Panel_Objects(1,3).Text,"Line width:"))
+			LineWidth_1 = P.GUI_Handles.Control_Panel_Objects(1,4).Value; % [2,6].
+			DotSize_1 = P.GUI_Handles.Control_Panel_Objects(1,5).Value; % 80;
+		else
+			LineWidth_1 = 2;
+			DotSize_1 = 10;
+		end
 		DotSize_2 = 15; % 80;
 	end
 	
@@ -70,6 +76,7 @@ function Display_Reconstruction(P,Data,Label)
 				if(isequal(Label,'Raw Image - RGB'))
 					colormap(Ax,'hot');
 				end
+				
 			else % Multi-stack image.
 				if(P.GUI_Handles.Menus(4).Children(end).Checked == 1) % 2D. Maximum projection.
 					Im = im2uint8(max(tiffreadVolume(Data.Info.Files(1).Raw_Image),[],3)); % ,'PixelRegion',{[1,1,inf],[1,1,inf],[1,1,inf]}.
@@ -260,7 +267,7 @@ function Display_Reconstruction(P,Data,Label)
 				imshow(Data.Info.Files(1).Raw_Image,'Parent',Ax);
 				warndlg('Warning: Binary and/or denoised images have not been created yet.','Warning');
 			end
-		case 'Skeleton'
+		case {'Skeleton', 'Skeleton (connected components)'}
 			
 			Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 			
@@ -274,10 +281,8 @@ function Display_Reconstruction(P,Data,Label)
 				return;
 			end
 			
-			skel_method = 2;
-			
-			switch(skel_method)
-				case 1 % Display segments.
+			switch(Label)
+				case '' % Display segments.
 					imshow(Im1_NoiseReduction,'Parent',Ax);
 					
 					if(isfield(Data,'Segments') && ~isempty(Data.Segments))
@@ -294,7 +299,7 @@ function Display_Reconstruction(P,Data,Label)
 					end
 					% [Y,X] = find(Im1_branchpoints); hold on; plot(X,Y,'.k','MarkerSize',30);
 					% [Y,X] = find(Im1_endpoints); hold on; plot(X,Y,'.r','MarkerSize',30);
-				case 2 % Display connected components.
+				case 'Skeleton (connected components)' % Display connected components.
 					imshow(Im1_NoiseReduction,'Parent',Ax);
 					CM = lines(1000);
 					
@@ -304,7 +309,7 @@ function Display_Reconstruction(P,Data,Label)
 						hold(Ax,'on');
 						plot(Ax,x,y,'.','MarkerSize',0.2,'Color',CM(c,:)); % 7.
 					end
-				case 3 % Display as label.
+				case 'Skeleton' % Display as label.
 					CM = lines(7);
 					% CM = CM([1,7,2,3,4,5,6],:);
 					Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
@@ -331,6 +336,12 @@ function Display_Reconstruction(P,Data,Label)
 			
 			Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+			
+			if(~isequal(P.GUI_Handles.Control_Panel_Objects(1,3).Text,"Line width:"))
+				P.GUI_Handles.Control_Panel_Objects(1,3).Text = "Line width:";
+				P.GUI_Handles.Control_Panel_Objects(1,4).Value = 2;
+				P.GUI_Handles.Control_Panel_Objects(1,5).Value = 10;
+			end
 			
 			imshow(Im,'Parent',Ax);
 			hold(Ax,'on');
@@ -689,6 +700,12 @@ function Display_Reconstruction(P,Data,Label)
 			Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
 			
+			if(~isequal(P.GUI_Handles.Control_Panel_Objects(1,3).Text,"Line width:"))
+				P.GUI_Handles.Control_Panel_Objects(1,3).Text = "Line width:";
+				P.GUI_Handles.Control_Panel_Objects(1,4).Value = 2;
+				P.GUI_Handles.Control_Panel_Objects(1,5).Value = 10;
+			end
+			
 			imshow(Im,'Parent',Ax);
 			hold(Ax,'on');
 			
@@ -745,6 +762,12 @@ function Display_Reconstruction(P,Data,Label)
 			
 			Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 			Im = im2uint8(rescale(Data.Info.Files(1).Raw_Image,0,1,'InputMin',Pix_Lim(1),'InputMax',Pix_Lim(2)));
+			
+			if(~isequal(P.GUI_Handles.Control_Panel_Objects(1,3).Text,"Line width:"))
+				P.GUI_Handles.Control_Panel_Objects(1,3).Text = "Line width:";
+				P.GUI_Handles.Control_Panel_Objects(1,4).Value = 2;
+				P.GUI_Handles.Control_Panel_Objects(1,5).Value = 10;
+			end
 			
 			imshow(Im,'Parent',Ax);
 			hold(Ax,'on');
