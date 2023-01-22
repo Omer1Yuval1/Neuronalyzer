@@ -155,8 +155,8 @@ function index()
 					% Display_Reconstruction(P,P.Data(1),'Raw Image - Grayscale');
 					% imshow(tiffreadVolume(P.Data(1).Info.Files(1).Raw_Image,'PixelRegion',{[1,1,inf],[1,1,inf],[P.GUI_Handles.Current_Stack,1,P.GUI_Handles.Current_Stack]}),'Parent',P.GUI_Handles.View_Axes(1)); % Display the first stack.
 					
-					set(P.GUI_Handles.Menus(4).Children(:),'Checked',false);
-					set(P.GUI_Handles.Menus(4).Children(2),'Checked',true,'Enable','on');
+					set(P.GUI_Handles.Menus(5).Children(:),'Checked',false);
+					set(P.GUI_Handles.Menus(5).Children(2),'Checked',true,'Enable','on');
 				end
 			end
 			P.GUI_Handles.View_Axes.XLim = findall(P.GUI_Handles.View_Axes.Children,'Type','image').XData; % P.GUI_Handles.View_Axes.Children(1).XData;
@@ -536,6 +536,9 @@ function index()
 				Display_Plot(P,P.Data,source.Label);
 				
 				set(P.GUI_Handles.Buttons(3,1),'UserData',source.Label); % Last used plot. Must be set after running the plot.
+			case 4
+				set(findall(P.GUI_Handles.Menus(4)),'Checked','off');
+				set(source,'Checked','on');
 		end
 		% profile off; profile viewer;
 		if(~isempty(event))
@@ -551,8 +554,10 @@ function index()
 				Menus_Func(findall(P.GUI_Handles.Menus(2),'Checked','on'),[],P);
 			case 3 % Plots.
 				Menus_Func(findall(P.GUI_Handles.Menus(3),'Checked','on'),[],P);
-			case 4 % Mode.
-				set(findall(P.GUI_Handles.Menus(4)),'Checked','off');
+			case 4 % Group by.
+				% Menus_Func(findall(P.GUI_Handles.Menus(4),'Checked','on'),[],P);
+			case 5 % Mode.
+				set(findall(P.GUI_Handles.Menus(5)),'Checked','off');
 				set(source,'Checked','on');
 				if(P.GUI_Handles.Current_Menu == 2 || P.GUI_Handles.Current_Menu == 3)
 					Menus_Func(findall(P.GUI_Handles.Menus(P.GUI_Handles.Current_Menu),'Checked','on'),[],P);
@@ -593,7 +598,7 @@ function index()
 		
 		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Denoising images...'); % ,'Indeterminate','on'
 		
-		CNN = load([findall(P.GUI_Handles.Menus(5).Children(end).Children,'Checked','on').Text,'.mat']);
+		CNN = load([findall(P.GUI_Handles.Menus(6).Children(end).Children,'Checked','on').Text,'.mat']);
 		CNN = CNN.PVD_CNN;
 		
 		selection = uiconfirm(P.GUI_Handles.Main_Figure,'Overwrite existing binary images?','Warning','Icon','question','Options',{'Overwrite','Keep existing binary images'});
@@ -928,7 +933,7 @@ function index()
 			save(['./Inputs/pretrained_cnn/',cnn_gui.Name.Value,'.mat'],'PVD_CNN');
 			% [Im_Out,Im_Label] = Segment_Neuron(net,Im_In_4);
 			
-			uimenu(P.GUI_Handles.Menus(5).Children(end),'Label',cnn_gui.Name.Value,'Callback',{@select_cnn_func,P}); % ,'Checked','on'.
+			uimenu(P.GUI_Handles.Menus(6).Children(end),'Label',cnn_gui.Name.Value,'Callback',{@select_cnn_func,P}); % ,'Checked','on'.
 			
 			delete(cnn_gui.cnn_panel);
 			
@@ -937,7 +942,7 @@ function index()
 	end
 	
 	function select_cnn_func(source,~,P)
-		set(allchild(P.GUI_Handles.Menus(5).Children(end)),'Checked','off');
+		set(allchild(P.GUI_Handles.Menus(6).Children(end)),'Checked','off');
 		set(source,'Checked','on');
 	end
 	
@@ -988,10 +993,11 @@ function index()
 		% Menus:
 		set(findall(P.GUI_Handles.Menus(2),'UserData',2),'Callback',{@Menus_Func,P}); % Reconstruction menu.
 		set(findall(P.GUI_Handles.Menus(3),'UserData',3),'Callback',{@Menus_Func,P}); % Plot menu.
-		set(allchild(P.GUI_Handles.Menus(4)),'Callback',{@Apply_Changes_Func,P,4}); % Mode menu.
+		set(findall(P.GUI_Handles.Menus(4),'UserData',4),'Callback',{@Menus_Func,P}); % Group by menu.
+		set(allchild(P.GUI_Handles.Menus(5)),'Callback',{@Apply_Changes_Func,P,5}); % Mode menu.
 		
-		set(allchild(P.GUI_Handles.Menus(5)),'Callback',{@Advanced_Menu_Func,P}); % Advanced menu.
-		set(allchild(P.GUI_Handles.Menus(5).Children(end)),'Callback',{@select_cnn_func,P}); % Advanced menu.
+		set(allchild(P.GUI_Handles.Menus(6)),'Callback',{@Advanced_Menu_Func,P}); % Advanced menu.
+		set(allchild(P.GUI_Handles.Menus(6).Children(end)),'Callback',{@select_cnn_func,P}); % Advanced menu.
 		
 		close(P.GUI_Handles.Waitbar);
 	end

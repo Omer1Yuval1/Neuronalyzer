@@ -37,23 +37,29 @@ function Set_Objects_UI(P)
 	Set_Reconstructions_Menu(P);
 	Set_Plots_Menu(P);
 	
-	% Mode menu (2D, 3D, time-lapse):
-	for i=1:length(P.GUI_Handles.Mode_Names)
-		uimenu(P.GUI_Handles.Menus(4),'Label',P.GUI_Handles.Mode_Names{i},'Enable','on'); % ,'MenuSelectedFcn',''
+	% Group By menu (used for grouping projects in plots and statistical analysis):
+	for i=1:length(P.GUI_Handles.GroupBy_Names)
+		uimenu(P.GUI_Handles.Menus(4),'Label',P.GUI_Handles.GroupBy_Names{i},'Enable','on','UserData',4);
 	end
 	set(P.GUI_Handles.Menus(4).Children(end),'Checked',true,'Enable','on');
 	
+	% Mode menu (2D, 3D, time-lapse):
+	for i=1:length(P.GUI_Handles.Mode_Names)
+		uimenu(P.GUI_Handles.Menus(5),'Label',P.GUI_Handles.Mode_Names{i},'Enable','on'); % ,'MenuSelectedFcn',''
+	end
+	set(P.GUI_Handles.Menus(5).Children(end),'Checked',true,'Enable','on');
+	
 	% Advanced menu:
 	for i=1:length(P.GUI_Handles.Advanced_Names)
-		uimenu(P.GUI_Handles.Menus(5),'Label',P.GUI_Handles.Advanced_Names{i},'Enable','on');
+		uimenu(P.GUI_Handles.Menus(6),'Label',P.GUI_Handles.Advanced_Names{i},'Enable','on');
 	end
 	
 	CNN_List = dir('./Inputs/pretrained_cnn/*.mat');
 	for i=1:numel(CNN_List) % For each pretrained CNN.
 		if(contains(CNN_List(i).name,'PVD_CNN_Segnet_6A'))
-			uimenu(P.GUI_Handles.Menus(5).Children(end),'Label',CNN_List(i).name(1:end-4),'Checked','on');
+			uimenu(P.GUI_Handles.Menus(6).Children(end),'Label',CNN_List(i).name(1:end-4),'Checked','on');
 		else
-			uimenu(P.GUI_Handles.Menus(5).Children(end),'Label',CNN_List(i).name(1:end-4));
+			uimenu(P.GUI_Handles.Menus(6).Children(end),'Label',CNN_List(i).name(1:end-4));
 		end
 	end
 	

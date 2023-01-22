@@ -14,8 +14,6 @@ function Display_Plot(P,Data,Label)
 		end
 	end
 	
-	Grouping_List = {'Strain_Name','Age'};
-	
 	BarWidth = 0.8;
 	Jitter_Size = 0.1;
 	
@@ -34,28 +32,11 @@ function Display_Plot(P,Data,Label)
 	
 	Groups = cell(1,0);
 	Workspace_Set = cell(1,0); % One cell for each group. The cells contain row numbers of the members (Data(p)).
+	Ngroups = length(P.GUI_Handles.Menus(4).Children); % Number of groups in the "group by" menu.
+	Group_By = findall(P.GUI_Handles.Menus(4),'Checked','on').Text;
 	
-	% Choose field to group by:
-	Feature_Values = "";
-	Group_By = [];
-	for f=1:length(Grouping_List)
-		
-		for p=1:numel(Data)
-			Feature_Values(p) = char([Data(p).Info.Experiment(1).(Grouping_List{f})]);
-		end
-		Feature_Values(cellfun('isempty',Feature_Values)) = []; % Remove empty strings.
-		
-		if(length(unique(Feature_Values)) > 1) % If there are multiple values for feature f, use it for grouping.
-			Group_By = Grouping_List{f};
-			break;
-		end
-	end
 	
-	if(isempty(Group_By))
-		Group_By = 'Strain_Name';
-	end
-	
-	% List all groups (all existing values of "Group_By"):
+	% List all groups (all existing values of "Group_By") and split projects by the selected "group by" feature
 	if(~P.GUI_Handles.Control_Panel_Objects(1,1).Value) % Use all projects.
 		for p=1:numel(Data)
 			s = Data(p).Info.Experiment(1).(Group_By);
