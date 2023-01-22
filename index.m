@@ -703,8 +703,14 @@ function index()
 		
 		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message',''); % ,'Indeterminate','on'
 		
+		if(P.GUI_Handles.Control_Panel_Objects(1,1).Value)
+			project_indices = P.GUI_Handles.Current_Project;
+		else
+			project_indices = 1:numel(P.Data);
+		end
 		Np = numel(P.Data);
-		for pp=1:Np
+		
+		for pp=project_indices
 			P.GUI_Handles.Waitbar.Value = pp ./ Np;
 			
 			% Load and enhance the raw image:
