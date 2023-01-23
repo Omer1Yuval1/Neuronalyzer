@@ -458,7 +458,7 @@ function index()
 	
 	function Update_Info_Func(source,event,P)
 		
-		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Denoising images...','Indeterminate','on');
+		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Loading...','Indeterminate','on');
 		
 		pp = P.GUI_Handles.Current_Project;
 		
@@ -596,17 +596,21 @@ function index()
 	
 	function Denoise_Image_Func(source,event,P)
 		
-		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Denoising images...'); % ,'Indeterminate','on'
+		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Segmenting images...'); % ,'Indeterminate','on'
 		
 		CNN = load([findall(P.GUI_Handles.Menus(6).Children(end).Children,'Checked','on').Text,'.mat']);
 		CNN = CNN.PVD_CNN;
 		
-		selection = uiconfirm(P.GUI_Handles.Main_Figure,'Overwrite existing binary images?','Warning','Icon','question','Options',{'Overwrite','Keep existing binary images'});
-		switch(selection)
-		case 'Overwrite'
+		if(~isfield(P.Data(1).Info.Files,'Binary_Image') || isempty(P.Data(1).Info.Files(1).Binary_Image))
 			Overwrite = 1;
-		case 'Keep existing binary images'
-			Overwrite = 0;
+		else
+			selection = uiconfirm(P.GUI_Handles.Main_Figure,'Overwrite existing binary images?','Warning','Icon','question','Options',{'Overwrite','Keep existing binary images'});
+			switch(selection)
+			case 'Overwrite'
+				Overwrite = 1;
+			case 'Keep existing binary images'
+				Overwrite = 0;
+			end
 		end
 		
 		for pp=1:numel(P.Data) % For each project.
