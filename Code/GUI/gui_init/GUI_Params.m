@@ -13,7 +13,7 @@ function GUI_Params(P)
 	P.GUI_Handles.Step_Buttons_Names = {'Back','Start','Segmentation','Vertex detection','Neuron tracing','Validation','Analysis','Next'};
 	P.GUI_Handles.Info_Fields_List = {'Experiment','Analysis','Graphics'}; % Fields to include as tabs and tables in the info panel.
 	P.GUI_Handles.Menu_Names = {'Project','Reconstructions','Plots','Group by','Mode','Advanced'};
-	P.GUI_Handles.GroupBy_Names = {'Strain','Age','Sex','Genotype','Phenotype','Temperature','Strain_Name','Neuron_Name'};
+	P.GUI_Handles.GroupBy_Names = {'Default','Strain','Age','Sex','Genotype','Phenotype','Temperature','Strain_Name','Neuron_Name'};
 	P.GUI_Handles.Mode_Names = {'Single image (2D)','Z-stacks (3D)','Time-lapse'};
 	P.GUI_Handles.Advanced_Names = {'Choose a pretrained CNN for segmentation','Train a CNN for segmentation'};
 	% P.GUI_Handles.Reconstruction_Menu_Entries = {'Project','Reconstruction','Plot'};

@@ -32,26 +32,41 @@ function Display_Plot(P,Data,Label)
 	
 	Groups = cell(1,0);
 	Workspace_Set = cell(1,0); % One cell for each group. The cells contain row numbers of the members (Data(p)).
-	Ngroups = length(P.GUI_Handles.Menus(4).Children); % Number of groups in the "group by" menu.
-	Group_By = findall(P.GUI_Handles.Menus(4),'Checked','on').Text;
-	
+	N_features = length(P.GUI_Handles.Menus(4).Children); % Number of features in the "group by" menu.
+	Group_By = findall(P.GUI_Handles.Menus(4),'Checked','on');
+	Group_By_Name = Group_By.Text;
 	
 	% List all groups (all existing values of "Group_By") and split projects by the selected "group by" feature
 	if(~P.GUI_Handles.Control_Panel_Objects(1,1).Value) % Use all projects.
-		for p=1:numel(Data)
-			s = Data(p).Info.Experiment(1).(Group_By);
-			
-			Fs = find(ismember(Groups,s),1);
-			
-			if(isempty(Fs)) % If it's the first instance of "Group_By".
-				Groups{end+1} = s; % If this value is not listed yet as a group, add it.
-				Workspace_Set{length(Groups)} = p; % Associate the project index with this group.
-			else % If it's not the first instance of "Group_By".
-				Workspace_Set{Fs}(end+1) = p; % Associate the project index with this group.
+		if(Group_By.Position > 1) % If a feature was selected in the group by menu (not the default option).
+			for p=1:numel(Data)
+				if(isfield(Data(p).Info.Experiment(1), Group_By_Name) && ~isempty(Data(p).Info.Experiment(1).(Group_By_Name)))
+					s = Data(p).Info.Experiment(1).(Group_By_Name); % Get the value of the selected feature to group by in project p.
+					
+					Fs = find(ismember(Groups,s),1);
+					
+					if(isempty(Fs)) % If it's the first instance of "Group_By".
+						Groups{end+1} = s; % If this value is not listed yet as a group, add it.
+						Workspace_Set{length(Groups)} = p; % Associate the project index with this group.
+					else % If it's not the first instance of "Group_By".
+						Workspace_Set{Fs}(end+1) = p; % Associate the project index with this group.
+					end
+				else
+					Workspace_Set{1} = 1:numel(Data);
+					Groups{1} = 'All';
+					set(P.GUI_Handles.Menus(4).Children(:),'Checked',false);
+					set(P.GUI_Handles.Menus(4).Children(end),'Checked',true);
+					msgbox("Some projects are missing the selected feature to group by.");
+					break;
+				end
 			end
+		else
+			Workspace_Set{1} = 1:numel(Data);
+			Groups{1} = 'All';
 		end
 	else % Use selected project only.
 		Workspace_Set{1} = P.GUI_Handles.Current_Project;
+		Groups{1} = 'Selected';
 	end
 	
 	if(P.GUI_Handles.Control_Panel_Objects(4,1).Value) % Undock.
@@ -234,7 +249,7 @@ function Display_Plot(P,Data,Label)
 					Vw = nan(1,Ns);
 					for s=1:Ns
 						Fs = find([GP.Workspace(ww).Workspace.Points.Segment_Index] == s);
-						Ls = nansum([GP.Workspace(ww).Workspace.Points(Fs).(Field_1_Name)]);
+						Ls = sum([GP.Workspace(ww).Workspace.Points(Fs).(Field_1_Name)],'omitnan');
 						% Ls = nansum();
 						Vw(s) = mean([ std([GP.Workspace(ww).Workspace.Points(Fs).X]) , std([GP.Workspace(ww).Workspace.Points(Fs).Y]) ]);
 					end
@@ -306,8 +321,8 @@ function Display_Plot(P,Data,Label)
 						C_D(C_D < Curvature_Min_Max(1) | C_D > Curvature_Min_Max(2)) = nan;
 						C_V(C_V < Curvature_Min_Max(1) | C_V > Curvature_Min_Max(2)) = nan;
 						
-						M{g}(o,w,1) = nansum(C_D .* [Data(ww).Points(f_D).(Field_2_Name)]) ./ nansum([Data(ww).Points(f_D).(Field_2_Name)]);
-						M{g}(o,w,2) = nansum(C_V .* [Data(ww).Points(f_V).(Field_2_Name)]) ./ nansum([Data(ww).Points(f_V).(Field_2_Name)]);
+						M{g}(o,w,1) = sum(C_D .* [Data(ww).Points(f_D).(Field_2_Name)],'omitnan') ./ sum([Data(ww).Points(f_D).(Field_2_Name)],'omitnan');
+						M{g}(o,w,2) = sum(C_V .* [Data(ww).Points(f_V).(Field_2_Name)],'omitnan') ./ sum([Data(ww).Points(f_V).(Field_2_Name)],'omitnan');
 					end
 				end
 			end
@@ -630,7 +645,7 @@ function Display_Plot(P,Data,Label)
 						case 1
 							Norm_Value = 1;
 						case 2 % Total length.
-							Norm_Value = nansum([Data(pp).Points.(Field_2_Name)]);
+							Norm_Value = sum([Data(pp).Points.(Field_2_Name)],'omitnan');
 						case 3 % Midline length.
 							Norm_Value = Data(pp).Axes.Axis_0(end).Arc_Length;
 					end % TODO: For each point check if D/V and save both radii.
@@ -933,8 +948,8 @@ function Display_Plot(P,Data,Label)
 						f_D = find([Data(ww).Points.Midline_Distance] >= 0 & [Data(ww).Points.Segment_Class] == Class_Indices(o)); % Dorsal AND Menorah order o.
 						f_V = find([Data(ww).Points.Midline_Distance] < 0 & [Data(ww).Points.Segment_Class] == Class_Indices(o)); % Ventral AND Menorah order o.
 						
-						M{g}(o,w,1) = nansum([Data(ww).Points(f_D).(Field_1_Name)]) ./ Normalization_Length; % Dorsal.
-						M{g}(o,w,2) = nansum([Data(ww).Points(f_V).(Field_1_Name)]) ./ Normalization_Length; % Ventral.
+						M{g}(o,w,1) = sum([Data(ww).Points(f_D).(Field_1_Name)],'omitnan') ./ Normalization_Length; % Dorsal.
+						M{g}(o,w,2) = sum([Data(ww).Points(f_V).(Field_1_Name)],'omitnan') ./ Normalization_Length; % Ventral.
 					end
 				end
 			end
@@ -991,7 +1006,7 @@ function Display_Plot(P,Data,Label)
 						errorbar(Ax1,Xm,B_DV(:,g),std(sum(M{g},3),0,2)','Color','k','LineWidth',2,'LineStyle','none');
 						
 						if(P.GUI_Handles.Control_Panel_Objects(3,1).Value) % Plot data points.
-							DV_Sum = nansum(M{g},3);
+							DV_Sum = sum(M{g},3,'omitnan');
 							for o=1:length(Class_Indices)
 								scatter(Ax1,Xm(o).*ones(1,size(DV_Sum,2)),DV_Sum(o,:),10,[0.2,0.2,0.2],'filled','jitter','on','jitterAmount',Jitter_Size);
 							end
@@ -1012,12 +1027,12 @@ function Display_Plot(P,Data,Label)
 					for o=1:Max_PVD_Orders % Compare each order between wt and mutant.
 						for g=1:Ng % Compare each order between wt and mutant.
 							if(g == 1 && o > 1) % Compare classes withing the 1st group.
-								[PVal_D,Test_Name_D] = Stat_Test(nansum(M{1}(1,:,:),3),nansum(M{1}(o,:,:),3));
+								[PVal_D,Test_Name_D] = Stat_Test(sum(M{1}(1,:,:),3,'omitnan'),sum(M{1}(o,:,:),3,'omitnan'));
 								Stat_Name = ['(Group-',num2str(1),', Class-',num2str(1),') VS ','(Group-',num2str(1),', Class-',num2str(o),'): '];
 								disp([Stat_Name,'P-Value = ',num2str(PVal_D),' (',Test_Name_D,')']);
 								sig_mat = update_sig_mat(sig_mat,1,o,1,1,PVal_D,pval_threshold);
 							elseif(g > 1) % Compare corresponding classes between group 1 and g.
-								[PVal_D,Test_Name_D] = Stat_Test(nansum(M{1}(o,:,:),3),nansum(M{g}(o,:,:),3)); % Sum up across D-V.
+								[PVal_D,Test_Name_D] = Stat_Test(sum(M{1}(o,:,:),3,'omitnan'),sum(M{g}(o,:,:),3,'omitnan')); % Sum up across D-V.
 								Stat_Name = ['(Group ',num2str(1),', Class ',num2str(o),') VS ','(Group ',num2str(g),', Class ',num2str(o),'): '];
 								disp([Stat_Name,'P-Value = ',num2str(PVal_D),' (',Test_Name_D,')']);
 								sig_mat = update_sig_mat(sig_mat,o,o,1,g,PVal_D,pval_threshold);
@@ -1052,8 +1067,8 @@ function Display_Plot(P,Data,Label)
 					
 					if(Ng > 1)
 						disp(['Total Neuronal Length - Result:']);
-						Total_Length_1 = nansum(sum(M{1},1),3); % Sum up across menorah orders and D-V.
-						Total_Length_2 = nansum(sum(M{2},1),3); % ".
+						Total_Length_1 = sum(sum(M{1},1),3,'omitnan'); % Sum up across menorah orders and D-V.
+						Total_Length_2 = sum(sum(M{2},1),3,'omitnan'); % ".
 						[PVal_D,Test_Name_D] = Stat_Test(Total_Length_1,Total_Length_2); % Summing up the classes and then dorsal-ventral.
 						disp(['P-Value = ',num2str(PVal_D),' (',Test_Name_D,')']);
 						
@@ -1157,10 +1172,10 @@ function Display_Plot(P,Data,Label)
 							Total_Length = 1;
 						case 3 % Normalized to Total Length.
 							Midline_Length = 1;
-							Total_Length = nansum([Data(ww).Points.(Field_1_Name)]);
+							Total_Length = sum([Data(ww).Points.(Field_1_Name)],'omitnan');
 						case 4 % Normalized to both Midline and Total Length.
 							Midline_Length = Data(ww).Axes.Axis_0(end).Arc_Length;
-							Total_Length = nansum([Data(ww).Points.(Field_1_Name)]);
+							Total_Length = sum([Data(ww).Points.(Field_1_Name)],'omitnan');
 					end
 					
 					for o=1:Max_PVD_Orders
@@ -1527,7 +1542,7 @@ function Display_Plot(P,Data,Label)
 										Normalization_Factor = Data(ww).Axes.Axis_0(end).Arc_Length;
 									case 3 % Total length of order Classes(o).
 										f0 = find([Data(ww).Points.Segment_Class] == Classes(o)); % Find all points of class Classes(o).
-										Normalization_Factor = nansum([Data(ww).Points(f0).(Field_1)]); % Total length of order o in workspace ww.
+										Normalization_Factor = sum([Data(ww).Points(f0).(Field_1)],'omitnan'); % Total length of order o in workspace ww.
 								end
 								
 								f3 = find([Data(ww).Points.Segment_Class] == Classes(o) & [Data(ww).Points.Vertex_Order] == Vertex_Order); % Find all rectangles that belong to a 3-way junction of class o.
@@ -1543,7 +1558,7 @@ function Display_Plot(P,Data,Label)
 								case 2 % Midline.
 									Normalization_Factor = Data(ww).Axes.Axis_0(end).Arc_Length;
 								case 3 % Total length of entire neuron.
-									Normalization_Factor = nansum([Data(ww).Points.(Field_1)]); % Total neuron length.
+									Normalization_Factor = sum([Data(ww).Points.(Field_1)],'omitnan'); % Total neuron length.
 							end
 							
 							f3 = find([Data(ww).Points.Vertex_Order] == Vertex_Order);
@@ -1558,7 +1573,7 @@ function Display_Plot(P,Data,Label)
 									Normalization_Factor = Data(ww).Axes.Axis_0(end).Arc_Length;
 								case 3 % Total length of entire neuron.
 									f0 = find(ismember([Data(ww).Points.Segment_Class],Classes)); % Find all points of Classes (1-3).
-									Normalization_Factor = nansum([Data(ww).Points(f0).(Field_1)]); % Total length of Classes (1-3).
+									Normalization_Factor = sum([Data(ww).Points(f0).(Field_1)],'omitnan'); % Total length of Classes (1-3).
 							end
 							
 							f3 = find([Data(ww).Points.Vertex_Order] == Vertex_Order & ismember([Data(ww).Points.Segment_Class],Classes));
@@ -1829,7 +1844,7 @@ function Display_Plot(P,Data,Label)
 						case 1
 							Total_Length = 1;
 						case 2
-							Total_Length = nansum([Data(pp).Points.(Field_2_Name)]);
+							Total_Length = sum([Data(pp).Points.(Field_2_Name)],'omitnan');
 					end
 					
 					if(P.GUI_Handles.Control_Panel_Objects(4,4).Value <= 2) % Type.
@@ -2495,7 +2510,7 @@ function Display_Plot(P,Data,Label)
 								Normalization = 'count';
 							case 2 % Each order is divided by the total length of that order.
 								f1 = find([GP.Workspace(ww).Workspace.Points.Segment_Class] == Menorah_Classes(o));
-								Total_Length(o) = nansum([GP.Workspace(ww).Workspace.Points(f1).(Length_Field)]); % Total length of order Menorah_Classes(o).
+								Total_Length(o) = sum([GP.Workspace(ww).Workspace.Points(f1).(Length_Field)],'omitnan'); % Total length of order Menorah_Classes(o).
 								Normalization = 'count';
 							case 3 % Each order is normalized to 1.
 								Normalization = 'Probability';
@@ -2505,13 +2520,13 @@ function Display_Plot(P,Data,Label)
 						for s=1:length(F1) % For each segment of order o in animal w.
 							% if(GP.Workspace(ww).Workspace.Segments(F1(s)).Terminal == 1) % Uncomment to exclude tips (== 0). Change to 1 to show only tips.
 								F2 = find([GP.Workspace(ww).Workspace.Points.Segment_Index] == GP.Workspace(ww).Workspace.Segments(F1(s)).Segment_Index);
-								v(s) = nansum([GP.Workspace(ww).Workspace.Points(F2).(Length_Field)]);
+								v(s) = sum([GP.Workspace(ww).Workspace.Points(F2).(Length_Field)],'omitnan');
 							% end
                         end
 						v = v(~isnan(v));
 						
 						N{g}(w,:,o) = histcounts(v,Bin_Vector,'Normalization',Normalization) ./ Total_Length(o); % N{g}(w,:,o) = histcounts(V ./ Total_Length(o),Bin_Vector ./ Total_Length(o));
-						V{g}(w,o) = nansum(v) ./ Total_Length(o);
+						V{g}(w,o) = sum(v,'omitnan') ./ Total_Length(o);
 						X{g}{w,o} = v;
 						% disp(sum(N{g}(w,:,o)));
 						% V_Total = [V_Total,v];
