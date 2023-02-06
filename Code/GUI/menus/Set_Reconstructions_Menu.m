@@ -6,12 +6,12 @@ function Set_Reconstructions_Menu(P)
 		H(1) = uimenu(H_Raw_Image,'Label','Raw Image - Grayscale','Checked','on');
 		H(2) = uimenu(H_Raw_Image,'Label','Raw Image - RGB');
 	
-	H(3) = uimenu(P.GUI_Handles.Menus(2),'Label','CNN Image');
+	H(3) = uimenu(P.GUI_Handles.Menus(2),'Label','Segmented Image');
 	
 	H_Binary = uimenu(P.GUI_Handles.Menus(2),'Label','Binary Image');
 		H(4) = uimenu(H_Binary,'Label','Binary Image');
 		H(5) = uimenu(H_Binary,'Label','Binary Image - RGB');
-		H(6) = uimenu(H_Binary,'Label','CNN + Binary','Enable','on');
+		H(6) = uimenu(H_Binary,'Label','Segmented + Binary','Enable','on');
 		H(7) = uimenu(H_Binary,'Label','3D Binary');
 	
 	H_Skel = uimenu(P.GUI_Handles.Menus(2),'Label','Skeleton');

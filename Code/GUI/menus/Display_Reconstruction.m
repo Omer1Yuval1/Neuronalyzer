@@ -99,7 +99,7 @@ function Display_Reconstruction(P,Data,Label)
 			[CB_Vertices,Pixels0,Pixels1] = Find_CB_Vertices(Data.Image0,CB_Perimeter,CB_Pixels,Scale_Factor,CB_BW_Threshold,1);
 			
 			% plot(CB_Perimeter(:,1),CB_Perimeter(:,2),'LineWidth',4);
-		case 'CNN Image'
+		case 'Segmented Image'
 			
 			Pix_Lim = P.Data(p).Parameters.Image_Parameters.Pixel_Limits;
 			
@@ -240,7 +240,7 @@ function Display_Reconstruction(P,Data,Label)
 				warndlg('Warning: A binary image has not been created yet.','Warning');
 			end
 			
-		case 'CNN + Binary'
+		case 'Segmented + Binary'
 			
 			if(isfield(Data.Info.Files,'Binary_Image') && ~isempty(Data.Info.Files(1).Binary_Image) && ...
 				isfield(Data.Info.Files,'Denoised_Image') && ~isempty(Data.Info.Files(1).Denoised_Image))
