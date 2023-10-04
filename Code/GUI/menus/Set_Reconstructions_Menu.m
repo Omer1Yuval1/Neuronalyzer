@@ -39,7 +39,7 @@ function Set_Reconstructions_Menu(P)
 	H(20) = uimenu(P.GUI_Handles.Menus(2),'Label','Curvature');
 	
 	H0_1_8 = uimenu(P.GUI_Handles.Menus(2),'Label','Axes');
-		H(21) = uimenu(H0_1_8,'Label','Axes');
+		H(21) = uimenu(H0_1_8,'Label','Neuron Axes');
 		H(22) = uimenu(H0_1_8,'Label','Axes Mapping Process','Enable','off');
 		
 	H(23) = uimenu(P.GUI_Handles.Menus(2),'Label','Radial Distance');

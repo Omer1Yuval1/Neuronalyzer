@@ -110,7 +110,8 @@ function Set_Objects_UI(P)
 		end
 	end
 	
-	drawnow; drawnow; drawnow; drawnow;
+	drawnow;
+    pause(1);
 	
 	for i=1:4 % % Set radio button positions.
 		% P.GUI_Handles.Control_Panel_Objects(5-i,2).Position(2) = (i-1) .* P.GUI_Handles.Control_Panel_Objects(5-i,2).Position(4) .* 1.59;
