@@ -4,17 +4,17 @@
 To get started, download the latest Neuronalyzer version from the GitHub repository.
 Then open the file index.m in MATLAB and run it.
 
-Please cite this paper:<br/>
+**Please cite this paper:**</br>
 [Yuval, O., Iosilevskii, Y., Meledin, A., Podbilewicz, B., & Shemesh, T. (2021). Neuron tracing and quantitative analyses of dendritic architecture reveal symmetrical three-way-junctions and phenotypes of git-1 in C. elegans. PLoS computational biology, 17(7), e1009185.](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1009185)
 
-Required toolboxes: Computer Vision, Navigation, Robotics System, Image Processing, 
+**Required toolboxes:** Computer Vision, Navigation, Robotics System, Image Processing, 
 Curve Fitting, Signal Processing, Statistics and Machine Learning, Phased Array System.
 
-**New features and announcements
-    * It is now possible to annotate and train a custom neural network from within the GUI.
-    * Users can access the full data, meta data and parameters of their project via the `Project` variable in the MATLAB Workspace.
-    * To export tabular data to csv, users can use the following example code in the command line (after analyzing an image dataset or loading an existing project into the GUI):
-        `writetable(struct2table(Project.Data(i).Points),['Project_',num2str(i),'_',Project.Data(1).Info.Experiment(i).Identifier,'.csv'],'Delimiter',',')`
+**New features and announcements**</br>
+* It is now possible to annotate and train a custom neural network from within the GUI.
+* Users can access the full data, meta data and parameters of their project via the `Project` variable in the MATLAB Workspace.
+* To export tabular data to csv, users can use the following example code in the command line (after analyzing an image dataset or loading an existing project into the GUI):</br>
+        `writetable(struct2table(Project.Data(i).Points),['Project_',num2str(i),'_',Project.Data(i).Info.Experiment(1).Identifier,'.csv'],'Delimiter',',')`</br>
         where `i` is the image index in the dataset. This code exports the traced elements into a csv file.
 <br/>
 
