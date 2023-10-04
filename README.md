@@ -10,7 +10,7 @@ Please cite this paper:<br/>
 Required toolboxes: Computer Vision, Navigation, Robotics System, Image Processing, 
 Curve Fitting, Signal Processing, Statistics and Machine Learning, Phased Array System.
 
-** New features and announcements
+**New features and announcements
     * It is now possible to annotate and train a custom neural network from within the GUI.
     * Users can access the full data, meta data and parameters of their project via the `Project` variable in the MATLAB Workspace.
     * To export tabular data to csv, users can use the following example code in the command line (after analyzing an image dataset or loading an existing project into the GUI):
