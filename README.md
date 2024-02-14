@@ -8,7 +8,7 @@ Then open the file index.m in MATLAB and run it.
 [Yuval, O., Iosilevskii, Y., Meledin, A., Podbilewicz, B., & Shemesh, T. (2021). Neuron tracing and quantitative analyses of dendritic architecture reveal symmetrical three-way-junctions and phenotypes of git-1 in C. elegans. PLoS computational biology, 17(7), e1009185.](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1009185)
 
 **Required toolboxes:** Computer Vision, Navigation, Robotics System, Image Processing, 
-Curve Fitting, Signal Processing, Statistics and Machine Learning, Phased Array System.
+Curve Fitting, Signal Processing, Parallel Computing Toolbox, Statistics and Machine Learning, Phased Array System.
 
 **New features and announcements**</br>
 * It is now possible to annotate and train a custom neural network from within the GUI.

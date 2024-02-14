@@ -838,7 +838,7 @@ function index()
 				Field_Names = {'Name','Solver','Input_Size','Samples_Per_Image','Max_Epochs','miniBatchSize','Encoder_Depth','Conv_Num','InitialLearnRate','Randomize_By_Image','Test_Set_Ratio','ExecutionEnvironment','Plots'};
 				Default_Values = {['My_CNN_',datestr(datetime,'yyyymmdd_HH-MM-SS')],{'adam','sgdm','rmsprop'},Training_Params.Input_Size(1),Training_Params.Samples_Per_Image, ...
 													Training_Params.Max_Epochs,Training_Params.miniBatchSize,Training_Params.Encoder_Depth,Training_Params.Conv_Num, ...
-													Training_Params.InitialLearnRate,{'Randomize source images','Radnomize input samples'},Training_Params.Test_Set_Ratio,{'CPU (no parallel computing)','Parallel'},{'None (progress printed to command line)','Plot progress'}};
+													Training_Params.InitialLearnRate,{'Randomize source images','Radnomize input samples'},Training_Params.Test_Set_Ratio,{'CPU (no parallel computing)','Parallel-CPU','Parallel-GPU'},{'None (progress printed to command line)','Plot progress'}};
 				Param_Names = {'Name','Solver','Sample size (px^2)','Number of samples per image','Number of epochs','Mini batch size', ...
 								'Encoder Depth','Number of convolution layers (per encoder)','Initial learning rate','Sample randomization method','Test set ratio','Parallel computing','Progress visualization'};
 				
@@ -855,7 +855,7 @@ function index()
 					elseif(ii == 10) % Randomization method.
 						cnn_gui.(Field_Names{ii}) = uidropdown(cnn_gui.cnn_grid,'Items',Default_Values{ii},'ItemsData',[1,0],'Value',1,'Tooltip','The first option means that all samples from one neuron image are allocated as a group to either the training or test set. The second option means that different samples from one neuron image can be in different sets (i.e., training or test).');
 					elseif(ii == 12) % Parallelization.
-						cnn_gui.(Field_Names{ii}) = uidropdown(cnn_gui.cnn_grid,'Items',Default_Values{ii},'ItemsData',{'cpu','parallel'},'Value','cpu');
+						cnn_gui.(Field_Names{ii}) = uidropdown(cnn_gui.cnn_grid,'Items',Default_Values{ii},'ItemsData',{'cpu','parallel-cpu','parallel-gpu'},'Value','cpu');
 					elseif(ii == 13) % Progress visualization.
 						cnn_gui.(Field_Names{ii}) = uidropdown(cnn_gui.cnn_grid,'Items',Default_Values{ii},'ItemsData',{'none','training-progress'},'Value','none');
 					elseif(isnumeric(Default_Values{ii}))
