@@ -1,6 +1,6 @@
 # Neuronalyzer - User Manual
 
-**The software is compatible with MATLAB R2020b or newer.** <br/>
+**The software is compatible with MATLAB R2023a or newer.** <br/>
 To get started, download the latest Neuronalyzer version from the GitHub repository.
 Then open the file index.m in MATLAB and run it.
 
