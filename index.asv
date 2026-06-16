@@ -598,12 +598,12 @@ function index()
 		
 		P.GUI_Handles.Waitbar = uiprogressdlg(P.GUI_Handles.Main_Figure,'Title','Please Wait','Message','Segmenting images...'); % ,'Indeterminate','on'
 		
-		CNN = load([findall(P.GUI_Handles.Menus(6).Children(end).Children, 'Checked', 'on').Text, '.mat']);
-		% CNN = CNN.PVD_CNN;
+		CNN = load([findall(P.GUI_Handles.Menus(6).Children(end).Children,'Checked','on').Text,'.mat']);
+		CNN = CNN.PVD_CNN;
 
-        % classNames = CNN.Layers(end).Classes;
-        % dlnet = dag2dlnetwork(CNN);
-        % save('./Inputs/pretrained_cnn/pvd_dlnet_6A.mat', 'dlnet', 'classNames');
+        classNames = CNN.Layers(end).Classes;
+        dlnet = dag2dlnetwork(CNN);
+        save('./Inputs/pretrained_cnn/my_pretrained_dlnet.mat', 'dlnet', 'classNames');
 		
 		if(~isfield(P.Data(1).Info.Files,'Binary_Image') || isempty(P.Data(1).Info.Files(1).Binary_Image))
 			Overwrite = 1;

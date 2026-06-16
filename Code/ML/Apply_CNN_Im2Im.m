@@ -1,4 +1,4 @@
-function [C,Im_Label] = Apply_CNN_Im2Im(My_CNN,Im)
+function [C,Im_Label] = Apply_CNN_Im2Im(My_CNN, Im)
 		
 	% This function gets a trained neural My_CNNwork and a grayscale image and produces a matrix of probabilities.
 	% Each pixel in the output matrix contains the probability of the corresponding pixel in the grayscale image of being
@@ -10,6 +10,9 @@ function [C,Im_Label] = Apply_CNN_Im2Im(My_CNN,Im)
     % Enhance image:
         % Im1 = uint8(255 * mat2gray(rescale(Im,0,1,'InputMin',0,'InputMax',50)));
 	
+    dlnet = My_CNN.dlnet;
+    classNames = My_CNN.classNames;
+
 	Save_Patches = 0;
 	
 	S = PVD_CNN_Params();
@@ -19,7 +22,7 @@ function [C,Im_Label] = Apply_CNN_Im2Im(My_CNN,Im)
     CM([1,2],:) = CM([1,7],:);
     Im_Label = [];
     
-	FS = My_CNN.Layers(1).InputSize(1); % Frame Size.
+	FS = dlnet.Layers(1).InputSize(1); % Frame Size.
 	FHS = round(FS ./ 2); % Frame Half Size.
 	dF = FS; % round(FS ./ 2); % FS;
 	
@@ -47,7 +50,8 @@ function [C,Im_Label] = Apply_CNN_Im2Im(My_CNN,Im)
 			
 			if(S.Sample_In_Func(S.Input_Image_Func(In)))
 				
-                C(dy,dx) = semanticseg(In,My_CNN);
+                C(dy,dx) = semanticseg(In, dlnet, Classes=classNames);
+                % C(dy,dx) = semanticseg(In, My_CNN);
 				
 				if(Save_Patches)
 					ii = ii + 1;

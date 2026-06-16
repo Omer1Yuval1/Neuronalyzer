@@ -56,7 +56,7 @@ function Set_Objects_UI(P)
 	
 	CNN_List = dir('./Inputs/pretrained_cnn/*.mat');
 	for i=1:numel(CNN_List) % For each pretrained CNN.
-		if(contains(CNN_List(i).name,'PVD_CNN_Segnet_6A'))
+		if(contains(CNN_List(i).name,'pvd_dlnet_6A'))
 			uimenu(P.GUI_Handles.Menus(6).Children(end),'Label',CNN_List(i).name(1:end-4),'Checked','on');
 		else
 			uimenu(P.GUI_Handles.Menus(6).Children(end),'Label',CNN_List(i).name(1:end-4));

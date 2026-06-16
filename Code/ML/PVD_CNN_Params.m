@@ -77,7 +77,7 @@ function P = PVD_CNN_Params()
 		P.Layers = replaceLayer(P.Layers,'Segmentation-Layer',regressionLayer('name','regressionLayer'));
 		P.Layers = P.Layers.connectLayers('Final-ConvolutionLayer','regressionLayer');
 	elseif(1) % Used with pixelLabelImageDatastore.
-		P.Layers = segnetLayers([P.Input_Size,1],2,P.Encoder_Depth,'NumConvolutionLayers',P.Conv_Num);
+		% P.Layers = segnetLayers([P.Input_Size,1], 2, P.Encoder_Depth, 'NumConvolutionLayers', P.Conv_Num);
 	else
 		P.Layers = [imageInputLayer([P.Input_Size,1]), ...
 			convolution2dLayer(P.Filter_Size_1,P.Filters_num,'Padding',P.Padding_Vector),batchNormalizationLayer,reluLayer, ...
